@@ -25,6 +25,7 @@ def test_11_modify_venue():
 def test_12_create_venue():
     venue_data = {'name': 'Ma venue',
                   'address': '75 Rue Charles Fourier, 75013 Paris',
+                  'departementCode': '75',
                   'latitude': 48.82387,
                   'longitude': 2.35284
                  }
@@ -38,4 +39,3 @@ def test_12_create_venue():
     for (key, value) in venue_data.items():
         assert created_venue_data[key] == venue_data[key]
     #TODO: check thumb presence
-
