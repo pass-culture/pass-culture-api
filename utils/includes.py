@@ -41,8 +41,17 @@ RECOMMENDATIONS_INCLUDES = [
     {
         "key": "mediatedOccurences",
         "sub_joins": [
-            "offers", "offer" # FIXME: Once all request come with the version header,
-                              # remove "offer" (see model/offer.py)
+            {
+                "key": "offers",
+                "sub_joins": [
+                    {
+                        "key": "eventOccurence",
+                        "sub_joins": ["event", "venue"],
+                    },
+                    "thing",
+                    "venue"
+                ]
+            }
         ]
     },
     {
@@ -52,6 +61,7 @@ RECOMMENDATIONS_INCLUDES = [
             "thing"
         ]
     },
+    "bookings",
     {
         "key": "recommendationBookings",
         "resolve": (lambda element, filters: element['booking']),
