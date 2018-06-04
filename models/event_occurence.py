@@ -38,5 +38,8 @@ class EventOccurence(app.model.PcObject,
                               nullable=False,
                               default=bytes([0]))
 
+    @property
+    def offer(self):
+        return self.offers
 
 app.model.EventOccurence = EventOccurence
