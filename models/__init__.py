@@ -39,6 +39,7 @@ import models.occasion
 import models.provider
 import models.recommendation
 import models.thing
+import models.user_occasion
 import models.user_offerer
 import models.user
 import models.venue
