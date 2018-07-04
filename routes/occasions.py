@@ -21,6 +21,7 @@ Offer = app.model.Offer
 Offerer = app.model.Offerer
 RightsType = app.model.RightsType
 Thing = app.model.Thing
+UserOccasion = app.model.UserOccasion
 UserOfferer = app.model.UserOfferer
 Venue = app.model.Venue
 
@@ -89,15 +90,29 @@ def get_occasion(id):
 @login_or_api_key_required
 @expect_json_data
 def post_occasion():
-    ocas = Occasion()
+    occasion = Occasion()
     venue = Venue.query.filter_by(id=dehumanize(request.json['venueId']))\
                        .first_or_404()
     ensure_current_user_has_rights(RightsType.editor,
                                    venue.managingOffererId)
-    update(ocas, request.json)
-    app.model.PcObject.check_and_save(ocas)
+    update(occasion, request.json)
+    app.model.PcObject.check_and_save(occasion)
+
+
+    users = UserOfferer.query.filter_by(offererId=venue.managingOffererId).all()
+    for user in users:
+        user_occasion = UserOccasion.query.filter_by(user=user)\
+                                          .join(Event)\
+                                          .join(Thing)\
+                                          .exists(
+                                              (Event == occasion.event) |
+                                              (Thing == occasion.thing))
+        if user_occasion is None:
+            user_occasion = UserOccasion(occasion=occasion, user=user)
+            app.model.PcObject.check_and_save(user_occasion)
+
     return jsonify(
-        ocas._asdict(
+        occasion._asdict(
             include=OCCASION_INCLUDES,
             has_dehumanized_id=True
         )

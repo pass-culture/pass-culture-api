@@ -81,7 +81,8 @@ OCCASION_INCLUDES = [
     {
         "key": "venue",
         "sub_joins": ["managingOfferer"]
-    }
+    },
+    "userOccasions"
 ]
 
 OFFER_INCLUDES = [
