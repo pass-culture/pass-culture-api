@@ -6,9 +6,8 @@ import os
 from pprint import pformat
 import requests
 
-from utils.config import API_URL
+from utils.config import API_URL, ENV, IS_DEV, IS_STAGING
 from utils.date import format_datetime, utc_datetime_to_dept_timezone
-from utils.config import ENV, IS_DEV, IS_STAGING
 
 MAILJET_API_KEY = os.environ.get('MAILJET_API_KEY')
 MAILJET_API_SECRET = os.environ.get('MAILJET_API_SECRET')
@@ -23,6 +22,7 @@ if MAILJET_API_SECRET is None or MAILJET_API_SECRET=='':
     raise ValueError("Missing environment variable MAILJET_API_SECRET")
 client = Client(auth=(MAILJET_API_KEY, MAILJET_API_SECRET),
               version='v3')
+app.mailjet_client = client
 app.mailjet = client.send.create
 
 
@@ -167,13 +167,17 @@ def maybe_send_offerer_validation_email(user, *objects_to_validate):
         classes_to_validate.append(obj.__class__.__name__)
         if isinstance(obj, app.model.UserOfferer):
             email_html += "<h3>Nouveau Rattachement : </h3>"
+            email_html += "<h4>Utilisateur: </h4>"
+            email_html += "<pre>"+pformat(vars(obj.user))+"</pre>"
+            email_html += "<h4>Structure: </h4>"
+            email_html += "<pre>"+pformat(vars(obj.offerer))+"</pre>"
         elif isinstance(obj, app.model.Offerer):
             email_html += "<h3>Nouvelle Structure : </h3>"
+            email_html += "<pre>"+pformat(vars(obj))+"</pre>"
         else:
             raise ValueError("Unexpected object type in"
                              + " maybe_send_pro_validation_email : "
                              + obj.__class__.__name__)
-        email_html += "<pre>"+pformat(vars(obj))+"</pre>"
         if isinstance(obj, app.model.Offerer):
             email_html += "<h4>Infos API entreprise : </h4>"
             api_entreprise = requests.get("https://sirene.entreprise.api.gouv.fr/v1/siren/"+obj.siren, verify=False)  # FIXME: add root cerficate on docker image ?
@@ -218,7 +222,6 @@ def send_dev_email(subject, html_text):
 
 
 def make_user_booking_recap_email(offer, booking, offerer, is_cancellation=False):
-
     user = booking.user
     if is_cancellation:
         email_html, email_subject = _generate_cancellation_email_html_and_subject(user,
@@ -235,7 +238,6 @@ def make_user_booking_recap_email(offer, booking, offerer, is_cancellation=False
              'Subject': email_subject,
              'Html-part': email_html,
            }
-
 
 def _generate_reservation_email_html_subject(user, offer, offerer):
     offer_description = _get_offer_description(offer)
@@ -276,4 +278,41 @@ def _get_event_datetime(offer):
     date_in_tz = utc_datetime_to_dept_timezone(date_in_utc,
                                                offer.eventOccurence.venue.departementCode)
     return date_in_tz
+  
 
+def get_contact(user):
+    return app.mailjet_client.contact.get(user.email).json()['Data'][0]
+
+def subscribe_newsletter(user):
+
+    if IS_DEV or IS_STAGING:
+        print("Subscription in DEV or STAGING mode is disabled")
+        return
+
+    try:
+        contact = get_contact(user)
+    except:
+        contact_data = {
+            'Email': user.email,
+            'Name': user.publicName
+        }
+        contact_json = app.mailjet_client.contact.create(data=contact_data).json()
+        contact = contact_json['Data'][0]
+
+    #('Pass Culture - Liste de diffusion', 1795144)
+    contact_lists_data = {
+        "ContactsLists": [
+            {
+                "Action": "addnoforce",
+                "ListID": 1795144
+            }
+        ]
+    }
+
+    return app.mailjet_client.contact_managecontactslists.create(
+        id=contact['ID'],
+        data=contact_lists_data
+    ).json()
+
+app.get_contact = get_contact
+app.subscribe_newsletter = subscribe_newsletter
