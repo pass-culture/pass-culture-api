@@ -79,7 +79,7 @@ def send_booking_confirmation_email_to_user(offer, booking, offerer, is_cancella
 
 
 def _get_offerer_description(offerer):
-    return ', proposé par {} (Adresse : {}, {} {}).'.format(offerer.name,
+    return ', proposé par {} (Adresse : {}, {} {}).</p>'.format(offerer.name,
                                                             offerer.address,
                                                             offerer.postalCode,
                                                             offerer.city)
@@ -101,8 +101,7 @@ def make_booking_recap_email(offer, booking=None, offerer=None, is_cancellation=
             email_html += ' vient d\'annuler sa réservation'
         else:
             email_subject += 'Nouvelle reservation pour ' + offer_description
-            email_html += ' vient de faire une nouvelle réservation'
-        email_html += '</p>'
+            email_html += ' vient de faire une nouvelle réservation.</p>'
     else:
         email_subject += 'Récapitulatif pour ' + offer_description
 
@@ -115,8 +114,6 @@ def make_booking_recap_email(offer, booking=None, offerer=None, is_cancellation=
 
         if offerer is not None:
             email_html += offerer_description
-
-        email_html += '</p>'
 
         if len(offer.bookings) > 0:
             email_html += '<table>'
@@ -222,13 +219,12 @@ def send_dev_email(subject, html_text):
 
 
 def make_user_booking_recap_email(offer, booking, offerer, is_cancellation=False):
-    user = booking.user
     if is_cancellation:
-        email_html, email_subject = _generate_cancellation_email_html_and_subject(user,
+        email_html, email_subject = _generate_cancellation_email_html_and_subject(booking,
                                                                                   offer,
                                                                                   offerer)
     else:
-        email_html, email_subject = _generate_reservation_email_html_subject(user,
+        email_html, email_subject = _generate_reservation_email_html_subject(booking,
                                                                              offer,
                                                                              offerer)
 
@@ -239,7 +235,8 @@ def make_user_booking_recap_email(offer, booking, offerer, is_cancellation=False
              'Html-part': email_html,
            }
 
-def _generate_reservation_email_html_subject(user, offer, offerer):
+def _generate_reservation_email_html_subject(booking, offer, offerer):
+    user = booking.user
     offer_description = _get_offer_description(offer)
     email_html = '<html><body><p>Cher {},</p>'.format(user.publicName)
     if offer.eventOccurence == None:
@@ -252,14 +249,16 @@ def _generate_reservation_email_html_subject(user, offer, offerer):
                                                                     offer_description)
     if offer.eventOccurence == None:
         email_html += ' (Ref: {}),'.format(offer.thing.idAtProviders)
-        email_html += ' proposé par {}.'.format(offerer.name)
+        email_html += ' proposé par {}.</p>'.format(offerer.name)
     else:
         email_html += _get_offerer_description(offerer)
-    email_html += '</p><p>Cordialement,</p><p>L\'équipe pass culture</p></body></html>'
+    email_html += '<p>Votre code de réservation est le {}.</p>'.format(booking.token)
+    email_html += '<p>Cordialement,</p><p>L\'équipe pass culture</p></body></html>'
     return email_html, email_subject
 
 
-def _generate_cancellation_email_html_and_subject(user, offer, offerer):
+def _generate_cancellation_email_html_and_subject(booking, offer, offerer):
+    user = booking.user
     email_html = '<html><body><p>Cher {},</p>'.format(user.publicName)
     email_subject = 'Annulation de votre réservation pour {}'.format(offer.eventOccurence.event.name)
     email_html += '<p>Votre annulation pour {},'.format(offer.eventOccurence.event.name)
@@ -268,8 +267,8 @@ def _generate_cancellation_email_html_and_subject(user, offer, offerer):
     datetime_information = ' le {}'.format(format_datetime(date_in_tz))
     email_html += '{},'.format(datetime_information)
     email_subject += datetime_information
-    email_html += ' a bien été prise en compte.'
-    email_html += '</p><p>Cordialement,</p><p>L\'équipe pass culture</p></body></html>'
+    email_html += ' a bien été prise en compte.</p>'
+    email_html += '<p>Cordialement,</p><p>L\'équipe pass culture</p></body></html>'
     return email_html, email_subject
 
 
