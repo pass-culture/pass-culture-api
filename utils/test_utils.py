@@ -48,10 +48,10 @@ def create_event_offer_for_booking_email_test(app):
     offer.eventOccurence.beginningDatetime = datetime(2019, 7, 20, 12, 0, 0, tzinfo=timezone.utc)
     offer.eventOccurence.event = app.model.Event()
     offer.eventOccurence.event.name = 'Mains, sorts et papiers'
-    offer.eventOccurence.venue = app.model.Venue()
-    offer.eventOccurence.venue.departementCode = '93'
+    offer.eventOccurence.venue = _create_venue_for_booking_email_test(app)
     offer.thing = None
     offer.isActive = True
+
     return offer
 
   
@@ -64,13 +64,15 @@ def create_thing_offer_for_booking_email_test(app):
     offer.thing.mediaUrls = 'test/urls'
     offer.thing.idAtProviders = '12345'
     offer.isActive = True
+    offer.venue = _create_venue_for_booking_email_test(app)
     return offer
 
   
-def create_venue_for_booking_email_test(app):
+def _create_venue_for_booking_email_test(app):
     venue = app.model.Venue()
     venue.address = '123 rue test'
     venue.postalCode = '93000'
     venue.city = 'Test city'
     venue.name = 'Test offerer'
+    venue.departementCode = '93'
     return venue
