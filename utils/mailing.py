@@ -222,7 +222,6 @@ def send_dev_email(subject, html_text):
 
 
 def make_user_booking_recap_email(offer, booking, offerer, is_cancellation=False):
-
     user = booking.user
     if is_cancellation:
         email_html, email_subject = _generate_cancellation_email_html_and_subject(user,
@@ -240,6 +239,47 @@ def make_user_booking_recap_email(offer, booking, offerer, is_cancellation=False
              'Html-part': email_html,
            }
 
+
+def _generate_reservation_email_html_subject(user, offer, offerer):
+    offer_description = _get_offer_description(offer)
+    email_html = '<html><body><p>Cher {},</p>'.format(user.publicName)
+    if offer.eventOccurence == None:
+        confirmation_nature = 'commande'
+    else:
+        confirmation_nature = 'réservation'
+    email_subject = 'Confirmation de votre {} pour {}'.format(confirmation_nature,
+                                                              offer_description)
+    email_html += '<p>Nous vous confirmons votre {} pour {}'.format(confirmation_nature,
+                                                                    offer_description)
+    if offer.eventOccurence == None:
+        email_html += ' (Ref: {}),'.format(offer.thing.idAtProviders)
+        email_html += ' proposé par {}.'.format(offerer.name)
+    else:
+        email_html += _get_offerer_description(offerer)
+    email_html += '</p><p>Cordialement,</p><p>L\'équipe pass culture</p></body></html>'
+    return email_html, email_subject
+
+
+def _generate_cancellation_email_html_and_subject(user, offer, offerer):
+    email_html = '<html><body><p>Cher {},</p>'.format(user.publicName)
+    email_subject = 'Annulation de votre réservation pour {}'.format(offer.eventOccurence.event.name)
+    email_html += '<p>Votre annulation pour {},'.format(offer.eventOccurence.event.name)
+    email_html += ' proposé par {}'.format(offerer.name)
+    date_in_tz = _get_event_datetime(offer)
+    datetime_information = ' le {}'.format(format_datetime(date_in_tz))
+    email_html += '{},'.format(datetime_information)
+    email_subject += datetime_information
+    email_html += ' a bien été prise en compte.'
+    email_html += '</p><p>Cordialement,</p><p>L\'équipe pass culture</p></body></html>'
+    return email_html, email_subject
+
+
+def _get_event_datetime(offer):
+    date_in_utc = offer.eventOccurence.beginningDatetime
+    date_in_tz = utc_datetime_to_dept_timezone(date_in_utc,
+                                               offer.eventOccurence.venue.departementCode)
+    return date_in_tz
+  
 
 def get_contact(user):
     return app.mailjet_client.contact.get(user.email).json()['Data'][0]

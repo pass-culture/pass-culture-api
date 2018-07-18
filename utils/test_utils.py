@@ -54,8 +54,7 @@ def create_event_offer_for_booking_email_test(app):
     offer.isActive = True
     return offer
 
-
-
+  
 def create_thing_offer_for_booking_email_test(app):
     offer = app.model.Offer()
     offer.eventOccurence = None
@@ -67,7 +66,7 @@ def create_thing_offer_for_booking_email_test(app):
     offer.isActive = True
     return offer
 
-
+  
 def create_offerer_for_booking_email_test(app):
     offerer = app.model.Offerer()
     offerer.isActive = 't'
