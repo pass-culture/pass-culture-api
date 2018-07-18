@@ -26,15 +26,27 @@ HTML_USER_BOOKING_THING_CONFIRMATION_EMAIL = '<html><body>' + \
            '<p>L\'équipe pass culture</p>' + \
            '</body></html>'
 
+SUBJECT_USER_BOOKING_THING_CANCELLATION_EMAIL = \
+    'Annulation de votre commande pour Test Book'
+
+HTML_USER_BOOKING_THING_CANCELLATION_EMAIL = '<html><body>' + \
+           '<p>Cher Test,</p>' + \
+           '<p>Votre commande pour Test Book (Ref: 12345), ' + \
+           'proposé par Test offerer ' + \
+           'a bien été annulée.</p>' + \
+           '<p>Cordialement,</p>' + \
+           '<p>L\'équipe pass culture</p>' + \
+           '</body></html>'
+
 SUBJECT_USER_BOOKING_EVENT_CANCELLATION_EMAIL = \
     'Annulation de votre réservation pour Mains, sorts et papiers le 20 juillet 2019 à 14:00'
 
 HTML_USER_BOOKING_EVENT_CANCELLATION_EMAIL = '<html><body>' + \
            '<p>Cher Test,</p>' + \
-           '<p>Votre annulation pour Mains, sorts et papiers, ' + \
+           '<p>Votre réservation pour Mains, sorts et papiers, ' + \
            'proposé par Test offerer ' + \
            'le 20 juillet 2019 à 14:00, ' + \
-           'a bien été prise en compte.</p>' + \
+           'a bien été annulée.</p>' + \
            '<p>Cordialement,</p>' + \
            '<p>L\'équipe pass culture</p>' + \
            '</body></html>'
@@ -216,3 +228,34 @@ def test_09_maker_user_booking_thing_recap_email_should_have_standard_subject(ap
                                                 is_cancellation=False)
     # Then
     assert recap_email['Subject'] == SUBJECT_USER_THING_BOOKING_CONFIRMATION_EMAIL
+
+
+def test_10_make_user_booking_thing_recap_email_should_have_standard_subject_cancellation(app):
+    # Given
+    from utils.mailing import make_user_booking_recap_email
+
+    offer = create_thing_offer_for_booking_email_test(app)
+    user = create_user_for_booking_email_test(app)
+    booking = create_booking_for_booking_email_test(app, user, offer)
+    venue = create_venue_for_booking_email_test(app)
+
+
+    # When
+    recap_email = make_user_booking_recap_email(offer, booking, venue, is_cancellation=True)
+    # Then
+    assert recap_email['Subject'] == SUBJECT_USER_BOOKING_THING_CANCELLATION_EMAIL
+
+
+def test_11_make_user_booking_thing_recap_email_should_have_standard_body_cancellation(app):
+    # Given
+    from utils.mailing import make_user_booking_recap_email
+
+    offer = create_thing_offer_for_booking_email_test(app)
+    user = create_user_for_booking_email_test(app)
+    booking = create_booking_for_booking_email_test(app, user, offer)
+    venue = create_venue_for_booking_email_test(app)
+
+    # When
+    recap_email = make_user_booking_recap_email(offer, booking, venue, is_cancellation=True)
+    # Then
+    assert recap_email['Html-part'] == HTML_USER_BOOKING_THING_CANCELLATION_EMAIL
