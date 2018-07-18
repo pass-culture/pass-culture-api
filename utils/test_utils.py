@@ -67,11 +67,10 @@ def create_thing_offer_for_booking_email_test(app):
     return offer
 
   
-def create_offerer_for_booking_email_test(app):
-    offerer = app.model.Offerer()
-    offerer.isActive = 't'
-    offerer.address = '123 rue test'
-    offerer.postalCode = '93000'
-    offerer.city = 'Test city'
-    offerer.name = 'Test offerer'
-    return offerer
+def create_venue_for_booking_email_test(app):
+    venue = app.model.Venue()
+    venue.address = '123 rue test'
+    venue.postalCode = '93000'
+    venue.city = 'Test city'
+    venue.name = 'Test offerer'
+    return venue
