@@ -1,17 +1,19 @@
-from functools import wraps
+""" rest """
 import re
-from flask import abort, jsonify, request, current_app as app
+from functools import wraps
+from flask import abort, jsonify, request
 from flask_login import current_user
 from sqlalchemy.exc import ProgrammingError
 
 from models.api_errors import ApiErrors
+from models.db import db
 from utils.human_ids import dehumanize, humanize
 from utils.string_processing import dashify
 
 
 def get_provider_from_api_key():
     if 'apikey' in request.headers:
-        Provider = app.model.Provider
+        Provider = Provider
         return Provider.query\
                        .filter_by(apiKey=request.headers['apikey'])\
                        .first()
@@ -114,7 +116,7 @@ def ensure_current_user_has_rights(rights, offererId):
             'global',
             "Cette structure n'est pas enregistrée chez cet utilisateur."
         )
-        abort(403)
+        raise errors
 
 
 def ensure_can_be_updated(model, id):
@@ -136,8 +138,8 @@ def feed(entity, json, keys):
 
 
 def delete(entity):
-    app.db.session.delete(entity)
-    app.db.session.commit()
+    db.session.delete(entity)
+    db.session.commit()
     return jsonify({"id": humanize(entity.id)}), 200
 
 

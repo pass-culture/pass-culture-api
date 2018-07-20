@@ -1,9 +1,17 @@
-import requests as req
 import json
+from datetime import datetime, timedelta, timezone
 from os import path
 from pathlib import Path
-from datetime import datetime, timedelta, timezone
 
+import requests as req
+
+from models.booking import Booking
+from models.event import Event
+from models.event_occurence import EventOccurence
+from models.offer import Offer
+from models.user import User
+from models.venue import Venue
+from models.thing import Thing
 
 API_URL = "http://localhost:5000"
 
@@ -28,37 +36,37 @@ def req_with_auth(email=None, password=None):
 
 
 def create_booking_for_booking_email_test(app, user, offer):
-    booking = app.model.Booking()
+    booking = Booking()
     booking.user = user
     offer.bookings = [booking]
     return booking
 
 
 def create_user_for_booking_email_test(app):
-    user = app.model.User()
+    user = User()
     user.publicName = 'Test'
     user.email = 'test@email.com'
     return user
 
 
 def create_event_offer_for_booking_email_test(app):
-    offer = app.model.Offer()
+    offer = Offer()
     offer.bookingLimitDatetime = datetime.utcnow() + timedelta(minutes=2)
-    offer.eventOccurence = app.model.EventOccurence()
+    offer.eventOccurence = EventOccurence()
     offer.eventOccurence.beginningDatetime = datetime(2019, 7, 20, 12, 0, 0, tzinfo=timezone.utc)
-    offer.eventOccurence.event = app.model.Event()
+    offer.eventOccurence.event = Event()
     offer.eventOccurence.event.name = 'Mains, sorts et papiers'
-    offer.eventOccurence.venue = _create_venue_for_booking_email_test(app)
+    offer.eventOccurence.venue = Venue()
+    offer.eventOccurence.venue.departementCode = '93'
     offer.thing = None
     offer.isActive = True
-
     return offer
 
   
 def create_thing_offer_for_booking_email_test(app):
-    offer = app.model.Offer()
+    offer = Offer()
     offer.eventOccurence = None
-    offer.thing = app.model.Thing()
+    offer.thing = Thing()
     offer.thing.type = 'Book'
     offer.thing.name = 'Test Book'
     offer.thing.mediaUrls = 'test/urls'
@@ -69,10 +77,11 @@ def create_thing_offer_for_booking_email_test(app):
 
   
 def _create_venue_for_booking_email_test(app):
-    venue = app.model.Venue()
+    venue = Venue()
     venue.address = '123 rue test'
     venue.postalCode = '93000'
     venue.city = 'Test city'
     venue.name = 'Test offerer'
     venue.departementCode = '93'
     return venue
+
