@@ -1,7 +1,6 @@
 """ recommendations """
 from collections import Counter
 from datetime import datetime
-
 from dateutil.parser import parse as parse_date
 
 from utils.config import BLOB_SIZE

@@ -1,36 +1,32 @@
-""" providable mixin """
 from datetime import datetime
-from sqlalchemy import BigInteger,\
-                       CheckConstraint,\
-                       Column,\
-                       DateTime,\
-                       ForeignKey,\
-                       String
-from sqlalchemy.orm import relationship
+from flask import current_app as app
 from sqlalchemy.ext.declarative import declared_attr
 
-from models.versioned_mixin import VersionedMixin
+db = app.db
 
 
-class ProvidableMixin(VersionedMixin):
+class ProvidableMixin(app.model.VersionedMixin):
 
     @declared_attr
     def lastProviderId(cls):
-        return Column(BigInteger,
-                      ForeignKey("provider.id"),
-                      nullable=True)
+        return db.Column(db.BigInteger,
+                         db.ForeignKey("provider.id"),
+                         nullable=True)
 
     @declared_attr
     def lastProvider(cls):
-        return relationship('Provider',
-                            foreign_keys=[cls.lastProviderId])
+        return db.relationship(lambda: app.model.Provider,
+                               foreign_keys=[cls.lastProviderId])
 
-    idAtProviders = Column(String(70),
-                           CheckConstraint('"lastProviderId" IS NULL OR "idAtProviders" IS NOT NULL',
+    idAtProviders = db.Column(db.String(70),
+                              db.CheckConstraint('"lastProviderId" IS NULL OR "idAtProviders" IS NOT NULL',
                                                  name='check_providable_with_provider_has_idatproviders'),
-                           nullable=True,
-                           unique=True)
+                              nullable=True,
+                              unique=True)
 
-    dateModifiedAtLastProvider = Column(DateTime,
-                                        nullable=True,
-                                        default=datetime.utcnow)
+    dateModifiedAtLastProvider = db.Column(db.DateTime,
+                                           nullable=True,
+                                           default=datetime.utcnow)
+
+
+app.model.ProvidableMixin = ProvidableMixin

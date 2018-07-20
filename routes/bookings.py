@@ -4,22 +4,21 @@ from flask import current_app as app, jsonify, request
 from flask_login import current_user, login_required
 from sqlalchemy.exc import InternalError
 
-from models import Booking
 from models.api_errors import ApiErrors
-from models.offer import Offer
-from models.offerer import Offerer
-from models.pc_object import PcObject
-from utils.human_ids import dehumanize
 from utils.includes import BOOKING_INCLUDES
 from utils.mailing import send_booking_recap_emails, send_booking_confirmation_email_to_user
 from utils.rest import expect_json_data
 from utils.token import random_token
+from utils.human_ids import dehumanize
 
+Booking = app.model.Booking
+Offer = app.model.Offer
 
 @app.route('/bookings', methods=['GET'])
 @login_required
 def get_bookings():
     bookings = Booking.query.filter_by(userId=current_user.id).all()
+    print(bookings)
     return jsonify([booking._asdict(include=BOOKING_INCLUDES)
                     for booking in bookings]), 200
 
@@ -74,7 +73,7 @@ def post_booking():
         new_booking.recommendationId = dehumanize(recommendation_id)
 
     try:
-        PcObject.check_and_save(new_booking)
+        app.model.PcObject.check_and_save(new_booking)
     except InternalError as ie:
         if 'check_booking' in str(ie.orig):
             ae.addError('global', 'la quantité disponible pour cette offre'
@@ -83,7 +82,7 @@ def post_booking():
         else:
             raise ie
 
-    new_booking_offer = Offer.query.get(new_booking.offerId)
+    new_booking_offer = app.model.Offer.query.get(new_booking.offerId)
     send_booking_recap_emails(new_booking_offer, new_booking)
     send_booking_confirmation_email_to_user(new_booking)
 

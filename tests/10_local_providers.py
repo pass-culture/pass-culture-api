@@ -1,17 +1,12 @@
-import subprocess
-from inspect import isclass
-from glob import glob
-
 from sqlalchemy import func
+from glob import glob
+from inspect import isclass
+import subprocess
 
-from models.db import db
-from models.pc_object import PcObject
-from models.provider import Provider
-from models.thing import Thing
-from models.venue_provider import VenueProvider
 from utils.config import API_ROOT_PATH
 from utils.human_ids import dehumanize
 from utils.object_storage import STORAGE_DIR
+
 
 savedCounts = {}
 
@@ -19,7 +14,7 @@ savedCounts = {}
 def saveCounts(app):
     for modelName in app.model:
         if isclass(app.model[modelName])\
-           and issubclass(app.model[modelName], PcObject)\
+           and issubclass(app.model[modelName], app.model.PcObject)\
            and modelName != "PcObject":
             savedCounts[modelName] = app.model[modelName].query.count()
 
@@ -35,20 +30,18 @@ def assertCreatedCounts(app, **counts):
 
 def assertEmptyDb(app):
     for modelName in app.model:
-        if isinstance(app.model[modelName], PcObject):
+        if isinstance(app.model[modelName], app.model.PcObject):
             if modelName == 'Mediation':
                 assert app.model[modelName].query.count() == 2
             else:
                 assert app.model[modelName].query.count() == 0
-
-def assert_created_thumbs():
     assert len(glob(str(STORAGE_DIR / "thumbs" / "*"))) == 1
 
 
 def provider_test(app, provider, venueProvider, **counts):
     providerObj = provider(venueProvider, mock=True)
     providerObj.dbObject.isActive = True
-    PcObject.check_and_save(providerObj.dbObject)
+    app.model.PcObject.check_and_save(providerObj.dbObject)
     saveCounts(app)
     providerObj.updateObjects()
     for countName in ['updatedObjects',
@@ -66,7 +59,6 @@ def provider_test(app, provider, venueProvider, **counts):
 
 def test_10_titelive_venues_provider(app):
     assertEmptyDb(app)
-    assert_created_thumbs()
     provider_test(app,
                   app.local_providers.TiteLiveVenues,
                   None,
@@ -80,13 +72,13 @@ def test_10_titelive_venues_provider(app):
                   erroredThumbs=0,
                   Venue=2,
                   Offerer=2)
-    provider = Provider.getByClassName('TiteLiveOffers')
-    for vp in VenueProvider.query\
+    provider = app.model.Provider.getByClassName('TiteLiveOffers')
+    for vp in app.model.VenueProvider.query\
                                      .filter_by(provider=provider)\
                                      .all():
         assert not vp.isActive
         vp.isActive = True
-        PcObject.check_and_save(vp)
+        app.model.PcObject.check_and_save(vp)
 
 
 def test_11_titelive_things_provider(app):
@@ -119,7 +111,7 @@ def test_12_titelive_thing_thumbs_provider(app):
                   erroredThumbs=0,
                   Thing=0
                   )
-    assert db.session.query(func.sum(Thing.thumbCount))\
+    assert app.db.session.query(func.sum(app.model.Thing.thumbCount))\
                          .scalar() == 92
 
 
@@ -140,7 +132,7 @@ def test_13_titelive_thing_desc_provider(app):
 
 
 def test_14_titelive_offer_provider(app):
-    venueProvider = VenueProvider.query\
+    venueProvider = app.model.VenueProvider.query\
                           .filter_by(venueIdAtOfferProvider='2949')\
                           .one_or_none()
     assert venueProvider is not None
@@ -159,7 +151,7 @@ def test_14_titelive_offer_provider(app):
                   Offer=185
                   )
 
-    venueProvider = VenueProvider.query\
+    venueProvider = app.model.VenueProvider.query\
                           .filter_by(venueIdAtOfferProvider='2921')\
                           .one_or_none()
     assert venueProvider is not None
@@ -217,14 +209,14 @@ def test_15_spreadsheet_exp_offers_provider(app):
 
 
 def test_16_openagenda_events_provider(app):
-    oa_provider = Provider.getByClassName('OpenAgendaEvents')
-    venueProvider = VenueProvider()
+    oa_provider = app.model.Provider.getByClassName('OpenAgendaEvents')
+    venueProvider = app.model.VenueProvider()
     venueProvider.venueId = dehumanize('AE')
     venueProvider.provider = oa_provider
     venueProvider.isActive = True
     venueProvider.venueIdAtOfferProvider = '49050769'
-    PcObject.check_and_save(venueProvider)
-    venueProvider = VenueProvider.query\
+    app.model.PcObject.check_and_save(venueProvider)
+    venueProvider = app.model.VenueProvider.query\
                              .filter_by(venueIdAtOfferProvider='49050769')\
                              .one_or_none()
     provider_test(app,

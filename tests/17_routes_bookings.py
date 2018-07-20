@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta
+
 from glob import glob
 from inspect import isclass
 
 from utils.human_ids import humanize, dehumanize
 from utils.test_utils import API_URL, req, req_with_auth
-from models.offer import Offer
-from models.pc_object import PcObject
 
 
 def test_10_create_booking():
@@ -25,13 +24,13 @@ def test_10_create_booking():
 
 
 def test_11_create_booking_should_not_work_past_limit_date(app):
-    expired_offer = Offer()
+    expired_offer = app.model.Offer()
     expired_offer.venueId = 1
     expired_offer.offererId = 1
     expired_offer.thingId = 1
     expired_offer.price = 0
     expired_offer.bookingLimitDatetime = datetime.utcnow() - timedelta(seconds=1)
-    PcObject.check_and_save(expired_offer)
+    app.model.PcObject.check_and_save(expired_offer)
 
     booking_json = {
         'offerId': humanize(expired_offer.id),
@@ -45,13 +44,13 @@ def test_11_create_booking_should_not_work_past_limit_date(app):
 
 
 def test_12_create_booking_should_work_before_limit_date(app):
-    ok_offer = Offer()
+    ok_offer = app.model.Offer()
     ok_offer.venueId = 1
     ok_offer.offererId = 1
     ok_offer.thingId = 1
     ok_offer.price = 0
     ok_offer.bookingLimitDatetime = datetime.utcnow() + timedelta(minutes=2)
-    PcObject.check_and_save(ok_offer)
+    app.model.PcObject.check_and_save(ok_offer)
 
     booking_json = {
         'offerId': humanize(ok_offer.id),
@@ -68,14 +67,14 @@ def test_12_create_booking_should_work_before_limit_date(app):
 
 
 def test_13_create_booking_should_not_work_if_too_many_bookings(app):
-    too_many_bookings_offer = Offer()
+    too_many_bookings_offer = app.model.Offer()
     too_many_bookings_offer.venueId = 1
     too_many_bookings_offer.offererId = 1
     too_many_bookings_offer.thingId = 1
     too_many_bookings_offer.price = 0
     too_many_bookings_offer.available = 0
     too_many_bookings_offer.bookingLimitDatetime = datetime.utcnow() + timedelta(minutes=2)
-    PcObject.check_and_save(too_many_bookings_offer)
+    app.model.PcObject.check_and_save(too_many_bookings_offer)
 
     booking_json = {
         'offerId': humanize(too_many_bookings_offer.id),

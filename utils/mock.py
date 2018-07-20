@@ -1,8 +1,7 @@
-""" mock """
-import os
+from flask import current_app
 from pathlib import Path
+import os
 
-from models.pc_object import PcObject
 from utils.human_ids import humanize
 from utils.object_storage import store_public_object
 from utils.string_processing import inflect_engine
@@ -28,4 +27,4 @@ def set_from_mock(folder, obj, thumb_id):
                                 collection_name + '/' + humanize(obj.id),
                                 file.read(),
                                 mimes_by_folder[folder])
-    PcObject.check_and_save(obj)
+    current_app.model.PcObject.check_and_save(obj)

@@ -1,11 +1,10 @@
 """ provider_event model """
 import enum
 from datetime import datetime
-from sqlalchemy import BigInteger, Column, DateTime, Enum, ForeignKey, String
-from sqlalchemy.orm import relationship
+from flask import current_app as app
 
-from models.db import Model
-from models.pc_object import PcObject
+db = app.db
+
 
 class LocalProviderEventType(enum.Enum):
     SyncError = "SyncError"
@@ -17,26 +16,31 @@ class LocalProviderEventType(enum.Enum):
     SyncEnd = "SyncEnd"
 
 
-class LocalProviderEvent(PcObject,
-                         Model):
+app.model.LocalProviderEventType = LocalProviderEventType
 
-    id = Column(BigInteger,
-                primary_key=True,
-                autoincrement=True)
 
-    providerId = Column(BigInteger,
-                        ForeignKey("provider.id"),
-                        nullable=False)
+class LocalProviderEvent(app.model.PcObject,
+                         db.Model):
 
-    provider = relationship('Provider',
-                            foreign_keys=[providerId])
+    id = db.Column(db.BigInteger,
+                   primary_key=True,
+                   autoincrement=True)
 
-    date = Column(DateTime,
-                  nullable=False,
-                  default=datetime.utcnow)
+    providerId = db.Column(db.BigInteger,
+                           db.ForeignKey("provider.id"),
+                           nullable=False)
+    provider = db.relationship(lambda: app.model.Provider,
+                               foreign_keys=[providerId])
 
-    type = Column(Enum(LocalProviderEventType),
-                  nullable=False)
+    date = db.Column(db.DateTime,
+                     nullable=False,
+                     default=datetime.utcnow)
 
-    payload = Column(String(50),
-                     nullable=True)
+    type = db.Column(db.Enum(app.model.LocalProviderEventType),
+                     nullable=False)
+
+    payload = db.Column(db.String(50),
+                        nullable=True)
+
+
+app.model.LocalProviderEvent = LocalProviderEvent
