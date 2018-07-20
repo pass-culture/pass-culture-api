@@ -1,19 +1,12 @@
-""" OA events """
+from datetime import datetime
 import email.utils as eut
+from flask import current_app as app
 import json
 import math
 import os
-from datetime import datetime
 from pathlib import Path
+from psycopg2.extras import DateTimeRange
 import requests
-from flask import current_app as app
-
-from models.db import db
-from models.event import Event
-from models.event_occurence import EventOccurence
-from models.local_provider import LocalProvider, ProvidableInfo
-from models.occasion import Occasion
-from models.venue import Venue
 
 
 def make_url(page, id):
@@ -40,7 +33,12 @@ def read_date(date):
     return datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%fZ")
 
 
-class OpenAgendaEvents(LocalProvider):
+Event = app.model.Event
+EventOccurence = app.model.EventOccurence
+Occasion = app.model.Occasion
+
+
+class OpenAgendaEvents(app.model.LocalProvider):
     help = ""
     identifierDescription = "Identifiant de l'agenda (ex: 80942872). Il se trouve à la fin de l'adresse web de votre agenda."
     identifierRegexp = "^\d+$"
@@ -50,7 +48,7 @@ class OpenAgendaEvents(LocalProvider):
 
     def __init__(self, venueProvider, **options):
         super().__init__(venueProvider, **options)
-        self.venue = Venue.query\
+        self.venue = app.model.Venue.query\
                                     .filter_by(id=self.venueProvider.venueId)\
                                     .one_or_none()
         self.venueId = self.venueProvider.venueId
@@ -89,13 +87,13 @@ class OpenAgendaEvents(LocalProvider):
         if self.venueLocationUid is not None and\
            self.oa_event['location']['uid'] != self.venueLocationUid:
             return self.__next__()
-
-        p_info_event = ProvidableInfo()
+        
+        p_info_event = app.model.ProvidableInfo()
         p_info_event.type = Event
         p_info_event.idAtProviders = str(self.oa_event['uid'])
         p_info_event.dateModifiedAtProvider = read_date(self.oa_event['updatedAt'])
-
-        p_info_occasion = ProvidableInfo()
+        
+        p_info_occasion = app.model.ProvidableInfo()
         p_info_occasion.type = Occasion
         p_info_occasion.idAtProviders = str(self.oa_event['uid'])
         p_info_occasion.dateModifiedAtProvider = read_date(self.oa_event['updatedAt'])
@@ -103,7 +101,7 @@ class OpenAgendaEvents(LocalProvider):
         p_info_eos = []
         durations_sum = 0
         for oa_timing in self.oa_event['timings']:
-            p_info_eo = ProvidableInfo()
+            p_info_eo = app.model.ProvidableInfo()
             p_info_eo.type = EventOccurence
             p_info_eo.idAtProviders = str(self.oa_event['uid'])+'_'+str(read_date(oa_timing['start']))
             p_info_eo.dateModifiedAtProvider = read_date(self.oa_event['updatedAt'])
@@ -117,7 +115,7 @@ class OpenAgendaEvents(LocalProvider):
         return [p_info_event , p_info_occasion] + p_info_eos
 
     def getDeactivatedObjectIds(self):
-        return db.session.query(Event.idAtProviders)\
+        return app.db.session.query(Event.idAtProviders)\
                              .filter(Event.provider == 'OpenAgenda',
                                      Event.venue == self.venue,
                                      ~Event.idAtProviders.in_(self.seen_uids))

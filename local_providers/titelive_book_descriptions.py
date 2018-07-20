@@ -1,13 +1,13 @@
-import os
-import re
 from datetime import datetime
+from flask import current_app as app
+import os
 from pathlib import Path, PurePath
 from zipfile import ZipFile
-from flask import current_app as app
+import re
 
-from models.local_provider import LocalProvider, ProvidableInfo
-from models.local_provider_event import LocalProviderEventType
-from models.thing import Thing
+LocalProviderEventType = app.model.LocalProviderEventType
+Thing = app.model.Thing
+
 
 DATE_FORMAT = "%y%m%d"
 DATE_REGEXP = re.compile('Resume(\d{6}).zip')
@@ -29,7 +29,7 @@ def read_date(date):
     return datetime.strptime(str(date), DATE_FORMAT)
 
 
-class TiteLiveBookDescriptions(LocalProvider):
+class TiteLiveBookDescriptions(app.model.LocalProvider):
 
     help = ""
     identifierDescription = "Pas d'identifiant nécessaire"\
@@ -84,7 +84,7 @@ class TiteLiveBookDescriptions(LocalProvider):
             self.open_next_file()
             self.desc_zipinfo = self.desc_zipinfos.__next__()
 
-        p_info = ProvidableInfo()
+        p_info = app.model.ProvidableInfo()
         p_info.type = Thing
         p_info.dateModifiedAtProvider = self.dateModified
         path = PurePath(self.desc_zipinfo.filename)

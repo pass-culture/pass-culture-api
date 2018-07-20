@@ -6,17 +6,26 @@ from random import randint
 from sqlalchemy import func
 from sqlalchemy.orm import aliased
 
-from models.booking import Booking
-from models.event import Event
-from models.event_occurence import EventOccurence
-from models.mediation import Mediation
-from models.offer import Offer
-from models.offerer import Offerer
-from models.recommendation import Recommendation
-from models.thing import Thing
-from models.venue import Venue
+from utils.config import IS_DEV
+from utils.human_ids import dehumanize
+from utils.compose import compose
+from utils.content import get_mediation, get_source
+from utils.distance import distance
+from utils.includes import RECOMMENDATION_INCLUDES
+
+Booking = app.model.Booking
+Event = app.model.Event
+EventOccurence = app.model.EventOccurence
+Mediation = app.model.Mediation
+Offer = app.model.Offer
+Offerer = app.model.Offerer
+Recommendation = app.model.Recommendation
+Thing = app.model.Thing
+Venue = app.model.Venue
 
 log = app.log
+
+
 
 # --- SCORING ---
 

@@ -1,30 +1,29 @@
 """ user mediations routes """
 from datetime import datetime
-from random import shuffle
-
 from flask import current_app as app, jsonify, request
 from flask_login import current_user, login_required
+from random import shuffle
+from sqlalchemy import update
 from sqlalchemy.sql.expression import func
 
 from datascience import create_recommendation, create_recommendations
-from models import Booking
 from models.api_errors import ApiErrors
+from utils.rest import expect_json_data
+from utils.config import BLOB_SIZE, BLOB_READ_NUMBER,\
+                         BLOB_UNREAD_NUMBER
 from utils.human_ids import dehumanize, humanize
-from utils.includes import BOOKING_INCLUDES,\
-                           RECOMMENDATION_INCLUDES,\
+from utils.includes import RECOMMENDATION_INCLUDES,\
                            RECOMMENDATION_OFFER_INCLUDES
-from models.event import Event
-from models.mediation import Mediation
-from models.offer import Offer
-from models.pc_object import PcObject
-from models.recommendation import Recommendation
-from models.thing import Thing
-from utils.config import BLOB_SIZE, BLOB_READ_NUMBER, \
-    BLOB_UNREAD_NUMBER
 from utils.rest import expect_json_data
 
+Event = app.model.Event
+Mediation = app.model.Mediation
+Offer = app.model.Offer
+Recommendation = app.model.Recommendation
+Thing = app.model.Thing
 
 log = app.log
+
 
 def pick_random_occasions_given_blob_size(recos, limit=BLOB_SIZE):
     return recos.order_by(func.random()) \
@@ -75,8 +74,10 @@ def patch_recommendation(recommendationId):
     query = Recommendation.query.filter_by(id=dehumanize(recommendationId))
     recommendation = query.first_or_404()
     recommendation.populateFromDict(request.json)
-    PcObject.check_and_save(recommendation)
-    return jsonify(dictify_reco(recommendation)), 200
+    app.model.PcObject.check_and_save(recommendation)
+    return jsonify(recommendation._asdict()), 200
+
+
 
 
 @app.route('/recommendations', methods=['PUT'])
@@ -198,36 +199,42 @@ def put_recommendations():
              + str([(reco, reco.mediation, reco.dateRead, reco.thing, reco.event) for reco in recos])
              + str(len(recos)))
 
-    return jsonify(list(map(dictify_reco, recos))), 200
+    return jsonify(dictify_recos(recos)), 200
 
 
-def dictify_reco(reco):
-
-    dict_reco = reco._asdict(include=RECOMMENDATION_INCLUDES)
-    dict_reco['bookings'] = list(map(lambda b: b._asdict(include=BOOKING_INCLUDES),
-                                     reco.mediatedOffersQuery
-                                         .join(Booking)
-                                         .filter(Booking.user == current_user)
-                                         .with_entities(Booking)
-                                         .all()))
+def dictify_recos(recos):
     # FIXME: This is to support legacy code in the webapp
-    # it should be cleaned up and the app adapted
+    # it should be removed once all requests from the webapp
+    # have an app version header, which will mean that all
+    # clients (or at least those who do use the app) have
+    # a recent version of the app
 
-    if reco.event is not None or\
-       (reco.mediation is not None and
-        reco.mediation.event is not None):
-        if reco.event is not None:
-            occurences = reco.event.occurences
-        else:
-            occurences = reco.mediation.event.occurences
-        ros = list(map(lambda eo: eo.offers[0]._asdict(include=RECOMMENDATION_OFFER_INCLUDES),
-                       filter(lambda eo: len(eo.offers) > 0,
-                              occurences)))
-        dict_reco['recommendationOffers'] = sorted(ros,
-                                                   key=lambda ro: ro['bookingLimitDatetime'],
-                                                   reverse=True)
-    elif reco.mediation and\
-         reco.mediation.tutoIndex is not None:
-        dict_reco['recommendationOffers'] = []
+    dict_recos = list(map(lambda r: r._asdict(include=RECOMMENDATION_INCLUDES),
+                          recos))
 
-    return dict_reco
+    for index, reco in enumerate(dict_recos):
+        rbs = []
+        for b in recos[index].bookings:
+            rb = {}
+            rb['booking'] = b
+            rbs.append(rb)
+        reco['recommendationBookings'] = rbs
+
+        if recos[index].event is not None or\
+           (recos[index].mediation is not None and
+            recos[index].mediation.event is not None):
+            if recos[index].event is not None:
+                occurences = recos[index].event.occurences
+            else:
+                occurences = recos[index].mediation.event.occurences
+            ros = list(map(lambda eo: eo.offers[0]._asdict(include=RECOMMENDATION_OFFER_INCLUDES),
+                           filter(lambda eo: len(eo.offers) > 0,
+                                  occurences)))
+            reco['recommendationOffers'] = sorted(ros,
+                                                  key=lambda ro: ro['bookingLimitDatetime'],
+                                                  reverse=True)
+        elif recos[index].mediation and\
+             recos[index].mediation.tutoIndex is not None:
+            reco['recommendationOffers'] = []
+
+    return dict_recos

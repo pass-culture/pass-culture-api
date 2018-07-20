@@ -1,15 +1,11 @@
-from models.offer import Offer
-from models.offerer import Offerer
-from models.pc_object import PcObject
-from models.user_offerer import UserOfferer
-
 """ mailing """
+import os
 from datetime import datetime
+from pprint import pformat
+
+import requests
 from flask import current_app as app
 from mailjet_rest import Client
-import os
-from pprint import pformat
-import requests
 
 from utils.config import API_URL, ENV, IS_DEV, IS_STAGING
 from utils.date import format_datetime, utc_datetime_to_dept_timezone
@@ -17,7 +13,7 @@ from utils.date import format_datetime, utc_datetime_to_dept_timezone
 MAILJET_API_KEY = os.environ.get('MAILJET_API_KEY')
 MAILJET_API_SECRET = os.environ.get('MAILJET_API_SECRET')
 
-Offer = Offer
+Offer = app.model.Offer
 
 
 if MAILJET_API_KEY is None or MAILJET_API_KEY=='':
@@ -31,16 +27,13 @@ app.mailjet_client = client
 app.mailjet = client.send.create
 
 
-def send_booking_recap_emails(offer, booking=None, offerer=None, is_cancellation=False):
+def send_booking_recap_emails(offer, booking=None, is_cancellation=False):
     if booking is None and len(offer.bookings)==0:
         print("Not sending recap for  "+offer+" as it has no bookings")
 
-    email = make_booking_recap_email(offer, booking, offerer, is_cancellation)
+    email = make_booking_recap_email(offer, booking, is_cancellation)
 
-    if offer.venue:
-        venue = offer.venue
-    else:
-        venue = offer.eventOccurence.venue
+    venue = _get_offer_venue(offer)
 
     recipients = [venue.bookingEmail, 'passculture@beta.gouv.fr']
 
@@ -60,12 +53,12 @@ def send_booking_recap_emails(offer, booking=None, offerer=None, is_cancellation
 
     if booking is None:
         offer.bookingRecapSent = datetime.utcnow()
-        PcObject.check_and_save(offer)
+        app.model.PcObject.check_and_save(offer)
 
 
-def send_booking_confirmation_email_to_user(offer, booking, is_cancellation=False):
+def send_booking_confirmation_email_to_user(booking, is_cancellation=False):
 
-    email = make_user_booking_recap_email(offer, booking, is_cancellation)
+    email = make_user_booking_recap_email(booking, is_cancellation)
 
     recipients = [booking.user.email]
 
@@ -83,19 +76,23 @@ def send_booking_confirmation_email_to_user(offer, booking, is_cancellation=Fals
         raise Exception("Email send failed: "+pformat(vars(mailjet_result)))
 
 
-def _get_offerer_description(offerer):
-    return ', proposé par {} (Adresse : {}, {} {}).'.format(offerer.name,
-                                                                   offerer.address,
-                                                                   offerer.postalCode,
-                                                                   offerer.city)
+def _get_venue_description(venue):
+    return ', proposé par {} (Adresse : {}, {} {}).'.format(venue.name,
+                                                            venue.address,
+                                                            venue.postalCode,
+                                                            venue.city)
 
 
-def make_booking_recap_email(offer, booking=None, offerer=None, is_cancellation=False):
+def make_booking_recap_email(offer, booking=None, is_cancellation=False):
+    if booking == None:
+        venue = _get_offer_venue(offer)
+    else:
+        venue = _get_offer_venue(booking.offer)
     email_html = '<html><body>'
     email_html += '<p>Cher partenaire Pass Culture,</p>'
 
     offer_description = _get_offer_description(offer)
-    offerer_description = _get_offerer_description(offerer)
+    venue_description = _get_venue_description(venue)
 
     email_subject = '[Reservations] '
     if booking is not None:
@@ -118,8 +115,8 @@ def make_booking_recap_email(offer, booking=None, offerer=None, is_cancellation=
             email_html += '<p>Voici le récapitulatif des réservations à ce jour (total '
         email_html += '%s) pour %s' % (len(offer.bookings), offer_description)
 
-        if offerer is not None:
-            email_html += offerer_description
+        if venue is not None:
+            email_html += venue_description
 
         email_html += '</p>'
 
@@ -151,14 +148,11 @@ def make_booking_recap_email(offer, booking=None, offerer=None, is_cancellation=
 
 def _get_offer_description(offer):
     if offer.eventOccurence:
-        date_in_utc = offer.eventOccurence.beginningDatetime
-        date_in_tz = utc_datetime_to_dept_timezone(date_in_utc,
-                                                   offer.eventOccurence.venue.departementCode)
+        date_in_tz = _get_event_datetime(offer)
         description = '{} le {}'.format(offer.eventOccurence.event.name,
                                          format_datetime(date_in_tz))
     elif offer.thing:
-        description = '{} (Ref: {})'.format(offer.thing.name,
-                                             offer.thing.idAtProviders)
+        description = str(offer.thing.name)
 
     return description
 
@@ -173,20 +167,20 @@ def maybe_send_offerer_validation_email(user, *objects_to_validate):
             continue
         token = obj.validationToken  # objects validated together are supposed to have the same token
         classes_to_validate.append(obj.__class__.__name__)
-        if isinstance(obj, UserOfferer):
+        if isinstance(obj, app.model.UserOfferer):
             email_html += "<h3>Nouveau Rattachement : </h3>"
             email_html += "<h4>Utilisateur: </h4>"
             email_html += "<pre>"+pformat(vars(obj.user))+"</pre>"
             email_html += "<h4>Structure: </h4>"
             email_html += "<pre>"+pformat(vars(obj.offerer))+"</pre>"
-        elif isinstance(obj, Offerer):
+        elif isinstance(obj, app.model.Offerer):
             email_html += "<h3>Nouvelle Structure : </h3>"
             email_html += "<pre>"+pformat(vars(obj))+"</pre>"
         else:
             raise ValueError("Unexpected object type in"
                              + " maybe_send_pro_validation_email : "
                              + obj.__class__.__name__)
-        if isinstance(obj, Offerer):
+        if isinstance(obj, app.model.Offerer):
             email_html += "<h4>Infos API entreprise : </h4>"
             api_entreprise = requests.get("https://sirene.entreprise.api.gouv.fr/v1/siren/"+obj.siren, verify=False)  # FIXME: add root cerficate on docker image ?
             if api_entreprise.status_code == 200:
@@ -229,20 +223,15 @@ def send_dev_email(subject, html_text):
         raise Exception("Email send failed: "+pformat(vars(mailjet_result)))
 
 
-def make_user_booking_recap_email(offer, booking, offerer=None, is_cancellation=False):
-
+def make_user_booking_recap_email(booking, is_cancellation=False):
+    offer = booking.offer
     user = booking.user
-    offer_description = _get_offer_description(offer)
-    email_html = '<html><body><p>Cher {},</p>'.format(user.publicName)
     if is_cancellation:
-        email_subject = 'Annulation de votre réservation pour {}'.format(offer_description)
-        email_html += '<p>Votre annulation pour {} a bien été prise en compte.'.format(offer_description)
+        email_html, email_subject = _generate_cancellation_email_html_and_subject(user,
+                                                                                  offer)
     else:
-        email_subject = 'Confirmation de votre réservation pour {}'.format(offer_description)
-        email_html += '<p>Nous vous confirmons votre réservation pour {}.'.format(
-            offer_description
-        )
-    email_html += '</p><p>Cordialement,</p><p>L\'équipe pass culture</p></body></html>'
+        email_html, email_subject = _generate_reservation_email_html_subject(user,
+                                                                             offer)
 
     return {
              'FromName': 'Pass Culture',
@@ -250,6 +239,14 @@ def make_user_booking_recap_email(offer, booking, offerer=None, is_cancellation=
              'Subject': email_subject,
              'Html-part': email_html,
            }
+
+
+def _get_event_datetime(offer):
+    date_in_utc = offer.eventOccurence.beginningDatetime
+    date_in_tz = utc_datetime_to_dept_timezone(date_in_utc,
+                                               offer.eventOccurence.venue.departementCode)
+    return date_in_tz
+  
 
 def get_contact(user):
     return app.mailjet_client.contact.get(user.email).json()['Data'][0]
@@ -287,3 +284,71 @@ def subscribe_newsletter(user):
 
 app.get_contact = get_contact
 app.subscribe_newsletter = subscribe_newsletter
+
+
+def _generate_reservation_email_html_subject(user, offer):
+    venue = _get_offer_venue(offer)
+    offer_description = _get_offer_description(offer)
+    email_html = '<html><body><p>Cher {},</p>'.format(user.publicName)
+    if offer.eventOccurence == None:
+        confirmation_nature = 'commande'
+    else:
+        confirmation_nature = 'réservation'
+    email_subject = 'Confirmation de votre {} pour {}'.format(confirmation_nature,
+                                                              offer_description)
+    email_html += '<p>Nous vous confirmons votre {} pour {}'.format(confirmation_nature,
+                                                                    offer_description)
+    if offer.eventOccurence == None:
+        email_html += ' (Ref: {}),'.format(offer.thing.idAtProviders)
+        email_html += ' proposé par {}.'.format(venue.name)
+    else:
+        email_html += _get_venue_description(venue)
+    email_html += '</p><p>Cordialement,</p><p>L\'équipe pass culture</p></body></html>'
+    return email_html, email_subject
+
+
+def _generate_cancellation_email_html_and_subject(user, offer):
+    venue = _get_offer_venue(offer)
+    email_html = '<html><body><p>Cher {},</p>'.format(user.publicName)
+    if offer.eventOccurence == None:
+        confirmation_nature = 'commande'
+        offer_name = offer.thing.name
+        thing_reference = ' (Ref: {})'.format(offer.thing.idAtProviders)
+
+    else:
+        confirmation_nature = 'réservation'
+        offer_name = offer.eventOccurence.event.name
+
+    email_html += '<p>Votre {} pour {}'.format(confirmation_nature,
+                                                offer_name)
+
+    if offer.eventOccurence == None:
+        email_html += thing_reference
+
+    email_html += ','
+    email_subject = 'Annulation de votre {} pour {}'.format(confirmation_nature,
+                                                            offer_name)
+    email_html += ' proposé par {}'.format(venue.name)
+    if offer.eventOccurence != None:
+        date_in_tz = _get_event_datetime(offer)
+        datetime_information = ' le {}'.format(format_datetime(date_in_tz))
+        email_html += '{},'.format(datetime_information)
+        email_subject += datetime_information
+    email_html += ' a bien été annulée.'
+    email_html += '</p><p>Cordialement,</p><p>L\'équipe pass culture</p></body></html>'
+    return email_html, email_subject
+
+
+
+def _get_event_datetime(offer):
+    date_in_utc = offer.eventOccurence.beginningDatetime
+    date_in_tz = utc_datetime_to_dept_timezone(date_in_utc,
+                                               offer.eventOccurence.venue.departementCode)
+    return date_in_tz
+
+
+def _get_offer_venue(offer):
+    if offer.venue != None:
+        return offer.venue
+    else:
+        return offer.eventOccurence.venue

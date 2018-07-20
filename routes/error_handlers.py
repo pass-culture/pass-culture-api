@@ -1,14 +1,12 @@
-""" error handlers """
-import re
-import traceback
-import simplejson as json
 from flask import current_app as app, jsonify
+
+import re
+import simplejson as json
+import traceback
 from sqlalchemy.exc import IntegrityError
 
-from models.api_errors import ApiErrors
 
-
-@app.errorhandler(ApiErrors)
+@app.errorhandler(app.model.ApiErrors)
 def restize_api_errors(e):
     print(json.dumps(e.errors))
     return jsonify(e.errors), e.status_code or 400
@@ -44,12 +42,12 @@ def restize_type_error(e):
 def restize_integrity_error(e):
     if hasattr(e, 'orig') and hasattr(e.orig, 'pgcode') and e.orig.pgcode=='23505':
         field = re.search('Key \((.*?)\)=', str(e._message), re.IGNORECASE).group(1)
-        return json.dumps([{field: 'Une entrée avec cet identifiant existe déjà dans notre base de données'}]), 400
+        return json.dumps([{field: 'une entrée avec cet identifiant existe déjà dans notre base de données'}]), 400
     elif hasattr(e, 'orig') and hasattr(e.orig, 'pgcode') and e.orig.pgcode=='23503':
         field = re.search('Key \((.*?)\)=', str(e._message), re.IGNORECASE).group(1)
-        return json.dumps([{field: 'Aucun objet ne correspond à cet identifiant dans notre base de données'}]), 400
+        return json.dumps([{field: 'aucun objet ne correspond à cet identifiant dans notre base de données'}]), 400
     elif hasattr(e, 'orig') and hasattr(e.orig, 'pgcode') and e.orig.pgcode=='23502':
         field = re.search('column "(.*?)"', e.orig.pgerror, re.IGNORECASE).group(1)
-        return json.dumps([{field: 'Ce champ est obligatoire'}]), 400
+        return json.dumps([{field: 'ce champ est obligatoire'}]), 400
     else:
         return something_went_wrong(e)

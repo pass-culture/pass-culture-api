@@ -2,29 +2,30 @@
 from flask import current_app as app, jsonify, request
 from flask_login import current_user, login_required
 
-from models.offerer import Offerer
-from models.pc_object import PcObject
-from models.user import User
-from models.user_offerer import UserOfferer, RightsType
 from utils.human_ids import dehumanize
 from utils.includes import OFFERER_INCLUDES
 from utils.mailing import maybe_send_offerer_validation_email
-from utils.rest import ensure_current_user_has_rights, \
-    expect_json_data, \
-    handle_rest_get_list, \
-    load_or_404, \
-    login_or_api_key_required
+from utils.rest import ensure_current_user_has_rights,\
+                       expect_json_data,\
+                       handle_rest_get_list,\
+                       load_or_404,\
+                       login_or_api_key_required
+
+Offerer = app.model.Offerer
+RightsType = app.model.RightsType
+UserOfferer = app.model.UserOfferer
+
 
 def check_offerer_user(query):
     return query.filter(
-        Offerer.users.any(User.id == current_user.id)
+        app.model.Offerer.users.any(app.model.User.id == current_user.id)
     ).first_or_404()
 
 
 @app.route('/offerers', methods=['GET'])
 @login_required
 def list_offerers():
-    query = Offerer.query
+    query = app.model.Offerer.query
     if not current_user.isAdmin:
         query = query.join(UserOfferer)\
                      .filter_by(user=current_user)
@@ -44,14 +45,14 @@ def get_offerer(id):
 @login_or_api_key_required
 @expect_json_data
 def create_offerer():
-    offerer = Offerer()
+    offerer = app.model.Offerer()
     offerer.populateFromDict(request.json)
-    PcObject.check_and_save(offerer)
+    app.model.PcObject.check_and_save(offerer)
     if not current_user.isAdmin:
         offerer.generate_validation_token()
         user_offerer = offerer.give_rights(current_user,
-                                           RightsType.admin)
-        PcObject.check_and_save(offerer, user_offerer)
+                                           app.model.RightsType.admin)
+        app.model.PcObject.check_and_save(offerer, user_offerer)
     maybe_send_offerer_validation_email(current_user, offerer)
     return jsonify(offerer._asdict(include=OFFERER_INCLUDES)), 201
 
@@ -60,8 +61,8 @@ def create_offerer():
 @login_or_api_key_required
 @expect_json_data
 def patch_offerer(offererId):
-    offerer = Offerer\
+    offerer = app.model.Offerer\
                        .query.filter_by(id=dehumanize(offererId))
     offerer.populateFromDict(request.json, skipped_keys=['validationToken'])
-    PcObject.check_and_save(offerer)
+    app.model.PcObject.check_and_save(offerer)
     return jsonify(offerer._asdict(include=OFFERER_INCLUDES)), 200
