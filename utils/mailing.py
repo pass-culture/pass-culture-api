@@ -230,11 +230,9 @@ def make_user_booking_recap_email(booking, is_cancellation=False):
     offer = booking.offer
     user = booking.user
     if is_cancellation:
-        email_html, email_subject = _generate_cancellation_email_html_and_subject(user,
-                                                                                  offer)
+        email_html, email_subject = _generate_cancellation_email_html_and_subject(booking)
     else:
-        email_html, email_subject = _generate_reservation_email_html_subject(user,
-                                                                             offer)
+        email_html, email_subject = _generate_reservation_email_html_subject(booking)
 
     return {
         'FromName': 'Pass Culture',
@@ -290,7 +288,9 @@ app.get_contact = get_contact
 app.subscribe_newsletter = subscribe_newsletter
 
 
-def _generate_reservation_email_html_subject(user, offer):
+def _generate_reservation_email_html_subject(booking):
+    offer = booking.offer
+    user = booking.user
     venue = _get_offer_venue(offer)
     offer_description = _get_offer_description(offer)
     email_html = '<html><body><p>Cher {},</p>'.format(user.publicName)
@@ -307,11 +307,14 @@ def _generate_reservation_email_html_subject(user, offer):
         email_html += ' proposé par {}.'.format(venue.name)
     else:
         email_html += _get_venue_description(venue)
-    email_html += '</p><p>Cordialement,</p><p>L\'équipe pass culture</p></body></html>'
+    email_html += '</p><p>Votre code de réservation est le {}.</p>'.format(booking.token)
+    email_html += '<p>Cordialement,</p><p>L\'équipe pass culture</p></body></html>'
     return email_html, email_subject
 
 
-def _generate_cancellation_email_html_and_subject(user, offer):
+def _generate_cancellation_email_html_and_subject(booking):
+    offer = booking.offer
+    user = booking.user
     venue = _get_offer_venue(offer)
     email_html = '<html><body><p>Cher {},</p>'.format(user.publicName)
     if offer.eventOccurence == None:
