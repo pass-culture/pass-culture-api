@@ -7,6 +7,7 @@ from flask import current_app as app, jsonify, request
 from flask_login import current_user, login_required, logout_user, login_user
 from oauth2client.service_account import ServiceAccountCredentials
 
+from utils.config import ILE_DE_FRANCE_DEPT_CODES
 from models.api_errors import ApiErrors
 from models.offerer import Offerer
 from models.pc_object import PcObject
@@ -23,6 +24,11 @@ from utils.rest import expect_json_data, \
 def make_user_query():
     query = User.query
     return query
+
+
+def is_pro_signup(json_user):
+    return 'siren' in json_user
+
 
 @app.route("/users/current", methods=["GET"])
 @login_required
@@ -66,7 +72,7 @@ def signup():
         return jsonify(e.errors), 400
 
     departement_code = None
-    if 'email' in request.json:
+    if 'email' in request.json and not is_pro_signup(request.json):
         scope = ['https://spreadsheets.google.com/feeds',
                  'https://www.googleapis.com/auth/drive']
 
@@ -129,13 +135,20 @@ def signup():
     user_offerer = None
     # we don't validate users yet
     # new_user.generate_validation_token()
-    if 'siren' in request.json:
+    if is_pro_signup(request.json):
         new_user.canBook = False
         existing_offerer = Offerer.query.filter_by(siren=request.json['siren']).first()
         if existing_offerer is None:
             offerer = Offerer()
             offerer.populateFromDict(request.json)
             offerer.generate_validation_token()
+            if offerer.postalCode is not None:
+                offerer_dept_code = offerer.postalCode[:2]
+                new_user.departementCode = '93' if offerer_dept_code in ILE_DE_FRANCE_DEPT_CODES\
+                                                else offerer_dept_code
+            else:
+                new_user.departementCode = 'XX' # We don't want to trigger an error on this:
+                                                # we want the error on user
             user_offerer = offerer.give_rights(new_user,
                                                RightsType.admin)
             # offerer.bookingEmail = new_user.email
@@ -143,6 +156,7 @@ def signup():
             PcObject.check_and_save(new_user, offerer, user_offerer)
         else:
             offerer = existing_offerer
+            new_user.departementCode = offerer.postalCode[:2]
             user_offerer = offerer.give_rights(new_user,
                                                RightsType.editor)
             user_offerer.generate_validation_token()

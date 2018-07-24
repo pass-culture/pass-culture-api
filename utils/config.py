@@ -9,7 +9,7 @@ DELETE = '_delete_'
 ENV = os.environ.get('ENV', 'development')
 IS_DEV = ENV == 'development'
 IS_STAGING = ENV == 'staging'
-LOG_LEVEL = LOG_LEVEL_INFO
+LOG_LEVEL = int(os.environ.get('LOG_LEVEL', LOG_LEVEL_INFO))
 
 if IS_DEV:
     API_URL = 'localhost'
@@ -21,3 +21,5 @@ else:
 BLOB_SIZE = 80
 BLOB_UNREAD_NUMBER = int(BLOB_SIZE/5)
 BLOB_READ_NUMBER = int(BLOB_SIZE/5)
+
+ILE_DE_FRANCE_DEPT_CODES = ['75', '78', '91', '94', '93', '95']
