@@ -222,8 +222,7 @@ def make_user_booking_recap_email(booking, is_cancellation=False):
     offer = booking.offer
     user = booking.user
     if is_cancellation:
-        email_html, email_subject = _generate_cancellation_email_html_and_subject(user,
-                                                                                  offer)
+        email_html, email_subject = _generate_cancellation_email_html_and_subject(booking)
     else:
         email_html, email_subject = _generate_reservation_email_html_subject(booking)
 
@@ -301,7 +300,9 @@ def _generate_reservation_email_html_subject(booking):
     return email_html, email_subject
 
 
-def _generate_cancellation_email_html_and_subject(user, offer):
+def _generate_cancellation_email_html_and_subject(booking):
+    offer = booking.offer
+    user = booking.user
     venue = _get_offer_venue(offer)
     email_html = '<html><body><p>Cher {},</p>'.format(user.publicName)
     if offer.eventOccurence == None:

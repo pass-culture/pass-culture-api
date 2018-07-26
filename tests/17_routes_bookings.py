@@ -2,8 +2,8 @@ from datetime import datetime, timedelta
 
 from models.offer import Offer
 from models.pc_object import PcObject
-from utils.human_ids import humanize
-from utils.test_utils import API_URL, req_with_auth
+from utils.human_ids import humanize, dehumanize
+from utils.test_utils import API_URL, req, req_with_auth
 
 
 def test_10_create_booking():
