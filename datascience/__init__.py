@@ -6,7 +6,7 @@ from sqlalchemy.sql.expression import func
 from datascience.occasions import get_occasions, get_occasions_by_type
 from models import Event
 from models.db import db
-from models.event_occurence import EventOccurence
+from models.event_occurrence import EventOccurrence
 from models.mediation import Mediation
 from models.offer import Offer
 from models.pc_object import PcObject
@@ -50,8 +50,8 @@ def create_recommendation(user, occasion, mediation=None):
                                 .order_by(desc(Offer.bookingLimitDatetime))\
                                 .first()
     else:
-        last_offer = Offer.query.join(EventOccurence)\
-                                .filter(EventOccurence.eventId == occasion.id)\
+        last_offer = Offer.query.join(EventOccurrence)\
+                                .filter(EventOccurrence.eventId == occasion.id)\
                                 .order_by(desc(Offer.bookingLimitDatetime))\
                                 .first()
 

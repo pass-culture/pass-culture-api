@@ -14,7 +14,7 @@ from sqlalchemy.orm import relationship
 
 from models.db import Model
 from models.deactivable_mixin import DeactivableMixin
-from models.event_occurence import EventOccurence
+from models.event_occurrence import EventOccurrence
 from models.pc_object import PcObject
 from models.providable_mixin import ProvidableMixin
 
@@ -27,21 +27,21 @@ class Offer(PcObject,
                 primary_key=True,
                 autoincrement=True)
 
-    # an offer is either linked to a thing or to an eventOccurence
+    # an offer is either linked to a thing or to an eventOccurrence
 
     dateModified = Column(DateTime,
                           nullable=False,
                           default=datetime.utcnow)
 
-    eventOccurenceId = Column(BigInteger,
-                              ForeignKey("event_occurence.id"),
-                              CheckConstraint('"eventOccurenceId" IS NOT NULL OR "thingId" IS NOT NULL',
-                                                    name='check_offer_has_event_occurence_or_thing'),
+    eventOccurrenceId = Column(BigInteger,
+                              ForeignKey("event_occurrence.id"),
+                              CheckConstraint('"eventOccurrenceId" IS NOT NULL OR "thingId" IS NOT NULL',
+                                                    name='check_offer_has_event_occurrence_or_thing'),
                               index=True,
                               nullable=True)
 
-    eventOccurence = relationship('EventOccurence',
-                                  foreign_keys=[eventOccurenceId],
+    eventOccurrence = relationship('EventOccurrence',
+                                  foreign_keys=[eventOccurrenceId],
                                   backref='offers')
 
     thingId = Column(BigInteger,
@@ -55,9 +55,9 @@ class Offer(PcObject,
 
     venueId = Column(BigInteger,
                      ForeignKey("venue.id"),
-                     CheckConstraint('("venueId" IS NOT NULL AND "eventOccurenceId" IS NULL)'
-                                           + 'OR ("venueId" IS NULL AND "eventOccurenceId" IS NOT NULL)',
-                                           name='check_offer_has_venue_xor_event_occurence'),
+                     CheckConstraint('("venueId" IS NOT NULL AND "eventOccurrenceId" IS NULL)'
+                                           + 'OR ("venueId" IS NULL AND "eventOccurrenceId" IS NOT NULL)',
+                                           name='check_offer_has_venue_xor_event_occurrence'),
                         index=True,
                         nullable=True)
 
@@ -98,21 +98,21 @@ class Offer(PcObject,
 
     @hybrid_property
     def object(self):
-        return self.thing or self.eventOccurence
+        return self.thing or self.eventOccurrence
 
 
 @event.listens_for(Offer, 'before_insert')
 def page_defaults(mapper, configuration, target):
     # `bookingLimitDatetime` defaults to midnight before `beginningDatetime`
-    # for eventOccurences
-    if target.eventOccurenceId and not target.bookingLimitDatetime:
-        eventOccurence = target.eventOccurence
-        if eventOccurence is None:
-            eventOccurence = EventOccurence\
+    # for eventOccurrences
+    if target.eventOccurrenceId and not target.bookingLimitDatetime:
+        eventOccurrence = target.eventOccurrence
+        if eventOccurrence is None:
+            eventOccurrence = EventOccurrence\
                                       .query\
-                                      .filter_by(id=target.eventOccurenceId)\
+                                      .filter_by(id=target.eventOccurrenceId)\
                                       .first_or_404()
-        target.bookingLimitDatetime = eventOccurence.beginningDatetime\
+        target.bookingLimitDatetime = eventOccurrence.beginningDatetime\
                                                     .replace(hour=23)\
                                                     .replace(minute=59) - timedelta(days=3)
 
@@ -128,10 +128,10 @@ trig_ddl = DDL("""
       END IF;
 
       IF NOT NEW."bookingLimitDatetime" IS NULL AND
-      (NEW."bookingLimitDatetime" > (SELECT "beginningDatetime" FROM event_occurence WHERE id=NEW."eventOccurenceId")) THEN
+      (NEW."bookingLimitDatetime" > (SELECT "beginningDatetime" FROM event_occurrence WHERE id=NEW."eventOccurrenceId")) THEN
 
       RAISE EXCEPTION 'bookingLimitDatetime_too_late'
-      USING HINT = 'offer.bookingLimitDatetime after event_occurence.beginningDatetime';
+      USING HINT = 'offer.bookingLimitDatetime after event_occurrence.beginningDatetime';
       END IF;
 
       RETURN NEW;

@@ -21,9 +21,8 @@ from utils.rest import expect_json_data, \
     login_or_api_key_required
 
 
-def make_user_query():
-    query = User.query
-    return query
+
+def get_authorized_users():
 
 
 def is_pro_signup(json_user):

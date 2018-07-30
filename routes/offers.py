@@ -6,7 +6,7 @@ from sqlalchemy.sql.expression import and_, or_
 
 from models.api_errors import ApiErrors
 from models.event import Event
-from models.event_occurence import EventOccurence
+from models.event_occurrence import EventOccurrence
 from models.mediation import Mediation
 from models.offer import Offer
 from models.offerer import Offerer
@@ -37,7 +37,7 @@ search_models = [
 def join_offers(query):
     for search_model in search_models:
         if search_model == Event:
-            query = query.outerjoin(EventOccurence).outerjoin(search_model)
+            query = query.outerjoin(EventOccurrence).outerjoin(search_model)
         else:
             query = query.outerjoin(search_model)
     return query
@@ -148,8 +148,8 @@ def edit_offer(offer_id):
 @login_or_api_key_required
 def delete_offer(id):
     offer = load_or_404(Offer, id)
-    if offer.eventOccurence:
-        offererId = offer.eventOccurence.venue.managingOffererId
+    if offer.eventOccurrence:
+        offererId = offer.eventOccurrence.venue.managingOffererId
     else:
         offererId = offer.venue.managingOffererId
     ensure_current_user_has_rights(RightsType.editor,

@@ -140,9 +140,9 @@ def make_booking_recap_email(offer, booking=None, is_cancellation=False):
 
 
 def _get_offer_description(offer):
-    if offer.eventOccurence:
+    if offer.eventOccurrence:
         date_in_tz = _get_event_datetime(offer)
-        description = '{} le {}'.format(offer.eventOccurence.event.name,
+        description = '{} le {}'.format(offer.eventOccurrence.event.name,
                                         format_datetime(date_in_tz))
     elif offer.thing:
         description = str(offer.thing.name)
@@ -236,9 +236,9 @@ def make_user_booking_recap_email(booking, is_cancellation=False):
 
 
 def _get_event_datetime(offer):
-    date_in_utc = offer.eventOccurence.beginningDatetime
+    date_in_utc = offer.eventOccurrence.beginningDatetime
     date_in_tz = utc_datetime_to_dept_timezone(date_in_utc,
-                                               offer.eventOccurence.venue.departementCode)
+                                               offer.eventOccurrence.venue.departementCode)
     return date_in_tz
 
 
@@ -283,7 +283,7 @@ def _generate_reservation_email_html_subject(booking):
     venue = _get_offer_venue(offer)
     offer_description = _get_offer_description(offer)
     email_html = '<html><body><p>Cher {},</p>'.format(user.publicName)
-    if offer.eventOccurence == None:
+    if offer.eventOccurrence == None:
         confirmation_nature = 'commande'
     else:
         confirmation_nature = 'réservation'
@@ -291,7 +291,7 @@ def _generate_reservation_email_html_subject(booking):
                                                               offer_description)
     email_html += '<p>Nous vous confirmons votre {} pour {}'.format(confirmation_nature,
                                                                     offer_description)
-    if offer.eventOccurence == None:
+    if offer.eventOccurrence == None:
         email_html += ' (Ref: {}),'.format(offer.thing.idAtProviders)
         email_html += ' proposé par {}.'.format(venue.name)
     else:
@@ -304,26 +304,26 @@ def _generate_reservation_email_html_subject(booking):
 def _generate_cancellation_email_html_and_subject(user, offer):
     venue = _get_offer_venue(offer)
     email_html = '<html><body><p>Cher {},</p>'.format(user.publicName)
-    if offer.eventOccurence == None:
+    if offer.eventOccurrence == None:
         confirmation_nature = 'commande'
         offer_name = offer.thing.name
         thing_reference = ' (Ref: {})'.format(offer.thing.idAtProviders)
 
     else:
         confirmation_nature = 'réservation'
-        offer_name = offer.eventOccurence.event.name
+        offer_name = offer.eventOccurrence.event.name
 
     email_html += '<p>Votre {} pour {}'.format(confirmation_nature,
                                                 offer_name)
 
-    if offer.eventOccurence == None:
+    if offer.eventOccurrence == None:
         email_html += thing_reference
 
     email_html += ','
     email_subject = 'Annulation de votre {} pour {}'.format(confirmation_nature,
                                                             offer_name)
     email_html += ' proposé par {}'.format(venue.name)
-    if offer.eventOccurence != None:
+    if offer.eventOccurrence != None:
         date_in_tz = _get_event_datetime(offer)
         datetime_information = ' le {}'.format(format_datetime(date_in_tz))
         email_html += '{},'.format(datetime_information)
@@ -335,9 +335,9 @@ def _generate_cancellation_email_html_and_subject(user, offer):
 
 
 def _get_event_datetime(offer):
-    date_in_utc = offer.eventOccurence.beginningDatetime
+    date_in_utc = offer.eventOccurrence.beginningDatetime
     date_in_tz = utc_datetime_to_dept_timezone(date_in_utc,
-                                               offer.eventOccurence.venue.departementCode)
+                                               offer.eventOccurrence.venue.departementCode)
     return date_in_tz
 
 
@@ -345,4 +345,4 @@ def _get_offer_venue(offer):
     if offer.venue != None:
         return offer.venue
     else:
-        return offer.eventOccurence.venue
+        return offer.eventOccurrence.venue

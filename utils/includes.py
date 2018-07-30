@@ -11,13 +11,13 @@ OFFERER_INCLUDES = [
     "isValidated"
 ]
 
-EVENT_OCCURENCE_INCLUDES = [
+EVENT_OCCURRENCE_INCLUDES = [
     'offer'
 ]
 
 EVENT_INCLUDES = [
     {
-        "key": "occurences",
+        "key": "occurrences",
         "sub_joins": [
             {
                 "key": "offer",
@@ -45,7 +45,7 @@ OCCASION_INCLUDES = [
         "key": "event",
         "sub_joins": [
             {
-                "key": "occurences",
+                "key": "occurrences",
                 "sub_joins": [
                     {
                         "key": "offer"
@@ -79,7 +79,7 @@ OCCASION_INCLUDES = [
 
 OFFER_INCLUDES = [
     {
-        "key": "eventOccurence",
+        "key": "eventOccurrence",
         "sub_joins": [
             {
                 "key": "event",
@@ -88,7 +88,7 @@ OFFER_INCLUDES = [
             "venue"
         ]
     },
-    "occurencesAtVenue",
+    "occurrencesAtVenue",
     {
         "key": "offerer",
         #"sub_joins": OFFERER_INCLUDES
@@ -112,13 +112,13 @@ OFFER_INCLUDES = [
 
 RECOMMENDATION_INCLUDES = [
     {
-        "key": "mediatedOccurences",
+        "key": "mediatedOccurrences",
         "sub_joins": [
             {
                 "key": "offer",
                 "sub_joins": [
                     {
-                        "key": "eventOccurence",
+                        "key": "eventOccurrence",
                         "sub_joins": ["event", "venue"],
                     },
                     "thing",
@@ -138,7 +138,7 @@ RECOMMENDATION_INCLUDES = [
 
 RECOMMENDATION_OFFER_INCLUDES =  [
     {
-        "key": "eventOccurence",
+        "key": "eventOccurrence",
         "sub_joins": ["event", "venue"]
     }
 ]
@@ -149,7 +149,7 @@ BOOKING_INCLUDES = [
         "sub_joins": 
             [
                 {
-                    "key": "eventOccurence",
+                    "key": "eventOccurrence",
                     "sub_joins": ["venue"]
                 },
                 "venue"
@@ -164,7 +164,7 @@ USER_INCLUDES = [
 
 VENUE_INCLUDES = [
     {
-        "key": "eventOccurences",
+        "key": "eventOccurrences",
         "sub_joins": ["event"]
     },
     {

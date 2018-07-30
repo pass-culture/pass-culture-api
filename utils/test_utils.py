@@ -8,7 +8,7 @@ import requests as req
 from models import Thing
 from models.booking import Booking
 from models.event import Event
-from models.event_occurence import EventOccurence
+from models.event_occurrence import EventOccurrence
 from models.offer import Offer
 from models.offerer import Offerer
 from models.user import User
@@ -54,11 +54,11 @@ def create_user_for_booking_email_test():
 def create_event_offer_for_booking_email_test():
     offer = Offer()
     offer.bookingLimitDatetime = datetime.utcnow() + timedelta(minutes=2)
-    offer.eventOccurence = EventOccurence()
-    offer.eventOccurence.beginningDatetime = datetime(2019, 7, 20, 12, 0, 0, tzinfo=timezone.utc)
-    offer.eventOccurence.event = Event()
-    offer.eventOccurence.event.name = 'Mains, sorts et papiers'
-    offer.eventOccurence.venue = _create_venue_for_booking_email_test()
+    offer.eventOccurrence = EventOccurrence()
+    offer.eventOccurrence.beginningDatetime = datetime(2019, 7, 20, 12, 0, 0, tzinfo=timezone.utc)
+    offer.eventOccurrence.event = Event()
+    offer.eventOccurrence.event.name = 'Mains, sorts et papiers'
+    offer.eventOccurrence.venue = _create_venue_for_booking_email_test()
     offer.thing = None
     offer.isActive = True
 
@@ -67,7 +67,7 @@ def create_event_offer_for_booking_email_test():
 
 def create_thing_offer_for_booking_email_test():
     offer = Offer()
-    offer.eventOccurence = None
+    offer.eventOccurrence = None
     offer.thing = Thing()
     offer.thing.type = 'Book'
     offer.thing.name = 'Test Book'

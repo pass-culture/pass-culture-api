@@ -216,12 +216,12 @@ def dictify_reco(reco):
        (reco.mediation is not None and
         reco.mediation.event is not None):
         if reco.event is not None:
-            occurences = reco.event.occurences
+            occurrences = reco.event.occurrences
         else:
-            occurences = reco.mediation.event.occurences
+            occurrences = reco.mediation.event.occurrences
         ros = list(map(lambda eo: eo.offers[0]._asdict(include=RECOMMENDATION_OFFER_INCLUDES),
                        filter(lambda eo: len(eo.offers) > 0,
-                              occurences)))
+                              occurrences)))
         dict_reco['recommendationOffers'] = sorted(ros,
                                                    key=lambda ro: ro['bookingLimitDatetime'],
                                                    reverse=True)

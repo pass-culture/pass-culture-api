@@ -10,7 +10,7 @@ from sqlalchemy import BigInteger, \
     String
 from sqlalchemy.orm import relationship
 
-from models import Offer, EventOccurence
+from models import Offer, EventOccurrence
 from models.db import Model
 from models.pc_object import PcObject
 
@@ -63,12 +63,12 @@ class Recommendation(PcObject, Model):
     shareMedium = Column(String(20),
                          nullable=True)
 
-    inviteforEventOccurenceId = Column(BigInteger,
-                                       ForeignKey('event_occurence.id'),
+    inviteforEventOccurrenceId = Column(BigInteger,
+                                       ForeignKey('event_occurrence.id'),
                                        nullable=True)
 
-    inviteforEventOccurence = relationship('EventOccurence',
-                                           foreign_keys=[inviteforEventOccurenceId],
+    inviteforEventOccurrence = relationship('EventOccurrence',
+                                           foreign_keys=[inviteforEventOccurrenceId],
                                            backref='inviteRecommendations')
 
     dateCreated = Column(DateTime,
@@ -120,8 +120,8 @@ class Recommendation(PcObject, Model):
         if self.thingId is not None:
             query = query.filter_by(thingId=reco_or_mediation.thingId)
         elif self.eventId is not None:
-            query = query.join(EventOccurence) \
-                .filter(EventOccurence.eventId == reco_or_mediation.eventId)
+            query = query.join(EventOccurrence) \
+                .filter(EventOccurrence.eventId == reco_or_mediation.eventId)
         return query
 
     # FIXME: This is to support legacy code in the webapp
@@ -131,18 +131,18 @@ class Recommendation(PcObject, Model):
     # a recent version of the app
 
     @property
-    def mediatedOccurences(self):
-        occurences = []
+    def mediatedOccurrences(self):
+        occurrences = []
         if self.mediationId is None:
             if self.event is None:
                 return None
             else:
-                occurences = self.event.occurences
+                occurrences = self.event.occurrences
         else:
             if self.mediation.event is None:
                 return None
             else:
-                occurences = self.mediation.event.occurences
-        return sorted(occurences,
+                occurrences = self.mediation.event.occurrences
+        return sorted(occurrences,
                       key=lambda o: o.beginningDatetime,
                       reverse=True)

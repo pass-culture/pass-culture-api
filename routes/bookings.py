@@ -52,8 +52,8 @@ def post_booking():
     if not offer.isActive or\
        not offer.offerer.isActive or\
        (offer.thing and not offer.thing.isActive) or\
-       (offer.eventOccurence and (not offer.eventOccurence.isActive or
-                                  not offer.eventOccurence.event.isActive)):
+       (offer.eventOccurrence and (not offer.eventOccurrence.isActive or
+                                  not offer.eventOccurrence.event.isActive)):
         ae.addError('offerId', "Cette offre a été retirée. Elle n'est plus valable.")
         return jsonify(ae.errors), 400
 

@@ -8,7 +8,7 @@ from sqlalchemy.orm import aliased
 
 from models.booking import Booking
 from models.event import Event
-from models.event_occurence import EventOccurence
+from models.event_occurrence import EventOccurrence
 from models.mediation import Mediation
 from models.offer import Offer
 from models.offerer import Offerer
@@ -75,14 +75,14 @@ def score_occasion(occasion, departement_codes):
 def specific_score_event(event, departement_codes):
     score = 0
 
-    next_occurence = EventOccurence.query.filter((EventOccurence.event == event) &
-                                                 (EventOccurence.beginningDatetime > datetime.utcnow())).first()
-    if next_occurence is None:
+    next_occurrence = EventOccurrence.query.filter((EventOccurrence.event == event) &
+                                                 (EventOccurrence.beginningDatetime > datetime.utcnow())).first()
+    if next_occurrence is None:
         return None
 
-    # If the next occurence of an event is less than 10 days away,
+    # If the next occurrence of an event is less than 10 days away,
     # it gets one more point for each day closer it is to now
-    score += max(0, 10 - (next_occurence.beginningDatetime - datetime.utcnow()).days)
+    score += max(0, 10 - (next_occurrence.beginningDatetime - datetime.utcnow()).days)
 
     return score
 
@@ -96,7 +96,7 @@ def specific_score_thing(thing, departement_codes):
 
 def aliased_join_table(occasion_type):
     if occasion_type == Event:
-        return aliased(EventOccurence)
+        return aliased(EventOccurrence)
     else:
         return aliased(Offer)
 
@@ -115,10 +115,10 @@ def departement_or_national_occasions(query, occasion_type, departement_codes):
 
 
 def bookable_occasions(query, occasion_type):
-    # remove events for which all occurences are in the past
+    # remove events for which all occurrences are in the past
     # (crude filter to limit joins before the more complete one below)
     if occasion_type == Event:
-        query = query.filter(Event.occurences.any(EventOccurence.beginningDatetime > datetime.utcnow()))
+        query = query.filter(Event.occurrences.any(EventOccurrence.beginningDatetime > datetime.utcnow()))
         logger.debug(lambda: '(reco) future events.count '+str(query.count()))
         join_table = aliased_join_table(occasion_type)
         query = query.join(join_table)

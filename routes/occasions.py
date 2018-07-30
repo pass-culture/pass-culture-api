@@ -3,7 +3,7 @@ from flask import current_app as app, jsonify, request
 from flask_login import current_user
 
 from models.event import Event
-from models.event_occurence import EventOccurence
+from models.event_occurrence import EventOccurrence
 from models.occasion import Occasion
 from models.offer import Offer
 from models.offerer import Offerer
@@ -21,15 +21,15 @@ from utils.rest import delete, \
     login_or_api_key_required
 from utils.search import get_search_filter
 
-def create_event_occurence(json, occasion, offerer, venue):
-    event_occurence = EventOccurence()
-    event_occurence.event = occasion
-    event_occurence.venue = venue
-    event_occurence.populateFromDict(json, skipped_keys=['offer'])
-    PcObject.check_and_save(event_occurence)
+def create_event_occurrence(json, occasion, offerer, venue):
+    event_occurrence = EventOccurrence()
+    event_occurrence.event = occasion
+    event_occurrence.venue = venue
+    event_occurrence.populateFromDict(json, skipped_keys=['offer'])
+    PcObject.check_and_save(event_occurrence)
 
     offer = Offer()
-    offer.eventOccurence = event_occurence
+    offer.eventOccurrence = event_occurrence
     offer.offerer = offerer
     offer.populateFromDict(json['offer'][0])
     PcObject.check_and_save(offer)
