@@ -123,6 +123,7 @@ def test_17_create_booking_should_not_work_if_not_enough_credit(app):
     offerer.postalCode = '93000'
     offerer.address = '2 Test adress'
     offerer.city = 'Test city'
+    offerer.siren = '899999768'
     PcObject.check_and_save(offerer)
 
     thing_occasion = create_thing_occasion()
@@ -195,6 +196,7 @@ def test_17_create_booking_should_work_if_enough_credit(app):
     offerer.postalCode = '93000'
     offerer.address = '2 Test adress'
     offerer.city = 'Test city'
+    offerer.siren = '799999999'
     PcObject.check_and_save(offerer)
 
     thing_occasion = create_thing_occasion()
