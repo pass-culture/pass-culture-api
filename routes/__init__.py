@@ -12,6 +12,7 @@ import routes.providers
 import routes.recommendations
 # TODO
 # if IS_DEV:
+import routes.reset
 import routes.storage
 import routes.things
 import routes.types
