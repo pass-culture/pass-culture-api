@@ -20,12 +20,17 @@ from sqlalchemy.orm.collections import InstrumentedList
 
 from models.api_errors import ApiErrors
 from models.db import db
+from models.soft_deletable_mixin import SoftDeletableMixin
 from utils.human_ids import dehumanize, humanize
 from utils.logger import logger
 
 DUPLICATE_KEY_ERROR_CODE = '23505'
 NOT_FOUND_KEY_ERROR_CODE = '23503'
 OBLIGATORY_FIELD_ERROR_CODE = '23502'
+
+
+class DeletedRecordException(Exception):
+    pass
 
 def serialize(value, **options):
     if isinstance(value, Enum):
@@ -45,6 +50,21 @@ def serialize(value, **options):
                         value))
     else:
         return value
+
+
+def is_soft_deleted(object):
+    if issubclass(type(object), SoftDeletableMixin) and object.isSoftDeleted:
+        return True
+    else:
+        return False
+
+def is_not_soft_deleted(object):
+    return not is_soft_deleted(object)
+
+
+def _check_not_soft_deleted(object):
+    if is_soft_deleted(object):
+        raise DeletedRecordException
 
 
 class PcObject():
@@ -111,6 +131,7 @@ class PcObject():
                             final_value = value
                         else:
                             final_value = refine(value, options.get('filters', {}))
+                        final_value = filter(is_not_soft_deleted, final_value)
                         result[key] = list(
                             map(
                                 lambda attr: attr._asdict(
@@ -226,9 +247,12 @@ class PcObject():
             return PcObject.restize_global_error(e)
 
     def populateFromDict(self, dct, skipped_keys=[]):
+        _check_not_soft_deleted(self)
+
         data = dct.copy()
         if data.__contains__('id'):
             del data['id']
+
         cols = self.__class__.__table__.columns._data
         for key in data.keys():
             if (key=='deleted') or (key in skipped_keys):
@@ -256,6 +280,7 @@ class PcObject():
                                         key)
                 else:
                     setattr(self, key, value)
+
 
     @staticmethod
     def check_and_save(*objects):
