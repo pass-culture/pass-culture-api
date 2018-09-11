@@ -56,9 +56,9 @@ def validate_new_password_request(request):
         errors.addError('token', 'Votre lien de changement de mot de passe est invalide.')
         raise errors
 
-    if 'newPassword' not in request.get_json():
+    if 'password' not in request.get_json():
         errors = ApiErrors()
-        errors.addError('newPassword', 'Vous devez renseigner un nouveau mot de passe.')
+        errors.addError('password', 'Vous devez renseigner un nouveau mot de passe.')
         raise errors
 
 

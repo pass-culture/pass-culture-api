@@ -82,7 +82,7 @@ def post_for_password_token():
 def post_new_password():
     validate_new_password_request(request)
     token = request.get_json()['token']
-    new_password = request.get_json()['newPassword']
+    new_password = request.get_json()['password']
     user = find_user_by_reset_password_token(token)
 
     if not user:
