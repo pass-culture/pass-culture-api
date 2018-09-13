@@ -51,15 +51,15 @@ class EventOccurrence(PcObject,
 
         beginning_datetime = self.beginningDatetime
         if type(beginning_datetime) == str:
-            beginning_datetime = datetime.strptime(beginning_datetime, "%Y-%m-%d %H:%M:%S.%f")
+            beginning_datetime = datetime.strptime(beginning_datetime, "%Y-%m-%dT%H:%M:%S.%fZ")
             error_key = 'beginningDatetime'
 
         end_datetime = self.endDatetime
         if type(end_datetime) == str:
-            end_datetime = datetime.strptime(end_datetime, "%Y-%m-%d %H:%M:%S.%f")
+            end_datetime = datetime.strptime(end_datetime, "%Y-%m-%dT%H:%M:%S.%fZ")
             error_key = 'endDatetime'
 
-        if beginning_datetime < end_datetime:
+        if beginning_datetime > end_datetime:
             api_errors.addError(error_key, 'La date de fin de l\'événement doit être postérieure à la date de début')
 
         return api_errors
