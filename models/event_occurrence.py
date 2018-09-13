@@ -1,4 +1,5 @@
 """ event occurrence """
+from datetime import datetime
 from sqlalchemy import Binary, BigInteger, Column, DateTime, Enum, \
     ForeignKey, CheckConstraint
 from sqlalchemy.orm import relationship
@@ -45,6 +46,20 @@ class EventOccurrence(PcObject,
 
     def errors(self):
         api_errors = super(EventOccurrence, self).errors()
-        if self.endDatetime < self.beginningDatetime:
-            api_errors.addError('endDatetime', 'La date de fin de l\'événement doit être postérieure à la date de début')
+
+        error_key = 'global'
+
+        beginning_datetime = self.beginningDatetime
+        if type(beginning_datetime) == str:
+            beginning_datetime = datetime.strptime(beginning_datetime, "%Y-%m-%dT%H:%M:%S.%fZ")
+            error_key = 'beginningDatetime'
+
+        end_datetime = self.endDatetime
+        if type(end_datetime) == str:
+            end_datetime = datetime.strptime(end_datetime, "%Y-%m-%dT%H:%M:%S.%fZ")
+            error_key = 'endDatetime'
+
+        if beginning_datetime > end_datetime:
+            api_errors.addError(error_key, 'La date de fin de l\'événement doit être postérieure à la date de début')
+
         return api_errors
