@@ -76,8 +76,8 @@ class ReimbursementRules(Enum):
     MAX_REIMBURSEMENT = MaxReimbursementByOfferer()
 
 
-def find_all_booking_reimbursement(bookings):
-    reimbursements = []
+def get_all_reimbursements_by_id(bookings):
+    reimbursements_by_id = {}
     cumulative_bookings_value = 0
 
     for booking in bookings:
@@ -86,9 +86,14 @@ def find_all_booking_reimbursement(bookings):
 
         potential_rules = _find_potential_rules(booking, cumulative_bookings_value)
         elected_rule = min(potential_rules, key=lambda x: x['amount'])
-        reimbursements.append(BookingReimbursement(booking, elected_rule['rule'], elected_rule['amount']))
+        booking_reimbursement =  BookingReimbursement(
+            booking,
+            elected_rule['rule'],
+            elected_rule['amount']
+        )
+        reimbursements_by_id[booking.id] = booking_reimbursement
 
-    return reimbursements
+    return reimbursements_by_id
 
 
 def _find_potential_rules(booking, cumulative_bookings_value):

@@ -3,13 +3,12 @@ from flask import current_app as app, jsonify, request
 from flask_login import current_user, login_required
 
 from domain.admin_emails import maybe_send_offerer_validation_email
-from domain.reimbursement import find_all_booking_reimbursement
 from models import Offerer, PcObject, RightsType
 from models.venue import create_digital_venue
 from repository.booking_queries import find_offerer_bookings
 from repository.user_offerer_queries import filter_query_where_user_is_user_offerer_and_is_validated
 from utils.human_ids import dehumanize
-from utils.includes import PRO_BOOKING_INCLUDES, OFFERER_INCLUDES
+from utils.includes import OFFERER_INCLUDES
 from utils.mailing import MailServiceException
 from utils.rest import ensure_current_user_has_rights, \
                        expect_json_data, \
@@ -50,18 +49,16 @@ def get_offerer(id):
 @login_required
 def get_offerer_bookings(id):
 
-    ensure_current_user_has_rights(RightsType.editor, dehumanize(id))
+    offerer_id = dehumanize(id)
 
-    bookings = find_offerer_bookings(
-        dehumanize(id),
+    ensure_current_user_has_rights(RightsType.editor, offerer_id)
+
+    return find_offerer_bookings(
+        offerer_id,
         search=request.args.get('search'),
         order_by=request.args.get('order_by'),
         page=request.args.get('page', 1)
     )
-
-    bookings_reimbursements = find_all_booking_reimbursement(bookings)
-
-    return jsonify([b.as_dict(include=PRO_BOOKING_INCLUDES) for b in bookings_reimbursements]), 200
 
 @app.route('/offerers', methods=['POST'])
 @login_or_api_key_required

@@ -71,43 +71,86 @@ def query_with_order_by(query, order_by):
                 raise e
     return query
 
-def handle_rest_get_list(modelClass, query=None,
-                         refine=None, order_by=None, flask_request=None,
-                         include=None, resolve=None, print_elements=None,
-                         paginate=None, page=None):
+def handle_rest_get_list(modelClass,
+                         query=None,
+                         refine=None,
+                         order_by=None,
+                         flask_request=None,
+                         meta_data=None,
+                         include=None,
+                         resolve=None,
+                         print_elements=None,
+                         paginate=None,
+                         page=None):
+
+    # REQUEST
     if flask_request is None:
         flask_request = request
+
+    # QUERY
     if query is None:
         query = modelClass.query
+
     # DELETED
     if issubclass(modelClass, SoftDeletableMixin):
         query = query.filter_by(isSoftDeleted=False)
+
     # REFINE
     if refine:
         query = refine(query)
+
     # ORDER BY
     if order_by:
         query = query_with_order_by(query, order_by)
+
+    # HEADERS
+    headers = {}
 
     # PAGINATE
     if paginate:
         if page is not None:
             page = int(page)
         query = query.paginate(page, per_page=paginate, error_out=False)\
-                     .items
+
+        print("qdqd", query.pages, query.items, dir(query), "iter_pages", query.iter_pages)
+        print('query.total', query.total)
+
+        pagination = {
+            "itemsCount": query.total,
+            "itemsPerPage": query.per_page,
+            "pagesCount": query.pages
+        }
+
+        if query.has_next:
+            pagination["next"] = query.next
+        if query.has_prev:
+            pagination["prev"] = query.next
+
+        headers['X-Pagination'] = pagination
+
+        elements = query.items
+
+    else:
+        elements = query.all()
+
+    # METADATA
+    if meta_data:
+        headers['X-Metadata'] = meta_data(elements)
+
     # DICTIFY
-    elements = [
-        o._asdict(
+    dict_elements = [
+        element._asdict(
             include=include,
             resolve=resolve,
-        ) for o in query
+        ) for element in elements
     ]
+
     # PRINT
     if print_elements:
-        print(elements)
+        print(dict_elements)
 
     # RETURN
-    return jsonify(elements), 200
+    return jsonify(dict_elements), 200, headers
 
 
 def ensure_provider_can_update(obj):

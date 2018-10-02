@@ -3,6 +3,7 @@ from flask import render_template
 from sqlalchemy.exc import InternalError
 from sqlalchemy.orm import aliased
 
+from domain.reimbursement import get_all_reimbursements_by_id
 from models import ApiErrors, \
     Booking, \
     Event, \
@@ -14,8 +15,10 @@ from models import ApiErrors, \
     User, \
     Venue
 from models.db import db
-from utils.rest import query_with_order_by
-from utils.search import get_keywords_filter
+from utils.human_ids import dehumanize
+from utils.includes import PRO_BOOKING_INCLUDES
+from utils.rest import handle_rest_get_list
+from utils.search import get_search_filter
 from validation.errors import ResourceNotFound
 
 
@@ -27,7 +30,21 @@ def find_all_by_stock_id(stock):
     return Booking.query.filter_by(stockId=stock.id).all()
 
 
+def create_resolve_booking_reimbursements(reimbursements_by_id, include=None):
+    def resolve(booking, filters):
+        booking_reimbursement = reimbursements_by_id[dehumanize(booking['id'])]
+        return booking_reimbursement.as_dict(include=include)
+    return resolve
+
+def get_bookings_metadata(bookings):
+    metadata = {
+
+    }
+    return metadata
+
 def find_offerer_bookings(offerer_id, search=None, order_by=None, page=1):
+
+    # ROOT QUERY
     query = Booking.query.join(Stock) \
         .outerjoin(EventOccurrence) \
         .join(Offer,
@@ -36,18 +53,29 @@ def find_offerer_bookings(offerer_id, search=None, order_by=None, page=1):
         .join(Venue) \
         .filter(Venue.managingOffererId == offerer_id)
 
+    # WE NEED TO HAVE ALL THE BOOKINGS PER OFFERER
+    # TO COMPUTE THE REIMBURSEMENT RULES
+    # (AND WE LATER BIND THESE VALUES AT RESOLVE AS DICT TIME)
+    reimbursements_by_id = get_all_reimbursements_by_id(query.all())
+
+    # FILTER WITH SPECIFIC QUERIES ASKED BY THE CLIENT
     if search:
         query = query.outerjoin(Event)\
                      .outerjoin(Thing)\
                      .filter(get_keywords_filter([Event, Thing, Venue], search))
 
-    if order_by:
-        query = query_with_order_by(query, order_by)
-
-    bookings = query.paginate(int(page), per_page=10, error_out=False) \
-        .items
-
-    return bookings
+    # RETURN WITH A RESOLVE FUNCTION
+    # TO BIND THE REIMBURSEMENT PROPS
+    return handle_rest_get_list(Booking,
+                                include=PRO_BOOKING_INCLUDES,
+                                order_by=order_by,
+                                page=page,
+                                paginate=10,
+                                query=query,
+                                resolve=create_resolve_booking_reimbursements(
+                                    reimbursements_by_id,
+                                    include=PRO_BOOKING_INCLUDES
+                                ))
 
 
 def find_bookings_from_recommendation(reco, user):
