@@ -18,7 +18,7 @@ from models.db import db
 from utils.human_ids import dehumanize
 from utils.includes import PRO_BOOKING_INCLUDES
 from utils.rest import handle_rest_get_list
-from utils.search import get_search_filter
+from utils.search import get_keywords_filter
 from validation.errors import ResourceNotFound
 
 
