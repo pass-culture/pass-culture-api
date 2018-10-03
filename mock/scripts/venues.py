@@ -13,6 +13,11 @@ venue_mocks = [
         "siret": "50763357600016"
     },
     {
+        "isVirtual": True,
+        "name": "Offre en ligne",
+        "offererName": "LE GRAND REX PARIS"
+    },
+    {
         "address": "6 rue Grolee",
         "bookingEmail": "fake2@email.com",
         "city": "Lyon",
@@ -23,5 +28,15 @@ venue_mocks = [
         "offererName": "THEATRE DE L ODEON",
         "postalCode": "69002",
         "siret": "75050570300025"
+    },
+    {
+        "isVirtual": True,
+        "name": "Offre en ligne",
+        "offererName": "THEATRE DE L ODEON"
+    },
+    {
+        "isVirtual": True,
+        "name": "Offre en ligne",
+        "offererName": "THEATRE DU SOLEIL"
     }
 ]
