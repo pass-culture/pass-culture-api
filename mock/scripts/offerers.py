@@ -13,5 +13,12 @@ offerer_mocks = [
         "name": "THEATRE DE L ODEON",
         "postalCode": "69002",
         "siren": "750505703"
+    },
+    {
+        "address": "LIEU DIT CARTOUCHERIE",
+        "city": "Paris 12",
+        "name": "THEATRE DU SOLEIL",
+        "postalCode": "75012",
+        "siren": "784340093"
     }
 ]

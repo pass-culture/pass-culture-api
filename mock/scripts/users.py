@@ -20,12 +20,21 @@ user_mocks = [
     },
     {
         "departementCode": "93",
-        "publicName": "Utilisateur test pro",
-        "firstName": "Utilisateur",
-        "lastName": "Test Pro",
+        "publicName": "PC Test Pro 1",
+        "firstName": "PC Test",
+        "lastName": "Pro 1",
         "email": "pctest.pro.1@btmx.fr",
         "postalCode": "93100",
         "password": "pctestpro1"
+    },
+    {
+        "departementCode": "93",
+        "publicName": "PC Test Pro 2",
+        "firstName": "PC Test",
+        "lastName": "Pro 2",
+        "email": "pctest.pro.2@btmx.fr",
+        "postalCode": "93100",
+        "password": "pctestpro2"
     },
     {
         "publicName": "Utilisateur test admin",
