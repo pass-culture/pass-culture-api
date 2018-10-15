@@ -2,6 +2,7 @@ def check_bic_is_known(bic):
     return bic in KNOWN_BICS
 
 KNOWN_BICS = {
+    "CCOPFRPPXXX",
     "TSIGFR22",
     "ABCOFRPP",
     "EBAPFRPP",
