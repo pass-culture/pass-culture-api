@@ -1,8 +1,8 @@
 """ thumb """
 from models.api_errors import ApiErrors
-from utils.file import has_file, read_file
+from utils.file import ALLOWED_EXTENSIONS as AE, has_file, read_file
 
-ALLOWED_EXTENSIONS = set(['jpg', 'png', 'jpeg', 'gif'])
+ALLOWED_EXTENSIONS = set([ex for ex in AE if ex != 'pdf'])
 
 def get_crop(form):
     if 'croppingRect[x]' in form \

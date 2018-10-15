@@ -3,7 +3,9 @@ from flask import jsonify
 
 from models.api_errors import ApiErrors
 
-def has_file(key, files=files, form=form):
+ALLOWED_EXTENSIONS = set(['jpg', 'png', 'jpeg', 'gif', 'pdf'])
+
+def has_file(key,  files=files, form=form):
     if key in files:
         if files[key].filename == '':
             return False
