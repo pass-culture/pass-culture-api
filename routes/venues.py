@@ -2,6 +2,7 @@
 from flask import current_app as app, jsonify, request
 from flask_login import login_required
 
+from models.api_errors import ApiErrors
 from models.user_offerer import RightsType
 from models.venue import Venue
 from repository.venue_queries import save_venue
@@ -23,26 +24,41 @@ def get_venue(venueId):
 
 @app.route('/venues', methods=['POST'])
 @login_required
-@expect_json_data
 def create_venue():
-    validate_coordinates(request.json.get('latitude', None), request.json.get('longitude', None))
+
+
+    print('request.json', request.json)
+    if request.json is not None:
+        data = request.json
+    else:
+        data = request.form
+
+    print('data', data)
+
+    validate_coordinates(data.get('latitude', None), data.get('longitude', None))
 
     api_errors = ApiErrors()
-
-    if not has_file('rib_pdf'):
+    if data.get('bic') and not data.get('iban'):
+        api_errors.addError('iban', "Il manque l'iban associé à votre bic")
+        return jsonify(api_errors.errors), 400
+    if data.get('iban') and not data.get('bic'):
+        api_errors.addError('bic', "Il manque le bic associé à votre iban")
+        return jsonify(api_errors.errors), 400
+    if data.get('iban') and not has_file('rib_pdf'):
         api_errors.addError('rib_pdf', "Vous devez fournir un justificatif de rib")
         return jsonify(api_errors.errors), 400
 
-    venue = Venue(from_dict=request.form)
+    venue = Venue(from_dict=data)
     venue.departementCode = 'XX'  # avoid triggerring check on this
     save_venue(venue)
 
-    try:
-        venue.save_thumb(read_file('rib_pdf'), 0)
-    except ValueError as e:
-        logger.error(e)
-        api_errors.addError('rib_pdf', "Le rib pdf n'est pas au bon format")
-        raise api_errors
+    if data.get('iban'):
+        try:
+            venue.save_thumb(read_file('rib'), 0)
+        except ValueError as e:
+            logger.error(e)
+            api_errors.addError('rib_pdf', "Le rib pdf n'est pas au bon format")
+            raise api_errors
 
     return jsonify(venue._asdict(include=VENUE_INCLUDES)), 201
 

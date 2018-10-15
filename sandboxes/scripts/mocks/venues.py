@@ -2,9 +2,11 @@
 venue_mocks = [
     {
         "address": "1 BD POISSONNIERE",
+        "bic": "CCOPFRPPXXX",
         "bookingEmail": "fake@email.com",
         "city": "Paris",
         "departementCode": "75",
+        "iban": "FR7642559000099999999999999",
         "latitude": 48.870665,
         "longitude": 2.3478,
         "name": "LE GRAND REX PARIS",
