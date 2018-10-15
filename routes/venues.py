@@ -2,15 +2,14 @@
 from flask import current_app as app, jsonify, request
 from flask_login import login_required
 
-from models import ApiErrors
 from models.user_offerer import RightsType
 from models.venue import Venue
 from repository.venue_queries import save_venue
+from utils.file import has_file, read_file
 from utils.includes import VENUE_INCLUDES
 from utils.rest import ensure_current_user_has_rights, \
     expect_json_data, \
-    load_or_404, \
-    handle_rest_get_list
+    load_or_404
 from validation.venues import validate_coordinates, check_valid_edition
 
 
@@ -27,9 +26,24 @@ def get_venue(venueId):
 @expect_json_data
 def create_venue():
     validate_coordinates(request.json.get('latitude', None), request.json.get('longitude', None))
-    venue = Venue(from_dict=request.json)
+
+    api_errors = ApiErrors()
+
+    if not has_file('rib_pdf'):
+        api_errors.addError('rib_pdf', "Vous devez fournir un justificatif de rib")
+        return jsonify(api_errors.errors), 400
+
+    venue = Venue(from_dict=request.form)
     venue.departementCode = 'XX'  # avoid triggerring check on this
     save_venue(venue)
+
+    try:
+        venue.save_thumb(read_file('rib_pdf'), 0)
+    except ValueError as e:
+        logger.error(e)
+        api_errors.addError('rib_pdf', "Le rib pdf n'est pas au bon format")
+        raise api_errors
+
     return jsonify(venue._asdict(include=VENUE_INCLUDES)), 201
 
 

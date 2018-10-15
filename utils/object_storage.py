@@ -1,11 +1,11 @@
+""" object storage """
 import os
 from datetime import datetime
 from pathlib import Path, PurePath
+import swiftclient
+
 from utils.config import IS_DEV
 
-from utils.human_ids import humanize
-
-import swiftclient
 
 
 def swift_con():
