@@ -23,6 +23,7 @@ from domain import *
 from recommendations_engine import *
 from local_providers import *
 from models import *
+from repository.bic_queries import *
 from repository.offer_queries import *
 from sqlalchemy import *
 from utils.content import *
