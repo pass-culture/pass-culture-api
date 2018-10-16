@@ -8,9 +8,9 @@ from models.venue import Venue
 from repository.venue_queries import save_venue
 from utils.file import has_file, read_file
 from utils.includes import VENUE_INCLUDES
+from utils.logger import logger
 from utils.rest import ensure_current_user_has_rights, \
-    expect_json_data, \
-    load_or_404
+                       load_or_404
 from validation.venues import validate_coordinates, check_valid_edition
 
 
@@ -26,14 +26,10 @@ def get_venue(venueId):
 @login_required
 def create_venue():
 
-
-    print('request.json', request.json)
     if request.json is not None:
         data = request.json
     else:
         data = request.form
-
-    print('data', data)
 
     validate_coordinates(data.get('latitude', None), data.get('longitude', None))
 
@@ -44,8 +40,8 @@ def create_venue():
     if data.get('iban') and not data.get('bic'):
         api_errors.addError('bic', "Il manque le bic associé à votre iban")
         return jsonify(api_errors.errors), 400
-    if data.get('iban') and not has_file('rib_pdf'):
-        api_errors.addError('rib_pdf', "Vous devez fournir un justificatif de rib")
+    if data.get('iban') and not has_file('rib'):
+        api_errors.addError('rib', "Vous devez fournir un justificatif de rib")
         return jsonify(api_errors.errors), 400
 
     venue = Venue(from_dict=data)
@@ -54,10 +50,12 @@ def create_venue():
 
     if data.get('iban'):
         try:
-            venue.save_thumb(read_file('rib'), 0)
+            f = read_file('rib')
+            print('f', f)
+            venue.save_thumb(f, 0)
         except ValueError as e:
             logger.error(e)
-            api_errors.addError('rib_pdf', "Le rib pdf n'est pas au bon format")
+            api_errors.addError('rib', "Le rib n'a pas un bon format")
             raise api_errors
 
     return jsonify(venue._asdict(include=VENUE_INCLUDES)), 201
@@ -65,13 +63,33 @@ def create_venue():
 
 @app.route('/venues/<venueId>', methods=['PATCH'])
 @login_required
-@expect_json_data
 def edit_venue(venueId):
-    managing_offerer_id = request.json.get('managingOffererId')
-    check_valid_edition(managing_offerer_id)
+
+    if request.json is not None:
+        data = request.json
+    else:
+        data = request.form
+
     venue = load_or_404(Venue, venueId)
-    validate_coordinates(request.json.get('latitude', None), request.json.get('longitude', None))
+
+    managing_offerer_id = data.get('managingOffererId')
+    check_valid_edition(managing_offerer_id, venue)
+
+    validate_coordinates(data.get('latitude', None), data.get('longitude', None))
     ensure_current_user_has_rights(RightsType.editor, venue.managingOffererId)
-    venue.populateFromDict(request.json)
+
+    venue.populateFromDict(data)
     save_venue(venue)
+
+    if data.get('rib'):
+        try:
+            f = read_file('rib')
+            print('f', f)
+            venue.save_thumb(f, 0)
+        except ValueError as e:
+            logger.error(e)
+            api_errors = ApiErrors()
+            api_errors.addError('rib', "Le rib n'a pas un bon format")
+            raise api_errors
+
     return jsonify(venue._asdict(include=VENUE_INCLUDES)), 200
