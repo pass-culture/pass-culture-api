@@ -16,4 +16,7 @@ def has_thumb(files=None, form=None):
     return has_file('thumb', files=files, form=form)
 
 def read_thumb(files=None, form=None):
+    if 'thumbUrl' in form:
+        return form['thumbUrl']
+
     return read_file('thumb', ALLOWED_EXTENSIONS, files=files, form=form)
