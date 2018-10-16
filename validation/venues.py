@@ -1,6 +1,7 @@
 from decimal import Decimal, InvalidOperation
 
 from models import ApiErrors
+from utils.human_ids import dehumanize
 
 MAX_LONGITUDE = 180
 MAX_LATITUDE = 90
@@ -19,8 +20,8 @@ def validate_coordinates(raw_latitude, raw_longitude):
         raise api_errors
 
 
-def check_valid_edition(managing_offerer_id):
-    if managing_offerer_id:
+def check_valid_edition(managing_offerer_id, venue):
+    if managing_offerer_id and dehumanize(managing_offerer_id) != venue.id:
         errors = ApiErrors()
         errors.addError('managingOffererId', 'Vous ne pouvez pas changer la structure d\'un lieu')
         raise errors
