@@ -1,11 +1,32 @@
 from decimal import Decimal, InvalidOperation
 
 from models import ApiErrors
+from utils.file import has_file
 from utils.human_ids import dehumanize
 
 MAX_LONGITUDE = 180
 MAX_LATITUDE = 90
 
+def validate_bank_info(data):
+    api_errors = ApiErrors()
+    if data.get('bic') and not data.get('iban'):
+        api_errors.addError('iban', "Il manque l'iban associé à votre bic")
+        raise api_errors
+    if data.get('iban') and not data.get('bic'):
+        api_errors.addError('bic', "Il manque le bic associé à votre iban")
+        raise api_errors
+    if data.get('iban') and not has_file('rib'):
+        api_errors.addError('rib', "Vous devez fournir un justificatif de rib")
+        raise api_errors
+
+def validate_address(data):
+    api_errors = ApiErrors()
+    if 'postalCode' in data and data['postalCode'] is None:
+        api_errors.addError('postalCode', "Le code postal est obligatoire")
+        raise api_errors
+    if 'city' in data and data['city'] is None:
+        api_errors.addError('city', "La ville est obligatoire")
+        raise api_errors
 
 def validate_coordinates(raw_latitude, raw_longitude):
     api_errors = ApiErrors()

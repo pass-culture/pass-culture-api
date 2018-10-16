@@ -22,6 +22,13 @@ def save_venue(venue):
         errors.addError('isVirtual', 'Un lieu pour les offres numériques existe déjà pour cette structure')
         raise errors
 
+def save_venue_rib(venue):
+    try:
+        venue.save_thumb(read_file('rib'), 0)
+    except ValueError as e:
+        logger.error(e)
+        api_errors.addError('rib', "Le rib n'a pas un bon format")
+        raise api_errors
 
 def find_by_id(venue_id):
     return Venue.query.filter_by(id=venue_id).first()
