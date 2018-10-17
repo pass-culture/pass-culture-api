@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 import pytest
 from flask import session
 
@@ -5,8 +7,12 @@ from models import PcObject
 from models.db import db
 from tests.conftest import clean_database
 from utils.human_ids import humanize
-from utils.test_utils import API_URL, req_with_auth, create_venue, create_offerer, create_user, create_user_offerer
-
+from utils.test_utils import API_URL, \
+                             create_offerer, \
+                             create_user, \
+                             create_user_offerer, \
+                             create_venue, \
+                             req_with_auth
 
 @clean_database
 @pytest.mark.standalone
@@ -233,3 +239,34 @@ def test_patch_change_managing_offerer_id_status_400(app):
     # Then
     assert response.status_code == 400
     assert response.json()['managingOffererId'] == ['Vous ne pouvez pas changer la structure d\'un lieu']
+
+
+@clean_database
+@pytest.mark.standalone
+def test_modify_venue_with_rib_returns_200_and_apply_modifications_on_venue(app):
+    # given
+    offerer = create_offerer()
+    user = create_user(email='user.pro@test.com')
+    venue = create_venue(offerer, name='L\'encre et la plume')
+    user_offerer = create_user_offerer(user, offerer)
+    PcObject.check_and_save(user_offerer, venue)
+    auth_request = req_with_auth(email=user.email, password=user.clearTextPassword)
+
+    # when
+    dir_path = Path(os.path.dirname(os.path.realpath(__file__)))
+    url = API_URL + '/venues/%s' % humanize(venue.id)
+    rib_path = dir_path / '..' / 'mock'\
+                 / 'thumbs' / 'venues'\
+                 / str(1)
+    files = {
+        'bic': "BDFEFR2LCCB",
+        'iban': "FR7630006000011234567890189",
+        'rib': open(rib_path, mode='rb')
+    }
+    response = auth_request.patch(url, files)
+
+    # then
+    assert response.status_code == 200
+    db.session.refresh(venue)
+    assert venue.bic == "BDFEFR2LCCB"
+    assert venue.thumbCount == 1

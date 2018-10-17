@@ -1,5 +1,5 @@
 """ venues """
-from flask import current_app as app, jsonify, request
+from flask import current_app as app, jsonify
 from flask_login import login_required
 
 from models.user_offerer import RightsType
@@ -8,7 +8,8 @@ from repository.venue_queries import save_venue, save_venue_rib
 from utils.file import has_file
 from utils.includes import VENUE_INCLUDES
 from utils.rest import ensure_current_user_has_rights, \
-                       load_or_404
+                       load_or_404, \
+                       request_to_data
 from validation.venues import check_valid_edition, \
                               validate_address, \
                               validate_bank_info, \
@@ -26,10 +27,7 @@ def get_venue(venueId):
 @login_required
 def create_venue():
 
-    if request.json is not None:
-        data = request.json
-    else:
-        data = request.form
+    data = request_to_data()
 
     validate_coordinates(data.get('latitude', None), data.get('longitude', None))
     validate_address(data)
@@ -49,10 +47,7 @@ def create_venue():
 @login_required
 def edit_venue(venueId):
 
-    if request.json is not None:
-        data = request.json
-    else:
-        data = request.form
+    data = request_to_data()
 
     venue = load_or_404(Venue, venueId)
 

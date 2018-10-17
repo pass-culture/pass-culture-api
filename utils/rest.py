@@ -142,3 +142,19 @@ def delete(entity):
 def load_or_404(obj_class, human_id):
     return obj_class.query.filter_by(id=dehumanize(human_id))\
                           .first_or_404()
+
+def form_to_data(form):
+    data = {}
+    for (key, value) in form.items():
+        if value == 'null':
+            data[key] = None
+        else:
+            data[key] = value
+    return data
+
+def request_to_data():
+    if request.json is not None:
+        data = request.json
+    else:
+        data = form_to_data(request.form)
+    return data

@@ -4,6 +4,8 @@ from models import PcObject, ApiErrors
 from models import Venue
 from models.db import db
 from models.venue import TooManyVirtualVenuesException
+from utils.file import read_file
+from utils.logger import logger
 
 
 def count_venues_by_departement():
@@ -18,11 +20,12 @@ def save_venue(venue):
     try:
         PcObject.check_and_save(venue)
     except TooManyVirtualVenuesException:
-        errors = ApiErrors()
-        errors.addError('isVirtual', 'Un lieu pour les offres numériques existe déjà pour cette structure')
+        api_errors = ApiErrors()
+        api_errors.addError('isVirtual', 'Un lieu pour les offres numériques existe déjà pour cette structure')
         raise errors
 
 def save_venue_rib(venue):
+    api_errors = ApiErrors()
     try:
         venue.save_thumb(read_file('rib'), 0)
     except ValueError as e:

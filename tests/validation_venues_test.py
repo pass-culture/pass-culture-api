@@ -1,8 +1,51 @@
 import pytest
 
 from models import ApiErrors
-from validation.venues import validate_coordinates
+from validation.venues import validate_bank_info,\
+                              validate_coordinates
 
+@pytest.mark.standalone
+def test_validate_bank_info_raises_an_api_error_if_bic_is_without_iban_():
+    # when
+    with pytest.raises(ApiErrors) as e:
+        data = {
+            "bic": "BDFEFR2LCCB"
+        }
+        validate_bank_info(data)
+
+    # then
+    assert e.value.errors['iban'] == [
+        "Il manque l'iban associé à votre bic"
+    ]
+
+@pytest.mark.standalone
+def test_validate_bank_info_raises_an_api_error_if_iban_is_without_bic_():
+    # when
+    with pytest.raises(ApiErrors) as e:
+        data = {
+            "iban": "FR7630006000011234567890189"
+        }
+        validate_bank_info(data)
+
+    # then
+    assert e.value.errors['bic'] == [
+        "Il manque le bic associé à votre iban"
+    ]
+
+@pytest.mark.standalone
+def test_validate_bank_info_raises_an_api_error_if_iban_and_bic_is_without_rib_():
+    # when
+    with pytest.raises(ApiErrors) as e:
+        data = {
+            "bic": "BDFEFR2LCCB",
+            "iban": "FR7630006000011234567890189"
+        }
+        validate_bank_info(data)
+
+    # then
+    assert e.value.errors['rib'] == [
+        "Vous devez fournir un justificatif de rib"
+    ]
 
 @pytest.mark.standalone
 def test_validate_coordinates_raises_an_api_errors_if_latitude_is_not_a_decimal():
