@@ -22,7 +22,7 @@ def save_venue(venue):
     except TooManyVirtualVenuesException:
         api_errors = ApiErrors()
         api_errors.addError('isVirtual', 'Un lieu pour les offres numériques existe déjà pour cette structure')
-        raise errors
+        raise api_errors
 
 def save_venue_rib(venue):
     api_errors = ApiErrors()
