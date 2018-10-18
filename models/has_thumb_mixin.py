@@ -36,7 +36,14 @@ class HasThumbMixin(object):
                                      + humanize(self.id)\
                                      + (('_' + str(index)) if index > 0 else '')
 
-    def save_thumb(self, thumb, index, image_type=None, dominant_color=None, no_convert=False, crop=None):
+    def save_thumb(self,
+        thumb,
+        index,
+        image_type=None,
+        dominant_color=None,
+        no_convert=False,
+        crop=None
+    ):
         if isinstance(thumb, str):
             if not thumb[0:4] == 'http':
                 raise ValueError('Invalid thumb URL for object %s : %s' % (str(self), thumb))

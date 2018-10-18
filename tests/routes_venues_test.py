@@ -26,7 +26,10 @@ def test_modify_venue_returns_200_and_apply_modifications_on_venue(app):
     auth_request = req_with_auth(email=user.email, password=user.clearTextPassword)
 
     # when
-    response = auth_request.patch(API_URL + '/venues/%s' % humanize(venue.id), json={'name': 'Ma librairie'})
+    response = auth_request.patch(
+        API_URL + '/venues/%s' % humanize(venue.id),
+        json={'name': 'Ma librairie'}
+    )
 
     # then
     assert response.status_code == 200
@@ -234,7 +237,9 @@ def test_patch_change_managing_offerer_id_status_400(app):
     auth_request = req_with_auth(email=user.email, password=user.clearTextPassword)
 
     # When
-    response = auth_request.patch(API_URL + '/venues/%s' % humanize(venue.id), json={'managingOffererId': humanize(other_offerer.id)})
+    url = API_URL + '/venues/%s' % humanize(venue.id)
+    json={'managingOffererId': humanize(other_offerer.id)}
+    response = auth_request.patch(url, json=json)
 
     # Then
     assert response.status_code == 400
@@ -253,20 +258,24 @@ def test_modify_venue_with_rib_returns_200_and_apply_modifications_on_venue(app)
     auth_request = req_with_auth(email=user.email, password=user.clearTextPassword)
 
     # when
-    dir_path = Path(os.path.dirname(os.path.realpath(__file__)))
     url = API_URL + '/venues/%s' % humanize(venue.id)
+
+    dir_path = Path(os.path.dirname(os.path.realpath(__file__)))
     rib_path = dir_path / '..' / 'mock'\
                  / 'thumbs' / 'venues'\
                  / str(1)
-    files = {
+    data = {
         'bic': "BDFEFR2LCCB",
         'iban': "FR7630006000011234567890189",
+    }
+    files = {
         'rib': open(rib_path, mode='rb')
     }
-    response = auth_request.patch(url, files)
+    response = auth_request.patch(url, files=files, data=data)
 
     # then
     assert response.status_code == 200
     db.session.refresh(venue)
-    assert venue.bic == "BDFEFR2LCCB"
+    assert venue.bic == data['bic']
+    assert venue.iban == data['iban']
     assert venue.thumbCount == 1

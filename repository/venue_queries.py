@@ -27,7 +27,8 @@ def save_venue(venue):
 def save_venue_rib(venue):
     api_errors = ApiErrors()
     try:
-        venue.save_thumb(read_file('rib'), 0)
+        rib_file = read_file('rib')
+        venue.save_thumb(rib_file, 0)
     except ValueError as e:
         logger.error(e)
         api_errors.addError('rib', "Le rib n'a pas un bon format")

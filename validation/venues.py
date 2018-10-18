@@ -42,7 +42,7 @@ def validate_coordinates(raw_latitude, raw_longitude):
 
 
 def check_valid_edition(managing_offerer_id, venue):
-    if managing_offerer_id and dehumanize(managing_offerer_id) != venue.id:
+    if managing_offerer_id and dehumanize(managing_offerer_id) != venue.managingOffererId:
         errors = ApiErrors()
         errors.addError('managingOffererId', 'Vous ne pouvez pas changer la structure d\'un lieu')
         raise errors
