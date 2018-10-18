@@ -12,3 +12,7 @@ def filter_query_where_user_is_user_offerer_and_is_validated(query, user):
 
 def count_user_offerers_by_offerer(offerer):
     return UserOfferer.query.filter_by(offerer=offerer).count()
+
+
+def find_user_offerer_with_user(user):
+    return UserOfferer.query.filter_by(user=user).first()

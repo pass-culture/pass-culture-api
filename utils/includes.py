@@ -140,7 +140,8 @@ PRO_BOOKING_INCLUDES = [
 USER_INCLUDES = [
     '-password',
     'wallet_balance',
-    'wallet_is_activated'
+    'wallet_is_activated',
+    'pendingOffererValidation'
 ]
 
 VENUE_INCLUDES = [

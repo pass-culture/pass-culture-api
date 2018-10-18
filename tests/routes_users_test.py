@@ -238,22 +238,26 @@ def test_get_profile_should_return_the_users_profile_without_password_hash(app):
 
 @pytest.mark.standalone
 @clean_database
-def test_signin_should_return_the_signed_in_user_with_his_expenses(app):
+def test_signin_should_return_the_signed_in_user_with_his_expenses_and_offerer_status(app):
     # given
     user = create_user(email='user@example.com', password='toto123456789')
     PcObject.check_and_save(user)
     data = {'identifier': user.email, 'password': user.clearTextPassword}
 
     # when
-    response = req.post(API_URL + '/users/signin', json=data, headers={'origin': 'http://localhost:3000'})
+    r_sigin = req.post(API_URL + '/users/signin', json=data, headers={'origin': 'http://localhost:3000'})
 
     # then
-    assert response.status_code == 200
-    assert response.json()['expenses'] == {
+    assert r_sigin.status_code == 200
+    response = r_sigin.json()
+    assert response['expenses'] == {
         'all': {'actual': 0, 'max': 500},
         'digital': {'actual': 0, 'max': 200},
         'physical': {'actual': 0, 'max': 100}
     }
+
+    assert 'pendingOffererValidation' in response
+    assert response['pendingOffererValidation'] is False
 
 
 @pytest.mark.standalone
@@ -388,6 +392,9 @@ def test_pro_signup_should_create_user_offerer_digital_venue_and_userOfferer(app
     assert user_offerer is not None
     assert user_offerer.validationToken is None
     assert user_offerer.rights == RightsType.admin
+    response = r_signup.json()
+    assert 'pendingOffererValidation' in response
+    assert response['pendingOffererValidation'] is False
 
 
 @clean_database
@@ -426,6 +433,41 @@ def test_pro_signup_when_existing_offerer(app):
     assert user_offerer is not None
     assert user_offerer.validationToken is not None
     assert user_offerer.rights == RightsType.editor
+    response = r_signup.json()
+    assert 'pendingOffererValidation' in response
+    assert response['pendingOffererValidation'] is True
+
+
+
+@clean_database
+@pytest.mark.standalone
+def test_pro_signin_when_pending_offerer(app):
+    "should create user and userOfferer"
+    json_offerer = {
+        "name": "Test Offerer",
+        "siren": "349974931",
+        "address": "Test adresse",
+        "postalCode": "75000",
+        "city": "Paris"
+    }
+    offerer = Offerer(from_dict=json_offerer)
+    user = create_user(public_name='bobby', email='bobby@test.com')
+    user_offerer = create_user_offerer(user, offerer, is_admin=True)
+    PcObject.check_and_save(offerer, user_offerer)
+
+    data = BASE_DATA_PRO.copy()
+    r_signup = req.post(API_URL + '/users/signup',
+                        json=data, headers={'origin': 'http://localhost:3000'})
+    assert r_signup.status_code == 201
+
+    data = {'identifier': data['email'], 'password': data['password']}
+
+    r_signin = req.post(API_URL + '/users/signin',
+                        json=data, headers={'origin': 'http://localhost:3000'})
+
+    response = r_signin.json()
+    assert 'pendingOffererValidation' in response
+    assert response['pendingOffererValidation'] is True
 
 
 @clean_database

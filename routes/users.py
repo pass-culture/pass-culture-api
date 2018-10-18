@@ -12,7 +12,7 @@ from domain.password import validate_reset_request, check_reset_token_validity, 
 from models import ApiErrors, Deposit, Offerer, PcObject, User
 from models.user_offerer import RightsType
 from models.venue import create_digital_venue
-from repository.user_offerer_queries import count_user_offerers_by_offerer
+from repository.user_offerer_queries import count_user_offerers_by_offerer, find_user_offerer_with_user
 from repository.user_queries import find_user_by_email, find_user_by_reset_password_token
 from utils import logger
 from utils.config import ILE_DE_FRANCE_DEPT_CODES, IS_INTEGRATION
@@ -115,6 +115,12 @@ def signin():
     user = get_user_with_credentials(identifier, password)
     user_dict = user._asdict(include=USER_INCLUDES)
     user_dict['expenses'] = get_expenses(user)
+    user_offerer = find_user_offerer_with_user(user)
+    if user_offerer:
+        user_dict['pendingOffererValidation'] = not user_offerer.isValidated
+    else:
+        user_dict['pendingOffererValidation'] = False
+
     return jsonify(user_dict), 200
 
 
@@ -135,6 +141,7 @@ def signup():
     need_for_authorisation_check = email is not None and not do_pro_signup and not IS_INTEGRATION
 
     new_user = User(from_dict=request.json)
+    new_user.pendingOffererValidation = False
     if need_for_authorisation_check:
         authorized_emails, departement_codes = get_authorized_emails_and_dept_codes()
         departement_code = _get_departement_code_when_authorized_or_error(authorized_emails, departement_codes)
@@ -153,6 +160,7 @@ def signup():
         else:
             user_offerer = _generate_user_offerer_when_existing_offerer(new_user, existing_offerer)
             offerer = existing_offerer
+            new_user.pendingOffererValidation = True
         objects_to_save.append(user_offerer)
         new_user.canBookFreeOffers = False
         new_user = _set_offerer_departement_code(new_user, offerer)
