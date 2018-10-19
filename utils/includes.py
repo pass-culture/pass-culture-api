@@ -11,6 +11,26 @@ OFFERER_INCLUDES = [
     "isValidated"
 ]
 
+PENDING_OFFERER_INCLUDES = [
+    "name",
+    "siren",
+    "-address",
+    "-bic",
+    "-city",
+    "-dateCreated",
+    "-dateModifiedAtLastProvider",
+    "-firstThumbDominantColor",
+    "-iban",
+    "-id",
+    "-idAtProviders",
+    "-isActive",
+    "-lastProviderId",
+    "-modelName",
+    "-postalCode",
+    "siren",
+    "-thumbCount"
+]
+
 EVENT_OCCURRENCE_INCLUDES = [
     'stocks'
 ]

@@ -7,9 +7,9 @@ from domain.reimbursement import find_all_booking_reimbursement
 from models import Offerer, PcObject, RightsType
 from models.venue import create_digital_venue
 from repository.booking_queries import find_offerer_bookings
-from repository.user_offerer_queries import filter_query_where_user_is_user_offerer_and_is_validated
+from repository.user_offerer_queries import filter_query_where_user_is_user_offerer_and_is_validated, find_pending_offerer_by_user
 from utils.human_ids import dehumanize
-from utils.includes import PRO_BOOKING_INCLUDES, OFFERER_INCLUDES
+from utils.includes import PRO_BOOKING_INCLUDES, OFFERER_INCLUDES, PENDING_OFFERER_INCLUDES
 from utils.mailing import MailServiceException
 from utils.rest import ensure_current_user_has_rights, \
     expect_json_data, \
@@ -32,12 +32,20 @@ def list_offerers():
     if keywords is not None:
         query = query.filter(get_keywords_filter([Offerer], keywords))
 
-    return handle_rest_get_list(Offerer,
+    offerers = handle_rest_get_list(Offerer,
                                 include=OFFERER_INCLUDES,
                                 order_by=Offerer.name,
                                 page=request.args.get('page'),
                                 paginate=10,
                                 query=query)
+    if request.args.get('page') == "1":
+        raw_pending_offerers = find_pending_offerer_by_user(current_user)
+        pending_offerers = [
+            o._asdict(include=PENDING_OFFERER_INCLUDES) for o in raw_pending_offerers
+        ]
+        offerers = jsonify(pending_offerers + offerers[0].json), 200
+
+    return offerers
 
 
 @app.route('/offerers/<id>', methods=['GET'])
