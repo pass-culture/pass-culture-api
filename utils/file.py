@@ -16,7 +16,7 @@ def has_file(key, files=None, form=None):
 def read_file(key, extensions=ALLOWED_EXTENSIONS, files=None, form=None):
     if key in files:
         data_file = files[key]
-        filename_parts = file.filename.rsplit('.', 1)
+        filename_parts = data_file.filename.rsplit('.', 1)
         if len(filename_parts) < 2 \
            or filename_parts[1].lower() not in extensions:
             api_errors = ApiErrors()
