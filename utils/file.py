@@ -5,7 +5,7 @@ from models.api_errors import ApiErrors
 
 ALLOWED_EXTENSIONS = set(['jpg', 'png', 'jpeg', 'gif', 'pdf'])
 
-def has_file(key, files=files, form=form):
+def has_file(key, files=None, form=None):
     if key in files:
         if files[key].filename == '':
             return False
@@ -13,7 +13,7 @@ def has_file(key, files=files, form=form):
         return False
     return True
 
-def read_file(key, extensions=ALLOWED_EXTENSIONS, files=files, form=form):
+def read_file(key, extensions=ALLOWED_EXTENSIONS, files=None, form=None):
     if key in files:
         data_file = files[key]
         filename_parts = file.filename.rsplit('.', 1)
