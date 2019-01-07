@@ -36,5 +36,6 @@ python-swiftclient==3.6.0
 requests==2.20.1
 schwifty==2018.9.1
 simplejson==3.16.0
+unidecode==1.0.23
 wetransferpy==0.2.3
 xlrd==1.1.0
