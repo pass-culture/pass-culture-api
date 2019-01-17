@@ -4,9 +4,10 @@ from functools import partial
 import pandas as pd
 import unidecode
 
-from connectors.google_spreadsheet import get_offerer_equivalence, get_venue_equivalence
 from models import Venue, Offer, PcObject, Offerer, UserOfferer
 from models.db import db
+from scripts.v14_clean_duplicate_offerers.connectors_google_spreadsheet import get_offerer_equivalence, \
+    get_venue_equivalence
 
 
 def get_venues_by_offerer_equivalences():
@@ -72,11 +73,6 @@ def clean_offerers_KO():
 def _change_offer_venue_id(offer, new_id):
     offer.venueId = int(new_id)
     return offer
-
-
-def _change_venue_managing_offerer_id(venue, new_id):
-    venue.managingOffererId = int(new_id)
-    return venue
 
 
 def _get_venue_equivalence_df_for_KO_offerers(offerers_KO_df):

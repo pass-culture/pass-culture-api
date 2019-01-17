@@ -1,6 +1,7 @@
 import pytest
 
-from connectors.google_spreadsheet import get_offerer_equivalence, get_venue_equivalence
+from scripts.v14_clean_duplicate_offerers.connectors_google_spreadsheet import get_offerer_equivalence, \
+    get_venue_equivalence
 
 
 @pytest.mark.standalone

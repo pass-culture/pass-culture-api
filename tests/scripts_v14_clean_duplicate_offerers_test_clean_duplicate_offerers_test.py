@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from models import PcObject, Offerer, Venue, UserOfferer, Offer
-from scripts.clean_duplicate_offerers import correct_venue_id, delete_offerers_KO, correct_mananging_offerer_id, \
+from scripts.v14_clean_duplicate_offerers.clean_duplicate_offerers import correct_venue_id, delete_offerers_KO, correct_mananging_offerer_id, \
     delete_venues_linked_to_offerers_KO, delete_user_offerers_linked_to_offerers_KO, clean_offerers_KO
 from tests.conftest import clean_database
 from utils.test_utils import create_offerer, create_venue, create_thing_offer, create_user_offerer, create_user
@@ -135,7 +135,7 @@ def test_clean_offerers_KO_should_treat_db_dependencies_and_delete_all_objects_r
     get_venues_by_offerer_equivalences.return_value = dataframe
 
     # When
-    with patch('scripts.clean_duplicate_offerers.get_venue_equivalence', return_value=dataframe):
+    with patch('scripts.v14_clean_duplicate_offerers.clean_duplicate_offerers.get_venue_equivalence', return_value=dataframe):
         clean_offerers_KO()
 
     # then
