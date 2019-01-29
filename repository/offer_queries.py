@@ -199,7 +199,7 @@ def find_offers_with_filter_parameters(
         query = query.join(Venue).join(Offerer)
 
     if offerer_id is not None:
-        query = query.filter_by(managingOffererId=offerer_id)
+        query = query.filter(Venue.managingOffererId==offerer_id)
 
     if not user.isAdmin:
         query = filter_query_where_user_is_user_offerer_and_is_validated(
