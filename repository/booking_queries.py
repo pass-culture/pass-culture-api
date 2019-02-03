@@ -171,10 +171,16 @@ def find_date_used(booking: Booking) -> datetime:
 
 def user_has_booked_an_online_activation(user: User) -> bool:
     return User.query \
-        .join(Booking) \
-        .join(Stock) \
-        .join(Offer) \
-        .join(Thing) \
-        .filter(Thing.type == str(ThingType.ACTIVATION)) \
-        .filter(User.id == user.id) \
-        .count() > 0
+               .join(Booking) \
+               .join(Stock) \
+               .join(Offer) \
+               .join(Thing) \
+               .filter(Thing.type == str(ThingType.ACTIVATION)) \
+               .filter(User.id == user.id) \
+               .count() > 0
+
+
+def existing_token(token: str) -> bool:
+    return Booking.query \
+               .filter_by(token=token) \
+               .first() is not None

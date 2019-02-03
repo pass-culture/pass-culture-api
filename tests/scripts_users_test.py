@@ -153,6 +153,7 @@ class CreateUsersWithActivationBookingsTest:
         ]
         self.find_user_query = Mock()
         self.user_has_booking_query = Mock()
+        self.existing_token = Mock()
 
     def test_returns_n_bookings_for_n_csv_rows_on_first_run(self):
         # given
@@ -161,13 +162,14 @@ class CreateUsersWithActivationBookingsTest:
         stock = create_stock(offer=offer)
         self.find_user_query.side_effect = [None, None, None]
         self.user_has_booking_query.side_effect = [False, False, False]
-        existing_tokens = set()
+        self.existing_token.side_effect = [False, False, False]
 
         # when
         bookings = create_users_with_activation_bookings(
-            self.csv_rows, stock, existing_tokens,
+            self.csv_rows, stock,
             find_user=self.find_user_query,
-            user_has_booking=self.user_has_booking_query
+            user_has_booking=self.user_has_booking_query,
+            is_existing_token=self.existing_token
         )
 
         # then
@@ -180,13 +182,14 @@ class CreateUsersWithActivationBookingsTest:
         stock = create_stock(offer=offer)
         self.find_user_query.side_effect = [None, None, None]
         self.user_has_booking_query.side_effect = [False, False, True]
-        existing_tokens = set()
+        self.existing_token.side_effect = [False, False, False]
 
         # when
         bookings = create_users_with_activation_bookings(
-            self.csv_rows, stock, existing_tokens,
+            self.csv_rows, stock,
             find_user=self.find_user_query,
-            user_has_booking=self.user_has_booking_query
+            user_has_booking=self.user_has_booking_query,
+            is_existing_token=self.existing_token
         )
 
         # then
@@ -200,13 +203,14 @@ class CreateUsersWithActivationBookingsTest:
         blake = create_user(idx=123, email='fblake@bletchley.co.uk')
         self.find_user_query.side_effect = [None, blake, None]
         self.user_has_booking_query.side_effect = [False, False, False]
-        existing_tokens = set()
+        self.existing_token.side_effect = [False, False, False]
 
         # when
         bookings = create_users_with_activation_bookings(
-            self.csv_rows, stock, existing_tokens,
+            self.csv_rows, stock,
             find_user=self.find_user_query,
-            user_has_booking=self.user_has_booking_query
+            user_has_booking=self.user_has_booking_query,
+            is_existing_token=self.existing_token
         )
 
         # then
