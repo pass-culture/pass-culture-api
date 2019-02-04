@@ -13,9 +13,9 @@ from repository import booking_queries
 from utils.human_ids import dehumanize, humanize
 from utils.includes import BOOKING_INCLUDES
 from utils.mailing import MailServiceException
+from utils.random_token import create_random_token
 from utils.rest import ensure_current_user_has_rights, \
     expect_json_data
-from utils.token import random_token
 from validation.bookings import check_booking_is_usable, \
     check_can_book_free_offer, \
     check_existing_stock, \
@@ -70,7 +70,7 @@ def create_booking():
     new_booking = Booking(from_dict={
         'stockId': stock_id,
         'amount': stock.price,
-        'token': random_token(),
+        'token': create_random_token(),
         'userId': humanize(current_user.id),
         'quantity': quantity,
         'recommendationId': recommendation_id if recommendation_id else None

@@ -1,10 +1,9 @@
 import re
 import secrets
-import string
 from datetime import datetime, timedelta
 
 from models import ApiErrors
-from utils.token import random_token
+from utils.random_token import create_random_token
 
 RESET_PASSWORD_TOKEN_LENGTH = 10
 
@@ -34,7 +33,7 @@ def validate_change_password_request(json):
 
 
 def generate_reset_token(user, validity_duration_hours=24):
-    token = random_token(length=RESET_PASSWORD_TOKEN_LENGTH)
+    token = create_random_token(length=RESET_PASSWORD_TOKEN_LENGTH)
     user.resetPasswordToken = token
     user.resetPasswordTokenValidityLimit = datetime.utcnow() + timedelta(hours=validity_duration_hours)
 

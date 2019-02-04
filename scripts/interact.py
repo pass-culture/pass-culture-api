@@ -39,4 +39,4 @@ from utils.import_module import *
 from utils.includes import *
 from utils.logger import *
 from utils.printer import *
-from utils.token import *
+from utils.random_token import *

@@ -1,11 +1,10 @@
-""" token """
 import itertools
 import random
 
 from utils.human_ids import humanize
 
 
-def random_token(length=6):
+def create_random_token(length=6):
     token = random.SystemRandom()
     return _tokenify([token.randint(1, 255) for index in range(length // 2)])
 

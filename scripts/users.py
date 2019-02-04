@@ -15,7 +15,7 @@ from repository.user_queries import find_user_by_email
 from scripts.interact import app
 from utils.logger import logger
 from utils.mailing import MailServiceException, parse_email_addresses
-from utils.token import random_token
+from utils.random_token import create_random_token
 
 LAST_NAME_COLUMN_INDEX = 1
 FIRST_NAME_COLUMN_INDEX = 2
@@ -43,9 +43,9 @@ def create_users_with_activation_bookings(
 
         filled_user = fill_user_from(row, user)
 
-        token = random_token()
+        token = create_random_token()
         while token in existing_tokens:
-            token = random_token()
+            token = create_random_token()
 
         booking = find_activation_booking(user)
         if not booking:
@@ -80,7 +80,7 @@ def fill_user_from(csv_row: List[str], user: User) -> User:
     user.departementCode = _extract_department_code(csv_row[DEPARTMENT_COLUMN_INDEX])
     user.postalCode = csv_row[POSTAL_CODE_COLUMN_INDEX]
     user.canBookFreeOffers = False
-    user.password = random_token(length=12).encode('utf-8')
+    user.password = create_random_token(length=12).encode('utf-8')
     generate_reset_token(user, validity_duration_hours=THIRTY_DAYS_IN_HOURS)
     return user
 

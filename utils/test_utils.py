@@ -35,7 +35,7 @@ from models.payment import PaymentDetails
 from models.payment_status import PaymentStatus, TransactionStatus
 from models.pc_object import PcObject
 from utils.object_storage import STORAGE_DIR
-from utils.token import random_token
+from utils.random_token import create_random_token
 
 savedCounts = {}
 
@@ -67,7 +67,7 @@ def create_booking(user, stock=None, venue=None, recommendation=None, quantity=1
     booking.stock = stock
     booking.user = user
     if token is None:
-        booking.token = random_token()
+        booking.token = create_random_token()
     else:
         booking.token = token
     booking.amount = stock.price
@@ -117,7 +117,7 @@ def create_booking_for_event(
     booking.quantity = quantity
     booking.user = user
     booking.isCancelled = isCancelled
-    booking.token = random_token()
+    booking.token = create_random_token()
     booking.dateCreated = date_created
     return booking
 
