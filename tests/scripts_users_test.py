@@ -249,10 +249,10 @@ class SplitRowsInChunkWithNoDuplicatedEmailsTest:
         # given
         chunk_size = 2
         csv_reader = [
-            ['68bfa', 'Mortimer', 'Philip', '%s@bletchley.co.uk' % random_token()],
+            ['68bfa', 'Mortimer', 'Philip', '%s@bletchley.co.uk' % create_random_token()],
             ['68bfa', 'Mortimer', 'Philip', 'abcd@bletchley.co.uk'],
-            ['68bfa', 'Mortimer', 'Philip', '%s@bletchley.co.uk' % random_token()],
-            ['68bfa', 'Mortimer', 'Philip', '%s@bletchley.co.uk' % random_token()],
+            ['68bfa', 'Mortimer', 'Philip', '%s@bletchley.co.uk' % create_random_token()],
+            ['68bfa', 'Mortimer', 'Philip', '%s@bletchley.co.uk' % create_random_token()],
             ['68bfa', 'Mortimer', 'Philip', 'abcd@bletchley.co.uk']
         ]
 
@@ -268,9 +268,9 @@ class SplitRowsInChunkWithNoDuplicatedEmailsTest:
         chunk_size = 2
         csv_reader = [
             ['id', 'nom', 'prénom', 'email'],
-            ['68bfa', 'Mortimer', 'Philip', '%s@bletchley.co.uk' % random_token()],
-            ['68bfa', 'Mortimer', 'Philip', '%s@bletchley.co.uk' % random_token()],
-            ['68bfa', 'Mortimer', 'Philip', '%s@bletchley.co.uk' % random_token()]
+            ['68bfa', 'Mortimer', 'Philip', '%s@bletchley.co.uk' % create_random_token()],
+            ['68bfa', 'Mortimer', 'Philip', '%s@bletchley.co.uk' % create_random_token()],
+            ['68bfa', 'Mortimer', 'Philip', '%s@bletchley.co.uk' % create_random_token()]
         ]
 
         # when
@@ -287,9 +287,9 @@ class SplitRowsInChunkWithNoDuplicatedEmailsTest:
         csv_reader = [
             ['id', 'nom', 'prénom', 'email'],
             [],
-            ['68bfa', 'Mortimer', 'Philip', '%s@bletchley.co.uk' % random_token()],
+            ['68bfa', 'Mortimer', 'Philip', '%s@bletchley.co.uk' % create_random_token()],
             [''],
-            ['68bfa', 'Mortimer', 'Philip', '%s@bletchley.co.uk' % random_token()]
+            ['68bfa', 'Mortimer', 'Philip', '%s@bletchley.co.uk' % create_random_token()]
         ]
 
         # when
