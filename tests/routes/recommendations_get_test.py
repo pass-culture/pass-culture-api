@@ -346,18 +346,18 @@ class GetRecommendationsSearchTest:
         offer2 = create_event_offer(venue, event_name='Spectacle', event_type=EventType.SPECTACLE_VIVANT)
         thing = create_thing(thing_name='Lire un livre', is_national=True)
 
-        thingOffer = create_thing_offer(venue, thing)
+        thing_offer = create_thing_offer(venue, thing)
 
         event_occurrence = create_event_occurrence(offer, beginning_datetime=self.three_days_from_now,
                                                    end_datetime=self.three_days_and_one_hour_from_now)
 
         recommendation = create_recommendation(offer, user)
-        recommendation2 = create_recommendation(thingOffer, user)
+        recommendation2 = create_recommendation(thing_offer, user)
         recommendation3 = create_recommendation(offer2, user)
         stock = create_stock_from_event_occurrence(event_occurrence)
         stock1 = create_stock_from_offer(offer2)
-        thingStock = create_stock(price=12, available=5, offer=thingOffer)
-        PcObject.check_and_save(stock, recommendation, recommendation2, recommendation3, thingStock, stock1)
+        thing_stock = create_stock(price=12, available=5, offer=thing_offer)
+        PcObject.check_and_save(stock, recommendation, recommendation2, recommendation3, thing_stock, stock1)
         auth_request = req_with_auth(user.email, user.clearTextPassword)
 
         # When
@@ -371,7 +371,7 @@ class GetRecommendationsSearchTest:
         assert recommendations[1]['offer']['eventOrThing']['name'] == 'Lire un livre'
 
     @clean_database
-    def test_get_recommendations_returns_recommendations_from_search_by_date_and_type_except_if_it_is_activation_type(
+    def test_get_recommendations_returns_recommendations_from_search_by_date_and_type_even_if_it_is_activation_type(
             self, app):
         # Given
         category_and_date_search = "categories=Lire%2CRegarder%2CActivation&date=" + strftime(self.now) + "&days=1-5"
@@ -383,18 +383,21 @@ class GetRecommendationsSearchTest:
                                     event_type=EventType.ACTIVATION)
         thing = create_thing(thing_name='Lire un livre', is_national=True)
 
-        thingOffer = create_thing_offer(venue, thing)
+        thing_offer = create_thing_offer(venue, thing)
 
         event_occurrence = create_event_occurrence(offer, beginning_datetime=self.three_days_from_now,
                                                    end_datetime=self.three_days_and_one_hour_from_now)
+        event_occurrence2 = create_event_occurrence(offer2, beginning_datetime=self.three_days_from_now,
+                                                   end_datetime=self.three_days_and_one_hour_from_now)
 
         recommendation = create_recommendation(offer, user)
-        recommendation2 = create_recommendation(thingOffer, user)
+        recommendation2 = create_recommendation(thing_offer, user)
         recommendation3 = create_recommendation(offer2, user)
         stock = create_stock_from_event_occurrence(event_occurrence)
         stock1 = create_stock_from_offer(offer2)
-        thingStock = create_stock(price=12, available=5, offer=thingOffer)
-        PcObject.check_and_save(stock, recommendation, recommendation2, recommendation3, thingStock, stock1)
+        stock2 = create_stock_from_event_occurrence(event_occurrence2)
+        thing_stock = create_stock(price=12, available=5, offer=thing_offer)
+        PcObject.check_and_save(stock, recommendation, recommendation2, recommendation3, thing_stock, stock1, stock2)
         auth_request = req_with_auth(user.email, user.clearTextPassword)
 
         # When
@@ -402,10 +405,11 @@ class GetRecommendationsSearchTest:
 
         # Then
         assert response.status_code == 200
-        assert len(response.json()) == 2
+        assert len(response.json()) == 3
         recommendations = response.json()
-        assert recommendations[0]['offer']['eventOrThing']['name'] == 'The new film'
-        assert recommendations[1]['offer']['eventOrThing']['name'] == 'Lire un livre'
+        recommendation_names = [recommendation['offer']['eventOrThing']['name'] for recommendation in recommendations]
+        assert 'Activation de votre Pass Culture' in recommendation_names
+
 
     @clean_database
     def test_get_recommendations_returns_recommendation_from_search_by_type_including_activation_type(self, app):
@@ -448,16 +452,16 @@ class GetRecommendationsSearchTest:
         offer = create_event_offer(venue, event_name='The new film', event_type=EventType.CINEMA)
         thing = create_thing(thing_name='Lire un livre', is_national=True)
 
-        thingOffer = create_thing_offer(venue, thing)
+        thing_offer = create_thing_offer(venue, thing)
 
         event_occurrence = create_event_occurrence(offer, beginning_datetime=self.three_days_from_now,
                                                    end_datetime=self.three_days_and_one_hour_from_now)
 
         recommendation = create_recommendation(offer, user)
-        recommendation2 = create_recommendation(thingOffer, user)
+        recommendation2 = create_recommendation(thing_offer, user)
         stock = create_stock_from_event_occurrence(event_occurrence)
-        thingStock = create_stock(price=12, available=5, offer=thingOffer)
-        PcObject.check_and_save(stock, recommendation, recommendation2, thingStock)
+        thing_stock = create_stock(price=12, available=5, offer=thing_offer)
+        PcObject.check_and_save(stock, recommendation, recommendation2, thing_stock)
         auth_request = req_with_auth(user.email, user.clearTextPassword)
 
         # When
