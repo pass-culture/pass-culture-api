@@ -103,7 +103,8 @@ def get_active_offers_by_type(offer_type, user=None, department_codes=None, offe
 
     query = department_or_national_offers(query, offer_type, department_codes)
     logger.debug(lambda:
-        '(reco) departement or national {} {} in {}'.format(offer_type.__name__, str(department_codes), query.count()))
+                 '(reco) departement or national {} {} in {}'.format(offer_type.__name__, str(department_codes),
+                                                                     query.count()))
     query = bookable_offers(query, offer_type)
     logger.debug(lambda: '(reco) bookable_offers {} {}'.format(offer_type.__name__, query.count()))
     query = with_active_and_validated_offerer(query)
@@ -307,3 +308,11 @@ def find_offer_by_id(offer_id):
     return Offer.query \
         .filter(Offer.id == offer_id) \
         .first()
+
+
+def find_first_offer_linked_to_event(event):
+    return Offer.query.join(Event).filter_by(id=event.id).first()
+
+
+def find_first_offer_linked_to_thing(thing):
+    return Offer.query.join(Thing).filter_by(id=thing.id).first()
