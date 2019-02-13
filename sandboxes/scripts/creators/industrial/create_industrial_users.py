@@ -4,7 +4,7 @@ from utils.test_utils import create_user
 from sandboxes.scripts.utils.user_tags import JEUNES_TAGS, PROS_TAGS
 
 ADMINS_COUNT = 1
-DEPARTMENT_CODES = ["93", "97"]
+DEPARTMENT_CODES = ["34", "93", "97"]
 
 def create_industrial_users():
     logger.info('create_industrial_users')
@@ -68,11 +68,12 @@ def create_industrial_users():
                 validation_token=validation_token
             )
 
+        validation_suffix = 1
         for tag in JEUNES_TAGS:
             short_tag = "".join([chunk[0].upper() for chunk in tag.split('-')])
 
             if tag == "has-signed-up":
-                reset_password_token = '{}{}'.format(validation_prefix, validation_suffix)
+                reset_password_token = '{}{}{}'.format(validation_prefix, departement_code, validation_suffix)
                 validation_suffix += 1
             else:
                 reset_password_token = None
