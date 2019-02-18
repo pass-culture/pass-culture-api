@@ -17,3 +17,6 @@ def feature_cron_send_final_booking_recaps_enabled():
 
 def feature_cron_generate_and_send_payments():
     return os.environ.get('CRON_GENERATE_AND_SEND_PAYMENTS', False)
+
+def feature_cron_retrieve_offerers_bank_information():
+    return os.environ.get('CRON_RETRIEVE_OFFERERS_BANK_INFORMATION', False)
