@@ -68,7 +68,7 @@ class BankInformationProvider(LocalProvider):
     def updateObject(self, bank_information):
         bank_information.iban = self.bank_information_dict['iban']
         bank_information.bic = self.bank_information_dict['bic']
-        bank_information.applicationId = self.bank_information_dict['application_id']
+        bank_information.application_id = self.bank_information_dict['application_id']
         bank_information.offererId = self.bank_information_dict.get('offererId', None)
         bank_information.venueId = self.bank_information_dict.get('venueId', None)
 
