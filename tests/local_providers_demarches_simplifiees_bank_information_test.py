@@ -4,7 +4,7 @@ from datetime import datetime
 from unittest.mock import patch
 
 from local_providers import BankInformationProvider
-from local_providers.demarches_simplifiees_bank_information import retrieve_bank_information_dict_from, \
+from local_providers.demarches_simplifiees_bank_information import retrieve_bank_information, \
     get_last_update_from_bank_information
 from models import BankInformation, PcObject, LocalProviderEvent
 from models.local_provider_event import LocalProviderEventType
@@ -995,7 +995,7 @@ class CreateBankInformationWithTest:
         venue_id = venue.id
 
         # When
-        bank_information_dict = retrieve_bank_information_dict_from(application_details)
+        bank_information_dict = retrieve_bank_information(application_details)
 
         # Then
         assert bank_information_dict['iban'] == "TEST IBAN1"
@@ -1049,7 +1049,7 @@ class CreateBankInformationWithTest:
         offerer_id = offerer.id
 
         # When
-        bank_information_dict = retrieve_bank_information_dict_from(application_details)
+        bank_information_dict = retrieve_bank_information(application_details)
 
         # Then
         assert bank_information_dict['iban'] == "TEST IBAN1"

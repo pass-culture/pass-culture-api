@@ -17,4 +17,4 @@ def get_all_application_ids_from_demarches_simplifiees_procedure(procedure_id: s
 
 def _needs_processing(application: dict, last_update: datetime) -> dict:
     return application['state'] == 'closed' and (
-                datetime.strptime(application['updated_at'], DATE_ISO_FORMAT) > last_update)
+                datetime.strptime(application['updated_at'], DATE_ISO_FORMAT) >= last_update)
