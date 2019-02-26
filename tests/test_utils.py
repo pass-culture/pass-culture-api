@@ -373,8 +373,6 @@ def create_offerer(
         postal_code='93100',
         name='Test Offerer',
         validation_token=None,
-        iban=None,
-        bic=None,
         idx=None,
         is_active=True,
         date_created=datetime.utcnow()
@@ -387,8 +385,6 @@ def create_offerer(
     offerer.city = city
     offerer.name = name
     offerer.validationToken = validation_token
-    offerer.bic = bic
-    offerer.iban = iban
     offerer.id = idx
     offerer.dateCreated = date_created
     return offerer
@@ -403,8 +399,6 @@ def create_venue(
         city='Montreuil',
         departement_code='93',
         is_virtual=False,
-        iban=None,
-        bic=None,
         longitude='2.4002701',
         latitude='48.8363788',
         siret='12345678912345',
@@ -422,8 +416,6 @@ def create_venue(
     venue.name = name
     venue.managingOfferer = offerer
     venue.isVirtual = is_virtual
-    venue.iban = iban
-    venue.bic = bic
     venue.longitude = longitude
     venue.latitude = latitude
     venue.siret = siret
