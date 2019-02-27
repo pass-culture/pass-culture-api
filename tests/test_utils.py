@@ -54,7 +54,8 @@ def req_with_auth(email=None, password=None, headers={'origin': 'http://localhos
 
 
 def create_booking(user, stock=None, venue=None, recommendation=None, quantity=1, date_created=datetime.utcnow(),
-                   is_cancelled=False, is_used=False, token=None, idx=None):
+                   is_cancelled=False, is_used=False, token=None, idx=None, amount=None):
+
     booking = Booking()
     if venue is None:
         offerer = create_offerer('987654321', 'Test address', 'Test city', '93000', 'Test name')
@@ -69,7 +70,12 @@ def create_booking(user, stock=None, venue=None, recommendation=None, quantity=1
         booking.token = random_token()
     else:
         booking.token = token
-    booking.amount = stock.price
+
+    if amount is None:
+        booking.amount = stock.price
+    else:
+        booking.amount = amount
+
     booking.quantity = quantity
     booking.dateCreated = date_created
     if recommendation:
@@ -661,7 +667,7 @@ def create_bank_information(application_id=1, bic='QSDFGH8Z555', iban='CF13QSDFG
     return bank_information
 
 
-def saveCounts(app):
+def saveCounts():
     for modelName in models.__all__:
         model = getattr(models, modelName)
         if isclass(model) \
@@ -670,14 +676,17 @@ def saveCounts(app):
             saved_counts[modelName] = model.query.count()
 
 
-def assertCreatedCounts(app, **counts):
+def assertCreatedCounts(**counts):
     for modelName in counts:
         model = getattr(models, modelName)
-        assert model.query.count() - saved_counts[modelName] \
-               == counts[modelName]
+        all_records_count = model.query.count()
+        previous_records_count = saved_counts[modelName]
+        last_created_count = all_records_count - previous_records_count
+        assert last_created_count == counts[modelName],\
+            'Model [%s], Actual [%s], Expected [%s]' % (modelName, last_created_count, counts[modelName])
 
 
-def assertEmptyDb(app):
+def assertEmptyDb():
     for modelName in models.__all__:
         model = getattr(models, modelName)
         if isinstance(model, PcObject):
@@ -695,7 +704,7 @@ def provider_test(app, provider, venueProvider, **counts):
     providerObj = provider(venueProvider, mock=True)
     providerObj.dbObject.isActive = True
     PcObject.check_and_save(providerObj.dbObject)
-    saveCounts(app)
+    saveCounts()
     providerObj.updateObjects()
 
     for countName in ['updatedObjects',
@@ -708,14 +717,14 @@ def provider_test(app, provider, venueProvider, **counts):
                       'erroredThumbs']:
         assert getattr(providerObj, countName) == counts[countName]
         del counts[countName]
-    assertCreatedCounts(app, **counts)
+    assertCreatedCounts(**counts)
 
 
 def provider_test_without_mock(app, provider, **counts):
     providerObj = provider()
     providerObj.dbObject.isActive = True
     PcObject.check_and_save(providerObj.dbObject)
-    saveCounts(app)
+    saveCounts()
     providerObj.updateObjects()
 
     for countName in ['updatedObjects',
@@ -728,7 +737,7 @@ def provider_test_without_mock(app, provider, **counts):
                       'erroredThumbs']:
         assert getattr(providerObj, countName) == counts[countName]
         del counts[countName]
-    assertCreatedCounts(app, **counts)
+    assertCreatedCounts(**counts)
 
 
 def save_all_activities(*objects):
@@ -743,3 +752,16 @@ def check_open_agenda_api_is_down():
     unsuccessful_request = ('success' in response_json) and not response_json['success']
     status_code_not_200 = (response.status_code != 200)
     return unsuccessful_request or status_code_not_200
+
+def get_occurrence_short_name(concatened_names_with_a_date):
+    splitted_names = concatened_names_with_a_date.split(' / ')
+    if len(splitted_names) > 0:
+      return splitted_names[0]
+    else:
+      return None
+
+def get_price_by_short_name(occurrence_short_name=None):
+    if occurrence_short_name is None:
+      return 0
+    else:
+      return sum(map(ord, occurrence_short_name)) % 50
