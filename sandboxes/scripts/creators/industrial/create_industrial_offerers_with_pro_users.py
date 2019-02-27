@@ -210,9 +210,6 @@ def create_industrial_offerers_with_pro_users():
     )
     user_offerer_index = 0
 
-
-    print(user_offerers_by_name.keys())
-
     for (user_name, user) in user_items_with_several_offerers:
         offerer_items_with_three_attached_users = pick_every(
             offerers_by_name.items(),
@@ -220,9 +217,6 @@ def create_industrial_offerers_with_pro_users():
         )
         for (offerer_name, offerer) in offerer_items_with_three_attached_users:
             user_offerer_name = '{} / {}'.format(user_name, offerer_name)
-
-
-            print(user_offerer_name)
 
             if user_offerer_name in user_offerers_by_name:
                 continue
