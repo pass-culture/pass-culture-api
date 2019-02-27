@@ -2,12 +2,6 @@ import simplejson as json
 
 from sandboxes.scripts import getters
 
-def get_testcafe_helper(module_name, getter_name):
-    module = getattr(getters, module_name)
-    getter = getattr(module, getter_name)
-    return getter()
-
-
 def get_testcafe_helpers(module_name):
     module = getattr(getters, module_name)
     items = [
@@ -16,11 +10,6 @@ def get_testcafe_helpers(module_name):
         if key.startswith('get_existing')
     ]
     return dict(items)
-
-
-def print_dumped_object(obj):
-    print(json.dumps(obj, ensure_ascii=False, indent=2, sort_keys=True))
-
 
 def get_all_testcafe_helpers():
     module_names = [
@@ -34,22 +23,14 @@ def get_all_testcafe_helpers():
         helpers.update(get_testcafe_helpers(module_name))
     return helpers
 
-
-def print_testcafe_helper(module_name, getter_name):
-    helper = get_testcafe_helper(module_name, getter_name)
-    print_dumped_object(helper)
-
-
 def print_testcafe_helpers(module_name):
-    helpers_by_name = get_testcafe_helpers(module_name)
     print('\n{} :'.format(module_name))
-    print_dumped_object(helpers_by_name)
-
+    print(json.dumps(get_testcafe_helpers(module_name), indent=2, sort_keys=True))
 
 def print_all_testcafe_helpers():
     module_names = [
-        module_name for module_name in dir(getters)
-        if type(getattr(getters, module_name)).__name__ == 'module' \
+        m for m in dir(getters)
+        if type(getattr(getters, m)).__name__ == 'module' \
         and module_name != 'sandboxes'
     ]
     for module_name in module_names:
