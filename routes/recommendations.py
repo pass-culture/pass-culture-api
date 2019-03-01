@@ -36,6 +36,19 @@ def list_recommendations():
 
     return jsonify(_serialize_recommendations(recommendations)), 200
 
+@app.route('/recommendations/<offer_id>', methods=['GET'])
+@app.route('/recommendations/<offer_id>/<mediation_id>', methods=['GET'])
+@login_required
+def get_recommendation(offer_id, mediation_id=None):
+    try:
+        recommendation = give_requested_recommendation_to_user(
+            current_user,
+            dehumanize(offer_id),
+            dehumanize(mediation_id)
+        )
+    except OfferNotFoundException:
+        return "Offer or mediation not found", 404
+    return jsonify(_serialize_recommendation(recommendation)), 200
 
 @app.route('/recommendations/<recommendationId>', methods=['PATCH'])
 @login_required
