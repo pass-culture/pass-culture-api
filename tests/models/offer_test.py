@@ -4,7 +4,8 @@ import pytest
 
 from models import Offer, Thing, Event, PcObject, ApiErrors, ThingType
 from tests.conftest import clean_database
-from tests.test_utils import create_thing, create_thing_offer, create_offerer, create_stock, create_venue
+from tests.test_utils import create_event_occurrence, create_thing, create_thing_offer, create_offerer, create_venue, \
+    create_stock, create_booking, create_user
 from utils.date import DateTimes
 
 now = datetime.utcnow()
@@ -24,8 +25,6 @@ class DateRangeTest:
         # then
         assert offer.dateRange == DateTimes()
 
-
-    @pytest.mark.standalone
     def test_matches_the_occurrence_if_only_one_occurrence(self):
         # given
         offer = Offer()
@@ -37,8 +36,6 @@ class DateRangeTest:
         # then
         assert offer.dateRange == DateTimes(two_days_ago, five_days_from_now)
 
-
-    @pytest.mark.standalone
     def test_starts_at_first_beginning_date_time_and_ends_at_last_end_date_time(self):
         # given
         offer = Offer()
@@ -54,8 +51,6 @@ class DateRangeTest:
         assert offer.dateRange == DateTimes(four_days_ago, ten_days_from_now)
         assert offer.dateRange.datetimes == [four_days_ago, ten_days_from_now]
 
-
-    @pytest.mark.standalone
     def test_is_empty_if_event_has_no_event_occurrences(self):
         # given
         offer = Offer()
@@ -66,11 +61,86 @@ class DateRangeTest:
         assert offer.dateRange == DateTimes()
 
 
+@pytest.mark.standalone
+class IsFullyBookedTest:
+    class WhenOfferOnThingTest:
+        def test_returns_true_if_all_available_stocks_are_booked(self):
+            # given
+            offer = Offer()
+            offer.thing = Thing()
+            user = create_user()
+            stock1 = create_stock(available=2)
+            stock2 = create_stock(available=1)
+            create_booking(user, stock=stock1, quantity=1)
+            create_booking(user, stock=stock1, quantity=1)
+            create_booking(user, stock=stock2, quantity=1)
+            offer.thingStocks = [stock1, stock2]
+
+            # then
+            assert offer.isFullyBooked is True
+
+        def test_cancelled_bookings_are_ignored(self):
+            # given
+            offer = Offer()
+            offer.thing = Thing()
+            user = create_user()
+            stock1 = create_stock(available=2)
+            stock2 = create_stock(available=1)
+            create_booking(user, stock=stock1, quantity=1)
+            create_booking(user, stock=stock1, quantity=1, is_cancelled=True)
+            create_booking(user, stock=stock2, quantity=1)
+            offer.thingStocks = [stock1, stock2]
+
+            # then
+            assert offer.isFullyBooked is False
+
+    class WhenOfferOnEventTest:
+        def test_returns_true_if_all_available_stocks_are_booked(self):
+            # given
+            offer = Offer()
+            offer.event = Event()
+            user = create_user()
+            stock1 = create_stock(available=2)
+            stock2 = create_stock(available=1)
+            stock3 = create_stock(available=1)
+            occurrence1 = create_event_occurrence(offer)
+            occurrence2 = create_event_occurrence(offer)
+            occurrence1.stocks = [stock1, stock2]
+            occurrence2.stocks = [stock3]
+            create_booking(user, stock=stock1, quantity=2)
+            create_booking(user, stock=stock2, quantity=1)
+            create_booking(user, stock=stock3, quantity=1)
+            offer.eventOccurrences = [occurrence1, occurrence2]
+
+            # then
+            assert offer.isFullyBooked is True
+
+        def test_cancelled_bookings_are_ignored(self):
+            # given
+            offer = Offer()
+            offer.event = Event()
+            user = create_user()
+            stock1 = create_stock(available=2)
+            stock2 = create_stock(available=1)
+            stock3 = create_stock(available=1)
+            occurrence1 = create_event_occurrence(offer)
+            occurrence2 = create_event_occurrence(offer)
+            occurrence1.stocks = [stock1, stock2]
+            occurrence2.stocks = [stock3]
+            create_booking(user, stock=stock1, quantity=2, is_cancelled=True)
+            create_booking(user, stock=stock2, quantity=1)
+            create_booking(user, stock=stock3, quantity=1)
+            offer.eventOccurrences = [occurrence1, occurrence2]
+
+            # then
+            assert offer.isFullyBooked is False
+
+
 @clean_database
 @pytest.mark.standalone
 def test_create_digital_offer_success(app):
     # Given
-    url='http://mygame.fr/offre'
+    url = 'http://mygame.fr/offre'
     digital_thing = create_thing(thing_type=ThingType.JEUX_VIDEO, url=url, is_national=True)
     offerer = create_offerer()
     virtual_venue = create_venue(offerer, is_virtual=True, siret=None)
@@ -83,6 +153,7 @@ def test_create_digital_offer_success(app):
 
     # Then
     assert offer.thing.url == url
+
 
 @clean_database
 @pytest.mark.standalone
