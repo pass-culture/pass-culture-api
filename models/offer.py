@@ -8,7 +8,6 @@ from sqlalchemy.sql.functions import coalesce
 
 from domain.keywords import create_tsvector
 from models import ExtraDataMixin
-from models import DeactivableMixin
 from models.db import Model
 from models.deactivable_mixin import DeactivableMixin
 from models.offer_type import ThingType, EventType
@@ -148,6 +147,27 @@ class Offer(PcObject,
     @property
     def isDigital(self):
         return self.url is not None and self.url != ''
+
+    @property
+    def availableStocks(self):
+        if self.thing:
+            return sum(map(lambda s: s.available, self.thingStocks))
+        elif self.event:
+            total_available = 0
+            for occurrence in self.eventOccurrences:
+                total_available += sum(map(lambda s: s.available, occurrence.stocks))
+            return total_available
+        else:
+            return 0
+
+    @property
+    def isFullyBooked(self):
+        total_quantity = 0
+        for stock in self.stocks:
+            bookings = filter(lambda b: not b.isCancelled, stock.bookings)
+            total_quantity += sum(map(lambda s: s.quantity, bookings))
+
+        return total_quantity >= self.availableStocks
 
     def _type_can_only_be_offline(self):
         offline_only_things = filter(lambda thing_type: thing_type.value['offlineOnly'], ThingType)
