@@ -4,8 +4,8 @@ import pytest
 
 from models import Offer, Thing, Event, PcObject, ApiErrors, ThingType
 from tests.conftest import clean_database
-from utils.date import DateTimes
 from tests.test_utils import create_thing, create_thing_offer, create_offerer, create_stock, create_venue
+from utils.date import DateTimes
 
 now = datetime.utcnow()
 two_days_ago = now - timedelta(days=2)
@@ -14,56 +14,56 @@ five_days_from_now = now + timedelta(days=5)
 ten_days_from_now = now + timedelta(days=10)
 
 
-@pytest.mark.standalone
-def test_date_range_is_empty_if_offer_is_on_a_thing():
-    # given
-    offer = Offer()
-    offer.thing = Thing()
-    offer.stocks = []
+class DateRangeTest:
+    def test_is_empty_if_offer_is_on_a_thing(self):
+        # given
+        offer = Offer()
+        offer.thing = Thing()
+        offer.eventOccurrences = []
 
-    # then
-    assert offer.dateRange == DateTimes()
-
-
-@pytest.mark.standalone
-def test_date_range_matches_the_occurrence_if_only_one_occurrence():
-    # given
-    offer = Offer()
-    offer.event = Event()
-    offer.stocks = [
-        create_stock(offer=offer, beginning_datetime=two_days_ago, end_datetime=five_days_from_now)
-    ]
-
-    # then
-    assert offer.dateRange == DateTimes(two_days_ago, five_days_from_now)
+        # then
+        assert offer.dateRange == DateTimes()
 
 
-@pytest.mark.standalone
-def test_date_range_starts_at_first_beginning_date_time_and_ends_at_last_end_date_time():
-    # given
-    offer = Offer()
-    offer.event = Event()
-    offer.stocks = [
-        create_stock(offer=offer, beginning_datetime=two_days_ago, end_datetime=five_days_from_now),
-        create_stock(offer=offer, beginning_datetime=four_days_ago, end_datetime=five_days_from_now),
-        create_stock(offer=offer, beginning_datetime=four_days_ago, end_datetime=ten_days_from_now),
-        create_stock(offer=offer, beginning_datetime=two_days_ago, end_datetime=ten_days_from_now)
-    ]
+    @pytest.mark.standalone
+    def test_matches_the_occurrence_if_only_one_occurrence(self):
+        # given
+        offer = Offer()
+        offer.event = Event()
+        offer.stocks = [
+            create_stock(offer, beginning_datetime=two_days_ago, end_datetime=five_days_from_now)
+        ]
 
-    # then
-    assert offer.dateRange == DateTimes(four_days_ago, ten_days_from_now)
-    assert offer.dateRange.datetimes == [four_days_ago, ten_days_from_now]
+        # then
+        assert offer.dateRange == DateTimes(two_days_ago, five_days_from_now)
 
 
-@pytest.mark.standalone
-def test_date_range_is_empty_if_event_has_no_stocks():
-    # given
-    offer = Offer()
-    offer.event = Event()
-    offer.stocks = []
+    @pytest.mark.standalone
+    def test_starts_at_first_beginning_date_time_and_ends_at_last_end_date_time(self):
+        # given
+        offer = Offer()
+        offer.event = Event()
+        offer.eventOccurrences = [
+            create_stock(offer, beginning_datetime=two_days_ago, end_datetime=five_days_from_now),
+            create_stock(offer, beginning_datetime=four_days_ago, end_datetime=five_days_from_now),
+            create_stock(offer, beginning_datetime=four_days_ago, end_datetime=ten_days_from_now),
+            create_stock(offer, beginning_datetime=two_days_ago, end_datetime=ten_days_from_now)
+        ]
 
-    # then
-    assert offer.dateRange == DateTimes()
+        # then
+        assert offer.dateRange == DateTimes(four_days_ago, ten_days_from_now)
+        assert offer.dateRange.datetimes == [four_days_ago, ten_days_from_now]
+
+
+    @pytest.mark.standalone
+    def test_is_empty_if_event_has_no_event_occurrences(self):
+        # given
+        offer = Offer()
+        offer.event = Event()
+        offer.eventOccurrences = []
+
+        # then
+        assert offer.dateRange == DateTimes()
 
 
 @clean_database
@@ -113,8 +113,8 @@ def test_offer_as_dict_returns_dateRange_in_ISO_8601(app):
                      end_datetime=datetime(2018, 10, 22, 13, 10, 10))
     ]
 
-
     # When
     offer_dict = offer._asdict(include=["dateRange"])
+
     # Then
     assert offer_dict['dateRange'] == ['2018-10-22T10:10:10Z', '2018-10-22T13:10:10Z']
