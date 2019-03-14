@@ -3,7 +3,6 @@ from flask import current_app as app, jsonify, request
 from flask_login import current_user
 
 from domain.discard_pc_objects import cancel_bookings
-from domain.keywords import LANGUAGE
 from domain.user_emails import send_batch_cancellation_emails_to_users, send_batch_cancellation_email_to_offerer
 from models.event import Event
 from models.mediation import Mediation
@@ -22,7 +21,8 @@ from utils.rest import ensure_current_user_has_rights, \
     handle_rest_get_list, \
     load_or_404, \
     login_or_api_key_required
-from validation.stocks import check_request_has_offer_id, check_dates_are_allowed_on_new_stock, check_dates_are_allowed_on_existing_stock
+from validation.stocks import check_request_has_offer_id, check_dates_are_allowed_on_new_stock, \
+    check_dates_are_allowed_on_existing_stock
 
 search_models = [
     # Order is important
@@ -80,8 +80,6 @@ def create_stock():
     return jsonify(new_stock._asdict()), 201
 
 
-# TODO: Si changement d'horaires et qu'il y a des réservations il faut envoyer des mails !
-# TODO: Interdire la modification d'évenements passés
 @app.route('/stocks/<stock_id>', methods=['PATCH'])
 @login_or_api_key_required
 @expect_json_data
