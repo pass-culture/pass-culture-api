@@ -1,21 +1,22 @@
 """ stock """
 from datetime import datetime, timedelta
+
 from sqlalchemy import BigInteger, \
-                       CheckConstraint, \
-                       Column, \
-                       DateTime, \
-                       DDL, \
-                       event, \
-                       ForeignKey, \
-                       Integer, \
-                       Numeric
+    CheckConstraint, \
+    Column, \
+    DateTime, \
+    DDL, \
+    event, \
+    ForeignKey, \
+    Integer, \
+    Numeric
 from sqlalchemy.orm import relationship
 
-from models.versioned_mixin import VersionedMixin
 from models.db import Model
 from models.pc_object import PcObject
 from models.providable_mixin import ProvidableMixin
 from models.soft_deletable_mixin import SoftDeletableMixin
+from models.versioned_mixin import VersionedMixin
 
 
 class Stock(PcObject,
@@ -79,10 +80,15 @@ class Stock(PcObject,
         return api_errors
 
     @property
+    def isBookable(self):
+        return self.bookingLimitDatetime is None \
+               or self.bookingLimitDatetime >= datetime.utcnow()
+
+    @property
     def resolvedOffer(self):
         return self.offer or self.eventOccurrence.offer
 
-    def queryNotSoftDeleted():
+    def queryNotSoftDeleted(self):
         return Stock.query.filter_by(isSoftDeleted=False)
 
 

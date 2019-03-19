@@ -108,6 +108,45 @@ class IsFullyBookedTest:
         assert offer.isFullyBooked is True
 
 
+@pytest.mark.standalone
+class IsFinishedTest:
+    def test_returns_false_if_any_stock_has_future_booking_limit_datetime(self):
+        # given
+        now = datetime.utcnow()
+        offer = Offer()
+        stock1 = create_stock(booking_limit_datetime=now - timedelta(weeks=3))
+        stock2 = create_stock(booking_limit_datetime=None)
+        stock3 = create_stock(booking_limit_datetime=now + timedelta(weeks=1))
+        offer.stocks = [stock1, stock2, stock3]
+
+        # then
+        assert offer.isFinished is False
+
+    def test_returns_false_if_all_stocks_have_no_booking_limit_datetime(self):
+        # given
+        now = datetime.utcnow()
+        offer = Offer()
+        stock1 = create_stock(booking_limit_datetime=None)
+        stock2 = create_stock(booking_limit_datetime=None)
+        stock3 = create_stock(booking_limit_datetime=None)
+        offer.stocks = [stock1, stock2, stock3]
+
+        # then
+        assert offer.isFinished is False
+
+    def test_returns_false_if_all_stocks_have_past_booking_limit_datetime(self):
+        # given
+        now = datetime.utcnow()
+        offer = Offer()
+        stock1 = create_stock(booking_limit_datetime=now - timedelta(weeks=3))
+        stock2 = create_stock(booking_limit_datetime=now - timedelta(weeks=2))
+        stock3 = create_stock(booking_limit_datetime=now - timedelta(weeks=1))
+        offer.stocks = [stock1, stock2, stock3]
+
+        # then
+        assert offer.isFinished is True
+
+
 @clean_database
 @pytest.mark.standalone
 def test_create_digital_offer_success(app):

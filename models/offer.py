@@ -97,8 +97,7 @@ class Offer(PcObject,
 
     @property
     def isFullyBooked(self):
-        is_bookable = lambda s: s.bookingLimitDatetime is None or s.bookingLimitDatetime >= datetime.utcnow()
-        bookable_stocks = list(filter(is_bookable, self.stocks))
+        bookable_stocks = list(filter(lambda s: s.isBookable, self.stocks))
         total_available = sum(map(lambda s: s.available, bookable_stocks))
 
         total_quantity = 0
@@ -107,3 +106,7 @@ class Offer(PcObject,
             total_quantity += sum(map(lambda s: s.quantity, bookings))
 
         return total_quantity >= total_available
+
+    @property
+    def isFinished(self):
+        return all(map(lambda s: not s.isBookable, self.stocks))
