@@ -93,6 +93,20 @@ class IsFullyBookedTest:
         # then
         assert offer.isFullyBooked is False
 
+    def test_stocks_with_past_booking_limit_datetimes_are_ignored(self):
+        # given
+        offer = Offer()
+        user = create_user()
+        stock1 = create_stock(available=2, booking_limit_datetime=datetime.utcnow() - timedelta(weeks=3))
+        stock2 = create_stock(available=1)
+        stock3 = create_stock(available=1)
+        create_booking(user, stock=stock2, quantity=1)
+        create_booking(user, stock=stock3, quantity=1)
+        offer.stocks = [stock1, stock2, stock3]
+
+        # then
+        assert offer.isFullyBooked is True
+
 
 @clean_database
 @pytest.mark.standalone
