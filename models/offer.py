@@ -1,5 +1,3 @@
-from itertools import chain
-
 from datetime import datetime
 from sqlalchemy import BigInteger, CheckConstraint, Column, DateTime, desc, ForeignKey, String, Text, Integer, Binary, \
     ARRAY, Boolean, false, cast, TEXT, Index

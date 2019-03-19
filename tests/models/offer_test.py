@@ -4,8 +4,8 @@ import pytest
 
 from models import Offer, Thing, Event, PcObject, ApiErrors, ThingType, EventType
 from tests.conftest import clean_database
-from tests.test_utils import create_event_occurrence, create_thing, create_thing_offer, create_offerer, create_venue, \
-    create_stock, create_booking, create_user
+from tests.test_utils import create_thing, create_thing_offer, create_offerer, create_venue, \
+    create_stock, create_booking, create_user, create_event_occurrence
 from tests.test_utils import create_event_offer
 from utils.date import DateTimes
 
@@ -16,8 +16,9 @@ five_days_from_now = now + timedelta(days=5)
 ten_days_from_now = now + timedelta(days=10)
 
 
+@pytest.mark.standalone
 class DateRangeTest:
-    def test_offer_as_dict_returns_dateRange_in_ISO_8601():
+    def test_offer_as_dict_returns_dateRange_in_ISO_8601(self):
         # Given
         offer = Offer()
         offer.stocks = [
@@ -36,7 +37,7 @@ class DateRangeTest:
         # given
         offer = Offer()
         offer.thing = Thing()
-        offer.eventOccurrences = []
+        offer.stocks = []
 
         # then
         assert offer.dateRange == DateTimes()
@@ -56,7 +57,7 @@ class DateRangeTest:
         # given
         offer = Offer()
         offer.event = Event()
-        offer.eventOccurrences = [
+        offer.stocks = [
             create_stock(offer, beginning_datetime=two_days_ago, end_datetime=five_days_from_now),
             create_stock(offer, beginning_datetime=four_days_ago, end_datetime=five_days_from_now),
             create_stock(offer, beginning_datetime=four_days_ago, end_datetime=ten_days_from_now),
@@ -71,7 +72,7 @@ class DateRangeTest:
         # given
         offer = Offer()
         offer.event = Event()
-        offer.eventOccurrences = []
+        offer.stocks = []
 
         # then
         assert offer.dateRange == DateTimes()
