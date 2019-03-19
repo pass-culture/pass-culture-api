@@ -1,6 +1,8 @@
 from datetime import datetime
 from sqlalchemy import BigInteger, CheckConstraint, Column, DateTime, desc, ForeignKey, String, Text, Integer, Binary, \
     ARRAY, Boolean, false, cast, TEXT, Index
+
+from sqlalchemy import BigInteger, CheckConstraint, Column, DateTime, desc, ForeignKey, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.functions import coalesce
 
@@ -160,8 +162,11 @@ class Offer(PcObject,
 
     @property
     def isFullyBooked(self):
+        is_bookable = lambda s: s.bookingLimitDatetime is None or s.bookingLimitDatetime >= datetime.utcnow()
+        bookable_stocks = list(filter(is_bookable, self.stocks))
+
         total_quantity = 0
-        for stock in self.stocks:
+        for stock in bookable_stocks:
             bookings = filter(lambda b: not b.isCancelled, stock.bookings)
             total_quantity += sum(map(lambda s: s.quantity, bookings))
 
