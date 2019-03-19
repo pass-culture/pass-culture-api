@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from models import Offer, Stock, Thing, Event, EventType, ThingType, Mediation
 from models.user import User
 from repository.offer_queries import _filter_bookable_offers_for_discovery
@@ -15,6 +17,15 @@ def get_query_join_on_thing(query):
   join_on_thing = (Offer.id == Stock.offerId)
   query = query.join(Stock, join_on_thing)
   return query
+
+def get_non_free_offer_with_multi_dates_not_already_booked():
+  query = Offer.query \
+      .filter(Stock.query.filter((Offer.id == Stock.offerId) & (Stock.beginningDatetime > datetime.utcnow())).count() > 1)
+  query = query.filter(Stock.price >= 0)
+  offer = query.first()
+  return {
+      "offer": get_offer_helper(offer)
+  }
 
 def get_non_free_offers_query_by_type(type):
   filter_not_free_price = (Stock.price > 0)
