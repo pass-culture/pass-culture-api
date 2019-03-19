@@ -88,7 +88,8 @@ class Stock(PcObject,
     def resolvedOffer(self):
         return self.offer or self.eventOccurrence.offer
 
-    def queryNotSoftDeleted(self):
+    @classmethod
+    def queryNotSoftDeleted(cls):
         return Stock.query.filter_by(isSoftDeleted=False)
 
 

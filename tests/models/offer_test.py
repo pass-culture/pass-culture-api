@@ -124,7 +124,6 @@ class IsFinishedTest:
 
     def test_returns_false_if_all_stocks_have_no_booking_limit_datetime(self):
         # given
-        now = datetime.utcnow()
         offer = Offer()
         stock1 = create_stock(booking_limit_datetime=None)
         stock2 = create_stock(booking_limit_datetime=None)
