@@ -97,22 +97,12 @@ class Offer(PcObject,
         return any(map(lambda m: m.isActive, self.mediations))
 
     @property
-    def availableStocks(self):
-        if self.thing:
-            return sum(map(lambda s: s.available, self.thingStocks))
-        elif self.event:
-            total_available = 0
-            for occurrence in self.eventOccurrences:
-                total_available += sum(map(lambda s: s.available, occurrence.stocks))
-            return total_available
-        else:
-            return 0
-
-    @property
     def isFullyBooked(self):
+        total_available = sum(map(lambda s: s.available, self.stocks))
+
         total_quantity = 0
         for stock in self.stocks:
             bookings = filter(lambda b: not b.isCancelled, stock.bookings)
             total_quantity += sum(map(lambda s: s.quantity, bookings))
 
-        return total_quantity >= self.availableStocks
+        return total_quantity >= total_available
