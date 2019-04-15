@@ -149,15 +149,7 @@ class Offer(PcObject,
 
     @property
     def availableStocks(self):
-        if self.thing:
-            return sum(map(lambda s: s.available, self.thingStocks))
-        elif self.event:
-            total_available = 0
-            for occurrence in self.eventOccurrences:
-                total_available += sum(map(lambda s: s.available, occurrence.stocks))
-            return total_available
-        else:
-            return 0
+        return sum(map(lambda s: s.available if s.isBookable else 0, self.stocks))
 
     @property
     def isFinished(self):
