@@ -50,6 +50,16 @@ class DigitalThingsReimbursementTest:
         # then
         assert is_relevant is False
 
+    def test_is_not_relevant_for_digital_books(self):
+        # given
+        booking = create_booking_for_thing(url='http://my.book', amount=40, quantity=3, type=ThingType.LIVRE_EDITION)
+
+        # when
+        is_relevant = ReimbursementRules.DIGITAL_THINGS.value.is_relevant(booking)
+
+        # then
+        assert is_relevant is False
+
 
 @pytest.mark.standalone
 class PhysicalOffersReimbursementTest:
