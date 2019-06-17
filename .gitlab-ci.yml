@@ -13,4 +13,4 @@ test-cafe:
   before_script:
     - echo before
   script:
-    - echo script
+    - echo writing in my runner > /tmp/salut
