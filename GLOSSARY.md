@@ -2,7 +2,7 @@
 
 ## Bank Information
 
-Une `bank information` un composé d'un IBAN et d'un RIB. Il est lié à une `venue` ou un `offerer`.
+Une `bank information` un composée d'un IBAN et d'un RIB. Il est lié à une `venue` ou un `offerer`.
 Il permet de rembourser l'`offerer` par virement SEPA.
 
 ## Booking
@@ -28,7 +28,7 @@ est créée par un `user` pro.
 
 ## Offerer
 
-Un `offerer` est une personne morale disponsant d'un `siren` et qui a été autorisée par 
+Un `offerer` est une personne morale ou "acteur culturel" disposant d'un `siren` et qui a été autorisée par 
 les administrateurs du pass Culture à utiliser le portail pro.
 
 ## Recommendation
@@ -51,6 +51,7 @@ Un `product` représente un objet culturel d'un certain type : un évènement, u
 Un `user` peut être de différent type. On parlera de `bénéficiaire` s'il s'agit d'un utilisateur 
 de la webapp, d'`acteur culturel` pour un utilisateur du portail pro et enfin d'`admin` 
 pour un membre de l'équipe du pass Culture.
+Un `user` de type `acteur culturel` peut être rattaché à plusieurs `offerers`.
 
 ## Venue
 
