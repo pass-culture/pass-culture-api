@@ -35,8 +35,8 @@ def run(
         applications = get_all_applications(PROCEDURE_ID, TOKEN, page=current_page)
         number_of_pages = applications['pagination']['nombre_de_page']
 
-        logger.info(f'[BATCH][REMOTE IMPORT BENEFICIARIES] Page {current_page} of {number_of_pages}, '
-                    f'{len(applications)} applications received')
+        logger.info(f"[BATCH][REMOTE IMPORT BENEFICIARIES] Page {current_page} of {number_of_pages}, "
+                    f"{len(applications['dossiers'])} applications received")
         ids_to_process = _find_application_ids_to_process(applications, process_applications_updated_after)
         logger.info(f'[BATCH][REMOTE IMPORT BENEFICIARIES] {len(ids_to_process)} applications to process')
 
