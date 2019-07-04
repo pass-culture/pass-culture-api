@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta
 from decimal import Decimal
 from unittest.mock import Mock, patch, ANY
@@ -117,6 +118,7 @@ class RunTest:
 
     @patch('scripts.beneficiary.remote_import.send_remote_beneficiaries_import_report_email')
     @patch('scripts.beneficiary.remote_import.process_beneficiary_application')
+    @patch.dict('os.environ', {'DEMARCHES_SIMPLIFIEES_ENROLLMENT_REPORT_RECIPIENTS': 'send@report.to'})
     def test_a_report_email_is_sent(self, process_beneficiary_application, send_report_email):
         # given
         get_all_applications = Mock()
@@ -130,6 +132,7 @@ class RunTest:
         )
         get_details = Mock(return_value=make_application_detail(123, 'closed'))
         find_user_by_email = Mock(return_value=None)
+        print(os.environ)
 
         # when
         remote_import.run(
@@ -140,7 +143,7 @@ class RunTest:
         )
 
         # then
-        send_report_email.assert_called_with([], [], ANY)
+        send_report_email.assert_called_with([], [], 'send@report.to', ANY)
 
     @patch('scripts.beneficiary.remote_import.send_remote_beneficiaries_import_report_email')
     @patch('scripts.beneficiary.remote_import.process_beneficiary_application')
