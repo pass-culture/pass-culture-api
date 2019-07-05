@@ -132,7 +132,6 @@ class RunTest:
         )
         get_details = Mock(return_value=make_application_detail(123, 'closed'))
         find_user_by_email = Mock(return_value=None)
-        print(os.environ)
 
         # when
         remote_import.run(
@@ -159,7 +158,6 @@ class RunTest:
         get_all_application_ids = Mock(return_value=[123])
         get_details = Mock(side_effect=[make_application_detail(123, 'closed')])
         find_user_by_email = Mock(return_value=None)
-        print(os.environ)
         parse_beneficiary_information.side_effect = [Exception()]
 
         # when
