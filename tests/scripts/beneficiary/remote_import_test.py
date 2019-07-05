@@ -155,15 +155,21 @@ class RunTest:
             send_report_email
     ):
         # given
-        get_all_application_ids = Mock(return_value=[123])
+        get_all_applications = Mock()
+        number_of_pages = 1
+        current_page = 1
         get_details = Mock(side_effect=[make_application_detail(123, 'closed')])
         find_user_by_email = Mock(return_value=None)
         parse_beneficiary_information.side_effect = [Exception()]
-
+        get_all_applications.return_value = make_applications_list(
+            [
+                (123, 'closed', FOUR_HOURS_AGO),
+            ], current_page, number_of_pages
+        )
         # when
         remote_import.run(
             ONE_WEEK_AGO,
-            get_all_applications_ids=get_all_application_ids,
+            get_all_applications=get_all_applications,
             get_details=get_details,
             existing_user=find_user_by_email
         )
