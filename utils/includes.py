@@ -162,6 +162,7 @@ BOOKING_INCLUDES = [
                     "venue",
                 ]
             },
+            "mediation",
             "thumbUrl"
         ]
     },
