@@ -1,5 +1,3 @@
-""" includes """
-
 OFFERER_INCLUDES = [
     {
         "key": "managedVenues",
@@ -152,26 +150,22 @@ BOOKING_INCLUDES = [
     "completedUrl",
     "isUserCancellable",
     {
-        "key": "stock",
-        "sub_joins":
-            [
-                {
-                    "key": "resolvedOffer",
-                    "sub_joins": [
-                        "product",
-                        "venue",
-                        'isFinished',
-                        'isFullyBooked'
-                    ]
-                }
-            ]
-    },
-    {
         "key": "recommendation",
         "sub_joins": [
+            {
+                "key": "offer",
+                "sub_joins": [
+                    "favorites",
+                    "isFinished",
+                    "isFullyBooked",
+                    "product",
+                    "venue",
+                ]
+            },
             "thumbUrl"
         ]
     },
+    "stock"
 ]
 
 PRO_BOOKING_INCLUDES = [
