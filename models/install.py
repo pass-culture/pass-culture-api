@@ -8,14 +8,28 @@ from models.feature import FeatureToggle, Feature
 
 
 def create_text_search_configuration_if_not_exists():
-    db.engine.execute("CREATE EXTENSION IF NOT EXISTS unaccent;")
+    french_unaccent_configuration_query = db.engine.execute("""
+    SELECT *
+    FROM pg_ts_config
+    WHERE cfgname='french_unaccent';
+    """)
 
-    french_unaccent_configuration_query = db.engine.execute(
-        "SELECT * FROM pg_ts_config WHERE cfgname='french_unaccent';")
+    unaccent_extension_query = db.engine.execute("""
+    SELECT *
+    FROM pg_extension
+    WHERE extname='unaccent';
+    """)
+
+    if unaccent_extension_query.fetchone() is None:
+        db.engine.execute("CREATE EXTENSION IF NOT EXISTS unaccent;")
+
     if french_unaccent_configuration_query.fetchone() is None:
         db.engine.execute("CREATE TEXT SEARCH CONFIGURATION french_unaccent ( COPY = french );")
-        db.engine.execute(
-            "ALTER TEXT SEARCH CONFIGURATION french_unaccent ALTER MAPPING FOR hword, hword_part, word WITH unaccent, french_stem;")
+        db.engine.execute("""
+        ALTER TEXT SEARCH CONFIGURATION french_unaccent
+        ALTER MAPPING FOR hword, hword_part, word
+        WITH unaccent, french_stem;
+        """)
 
 
 def create_versionning_tables():
