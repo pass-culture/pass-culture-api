@@ -159,7 +159,7 @@ USER_INCLUDES = [
     'wallet_is_activated'
 ]
 
-BOOKING_INCLUDES = [
+WEBAPP_GET_BOOKING_INCLUDES = [
     "completedUrl",
     "isUserCancellable",
     {
@@ -182,7 +182,28 @@ BOOKING_INCLUDES = [
     "stock"
 ]
 
-BOOKING_WITH_USER_INCLUDES = BOOKING_INCLUDES + [
+WEBAPP_PATCH_POST_BOOKING_INCLUDES = [
+    "completedUrl",
+    "isUserCancellable",
+    {
+        "key": "recommendation",
+        "sub_joins": [
+            {
+                "key": "offer",
+                "sub_joins": [
+                    "favorites",
+                    "isFinished",
+                    "isFullyBooked",
+                    "product",
+                    "stocks",
+                    "venue",
+                ]
+            },
+            "mediation",
+            "thumbUrl"
+        ]
+    },
+    "stock",
     {
         "key": "user",
         "sub_joins": USER_INCLUDES
