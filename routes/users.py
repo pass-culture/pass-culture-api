@@ -3,7 +3,6 @@
 from flask import current_app as app, jsonify, request
 from flask_login import current_user, login_required, logout_user, login_user
 
-from domain.expenses import get_expenses
 from models import PcObject
 from repository.user_queries import find_user_by_reset_password_token
 from utils.credentials import get_user_with_credentials
@@ -17,9 +16,8 @@ from validation.users import check_allowed_changes_for_user, check_valid_signin
 @app.route("/users/current", methods=["GET"])
 @login_required
 def get_profile():
-    user = current_user.as_dict(include=USER_INCLUDES)
-    user['expenses'] = get_expenses(current_user.userBookings)
-    return jsonify(user)
+    user_dict = current_user.as_dict(include=USER_INCLUDES)
+    return jsonify(user_dict)
 
 
 @app.route("/users/token/<token>", methods=["GET"])
