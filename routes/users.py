@@ -52,7 +52,6 @@ def signin():
     login_user(user, remember=True)
     stamp_session(user)
     user_dict = user.as_dict(include=USER_INCLUDES)
-    user_dict['expenses'] = get_expenses(user.userBookings)
     return jsonify(user_dict), 200
 
 
