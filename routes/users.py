@@ -39,7 +39,6 @@ def patch_profile():
     current_user.populate_from_dict(request.json)
     PcObject.save(current_user)
     user = current_user.as_dict(include=USER_INCLUDES)
-    user['expenses'] = get_expenses(current_user.userBookings)
     return jsonify(user), 200
 
 
