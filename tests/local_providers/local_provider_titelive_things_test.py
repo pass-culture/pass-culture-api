@@ -3,9 +3,8 @@ from datetime import datetime
 from unittest.mock import patch
 
 from local_providers import TiteLiveThings
-from models import Product, BookFormat, ThingType
+from models import Product, BookFormat
 from models.pc_object import PcObject
-from models.provider import Provider
 from repository.provider_queries import get_provider_by_local_class
 from tests.conftest import clean_database
 from tests.local_providers.local_provider_titelive_test import get_ordered_thing_files_from_sandbox_files, \
