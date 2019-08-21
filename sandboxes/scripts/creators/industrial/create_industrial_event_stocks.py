@@ -12,6 +12,7 @@ from tests.test_utils import create_stock_from_offer, \
 EVENT_OCCURRENCE_BEGINNING_DATETIMES = [
     today,
     today + timedelta(days=2),
+    today + timedelta(days=2, hours=2),
     today + timedelta(days=15)
 ]
 
