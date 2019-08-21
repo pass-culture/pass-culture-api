@@ -2,7 +2,6 @@ from sandboxes.scripts.creators.industrial.create_industrial_admin_users import 
 from sandboxes.scripts.creators.industrial.create_industrial_bookings import *
 from sandboxes.scripts.creators.industrial.create_industrial_deposits import *
 from sandboxes.scripts.creators.industrial.create_industrial_event_products import *
-from sandboxes.scripts.creators.industrial.create_industrial_event_occurrences import *
 from sandboxes.scripts.creators.industrial.create_industrial_event_offers import *
 from sandboxes.scripts.creators.industrial.create_industrial_event_stocks import *
 from sandboxes.scripts.creators.industrial.create_industrial_mediations import *
@@ -54,9 +53,7 @@ def save_industrial_sandbox():
         **thing_offers_by_name
     )
 
-    event_occurrences_by_name = create_industrial_event_occurrences(event_offers_by_name)
-
-    event_stocks_by_name = create_industrial_event_stocks(event_occurrences_by_name)
+    event_stocks_by_name = create_industrial_event_stocks(event_offers_by_name)
 
     thing_stocks_by_name = create_industrial_thing_stocks(thing_offers_by_name)
 
