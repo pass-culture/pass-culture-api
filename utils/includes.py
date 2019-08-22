@@ -219,8 +219,10 @@ WEBAPP_PATCH_POST_BOOKING_INCLUDES = [
                 "includes": [
                     "dateRange",
                     "favorites",
+                    "isEvent",
                     "isFinished",
                     "isFullyBooked",
+                    "isThing",
                     "offerType",
                     {
                         "key": "product",
