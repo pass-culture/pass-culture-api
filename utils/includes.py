@@ -356,3 +356,7 @@ MEDIATION_INCLUDES = [
 FEATURE_INCLUDES = [
     'nameKey'
 ]
+
+USER_OFFERER_INCLUDES = [
+    '-validationToken'
+]
