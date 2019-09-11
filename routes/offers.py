@@ -4,7 +4,7 @@ from flask_login import current_user, login_required
 from domain.admin_emails import send_offer_creation_notification_to_administration
 from domain.create_offer import fill_offer_with_new_data, initialize_offer_from_product_id
 from models import Offer, PcObject, Venue, RightsType
-from models.api_errors import ResourceNotFound
+from models.api_errors import ResourceNotFoundError
 from repository import venue_queries, offer_queries
 from repository.offer_queries import find_activation_offers, \
     find_offers_with_filter_parameters
@@ -88,11 +88,11 @@ def post_offer():
 @login_or_api_key_required
 @expect_json_data
 def patch_offer(id):
-    thing_or_event_dict = request.json
-    check_valid_edition(request.json)
-    offer = offer_queries.find_offer_by_id(dehumanize(id))
+    request_data = request.json
+    check_valid_edition(request_data)
+    offer = offer_queries.get_offer_by_id(dehumanize(id))
     if not offer:
-        raise ResourceNotFound
+        raise ResourceNotFoundError
     ensure_current_user_has_rights(RightsType.editor, offer.venue.managingOffererId)
     check_offer_is_editable(offer)
     offer.populate_from_dict(request.json)
