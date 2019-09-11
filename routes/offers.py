@@ -96,7 +96,7 @@ def patch_offer(id: int):
     ensure_current_user_has_rights(RightsType.editor, offer.venue.managingOffererId)
     check_offer_is_editable(offer)
     offer.populate_from_dict(request.json)
-    offer.update_with_product_data(thing_or_event_dict)
+    offer.update_with_product_data(request_data)
     PcObject.save(offer)
     if 'isActive' in request.json and not request.json['isActive']:
         invalidate_recommendations(offer)
