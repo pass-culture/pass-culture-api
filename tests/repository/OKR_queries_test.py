@@ -134,3 +134,32 @@ class getAllExperimentationUsersDetailsTest:
             # Then
             assert experimentation_users['Date d\'activation'].equals(
                 pandas.Series(data=[datetime(2019, 8, 31)], name='Date d\'activation'))
+
+    class TypeformFillingDateTest:
+        @clean_database
+        def test_returns_date_when_has_filled_cultural_survey_was_updated_to_false(self, app):
+            # Given
+            beginning_test_date = datetime.utcnow()
+            user = create_user(needs_to_fill_cultural_survey=True)
+            PcObject.save(user)
+            user.needsToFillCulturalSurvey = False
+            PcObject.save(user)
+            date_after_used = datetime.utcnow()
+
+            # When
+            experimentation_users = get_all_experimentation_users_details()
+
+            # Then
+            assert beginning_test_date < experimentation_users.loc[0, 'Date de remplissage du typeform'] < date_after_used
+
+        @clean_database
+        def test_returns_None_when_has_filled_cultural_survey_never_updated_to_false(self, app):
+            # Given
+            user = create_user(needs_to_fill_cultural_survey=True)
+            PcObject.save(user)
+
+            # When
+            experimentation_users = get_all_experimentation_users_details()
+
+            # Then
+            assert experimentation_users.loc[0, 'Date de remplissage du typeform'] is None

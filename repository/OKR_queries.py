@@ -6,7 +6,6 @@ from models.db import db
 def get_all_experimentation_users_details() -> pandas.DataFrame:
     connection = db.engine.connect()
     text_query_validated_activation_booking = '''
-    (
     SELECT activity.issued_at, booking."userId" 
     FROM activity 
     JOIN booking   
@@ -21,8 +20,18 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
      activity.table_name='booking'   
      AND activity.verb='update'   
      AND activity.changed_data ->> 'isUsed'='true'  
-     ) AS validated_activation_booking
     '''
+
+    text_query_typeform_filled = '''
+    SELECT activity.issued_at, "user".id AS "userId"
+     FROM activity  
+     JOIN "user"    
+      ON (activity.old_data ->> 'id')::int = "user".id  
+      AND activity.table_name='user'    
+      AND activity.verb='update'    
+      AND activity.changed_data ->> 'needsToFillCulturalSurvey'='false'
+    '''
+
     return pandas.read_sql_query(
         f'''
         SELECT 
@@ -32,23 +41,20 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
          "user"."departementCode" AS "Département",
          CASE WHEN booking."isUsed" THEN validated_activation_booking.issued_at
               ELSE "user"."dateCreated"
-        END AS "Date d'activation"
+        END AS "Date d'activation",
+        typeform_filled.issued_at AS "Date de remplissage du typeform"
         FROM "user"
         LEFT JOIN booking ON booking."userId" = "user".id
         LEFT JOIN stock ON stock.id = booking."stockId"
         LEFT JOIN offer ON offer.id = stock."offerId" 
          AND offer.type = 'ThingType.ACTIVATION'
-        LEFT JOIN {text_query_validated_activation_booking} ON validated_activation_booking."userId" = "user".id
+        LEFT JOIN ({text_query_validated_activation_booking}) 
+         AS validated_activation_booking 
+         ON validated_activation_booking."userId" = "user".id
+        LEFT JOIN ({text_query_typeform_filled}) 
+         AS typeform_filled
+         ON typeform_filled."userId"="user".id
         WHERE "user"."canBookFreeOffers";
         ''',
         connection
     )
-
-'''
- SELECT  
-  COALESCE(validated_activation_booking.issued_at, "user"."dateCreated") 
- FROM "user" 
- LEFT JOIN  
-  ON validated_activation_booking."userId" = "user".id 
- WHERE "user"."canBookFreeOffers";
-'''
