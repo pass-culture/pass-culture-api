@@ -514,13 +514,9 @@ class FindDateUsedTest:
         booking = create_booking(user)
         PcObject.save(user, deposit, booking)
 
-        activity_insert = create_booking_activity(
-            booking, 'booking', 'insert', issued_at=datetime(2018, 1, 28)
-        )
-        activity_update = create_booking_activity(
-            booking, 'booking', 'update', issued_at=datetime(2018, 2, 12),
-            data={'isUsed': True}
-        )
+        activity_insert = create_booking_activity(booking, 'insert', issued_at=datetime(2018, 1, 28))
+        activity_update = create_booking_activity(booking, 'update', issued_at=datetime(2018, 2, 12),
+                                                  data={'isUsed': True})
         save_all_activities(activity_insert, activity_update)
 
         # when
@@ -537,9 +533,7 @@ class FindDateUsedTest:
         booking = create_booking(user)
         PcObject.save(user, deposit, booking)
 
-        activity_insert = create_booking_activity(
-            booking, 'booking', 'insert', issued_at=datetime(2018, 1, 28)
-        )
+        activity_insert = create_booking_activity(booking, 'insert', issued_at=datetime(2018, 1, 28))
 
         save_all_activities(activity_insert)
 

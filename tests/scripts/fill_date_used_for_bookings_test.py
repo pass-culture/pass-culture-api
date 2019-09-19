@@ -16,10 +16,8 @@ class FillDateUsedForBookingsTest:
         booking.isUsed = True
         PcObject.save(user, deposit, booking)
 
-        activity_update = create_booking_activity(
-            booking, 'booking', 'update', issued_at=datetime(2018, 2, 12),
-            data={'isUsed': True}
-        )
+        activity_update = create_booking_activity(booking, 'update', issued_at=datetime(2018, 2, 12),
+                                                  data={'isUsed': True})
         save_all_activities(activity_update)
 
         # When
@@ -39,10 +37,8 @@ class FillDateUsedForBookingsTest:
         booking.dateUsed = datetime(2019, 2, 12)
         PcObject.save(user, deposit, booking)
 
-        activity_update = create_booking_activity(
-            booking, 'booking', 'update', issued_at=datetime(2018, 2, 12),
-            data={'isUsed': True}
-        )
+        activity_update = create_booking_activity(booking, 'update', issued_at=datetime(2018, 2, 12),
+                                                  data={'isUsed': True})
         save_all_activities(activity_update)
 
         # When

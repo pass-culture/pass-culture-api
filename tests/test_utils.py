@@ -558,11 +558,11 @@ def create_mediation(offer, author=None, date_created=datetime.utcnow(), front_t
     return mediation
 
 
-def create_booking_activity(booking, table_name, verb, issued_at=datetime.utcnow, data=None):
+def create_booking_activity(booking, verb, issued_at=datetime.utcnow, data=None):
     Activity = versioning_manager.activity_cls
     activity = Activity()
     activity.issued_at = issued_at
-    activity.table_name = table_name
+    activity.table_name = 'booking'
     activity.verb = verb
 
     base_data = {
