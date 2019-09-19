@@ -48,6 +48,7 @@ class LocalProvider(Iterator):
     def getDeactivatedObjectIds(self):
         return []
 
+    @abstractmethod
     def updateObject(self, obj):
         pass
 

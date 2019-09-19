@@ -94,6 +94,9 @@ class TiteLiveThingThumbs(LocalProvider):
             return iter(filter(lambda z: get_date_from_filename(z, DATE_REGEXP) > payload,
                                all_zips))
 
+    def updateObject(self, obj):
+        pass
+
 
 def extract_thumb_index(filename: str) -> int:
     split_filename = filename.split('_')
