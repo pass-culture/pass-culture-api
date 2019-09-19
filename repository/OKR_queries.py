@@ -32,6 +32,15 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
       AND activity.changed_data ->> 'needsToFillCulturalSurvey'='false'
     '''
 
+    text_query_recommendation_dates = '''
+    SELECT 
+     MIN(recommendation."dateCreated") AS first_recommendation_date, 
+     "user".id AS "userId"
+    FROM recommendation 
+    JOIN "user" ON "user".id = recommendation."userId" 
+    GROUP BY "user".id
+    '''
+
     return pandas.read_sql_query(
         f'''
         SELECT 
@@ -42,7 +51,8 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
          CASE WHEN booking."isUsed" THEN validated_activation_booking.issued_at
               ELSE "user"."dateCreated"
         END AS "Date d'activation",
-        typeform_filled.issued_at AS "Date de remplissage du typeform"
+        typeform_filled.issued_at AS "Date de remplissage du typeform",
+        recommendation_dates.first_recommendation_date AS "Date de première connection"
         FROM "user"
         LEFT JOIN booking ON booking."userId" = "user".id
         LEFT JOIN stock ON stock.id = booking."stockId"
@@ -54,6 +64,9 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
         LEFT JOIN ({text_query_typeform_filled}) 
          AS typeform_filled
          ON typeform_filled."userId"="user".id
+        LEFT JOIN ({text_query_recommendation_dates}) 
+         AS recommendation_dates
+         ON recommendation_dates."userId" = "user".id
         WHERE "user"."canBookFreeOffers";
         ''',
         connection

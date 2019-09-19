@@ -1,12 +1,13 @@
 from datetime import datetime
 
 import pandas
+from freezegun import freeze_time
 
 from models import ThingType, PcObject
 from repository.OKR_queries import get_all_experimentation_users_details
 from tests.conftest import clean_database
 from tests.test_utils import create_user, create_offerer, create_venue, create_offer_with_thing_product, create_stock, \
-    create_booking
+    create_booking, create_recommendation
 
 
 class getAllExperimentationUsersDetailsTest:
@@ -150,7 +151,8 @@ class getAllExperimentationUsersDetailsTest:
             experimentation_users = get_all_experimentation_users_details()
 
             # Then
-            assert beginning_test_date < experimentation_users.loc[0, 'Date de remplissage du typeform'] < date_after_used
+            assert beginning_test_date < experimentation_users.loc[
+                0, 'Date de remplissage du typeform'] < date_after_used
 
         @clean_database
         def test_returns_None_when_has_filled_cultural_survey_never_updated_to_false(self, app):
@@ -163,3 +165,36 @@ class getAllExperimentationUsersDetailsTest:
 
             # Then
             assert experimentation_users.loc[0, 'Date de remplissage du typeform'] is None
+
+    class FirstConnectionTest:
+        @clean_database
+        def test_returns_min_recommandation_dateCreated_for_a_user_if_has_any_recommendation(self, app):
+            # Given
+            beginning_test_date = datetime.utcnow()
+            user = create_user()
+            offerer = create_offerer()
+            venue = create_venue(offerer)
+            offer = create_offer_with_thing_product(venue)
+            recommendation = create_recommendation(offer, user)
+            PcObject.save(recommendation)
+            date_after_recommendation = datetime.utcnow()
+
+
+            # When
+            experimentation_users = get_all_experimentation_users_details()
+
+            # Then
+            assert beginning_test_date < experimentation_users.loc[0, 'Date de première connection'] < date_after_recommendation
+
+        @clean_database
+        def test_returns_None_if_no_recommendation(self, app):
+            # Given
+            user = create_user()
+            PcObject.save(user)
+
+
+            # When
+            experimentation_users = get_all_experimentation_users_details()
+
+            # Then
+            assert experimentation_users.loc[0, 'Date de première connection'] is None
