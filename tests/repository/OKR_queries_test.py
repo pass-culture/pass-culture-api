@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import pandas
-from freezegun import freeze_time
 
 from models import ThingType, PcObject
 from repository.OKR_queries import get_all_experimentation_users_details
@@ -179,19 +178,18 @@ class getAllExperimentationUsersDetailsTest:
             PcObject.save(recommendation)
             date_after_recommendation = datetime.utcnow()
 
-
             # When
             experimentation_users = get_all_experimentation_users_details()
 
             # Then
-            assert beginning_test_date < experimentation_users.loc[0, 'Date de première connection'] < date_after_recommendation
+            assert beginning_test_date < experimentation_users.loc[
+                0, 'Date de première connection'] < date_after_recommendation
 
         @clean_database
         def test_returns_None_if_no_recommendation(self, app):
             # Given
             user = create_user()
             PcObject.save(user)
-
 
             # When
             experimentation_users = get_all_experimentation_users_details()
@@ -219,7 +217,7 @@ class getAllExperimentationUsersDetailsTest:
             assert experimentation_users.loc[0, 'Date de première réservation'] == first_booking_date
 
         @clean_database
-        def test_returns_none_if_user_has_not_booked(self, app):
+        def test_returns_None_if_user_has_not_booked(self, app):
             # Given
             user = create_user()
             PcObject.save(user)
@@ -231,7 +229,7 @@ class getAllExperimentationUsersDetailsTest:
             assert experimentation_users.loc[0, 'Date de première réservation'] is None
 
         @clean_database
-        def test_returns_none_if_booking_on_activation_offer(self, app):
+        def test_returns_None_if_booking_on_activation_offer(self, app):
             # Given
             user = create_user()
             offerer = create_offerer()
@@ -247,7 +245,6 @@ class getAllExperimentationUsersDetailsTest:
 
             # Then
             assert experimentation_users.loc[0, 'Date de première réservation'] is None
-
 
     class SecondBookingTest:
         @clean_database
@@ -271,7 +268,7 @@ class getAllExperimentationUsersDetailsTest:
             assert experimentation_users.loc[0, 'Date de deuxième réservation'] == second_booking_date
 
         @clean_database
-        def test_returns_none_if_user_has_only_one_booking(self, app):
+        def test_returns_None_if_user_has_only_one_booking(self, app):
             # Given
             user = create_user()
             offerer = create_offerer()
@@ -289,7 +286,7 @@ class getAllExperimentationUsersDetailsTest:
             assert experimentation_users.loc[0, 'Date de deuxième réservation'] is None
 
         @clean_database
-        def test_returns_none_if_booking_on_activation_offer(self, app):
+        def test_returns_None_if_booking_on_activation_offer(self, app):
             # Given
             user = create_user()
             offerer = create_offerer()
@@ -339,8 +336,8 @@ class getAllExperimentationUsersDetailsTest:
             experimentation_users = get_all_experimentation_users_details()
 
             # Then
-            assert experimentation_users.loc[0, 'Date de première réservation dans 3 catégories différentes'] == booking_date_jeux_video1
-
+            assert experimentation_users.loc[
+                       0, 'Date de première réservation dans 3 catégories différentes'] == booking_date_jeux_video1
 
         @clean_database
         def test_does_not_count_type_activation(self, app):
@@ -383,13 +380,12 @@ class getAllExperimentationUsersDetailsTest:
             PcObject.save(recommendation2)
             date_after_second_recommendation = datetime.utcnow()
 
-
-
             # When
             experimentation_users = get_all_experimentation_users_details()
 
             # Then
-            assert date_after_first_recommendation < experimentation_users.loc[0, 'Date de dernière recommandation'] < date_after_second_recommendation
+            assert date_after_first_recommendation < experimentation_users.loc[
+                0, 'Date de dernière recommandation'] < date_after_second_recommendation
 
         @clean_database
         def test_returns_None_if_no_recommendation(self, app):
@@ -397,9 +393,44 @@ class getAllExperimentationUsersDetailsTest:
             user = create_user()
             PcObject.save(user)
 
-
             # When
             experimentation_users = get_all_experimentation_users_details()
 
             # Then
             assert experimentation_users.loc[0, 'Date de dernière recommandation'] is None
+
+    class NumberOfBookingsTest:
+        @clean_database
+        def test_returns_number_of_bookings_for_user_ignoring_activation_for_cancelled_or_non_cancelled_bookings(self, app):
+            # Given
+            user = create_user()
+            offerer = create_offerer()
+            venue = create_venue(offerer)
+            offer_cinema = create_offer_with_thing_product(venue, thing_type=ThingType.CINEMA_ABO)
+            stock_cinema = create_stock(offer=offer_cinema, price=0)
+            booking_cinema = create_booking(user, stock_cinema)
+            offer_audiovisuel = create_offer_with_thing_product(venue, thing_type=ThingType.AUDIOVISUEL)
+            stock_audiovisuel = create_stock(offer=offer_audiovisuel, price=0)
+            booking_audiovisuel = create_booking(user, stock_audiovisuel, is_cancelled=True)
+            offer_activation = create_offer_with_thing_product(venue, thing_type=ThingType.ACTIVATION)
+            stock_activation = create_stock(offer=offer_activation, price=0)
+            booking_activation = create_booking(user, stock_activation)
+            PcObject.save(booking_cinema, booking_audiovisuel, booking_activation)
+
+            # When
+            experimentation_users = get_all_experimentation_users_details()
+
+            # Then
+            assert experimentation_users.loc[0, 'Nombre de réservations totales'] == 2
+
+        @clean_database
+        def test_returns_None_if_no_booking(self, app):
+            # Given
+            user = create_user()
+            PcObject.save(user)
+
+            # When
+            experimentation_users = get_all_experimentation_users_details()
+
+            # Then
+            assert experimentation_users.loc[0, 'Nombre de réservations totales'] is None

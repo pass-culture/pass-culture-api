@@ -41,9 +41,10 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
     GROUP BY "userId"
     '''
 
-    text_query_first_booking_date = '''
+    text_query_bookings_grouped_by_user = '''
     SELECT 
      MIN(booking."dateCreated") AS date, 
+     SUM(booking.quantity) AS number_of_bookings,
      "userId"
     FROM booking 
     JOIN stock ON stock.id = booking."stockId"
@@ -104,10 +105,11 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
         END AS "Date d'activation",
         typeform_filled.issued_at AS "Date de remplissage du typeform",
         recommendation_dates.first_recommendation_date AS "Date de première connection",
-        first_booking_dates.date AS "Date de première réservation",
+        bookings_grouped_by_user.date AS "Date de première réservation",
         second_booking_dates.date AS "Date de deuxième réservation",
         first_booking_on_third_category.date as "Date de première réservation dans 3 catégories différentes",
-        recommendation_dates.last_recommendation_date AS "Date de dernière recommandation"
+        recommendation_dates.last_recommendation_date AS "Date de dernière recommandation",
+        bookings_grouped_by_user.number_of_bookings AS "Nombre de réservations totales"
         FROM "user"
         LEFT JOIN booking ON booking."userId" = "user".id
         LEFT JOIN stock ON stock.id = booking."stockId"
@@ -122,9 +124,9 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
         LEFT JOIN ({text_query_recommendation_dates}) 
          AS recommendation_dates
          ON recommendation_dates."userId" = "user".id
-        LEFT JOIN ({text_query_first_booking_date})
-         AS first_booking_dates
-         ON first_booking_dates."userId" = "user".id 
+        LEFT JOIN ({text_query_bookings_grouped_by_user})
+         AS bookings_grouped_by_user
+         ON bookings_grouped_by_user."userId" = "user".id 
         LEFT JOIN ({text_query_second_booking_date})
          AS second_booking_dates
          ON second_booking_dates."userId" = "user".id 
