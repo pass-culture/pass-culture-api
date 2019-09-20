@@ -309,3 +309,62 @@ class getAllExperimentationUsersDetailsTest:
 
             # Then
             assert experimentation_users.loc[0, 'Date de deuxième réservation'] is None
+
+    class BookingOnThirdProductTypeTest:
+        @clean_database
+        def test_returns_date_created_of_first_booking_on_more_than_three_types(self, app):
+            # Given
+            user = create_user()
+            offerer = create_offerer()
+            venue = create_venue(offerer)
+            offer_cinema = create_offer_with_thing_product(venue, thing_type=ThingType.CINEMA_ABO)
+            stock_cinema = create_stock(offer=offer_cinema, price=0)
+            booking_date_cinema = datetime(2019, 9, 19, 12, 0, 0)
+            booking_cinema = create_booking(user, stock_cinema, date_created=booking_date_cinema)
+            offer_audiovisuel = create_offer_with_thing_product(venue, thing_type=ThingType.AUDIOVISUEL)
+            stock_audiovisuel = create_stock(offer=offer_audiovisuel, price=0)
+            booking_date_audiovisuel = datetime(2019, 9, 20, 12, 0, 0)
+            booking_audiovisuel = create_booking(user, stock_audiovisuel, date_created=booking_date_audiovisuel)
+            offer_jeux_video1 = create_offer_with_thing_product(venue, thing_type=ThingType.JEUX_VIDEO)
+            stock_jeux_video1 = create_stock(offer=offer_jeux_video1, price=0)
+            booking_date_jeux_video1 = datetime(2019, 9, 21, 12, 0, 0)
+            booking_jeux_video1 = create_booking(user, stock_jeux_video1, date_created=booking_date_jeux_video1)
+            offer_jeux_video2 = create_offer_with_thing_product(venue, thing_type=ThingType.JEUX_VIDEO)
+            stock_jeux_video2 = create_stock(offer=offer_jeux_video2, price=0)
+            booking_date_jeux_video2 = datetime(2019, 9, 21, 12, 0, 0)
+            booking_jeux_video2 = create_booking(user, stock_jeux_video2, date_created=booking_date_jeux_video2)
+            PcObject.save(booking_cinema, booking_audiovisuel, booking_jeux_video1, booking_jeux_video2)
+
+            # When
+            experimentation_users = get_all_experimentation_users_details()
+
+            # Then
+            assert experimentation_users.loc[0, 'Date de première réservation dans 3 catégories différentes'] == booking_date_jeux_video1
+
+
+        @clean_database
+        def test_does_not_count_type_activation(self, app):
+            # Given
+            user = create_user()
+            offerer = create_offerer()
+            venue = create_venue(offerer)
+            offer_cinema = create_offer_with_thing_product(venue, thing_type=ThingType.CINEMA_ABO)
+            stock_cinema = create_stock(offer=offer_cinema, price=0)
+            booking_date_cinema = datetime(2019, 9, 19, 12, 0, 0)
+            booking_cinema = create_booking(user, stock_cinema, date_created=booking_date_cinema)
+            offer_audiovisuel = create_offer_with_thing_product(venue, thing_type=ThingType.AUDIOVISUEL)
+            stock_audiovisuel = create_stock(offer=offer_audiovisuel, price=0)
+            booking_date_audiovisuel = datetime(2019, 9, 20, 12, 0, 0)
+            booking_audiovisuel = create_booking(user, stock_audiovisuel, date_created=booking_date_audiovisuel)
+            offer_activation = create_offer_with_thing_product(venue, thing_type=ThingType.ACTIVATION)
+            stock_activation = create_stock(offer=offer_activation, price=0)
+            booking_date_activation = datetime(2019, 9, 21, 12, 0, 0)
+            booking_activation = create_booking(user, stock_activation, date_created=booking_date_activation)
+            PcObject.save(booking_cinema, booking_audiovisuel, booking_activation)
+
+            # When
+            experimentation_users = get_all_experimentation_users_details()
+
+            # Then
+            assert experimentation_users.loc[0, 'Date de première réservation dans 3 catégories différentes'] == None
+

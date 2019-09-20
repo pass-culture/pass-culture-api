@@ -66,6 +66,31 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
      WHERE ordered_dates.rank = 2
     '''
 
+    text_query_first_booking_on_third_category = '''
+    WITH bookings_on_distinct_types AS (SELECT DISTINCT ON (offer.type, booking."userId") offer.type, booking."userId", booking."dateCreated" 
+    FROM booking 
+    JOIN stock ON stock.id = booking."stockId" 
+    JOIN offer ON offer.id = stock."offerId" 
+   WHERE offer.type != 'ThingType.ACTIVATION'
+   ORDER BY offer.type, booking."userId", booking."dateCreated" ASC
+  )  
+      
+  SELECT  
+   ordered_dates."dateCreated" AS date,  
+   ordered_dates."userId"  
+  FROM (  
+   SELECT   
+    ROW_NUMBER()  
+     OVER(  
+      PARTITION BY "userId"   
+      ORDER BY bookings_on_distinct_types."dateCreated" ASC  
+     ) AS rank, bookings_on_distinct_types."dateCreated",   
+    bookings_on_distinct_types."userId"   
+   FROM bookings_on_distinct_types   
+      ) AS ordered_dates  
+  WHERE ordered_dates.rank = 3  
+  '''
+
     return pandas.read_sql_query(
         f'''
         SELECT 
@@ -79,7 +104,8 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
         typeform_filled.issued_at AS "Date de remplissage du typeform",
         recommendation_dates.first_recommendation_date AS "Date de première connection",
         first_booking_dates.date AS "Date de première réservation",
-        second_booking_dates.date AS "Date de deuxième réservation"
+        second_booking_dates.date AS "Date de deuxième réservation",
+        first_booking_on_third_category.date as "Date de première réservation dans 3 catégories différentes"
         FROM "user"
         LEFT JOIN booking ON booking."userId" = "user".id
         LEFT JOIN stock ON stock.id = booking."stockId"
@@ -100,6 +126,9 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
         LEFT JOIN ({text_query_second_booking_date})
          AS second_booking_dates
          ON second_booking_dates."userId" = "user".id 
+        LEFT JOIN ({text_query_first_booking_on_third_category})
+         AS first_booking_on_third_category
+         ON first_booking_on_third_category."userId" = "user".id 
         WHERE "user"."canBookFreeOffers";
         ''',
         connection
