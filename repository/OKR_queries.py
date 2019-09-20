@@ -53,6 +53,18 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
     GROUP BY "userId"
     '''
 
+    text_query_non_cancelled_bookings_grouped_by_user = '''
+    SELECT 
+     SUM(booking.quantity) AS number_of_bookings,
+     "userId"
+    FROM booking 
+    JOIN stock ON stock.id = booking."stockId"
+    JOIN offer ON offer.id = stock."offerId"
+    WHERE offer.type != 'ThingType.ACTIVATION'
+     AND booking."isCancelled" IS FALSE
+    GROUP BY "userId"
+    '''
+
     text_query_second_booking_date = '''
     SELECT 
      ordered_dates."dateCreated" AS date, 
@@ -109,7 +121,8 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
         second_booking_dates.date AS "Date de deuxième réservation",
         first_booking_on_third_category.date as "Date de première réservation dans 3 catégories différentes",
         recommendation_dates.last_recommendation_date AS "Date de dernière recommandation",
-        bookings_grouped_by_user.number_of_bookings AS "Nombre de réservations totales"
+        bookings_grouped_by_user.number_of_bookings AS "Nombre de réservations totales",
+        non_cancelled_bookings_grouped_by_user.number_of_bookings AS "Nombre de réservations non annulées" 
         FROM "user"
         LEFT JOIN booking ON booking."userId" = "user".id
         LEFT JOIN stock ON stock.id = booking."stockId"
@@ -133,6 +146,9 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
         LEFT JOIN ({text_query_first_booking_on_third_category})
          AS first_booking_on_third_category
          ON first_booking_on_third_category."userId" = "user".id 
+        LEFT JOIN ({text_query_non_cancelled_bookings_grouped_by_user})
+         AS non_cancelled_bookings_grouped_by_user
+         ON non_cancelled_bookings_grouped_by_user."userId" = "user".id 
         WHERE "user"."canBookFreeOffers";
         ''',
         connection

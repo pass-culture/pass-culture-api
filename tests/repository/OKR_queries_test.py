@@ -434,3 +434,42 @@ class getAllExperimentationUsersDetailsTest:
 
             # Then
             assert experimentation_users.loc[0, 'Nombre de réservations totales'] is None
+
+    class NumberOfNonCancelledBookingsTest:
+        @clean_database
+        def test_returns_number_of_bookings_for_user_ignoring_activation_for_cancelled_bookings(self, app):
+            # Given
+            user = create_user()
+            offerer = create_offerer()
+            venue = create_venue(offerer)
+            offer_non_cancelled = create_offer_with_thing_product(venue, thing_type=ThingType.CINEMA_ABO)
+            stock_non_cancelled = create_stock(offer=offer_non_cancelled, price=0)
+            booking_non_cancelled = create_booking(user, stock_non_cancelled)
+            offer_cancelled = create_offer_with_thing_product(venue, thing_type=ThingType.AUDIOVISUEL)
+            stock_cancelled = create_stock(offer=offer_cancelled, price=0)
+            booking_cancelled = create_booking(user, stock_cancelled, is_cancelled=True)
+            offer_cancelled2 = create_offer_with_thing_product(venue, thing_type=ThingType.AUDIOVISUEL)
+            stock_cancelled2 = create_stock(offer=offer_cancelled2, price=0)
+            booking_cancelled2 = create_booking(user, stock_cancelled2, is_cancelled=True)
+            offer_activation = create_offer_with_thing_product(venue, thing_type=ThingType.ACTIVATION)
+            stock_activation = create_stock(offer=offer_activation, price=0)
+            booking_activation = create_booking(user, stock_activation)
+            PcObject.save(booking_non_cancelled, booking_cancelled, booking_activation, booking_cancelled2)
+
+            # When
+            experimentation_users = get_all_experimentation_users_details()
+
+            # Then
+            assert experimentation_users.loc[0, 'Nombre de réservations non annulées'] == 1
+
+        @clean_database
+        def test_returns_None_if_no_booking(self, app):
+            # Given
+            user = create_user()
+            PcObject.save(user)
+
+            # When
+            experimentation_users = get_all_experimentation_users_details()
+
+            # Then
+            assert experimentation_users.loc[0, 'Nombre de réservations non annulées'] is None
