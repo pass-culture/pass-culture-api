@@ -247,3 +247,65 @@ class getAllExperimentationUsersDetailsTest:
 
             # Then
             assert experimentation_users.loc[0, 'Date de première réservation'] is None
+
+
+    class SecondBookingTest:
+        @clean_database
+        def test_returns_date_created_of_second_booking_if_exists(self, app):
+            # Given
+            user = create_user()
+            offerer = create_offerer()
+            venue = create_venue(offerer)
+            offer = create_offer_with_thing_product(venue)
+            stock = create_stock(offer=offer, price=0)
+            first_booking_date = datetime(2019, 9, 19, 12, 0, 0)
+            second_booking_date = datetime(2019, 9, 22, 12, 0, 0)
+            first_booking = create_booking(user, stock, date_created=first_booking_date)
+            second_booking = create_booking(user, stock, date_created=second_booking_date)
+            PcObject.save(first_booking, second_booking)
+
+            # When
+            experimentation_users = get_all_experimentation_users_details()
+
+            # Then
+            assert experimentation_users.loc[0, 'Date de deuxième réservation'] == second_booking_date
+
+        @clean_database
+        def test_returns_none_if_user_has_only_one_booking(self, app):
+            # Given
+            user = create_user()
+            offerer = create_offerer()
+            venue = create_venue(offerer)
+            offer = create_offer_with_thing_product(venue)
+            stock = create_stock(offer=offer, price=0)
+            first_booking_date = datetime(2019, 9, 19, 12, 0, 0)
+            booking = create_booking(user, stock, date_created=first_booking_date)
+            PcObject.save(booking)
+
+            # When
+            experimentation_users = get_all_experimentation_users_details()
+
+            # Then
+            assert experimentation_users.loc[0, 'Date de deuxième réservation'] is None
+
+        @clean_database
+        def test_returns_none_if_booking_on_activation_offer(self, app):
+            # Given
+            user = create_user()
+            offerer = create_offerer()
+            venue = create_venue(offerer)
+            activation_offer = create_offer_with_thing_product(venue, thing_type='ThingType.ACTIVATION')
+            activation_stock = create_stock(offer=activation_offer, price=0)
+            first_booking_date = datetime(2019, 9, 19, 12, 0, 0)
+            activation_booking = create_booking(user, activation_stock, date_created=first_booking_date)
+            offer = create_offer_with_thing_product(venue)
+            stock = create_stock(offer=offer, price=0)
+            first_booking_date = datetime(2019, 9, 20, 12, 0, 0)
+            booking = create_booking(user, stock, date_created=first_booking_date)
+            PcObject.save(activation_booking, booking)
+
+            # When
+            experimentation_users = get_all_experimentation_users_details()
+
+            # Then
+            assert experimentation_users.loc[0, 'Date de deuxième réservation'] is None

@@ -40,15 +40,30 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
     GROUP BY "userId"
     '''
 
-    text_query_booking_dates = '''
+    text_query_first_booking_date = '''
     SELECT 
-     MIN(booking."dateCreated") AS first_booking_date, 
+     MIN(booking."dateCreated") AS date, 
      "userId"
     FROM booking 
     JOIN stock ON stock.id = booking."stockId"
     JOIN offer ON offer.id = stock."offerId"
     WHERE offer.type != 'ThingType.ACTIVATION'
     GROUP BY "userId"
+    '''
+
+    text_query_second_booking_date = '''
+    SELECT 
+     ordered_dates."dateCreated" AS date, 
+     ordered_dates."userId"  
+     FROM ( 
+      SELECT ROW_NUMBER()  
+      OVER(PARTITION BY "userId" ORDER BY booking."dateCreated" ASC) AS rank, booking."dateCreated", booking."userId"  
+      FROM booking 
+      JOIN stock ON stock.id = booking."stockId"
+      JOIN offer ON offer.id = stock."offerId"
+      WHERE offer.type != 'ThingType.ACTIVATION'
+     ) AS ordered_dates  
+     WHERE ordered_dates.rank = 2
     '''
 
     return pandas.read_sql_query(
@@ -63,7 +78,8 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
         END AS "Date d'activation",
         typeform_filled.issued_at AS "Date de remplissage du typeform",
         recommendation_dates.first_recommendation_date AS "Date de première connection",
-        booking_dates.first_booking_date AS "Date de première réservation"
+        first_booking_dates.date AS "Date de première réservation",
+        second_booking_dates.date AS "Date de deuxième réservation"
         FROM "user"
         LEFT JOIN booking ON booking."userId" = "user".id
         LEFT JOIN stock ON stock.id = booking."stockId"
@@ -78,9 +94,12 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
         LEFT JOIN ({text_query_recommendation_dates}) 
          AS recommendation_dates
          ON recommendation_dates."userId" = "user".id
-        LEFT JOIN ({text_query_booking_dates})
-         AS booking_dates
-         ON booking_dates."userId" = "user".id 
+        LEFT JOIN ({text_query_first_booking_date})
+         AS first_booking_dates
+         ON first_booking_dates."userId" = "user".id 
+        LEFT JOIN ({text_query_second_booking_date})
+         AS second_booking_dates
+         ON second_booking_dates."userId" = "user".id 
         WHERE "user"."canBookFreeOffers";
         ''',
         connection
