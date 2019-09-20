@@ -306,12 +306,16 @@ def create_product_with_thing_type(
         thumb_count=1,
         url=None,
         owning_offerer=None,
+        extra_data=None
 ) -> Product:
     product = Product()
     product.type = str(thing_type)
     product.name = thing_name
     product.description = description
-    product.extraData = {'author': author_name}
+    if not extra_data:
+        product.extraData = {'author': author_name}
+    else:
+        product.extraData = extra_data
     product.isNational = is_national
     if id_at_providers is None:
         id_at_providers = ''.join(random.choices(string.digits, k=13))
@@ -809,8 +813,8 @@ def provider_test(app, provider, venue_provider, **counts):
         provider_object = provider()
     else:
         provider_object = provider(venue_provider)
-    provider_object.dbObject.isActive = True
-    PcObject.save(provider_object.dbObject)
+    provider_object.provider.isActive = True
+    PcObject.save(provider_object.provider)
     saveCounts()
     provider_object.updateObjects()
 

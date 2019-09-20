@@ -23,7 +23,7 @@ CHUNK_MAX_SIZE = 1000
 
 class LocalProvider(Iterator):
     def __init__(self, venue_provider=None, **options):
-        self.venueProvider = venue_provider
+        self.venue_provider = venue_provider
         self.updatedObjects = 0
         self.createdObjects = 0
         self.checkedObjects = 0
@@ -32,7 +32,7 @@ class LocalProvider(Iterator):
         self.updatedThumbs = 0
         self.checkedThumbs = 0
         self.erroredThumbs = 0
-        self.dbObject = get_provider_by_local_class(self.__class__.__name__)
+        self.provider = get_provider_by_local_class(self.__class__.__name__)
         self.providables = []
 
     @property
@@ -81,7 +81,7 @@ class LocalProvider(Iterator):
 
     @property
     @abstractmethod
-    def objectType(self):
+    def object_type(self):
         pass
 
     def save_thumb_from_thumb_count_to_index(self, index: int, obj: Model, thumb: BytesIO):
@@ -119,7 +119,7 @@ class LocalProvider(Iterator):
                     self.createdThumbs += new_thumb_index + 1
 
         except Exception as e:
-            self.logEvent(LocalProviderEventType.SyncError, e.__class__.__name__)
+            self.log_provider_event(LocalProviderEventType.SyncError, e.__class__.__name__)
             self.erroredThumbs += 1
             logger.info('ERROR during handle thumb: '
                         + e.__class__.__name__ + ' ' + str(e))
@@ -141,61 +141,48 @@ class LocalProvider(Iterator):
             self.updatedObjects += 1
         try:
             self.updateObject(obj)
-            obj.lastProviderId = self.dbObject.id
+            obj.lastProviderId = self.provider.id
             obj.dateModifiedAtLastProvider = providable_info.date_modified_at_provider
         except Exception as e:
             logger.info('ERROR during updateObject: '
                         + e.__class__.__name__ + ' ' + str(e))
-            self.logEvent(LocalProviderEventType.SyncError, e.__class__.__name__)
+            self.log_provider_event(LocalProviderEventType.SyncError, e.__class__.__name__)
             self.erroredObjects += 1
             traceback.print_tb(e.__traceback__)
             pprint(vars(e))
 
-    def logEvent(self, event_type, event_payload=None):
+    def log_provider_event(self, event_type, event_payload=None):
         local_provider_event = LocalProviderEvent()
         local_provider_event.type = event_type
         local_provider_event.payload = str(event_payload)
-        local_provider_event.provider = self.dbObject
+        local_provider_event.provider = self.provider
         db.session.add(local_provider_event)
         db.session.commit()
 
     def updateObjects(self, limit=None):
-        """Update venue's objects with this provider."""
-        if self.venueProvider is not None:
-            if not self.venueProvider.isActive:
-                logger.info("VenueProvider is not active. Stopping")
-                return
-            db.session.add(self.venueProvider)  # FIXME: we should not need this
-        provider_name = self.__class__.__name__
+        if self.venue_provider and \
+            not self.venue_provider.isActive:
+            logger.info("Venue provider is inactive")
+            return
 
-        if not self.dbObject.isActive:
+        if not self.provider.isActive:
+            provider_name = self.__class__.__name__
             logger.info("Provider " + provider_name + " is inactive")
             return
 
-        logger.debug("Updating "
-                     + inflect_engine.plural(self.objectType.__name__)
-                     + " from provider " + self.name)
-        self.logEvent(LocalProviderEventType.SyncStart)
-
-        if self.venueProvider is not None:
-            logger.debug(" for venue " + self.venueProvider.venue.name
-                         + " (#" + str(self.venueProvider.venueId) + " / "
-                         + humanize(self.venueProvider.venueId) + ") "
-                         + " venueIdAtOfferProvider="
-                         + self.venueProvider.venueIdAtOfferProvider)
-        else:
-            logger.info("venueProvider not found")
+        self.log_provider_event(LocalProviderEventType.SyncStart)
 
         chunk_to_insert = {}
         chunk_to_update = {}
 
         try:
             for providable_infos in self:
-                self.providables = []
+                if providable_infos is None:
+                    self.checkedObjects += 1
+                    continue
 
-                if isinstance(providable_infos, ProvidableInfo) \
-                        or providable_infos is None:
-                    providable_infos = [providable_infos]
+                 # TODO: only used in TiteLive Stocks
+                self.providables = []
 
                 for providable_info in providable_infos:
                     if providable_info is not None:
@@ -215,7 +202,7 @@ class LocalProvider(Iterator):
                                 continue
                             pc_obj = self.create_object(providable_info)
                         else:
-                            date_modified_at_provider = get_last_modification_date_for_provider(self.dbObject.id,
+                            date_modified_at_provider = get_last_modification_date_for_provider(self.provider.id,
                                                                                                 pc_obj)
 
                         self.providables.append(pc_obj)
@@ -229,7 +216,7 @@ class LocalProvider(Iterator):
 
                             errors = pc_obj.errors()
                             if errors and len(errors.errors) > 0:
-                                self.logEvent(LocalProviderEventType.SyncError, 'ApiErrors')
+                                self.log_provider_event(LocalProviderEventType.SyncError, 'ApiErrors')
                                 continue
 
                             if is_new_obj:
@@ -253,7 +240,7 @@ class LocalProvider(Iterator):
                                 if pc_obj.thumbCount != initial_thumb_count:
                                     errors = pc_obj.errors()
                                     if errors and len(errors.errors) > 0:
-                                        self.logEvent(LocalProviderEventType.SyncError, 'ApiErrors')
+                                        self.log_provider_event(LocalProviderEventType.SyncError, 'ApiErrors')
                                         continue
 
                                     chunk_to_update[chunk_key] = pc_obj
@@ -287,7 +274,7 @@ class LocalProvider(Iterator):
         logger.info("  Updated " + str(self.updatedThumbs) + " thumbs")
         logger.info("  " + str(self.erroredThumbs) + " errors in thumb creations/updates")
 
-        self.logEvent(LocalProviderEventType.SyncEnd)
-        if self.venueProvider is not None:
-            self.venueProvider.lastSyncDate = datetime.utcnow()
-            PcObject.save(self.venueProvider)
+        self.log_provider_event(LocalProviderEventType.SyncEnd)
+        if self.venue_provider is not None:
+            self.venue_provider.lastSyncDate = datetime.utcnow()
+            PcObject.save(self.venue_provider)
