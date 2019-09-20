@@ -35,10 +35,20 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
     text_query_recommendation_dates = '''
     SELECT 
      MIN(recommendation."dateCreated") AS first_recommendation_date, 
-     "user".id AS "userId"
+     "userId"
     FROM recommendation 
-    JOIN "user" ON "user".id = recommendation."userId" 
-    GROUP BY "user".id
+    GROUP BY "userId"
+    '''
+
+    text_query_booking_dates = '''
+    SELECT 
+     MIN(booking."dateCreated") AS first_booking_date, 
+     "userId"
+    FROM booking 
+    JOIN stock ON stock.id = booking."stockId"
+    JOIN offer ON offer.id = stock."offerId"
+    WHERE offer.type != 'ThingType.ACTIVATION'
+    GROUP BY "userId"
     '''
 
     return pandas.read_sql_query(
@@ -52,7 +62,8 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
               ELSE "user"."dateCreated"
         END AS "Date d'activation",
         typeform_filled.issued_at AS "Date de remplissage du typeform",
-        recommendation_dates.first_recommendation_date AS "Date de première connection"
+        recommendation_dates.first_recommendation_date AS "Date de première connection",
+        booking_dates.first_booking_date AS "Date de première réservation"
         FROM "user"
         LEFT JOIN booking ON booking."userId" = "user".id
         LEFT JOIN stock ON stock.id = booking."stockId"
@@ -63,10 +74,13 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
          ON validated_activation_booking."userId" = "user".id
         LEFT JOIN ({text_query_typeform_filled}) 
          AS typeform_filled
-         ON typeform_filled."userId"="user".id
+         ON typeform_filled."userId" = "user".id
         LEFT JOIN ({text_query_recommendation_dates}) 
          AS recommendation_dates
          ON recommendation_dates."userId" = "user".id
+        LEFT JOIN ({text_query_booking_dates})
+         AS booking_dates
+         ON booking_dates."userId" = "user".id 
         WHERE "user"."canBookFreeOffers";
         ''',
         connection

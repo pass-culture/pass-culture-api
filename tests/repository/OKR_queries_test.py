@@ -198,3 +198,52 @@ class getAllExperimentationUsersDetailsTest:
 
             # Then
             assert experimentation_users.loc[0, 'Date de première connection'] is None
+
+    class FirstBookingTest:
+        @clean_database
+        def test_returns_booking_date_created_if_user_has_booked(self, app):
+            # Given
+            user = create_user()
+            offerer = create_offerer()
+            venue = create_venue(offerer)
+            offer = create_offer_with_thing_product(venue)
+            stock = create_stock(offer=offer, price=0)
+            first_booking_date = datetime(2019, 9, 19, 12, 0, 0)
+            booking = create_booking(user, stock, date_created=first_booking_date)
+            PcObject.save(booking)
+
+            # When
+            experimentation_users = get_all_experimentation_users_details()
+
+            # Then
+            assert experimentation_users.loc[0, 'Date de première réservation'] == first_booking_date
+
+        @clean_database
+        def test_returns_none_if_user_has_not_booked(self, app):
+            # Given
+            user = create_user()
+            PcObject.save(user)
+
+            # When
+            experimentation_users = get_all_experimentation_users_details()
+
+            # Then
+            assert experimentation_users.loc[0, 'Date de première réservation'] is None
+
+        @clean_database
+        def test_returns_none_if_booking_on_activation_offer(self, app):
+            # Given
+            user = create_user()
+            offerer = create_offerer()
+            venue = create_venue(offerer)
+            offer = create_offer_with_thing_product(venue, thing_type='ThingType.ACTIVATION')
+            stock = create_stock(offer=offer, price=0)
+            first_booking_date = datetime(2019, 9, 19, 12, 0, 0)
+            booking = create_booking(user, stock, date_created=first_booking_date)
+            PcObject.save(booking)
+
+            # When
+            experimentation_users = get_all_experimentation_users_details()
+
+            # Then
+            assert experimentation_users.loc[0, 'Date de première réservation'] is None
