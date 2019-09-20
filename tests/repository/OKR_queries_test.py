@@ -366,5 +366,40 @@ class getAllExperimentationUsersDetailsTest:
             experimentation_users = get_all_experimentation_users_details()
 
             # Then
-            assert experimentation_users.loc[0, 'Date de première réservation dans 3 catégories différentes'] == None
+            assert experimentation_users.loc[0, 'Date de première réservation dans 3 catégories différentes'] is None
 
+    class LastRecommendationTest:
+        @clean_database
+        def test_returns_max_recommandation_dateCreated_for_a_user_if_has_any_recommendation(self, app):
+            # Given
+            user = create_user()
+            offerer = create_offerer()
+            venue = create_venue(offerer)
+            offer = create_offer_with_thing_product(venue)
+            recommendation1 = create_recommendation(offer, user)
+            PcObject.save(recommendation1)
+            date_after_first_recommendation = datetime.utcnow()
+            recommendation2 = create_recommendation(offer, user)
+            PcObject.save(recommendation2)
+            date_after_second_recommendation = datetime.utcnow()
+
+
+
+            # When
+            experimentation_users = get_all_experimentation_users_details()
+
+            # Then
+            assert date_after_first_recommendation < experimentation_users.loc[0, 'Date de dernière recommandation'] < date_after_second_recommendation
+
+        @clean_database
+        def test_returns_None_if_no_recommendation(self, app):
+            # Given
+            user = create_user()
+            PcObject.save(user)
+
+
+            # When
+            experimentation_users = get_all_experimentation_users_details()
+
+            # Then
+            assert experimentation_users.loc[0, 'Date de dernière recommandation'] is None

@@ -35,6 +35,7 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
     text_query_recommendation_dates = '''
     SELECT 
      MIN(recommendation."dateCreated") AS first_recommendation_date, 
+     MAX(recommendation."dateCreated") AS last_recommendation_date, 
      "userId"
     FROM recommendation 
     GROUP BY "userId"
@@ -105,7 +106,8 @@ def get_all_experimentation_users_details() -> pandas.DataFrame:
         recommendation_dates.first_recommendation_date AS "Date de première connection",
         first_booking_dates.date AS "Date de première réservation",
         second_booking_dates.date AS "Date de deuxième réservation",
-        first_booking_on_third_category.date as "Date de première réservation dans 3 catégories différentes"
+        first_booking_on_third_category.date as "Date de première réservation dans 3 catégories différentes",
+        recommendation_dates.last_recommendation_date AS "Date de dernière recommandation"
         FROM "user"
         LEFT JOIN booking ON booking."userId" = "user".id
         LEFT JOIN stock ON stock.id = booking."stockId"
