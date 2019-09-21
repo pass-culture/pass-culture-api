@@ -5,8 +5,9 @@ from decimal import Decimal
 from enum import Enum
 from io import StringIO
 from typing import List
-
 from dateutil.relativedelta import relativedelta
+from sqlalchemy_api_handler import as_dict
+from typing import Iterable
 
 from models import Booking, Payment, ThingType
 from models.payment_status import TransactionStatus
@@ -328,3 +329,11 @@ def generate_reimbursement_details_csv(reimbursement_details: List[Reimbursement
     writer.writerow(ReimbursementDetails.CSV_HEADER)
     writer.writerows(csv_lines)
     return output.getvalue()
+
+@as_dict.register(BookingReimbursement)
+def _(booking_reimbursement, column=None, includes: Iterable = ()):
+    dict_booking = as_dict(booking_reimbursement.booking, includes=includes)
+    dict_booking['token'] = dict_booking['token'] if dict_booking['isUsed'] else None
+    dict_booking['reimbursed_amount'] = booking_reimbursement.reimbursed_amount
+    dict_booking['reimbursement_rule'] = booking_reimbursement.reimbursement.description
+    return dict_booking

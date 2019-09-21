@@ -1,6 +1,7 @@
+from sqlalchemy_api_handler import ApiHandler
 from typing import List
 
-from models import BankInformation, PcObject
+from models import BankInformation
 from models.payment_status import TransactionStatus
 from repository import payment_queries
 
@@ -12,4 +13,4 @@ def retry_linked_payments(bank_information_list: List[BankInformation]):
     for payment in payments:
         payment.setStatus(TransactionStatus.RETRY)
     if payments:
-        PcObject.save(*payments)
+        ApiHandler.save(*payments)

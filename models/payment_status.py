@@ -1,6 +1,5 @@
 import enum
 from datetime import datetime
-
 from sqlalchemy import BigInteger, \
     Column, \
     DateTime, \
@@ -8,9 +7,9 @@ from sqlalchemy import BigInteger, \
     Text, \
     Enum
 from sqlalchemy.orm import relationship
+from sqlalchemy_api_handler import ApiHandler
 
 from models.db import Model
-from models.pc_object import PcObject
 
 
 class TransactionStatus(enum.Enum):
@@ -22,7 +21,7 @@ class TransactionStatus(enum.Enum):
     BANNED = 'BANNED'
 
 
-class PaymentStatus(PcObject, Model):
+class PaymentStatus(ApiHandler, Model):
     id = Column(BigInteger,
                 primary_key=True,
                 autoincrement=True)

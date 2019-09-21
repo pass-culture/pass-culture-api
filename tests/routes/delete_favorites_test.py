@@ -1,8 +1,9 @@
-from models import PcObject, Favorite
+from sqlalchemy_api_handler import ApiHandler, humanize
+
+from models import Favorite
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_offerer, create_venue, create_user, create_offer_with_thing_product, \
     create_mediation, create_recommendation, API_URL, create_favorite
-from utils.human_ids import humanize
 
 
 class Delete:
@@ -19,7 +20,7 @@ class Delete:
             recommendation = create_recommendation(
                 offer=offer, user=user, mediation=mediation)
             favorite = create_favorite(mediation, offer, user)
-            PcObject.save(recommendation, user, favorite)
+            ApiHandler.save(recommendation, user, favorite)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email).delete(
@@ -42,7 +43,7 @@ class Delete:
             mediation = create_mediation(offer, is_active=True)
             recommendation = create_recommendation(offer=offer, user=user, mediation=mediation, is_clicked=False)
             favorite = create_favorite(mediation, offer, user)
-            PcObject.save(recommendation, user, favorite)
+            ApiHandler.save(recommendation, user, favorite)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email).delete(
@@ -61,7 +62,7 @@ class Delete:
             mediation = create_mediation(offer, is_active=True)
             recommendation = create_recommendation(offer=offer, user=user, mediation=mediation, is_clicked=False)
             favorite = create_favorite(mediation, offer, user)
-            PcObject.save(recommendation, user, favorite)
+            ApiHandler.save(recommendation, user, favorite)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email).delete(

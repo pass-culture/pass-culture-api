@@ -1,11 +1,8 @@
-"""users routes"""
-
 from flask import current_app as app, jsonify, request
 from flask_login import current_user, login_required, logout_user, login_user
+from sqlalchemy_api_handler import ApiHandler, as_dict
 
-from models import PcObject
-from repository.user_queries import find_user_by_reset_password_token, find_user_by_email
-from routes.serialization import as_dict
+from repository.user_queries import find_user_by_reset_password_token
 from utils.credentials import get_user_with_credentials
 from utils.includes import USER_INCLUDES
 from utils.login_manager import stamp_session, discard_session
@@ -17,8 +14,7 @@ from validation.users import check_allowed_changes_for_user, check_valid_signin
 @app.route("/users/current", methods=["GET"])
 @login_required
 def get_profile():
-    user = find_user_by_email(current_user.email)
-    return jsonify(as_dict(user, includes=USER_INCLUDES)), 200
+    return jsonify(as_dict(current_user, includes=USER_INCLUDES)), 200
 
 
 @app.route("/users/token/<token>", methods=["GET"])
@@ -39,7 +35,7 @@ def patch_profile():
     check_allowed_changes_for_user(data)
     user = find_user_by_email(current_user.email)
     user.populate_from_dict(request.json)
-    PcObject.save(user)
+    ApiHandler.save(user)
     user = as_dict(user, includes=USER_INCLUDES)
     return jsonify(user), 200
 

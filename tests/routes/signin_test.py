@@ -1,4 +1,6 @@
-from models import PcObject, UserSession
+from sqlalchemy_api_handler import ApiHandler
+
+from models import UserSession
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_user
 
@@ -9,7 +11,7 @@ class Post:
         def when_account_is_known(self, app):
             # given
             user = create_user(email='user@example.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
             data = {'identifier': user.email, 'password': user.clearTextPassword}
 
             # when
@@ -27,7 +29,7 @@ class Post:
         def when_account_is_known_with_mixed_case_email(self, app):
             # given
             user = create_user(email='USER@example.COM')
-            PcObject.save(user)
+            ApiHandler.save(user)
             data = {'identifier': 'uSeR@EXAmplE.cOm', 'password': user.clearTextPassword}
 
             # when
@@ -40,7 +42,7 @@ class Post:
         def when_account_is_known_with_trailing_spaces_in_email(self, app):
             # given
             user = create_user(email='user@example.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
             data = {'identifier': '  user@example.com  ', 'password': user.clearTextPassword}
 
             # when
@@ -53,7 +55,7 @@ class Post:
         def expect_a_new_user_session_to_be_recorded(self, app):
             # given
             user = create_user(email='user@example.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
             data = {'identifier': user.email, 'password': user.clearTextPassword}
 
             # when
@@ -71,7 +73,7 @@ class Post:
         def when_identifier_is_missing(self, app):
             # Given
             user = create_user()
-            PcObject.save(user)
+            ApiHandler.save(user)
             data = {'identifier': None, 'password': user.clearTextPassword}
 
             # When
@@ -85,7 +87,7 @@ class Post:
         def when_identifier_is_incorrect(self, app):
             # Given
             user = create_user()
-            PcObject.save(user)
+            ApiHandler.save(user)
             data = {'identifier': 'random.email@test.com', 'password': user.clearTextPassword}
 
             # When
@@ -99,7 +101,7 @@ class Post:
         def when_password_is_missing(self, app):
             # Given
             user = create_user()
-            PcObject.save(user)
+            ApiHandler.save(user)
             data = {'identifier': user.email, 'password': None}
 
             # When
@@ -113,7 +115,7 @@ class Post:
         def when_password_is_incorrect(self, app):
             # Given
             user = create_user()
-            PcObject.save(user)
+            ApiHandler.save(user)
             data = {'identifier': user.email, 'password': 'wr0ng_p455w0rd'}
 
             # When
@@ -128,7 +130,7 @@ class Post:
             # Given
             user = create_user()
             user.generate_validation_token()
-            PcObject.save(user)
+            ApiHandler.save(user)
             data = {'identifier': user.email, 'password': user.clearTextPassword}
 
             # When

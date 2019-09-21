@@ -1,23 +1,20 @@
-""" storage """
 import os.path
-
 from flask import current_app as app, jsonify, request, send_file
 from flask_login import login_required
+from sqlalchemy_api_handler import as_dict, dehumanize
 
-import models
 from connectors.thumb_storage import save_thumb
-from models import RightsType
-from routes.serialization import as_dict
-from utils.human_ids import dehumanize
+from models.db import get_model_with_table_name
+from models.user_offerer import RightsType
 from utils.inflect_engine import inflect_engine
 from utils.object_storage import local_path
 from utils.rest import ensure_current_user_has_rights
 
 print('LOCAL DEV MODE: Using disk based object storage')
 
-GENERIC_STORAGE_MODEL_NAMES = [
-    'Mediation',
-    'User',
+GENERIC_STORAGE_TABLE_NAMES = [
+    'mediation',
+    'user',
 ]
 
 
@@ -35,15 +32,15 @@ def send_storage_file(bucketId, objectId):
 @app.route('/storage/thumb/<collectionName>/<id>/<index>', methods=['POST'])
 @login_required
 def post_storage_file(collectionName, id, index):
-    model_name = inflect_engine.singular_noun(collectionName.title(), 1)
+    table_name = inflect_engine.singular_noun(collectionName, 1)
 
-    if model_name not in GENERIC_STORAGE_MODEL_NAMES:
+    if table_name not in GENERIC_STORAGE_TABLE_NAMES:
         return jsonify({'text': 'upload is not authorized for this model'}), 400
 
-    model = getattr(models, model_name)
+    model = get_model_with_table_name(table_name)
     entity = model.query.filter_by(id=dehumanize(id)).first_or_404()
 
-    if model_name == 'Mediation':
+    if table_name == 'mediation':
         offerer_id = entity.offer.venue.managingOffererId
         ensure_current_user_has_rights(RightsType.editor, offerer_id)
 

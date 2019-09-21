@@ -1,6 +1,7 @@
 from unittest.mock import patch
+from sqlalchemy_api_handler import ApiHandler
 
-from models import PcObject, Offerer, RightsType, UserOfferer
+from models import Offerer, RightsType, UserOfferer
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_user, create_user_offerer, create_offerer
 
@@ -11,7 +12,7 @@ class Post:
         def when_creating_a_virtual_venue(self, app):
             # given
             user = create_user()
-            PcObject.save(user)
+            ApiHandler.save(user)
             body = {
                 'name': 'Test Offerer',
                 'siren': '418166096',
@@ -37,7 +38,7 @@ class Post:
         def when_no_address_is_provided(self, app):
             # given
             user = create_user()
-            PcObject.save(user)
+            ApiHandler.save(user)
             body = {
                 'name': 'Test Offerer',
                 'siren': '418166096',
@@ -59,7 +60,7 @@ class Post:
         def when_current_user_is_admin(self, app):
             # Given
             user = create_user(can_book_free_offers=False, is_admin=True)
-            PcObject.save(user)
+            ApiHandler.save(user)
             body = {
                 'name': 'Test Offerer',
                 'siren': '418166096',
@@ -80,7 +81,7 @@ class Post:
         def expect_the_current_user_to_be_editor_of_the_new_offerer(self, app):
             # Given
             user = create_user(can_book_free_offers=False, is_admin=False)
-            PcObject.save(user)
+            ApiHandler.save(user)
             body = {
                 'name': 'Test Offerer',
                 'siren': '418166096',
@@ -111,7 +112,7 @@ class Post:
             user_2 = create_user(email="other_offerer@mail.com", is_admin=False)
             offerer = create_offerer()
             user_offerer = create_user_offerer(user_2, offerer, validation_token=None)
-            PcObject.save(user, user_2, offerer, user_offerer)
+            ApiHandler.save(user, user_2, offerer, user_offerer)
             body = {
                 'name': 'Test Offerer',
                 'siren': '123456789',
@@ -143,7 +144,7 @@ class Post:
                                                                               app):
             # Given
             user = create_user(can_book_free_offers=False, is_admin=False)
-            PcObject.save(user)
+            ApiHandler.save(user)
             body = {
                 'name': 'Test Offerer',
                 'siren': '418166096',
@@ -172,7 +173,7 @@ class Post:
             # Given
             user = create_user(can_book_free_offers=False, is_admin=False)
             offerer = create_offerer(siren='123456789')
-            PcObject.save(user, offerer)
+            ApiHandler.save(user, offerer)
             body = {
                 'name': 'Test Offerer',
                 'siren': '123456789',
@@ -201,7 +202,7 @@ class Post:
             # Given
             user = create_user(can_book_free_offers=False, is_admin=False)
             offerer = create_offerer(siren='123456789', validation_token='not_validated')
-            PcObject.save(user, offerer)
+            ApiHandler.save(user, offerer)
             body = {
                 'name': 'Test Offerer',
                 'siren': '123456789',

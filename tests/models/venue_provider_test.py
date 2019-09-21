@@ -1,4 +1,6 @@
-from models import PcObject, Provider
+from sqlalchemy_api_handler import ApiHandler
+
+from models import Provider
 from tests.conftest import clean_database
 from tests.test_utils import create_offerer, create_venue, create_offer_with_thing_product, \
     create_offer_with_event_product, create_venue_provider
@@ -12,7 +14,7 @@ def test_nOffers_with_one_venue_provider(app):
     provider.localClass = 'OpenAgenda'
     provider.isActive = True
     provider.enabledForPro = True
-    PcObject.save(provider)
+    ApiHandler.save(provider)
 
     offerer = create_offerer()
     venue = create_venue(offerer)
@@ -21,7 +23,7 @@ def test_nOffers_with_one_venue_provider(app):
     offer_2 = create_offer_with_event_product(venue, last_provider_id=provider.id, id_at_providers='offer2')
     offer_3 = create_offer_with_event_product(venue, last_provider_id=provider.id, id_at_providers='offer3')
     offer_4 = create_offer_with_thing_product(venue, last_provider_id=provider.id, id_at_providers='offer4')
-    PcObject.save(offer_1, offer_2, offer_3, offer_4, venue_provider)
+    ApiHandler.save(offer_1, offer_2, offer_3, offer_4, venue_provider)
 
     # when
     n_offers = venue_provider.nOffers
@@ -43,7 +45,7 @@ def test_nOffers_with_two_venue_providers_from_different_providers(app):
     provider2.localClass = 'TiteLive'
     provider2.isActive = True
     provider2.enabledForPro = True
-    PcObject.save(provider1, provider2)
+    ApiHandler.save(provider1, provider2)
 
     offerer = create_offerer()
     venue = create_venue(offerer)
@@ -53,7 +55,7 @@ def test_nOffers_with_two_venue_providers_from_different_providers(app):
     offer_2 = create_offer_with_event_product(venue, last_provider_id=provider2.id, id_at_providers='offer2')
     offer_3 = create_offer_with_event_product(venue, last_provider_id=provider1.id, id_at_providers='offer3')
     offer_4 = create_offer_with_thing_product(venue, last_provider_id=provider1.id, id_at_providers='offer4')
-    PcObject.save(offer_1, offer_2, offer_3, offer_4, venue_provider1, venue_provider2)
+    ApiHandler.save(offer_1, offer_2, offer_3, offer_4, venue_provider1, venue_provider2)
 
     # when
     n_offers_for_venue_provider1 = venue_provider1.nOffers

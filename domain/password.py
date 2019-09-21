@@ -1,9 +1,8 @@
 import re
 from datetime import datetime, timedelta
-
 import bcrypt
+from sqlalchemy_api_handler import ApiErrors
 
-from models import ApiErrors
 from utils.token import random_token
 
 RESET_PASSWORD_TOKEN_LENGTH = 10

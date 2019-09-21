@@ -1,10 +1,11 @@
+from sqlalchemy_api_handler import humanize
+
 from models import Offer, Stock, EventType, ThingType, Mediation, Product
 from models.user import User
 from repository.offer_queries import _filter_bookable_stocks_for_discovery
 from repository.user_queries import keep_only_webapp_users
 from repository.recommendation_queries import find_recommendations_for_user_matching_offers_and_search
 from sandboxes.scripts.utils.helpers import get_user_helper, get_offer_helper
-from utils.human_ids import humanize
 
 
 def get_query_join_on_event(query):

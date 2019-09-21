@@ -1,7 +1,5 @@
-""" update providables """
 import traceback
 from pprint import pprint
-
 from flask import current_app as app
 
 import local_providers
@@ -45,4 +43,3 @@ def do_update(provider, limit):
 
 def get_class_by_name(class_name: str):
     return getattr(local_providers, class_name)
-

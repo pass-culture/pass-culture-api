@@ -2,16 +2,16 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 from unittest.mock import Mock
-
 import pytest
 from freezegun import freeze_time
+from sqlalchemy_api_handler import ApiHandler
 
 from domain.payments import create_payment_for_booking, filter_out_already_paid_for_bookings, create_payment_details, \
     create_all_payments_details, make_transaction_label, group_payments_by_status, \
     filter_out_bookings_without_cost, keep_only_pending_payments, keep_only_not_processable_payments, apply_banishment, \
     UnmatchedPayments
 from domain.reimbursement import BookingReimbursement, ReimbursementRules
-from models import Offer, Venue, Booking, Offerer, PcObject
+from models import Offer, Venue, Booking, Offerer
 from models.payment import Payment
 from models.payment_status import TransactionStatus
 from tests.conftest import clean_database

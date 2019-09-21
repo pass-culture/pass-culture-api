@@ -1,13 +1,12 @@
 import datetime
 from typing import Dict, Optional
-
 from sqlalchemy import select
+from sqlalchemy_api_handler import humanize
 
 import models
 from local_providers.providable_info import ProvidableInfo
 from models.db import db, Model
 from utils.date import read_json_date
-from utils.human_ids import humanize
 from utils.logger import logger
 
 

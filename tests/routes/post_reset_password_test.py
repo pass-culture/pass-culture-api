@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
+from sqlalchemy_api_handler import ApiHandler
 
 from domain.password import RESET_PASSWORD_TOKEN_LENGTH
-from models import PcObject, User
+from models import User
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_user
 
@@ -52,7 +53,7 @@ class PostResetPassword:
             # given
             data = {'email': 'bobby@test.com'}
             user = create_user(email='bobby@test.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
             user_id = user.id
 
             # when

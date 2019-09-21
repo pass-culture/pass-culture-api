@@ -1,7 +1,7 @@
-from connectors import api_entreprises
-from models import PcObject
-from repository import offerer_queries
+from sqlalchemy_api_handler import ApiHandler
 
+from connectors import api_entreprises
+from repository import offerer_queries
 
 def _parse_sirene_data(data: dict) -> dict:
     field_equivalence = {
@@ -26,7 +26,7 @@ def update_offerer_with_sirene_data(data: dict):
     offerer.latitude = parsed_data.get('latitude') or offerer.latitude
     offerer.longitude = parsed_data.get('longitude') or offerer.longitude
     offerer.postalCode = parsed_data.get('postalCode') or offerer.postalCode
-    PcObject.save(offerer)
+    ApiHandler.save(offerer)
 
 
 def update_offerer(siren: str):

@@ -1,7 +1,5 @@
-""" token """
 import random
-
-from utils.human_ids import humanize
+from sqlalchemy_api_handler import humanize
 
 
 def random_token(length=6):

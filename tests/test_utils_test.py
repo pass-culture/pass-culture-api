@@ -1,6 +1,7 @@
-from models import Offerer, PcObject, Venue
-from tests.conftest import clean_database
+from sqlalchemy_api_handler import ApiHandler
 
+from models import Offerer, Venue
+from tests.conftest import clean_database
 from tests.test_utils import create_venue
 
 class CreateVenueTest:

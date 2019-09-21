@@ -1,7 +1,8 @@
 import pytest
+from sqlalchemy_api_handler import ApiErrors
 
 from domain.password import check_new_password_validity, check_password_strength
-from models import User, ApiErrors
+from models import User
 
 
 def test_change_password_raises_and_error_if_old_password_does_not_match_existing_password():

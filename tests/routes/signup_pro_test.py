@@ -1,4 +1,5 @@
-from models import PcObject
+from sqlalchemy_api_handler import ApiHandler
+
 from models.offerer import Offerer
 from models.user import User
 from models.user_offerer import UserOfferer, RightsType
@@ -137,7 +138,7 @@ class Post:
             offerer.generate_validation_token()
             user = create_user(public_name='bobby', email='bobby@test.com')
             user_offerer = create_user_offerer(user, offerer, is_admin=False)
-            PcObject.save(offerer, user_offerer)
+            ApiHandler.save(offerer, user_offerer)
 
             data = BASE_DATA_PRO.copy()
 
@@ -176,7 +177,7 @@ class Post:
                 "city": "Paris"
             }
             offerer = Offerer(from_dict=json_offerer)
-            PcObject.save(offerer)
+            ApiHandler.save(offerer)
 
             data = BASE_DATA_PRO.copy()
 
@@ -216,7 +217,7 @@ class Post:
                 "city": "Paris"
             }
             offerer = Offerer(from_dict=json_offerer)
-            PcObject.save(offerer)
+            ApiHandler.save(offerer)
 
             data = BASE_DATA_PRO.copy()
 

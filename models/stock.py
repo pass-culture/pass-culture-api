@@ -1,7 +1,5 @@
-""" stock """
 from datetime import datetime, timedelta
 from pprint import pformat
-
 from sqlalchemy import BigInteger, \
     CheckConstraint, \
     Column, \
@@ -15,17 +13,17 @@ from sqlalchemy import BigInteger, \
     or_
 from sqlalchemy.orm import column_property, relationship
 from sqlalchemy.sql import select, func
+from sqlalchemy_api_handler import ApiHandler
 
 from models import Booking
 from models.db import Model
-from models.pc_object import PcObject
 from models.providable_mixin import ProvidableMixin
 from models.soft_deletable_mixin import SoftDeletableMixin
 from models.versioned_mixin import VersionedMixin
 from utils.logger import logger
 
 
-class Stock(PcObject,
+class Stock(ApiHandler,
             Model,
             ProvidableMixin,
             SoftDeletableMixin,
@@ -128,7 +126,7 @@ class Stock(PcObject,
                         'La date limite de réservation pour cette offre est postérieure à la date de début de l\'évènement']
             else:
                 logger.error("Unexpected error in patch stocks: " + pformat(ie))
-        return PcObject.restize_internal_error(ie)
+        return ApiHandler.restize_internal_error(ie)
 
 
 @event.listens_for(Stock, 'before_insert')

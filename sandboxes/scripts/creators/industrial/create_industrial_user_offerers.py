@@ -1,6 +1,7 @@
-from models.pc_object import PcObject
-from utils.logger import logger
+from sqlalchemy_api_handler import ApiHandler
+
 from tests.test_utils import create_user_offerer
+from utils.logger import logger
 
 def create_industrial_user_offerers(users_by_name, offerers_by_name):
     logger.info('create_industrial_user_offerers')
@@ -29,7 +30,7 @@ def create_industrial_user_offerers(users_by_name, offerers_by_name):
                 user=user
             )
 
-    PcObject.save(*user_offerers_by_name.values())
+    ApiHandler.save(*user_offerers_by_name.values())
 
     logger.info('created {} user_offerers'.format(len(user_offerers_by_name)))
 

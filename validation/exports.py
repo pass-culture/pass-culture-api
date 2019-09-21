@@ -1,8 +1,5 @@
-from models.api_errors import ForbiddenError
-
-from models import ApiErrors
 import re
-
+from sqlalchemy_api_handler.api_errors import ApiErrors, ForbiddenError
 
 
 def check_user_is_admin(user):
@@ -15,7 +12,7 @@ def check_user_is_admin(user):
 def check_get_venues_params(param: {}) -> bool:
     if param.get('sirens', None):
         _check_sirens(param['sirens'])
-    
+
     if param.get('dpts', []):
         _check_dpts_list(param['dpts'])
 
@@ -121,7 +118,7 @@ def _check_sirens(sirens:  []) -> bool:
         if not re.search(r'^(\d){9}$', siren):
             api_errors = ApiErrors()
             api_errors.add_error('sirens',
-            'sirens is a list of 9 digits : ["123456789", "789654123"]')    
+            'sirens is a list of 9 digits : ["123456789", "789654123"]')
             raise api_errors
     return True
 
@@ -131,7 +128,7 @@ def _check_dpts_list(dpts_list:  []) -> bool:
         api_errors = ApiErrors()
         api_errors.add_error('dpts',
             'dpts is a list of type xx or xxx (2 or 3 digits), or 2A, or 2B :\
-            ["34", "37"]')        
+            ["34", "37"]')
     for dpts in dpts_list:
        if not re.search(r'^(\d){2}$|^2{1}(a|b|A|B)$|^(\d){3}$', dpts):
             api_errors = ApiErrors()

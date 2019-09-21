@@ -1,11 +1,10 @@
 from decimal import Decimal
 from unittest.mock import Mock
-
 import pytest
 from freezegun import freeze_time
 from lxml.etree import DocumentInvalid
+from sqlalchemy_api_handler import ApiHandler
 
-from models import PcObject
 from models.payment import Payment
 from models.payment_status import TransactionStatus, PaymentStatus
 from scripts.payment.batch_steps import send_transactions, send_payments_details, \
@@ -42,7 +41,7 @@ class ConcatenatePaymentsWithErrorsAndRetriesTest:
         not_processable_status.status = TransactionStatus.NOT_PROCESSABLE
         not_processable_payment.statuses.append(not_processable_status)
 
-        PcObject.save(error_payment, retry_payment, pending_payment, deposit)
+        ApiHandler.save(error_payment, retry_payment, pending_payment, deposit)
 
         # When
         payments = concatenate_payments_with_errors_and_retries([pending_payment])
@@ -140,7 +139,7 @@ def test_send_transactions_should_send_an_email_with_xml_attachment(app):
     booking2 = create_booking(user, stock1)
     booking3 = create_booking(user, stock1)
     deposit = create_deposit(user, amount=500)
-    PcObject.save(deposit)
+    ApiHandler.save(deposit)
     payments = [
         create_payment(booking1, offerer1, Decimal(10)),
         create_payment(booking2, offerer1, Decimal(20)),
@@ -177,8 +176,8 @@ def test_send_transactions_creates_a_new_payment_transaction_if_email_was_sent_p
         create_payment(booking3, offerer1, Decimal(20), iban='CF13QSDFGH456789', bic='QSDFGH8Z555')
     ]
 
-    PcObject.save(deposit)
-    PcObject.save(*payments)
+    ApiHandler.save(deposit)
+    ApiHandler.save(*payments)
 
     app.mailjet_client.send.create.return_value = Mock(status_code=200)
 
@@ -209,8 +208,8 @@ def test_send_transactions_set_status_to_sent_if_email_was_sent_properly(app):
         create_payment(booking3, offerer1, Decimal(20), iban='CF13QSDFGH456789', bic='QSDFGH8Z555')
     ]
 
-    PcObject.save(deposit)
-    PcObject.save(*payments)
+    ApiHandler.save(deposit)
+    ApiHandler.save(*payments)
 
     app.mailjet_client.send.create.return_value = Mock(status_code=200)
 
@@ -243,8 +242,8 @@ def test_send_transactions_set_status_to_error_with_details_if_email_was_not_sen
         create_payment(booking3, offerer1, Decimal(20), iban='CF13QSDFGH456789', bic='QSDFGH8Z555')
     ]
 
-    PcObject.save(deposit)
-    PcObject.save(*payments)
+    ApiHandler.save(deposit)
+    ApiHandler.save(*payments)
 
     app.mailjet_client.send.create.return_value = Mock(status_code=400)
 
@@ -274,7 +273,7 @@ def test_send_transactions_with_malformed_iban_on_payments_gives_them_an_error_s
         create_payment(booking, offerer, Decimal(10), iban='CF  13QSDFGH45 qbc //', bic='QSDFGH8Z555'),
     ]
 
-    PcObject.save(deposit, *payments)
+    ApiHandler.save(deposit, *payments)
     app.mailjet_client.send.create.return_value = Mock(status_code=400)
 
     # when
@@ -309,8 +308,8 @@ def test_send_payment_details_sends_a_csv_attachment(app):
         create_payment(booking3, offerer1, Decimal(20), iban='CF13QSDFGH456789', bic='QSDFGH8Z555')
     ]
 
-    PcObject.save(deposit)
-    PcObject.save(*payments)
+    ApiHandler.save(deposit)
+    ApiHandler.save(*payments)
 
     app.mailjet_client.send.create.return_value = Mock(status_code=200)
 
@@ -411,8 +410,8 @@ def test_send_payments_report_sends_two_csv_attachments_if_some_payments_are_not
                        iban='CF13QSDFGH456789', bic='QSDFGH8Z555')
     ]
 
-    PcObject.save(deposit)
-    PcObject.save(*payments)
+    ApiHandler.save(deposit)
+    ApiHandler.save(*payments)
 
     app.mailjet_client.send.create.return_value = Mock(status_code=200)
 
@@ -448,8 +447,8 @@ def test_send_payments_report_sends_two_csv_attachments_if_no_payments_are_in_er
                        bic='QSDFGH8Z555')
     ]
 
-    PcObject.save(deposit)
-    PcObject.save(*payments)
+    ApiHandler.save(deposit)
+    ApiHandler.save(*payments)
 
     app.mailjet_client.send.create.return_value = Mock(status_code=200)
 

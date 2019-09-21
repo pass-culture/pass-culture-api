@@ -1,4 +1,3 @@
-from models.api_errors import ApiErrors
 from models.bank_information import BankInformation
 from models.beneficiary_import import BeneficiaryImport
 from models.beneficiary_import_status import BeneficiaryImportStatus
@@ -23,13 +22,11 @@ from models.offerer import Offerer
 from models.payment import Payment
 from models.payment_message import PaymentMessage
 from models.payment_status import PaymentStatus
-from models.pc_object import PcObject
 from models.product import BookFormat
 from models.product import Product
 from models.providable_mixin import ProvidableMixin
 from models.provider import Provider
 from models.recommendation import Recommendation
-from models.stock import Stock
 from models.stock import Stock
 from models.user import User
 from models.user_offerer import RightsType
@@ -43,12 +40,10 @@ from models.versioned_mixin import VersionedMixin
 
 __all__ = (
     'VersionedMixin',
-    'ApiErrors',
     'BankInformation',
     'BeneficiaryImport',
     'BeneficiaryImportStatus',
     'Criterion',
-    'PcObject',
     'DeactivableMixin',
     'Deposit',
     'Email',

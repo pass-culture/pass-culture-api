@@ -1,4 +1,6 @@
-from models import Booking, PcObject
+from sqlalchemy_api_handler import ApiHandler
+
+from models import Booking
 from repository.booking_queries import find_date_used
 
 CHUNK_SIZE = 500
@@ -16,7 +18,7 @@ def fill_date_used_for_bookings():
     for booking in bookings:
         booking.dateUsed = find_date_used(booking)
         try:
-            PcObject.save(booking)
+            ApiHandler.save(booking)
         except Exception:
             print("Error saving booking %s" % booking.id)
             bookings_id_errors.append(booking.id)

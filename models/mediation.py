@@ -1,5 +1,4 @@
 from datetime import datetime
-
 from sqlalchemy import Column, \
     BigInteger, \
     CheckConstraint, \
@@ -9,15 +8,15 @@ from sqlalchemy import Column, \
     Text, \
     String
 from sqlalchemy.orm import relationship
+from sqlalchemy_api_handler import ApiHandler
 
 from models import DeactivableMixin
 from models.db import Model
 from models.has_thumb_mixin import HasThumbMixin
-from models.pc_object import PcObject
 from models.providable_mixin import ProvidableMixin
 
 
-class Mediation(PcObject,
+class Mediation(ApiHandler,
                 Model,
                 HasThumbMixin,
                 ProvidableMixin,

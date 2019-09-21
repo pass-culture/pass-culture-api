@@ -1,10 +1,9 @@
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch, ANY
-
+from sqlalchemy_api_handler import ApiErrors, ApiHandler
 from mailjet_rest import Client
 
-from models import BeneficiaryImport, ImportStatus, PcObject
-from models import User, ApiErrors
+from models import BeneficiaryImport, ImportStatus, User
 from scripts.beneficiary import remote_import
 from scripts.beneficiary.remote_import import parse_beneficiary_information
 from tests.conftest import clean_database
@@ -259,10 +258,10 @@ class ProcessBeneficiaryApplicationTest:
         assert beneficiary_import.demarcheSimplifieeApplicationId == 123
 
     @patch('scripts.beneficiary.remote_import.create_beneficiary_from_application')
-    @patch('scripts.beneficiary.remote_import.PcObject')
+    @patch('scripts.beneficiary.remote_import.ApiHandler')
     @patch('scripts.beneficiary.remote_import.send_activation_notification_email')
     @clean_database
-    def test_account_activation_email_is_sent(self, send_activation_notification_email, PcObject,
+    def test_account_activation_email_is_sent(self, send_activation_notification_email, ApiHandler,
                                               create_beneficiary_from_application, app):
         # given
         information = {
@@ -287,11 +286,11 @@ class ProcessBeneficiaryApplicationTest:
         send_activation_notification_email.assert_called()
 
     @patch('scripts.beneficiary.remote_import.create_beneficiary_from_application')
-    @patch('scripts.beneficiary.remote_import.PcObject')
+    @patch('scripts.beneficiary.remote_import.ApiHandler')
     @patch('scripts.beneficiary.remote_import.send_activation_notification_email')
     @clean_database
     def test_error_is_collected_if_beneficiary_could_not_be_saved(self,
-                                                                  send_activation_notification_email, PcObject,
+                                                                  send_activation_notification_email, ApiHandler,
                                                                   create_beneficiary_from_application, app):
         # given
         information = {
@@ -307,7 +306,7 @@ class ProcessBeneficiaryApplicationTest:
             'activity': 'Étudiant'
         }
         create_beneficiary_from_application.side_effect = [User()]
-        PcObject.save.side_effect = [ApiErrors({'postalCode': ['baaaaad value']})]
+        ApiHandler.save.side_effect = [ApiErrors({'postalCode': ['baaaaad value']})]
         new_beneficiaries = []
         error_messages = []
 
@@ -319,10 +318,10 @@ class ProcessBeneficiaryApplicationTest:
         assert error_messages == ['{\n  "postalCode": [\n    "baaaaad value"\n  ]\n}']
         assert not new_beneficiaries
 
-    @patch('scripts.beneficiary.remote_import.PcObject')
+    @patch('scripts.beneficiary.remote_import.ApiHandler')
     @patch('scripts.beneficiary.remote_import.send_activation_notification_email')
     @clean_database
-    def test_beneficiary_is_not_created_if_duplicates_are_found(self, send_activation_notification_email, PcObject,
+    def test_beneficiary_is_not_created_if_duplicates_are_found(self, send_activation_notification_email, ApiHandler,
                                                                 app):
         # given
         information = {
@@ -338,7 +337,7 @@ class ProcessBeneficiaryApplicationTest:
             'activity': 'Étudiant'
         }
         existing_user = create_user(first_name='Jane', last_name='Doe', date_of_birth=datetime(2000, 5, 1))
-        PcObject.save(existing_user)
+        ApiHandler.save(existing_user)
         mock = Mock(return_value=[existing_user])
 
         # when
@@ -346,7 +345,7 @@ class ProcessBeneficiaryApplicationTest:
 
         # then
         send_activation_notification_email.assert_not_called()
-        PcObject.assert_not_called()
+        ApiHandler.assert_not_called()
         beneficiary_import = BeneficiaryImport.query.filter_by(demarcheSimplifieeApplicationId=123).first()
         assert beneficiary_import.currentStatus == ImportStatus.DUPLICATE
 
@@ -368,7 +367,7 @@ class ProcessBeneficiaryApplicationTest:
             'activity': 'Étudiant'
         }
         existing_user = create_user(first_name='Jane', last_name='Doe', date_of_birth=datetime(2000, 5, 1))
-        PcObject.save(existing_user)
+        ApiHandler.save(existing_user)
         mock = Mock(return_value=[existing_user])
         retry_ids = [123]
 

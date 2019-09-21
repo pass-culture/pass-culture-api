@@ -1,6 +1,7 @@
+from sqlalchemy_api_handler import ApiErrors
 import pytest
 
-from models import ApiErrors, ThingType, EventType, Offer
+from models import ThingType, EventType, Offer
 from validation.offers import check_has_venue_id, check_offer_type_is_valid, check_offer_is_editable
 
 

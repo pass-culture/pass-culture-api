@@ -1,9 +1,13 @@
 import pytest
+from sqlalchemy_api_handler import ApiErrors, ApiHandler, humanize
 
-from models import ApiErrors, Provider, PcObject
+from models import Provider
 from tests.conftest import clean_database
-from tests.test_utils import create_offerer, create_user, create_user_offerer, create_venue, create_venue_provider
-from utils.human_ids import humanize
+from tests.test_utils import create_offerer, \
+                             create_user, \
+                             create_user_offerer, \
+                             create_venue, \
+                             create_venue_provider
 from validation.venue_providers import validate_new_venue_provider_information
 
 
@@ -20,7 +24,7 @@ class ValidateNewVenueProviderInformationTest:
         user = create_user()
         user_offerer = create_user_offerer(user, offerer, is_admin=True)
         venue = create_venue(offerer, name='Librairie Titelive', siret='77567146400110')
-        PcObject.save(provider, user_offerer, venue)
+        ApiHandler.save(provider, user_offerer, venue)
 
         payload = {
             'providerId': humanize(provider.id),
@@ -115,7 +119,7 @@ class ValidateNewVenueProviderInformationTest:
         provider.localClass = 'OpenAgenda'
         provider.isActive = False
         provider.enabledForPro = True
-        PcObject.save(provider)
+        ApiHandler.save(provider)
 
         payload = {
             'providerId': humanize(provider.id),
@@ -139,7 +143,7 @@ class ValidateNewVenueProviderInformationTest:
         provider.localClass = 'OpenAgenda'
         provider.isActive = True
         provider.enabledForPro = False
-        PcObject.save(provider)
+        ApiHandler.save(provider)
 
         payload = {
             'providerId': humanize(provider.id),
@@ -168,7 +172,7 @@ class ValidateNewVenueProviderInformationTest:
         user_offerer = create_user_offerer(user, offerer, is_admin=True)
         venue = create_venue(offerer, name='Librairie Titelive', siret='77567146400110')
         venue_provider = create_venue_provider(venue, provider, venue_id_at_offer_provider="775671464")
-        PcObject.save(provider, user_offerer, venue, venue_provider)
+        ApiHandler.save(provider, user_offerer, venue, venue_provider)
 
         payload = {
             'providerId': humanize(provider.id),

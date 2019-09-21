@@ -1,6 +1,6 @@
 import pytest
+from sqlalchemy_api_handler import ApiErrors
 
-from models import ApiErrors
 from validation.venues import validate_coordinates
 
 

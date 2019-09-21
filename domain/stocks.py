@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 from typing import List
+from sqlalchemy_api_handler import ApiErrors
 
-from models import Booking, Stock, ApiErrors
+from models import Booking, Stock
 
 STOCK_DELETION_DELAY = timedelta(hours=48)
 

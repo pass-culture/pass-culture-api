@@ -1,13 +1,12 @@
-""" utils thumb """
 import os
 from pathlib import Path
-
 import pytest
 from unittest.mock import patch
+from sqlalchemy_api_handler import ApiErrors
 from werkzeug.datastructures import FileStorage
 
 from connectors.thumb_storage import read_thumb
-from models import ApiErrors, EventType
+from models import EventType
 
 
 def test_read_thumb_returns_api_error_when_no_extension_in_filename():

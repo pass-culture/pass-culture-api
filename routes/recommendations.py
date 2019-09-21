@@ -1,19 +1,17 @@
 from flask import current_app as app, jsonify, request
 from flask_login import current_user, login_required
+from sqlalchemy_api_handler import ApiHandler, as_dict, dehumanize
 
 from domain.build_recommendations import move_requested_recommendation_first, \
     move_tutorial_recommendations_first
-from models import PcObject, Recommendation
-from models.api_errors import ResourceNotFoundError
+from models import Recommendation
 from recommendations_engine import create_recommendations_for_discovery, \
     create_recommendations_for_search, \
     get_recommendation_search_params, \
     give_requested_recommendation_to_user
 from repository.booking_queries import find_bookings_from_recommendation
 from repository.recommendation_queries import update_read_recommendations
-from routes.serialization import as_dict
 from utils.config import BLOB_SIZE
-from utils.human_ids import dehumanize
 from utils.includes import WEBAPP_GET_BOOKING_INCLUDES, RECOMMENDATION_INCLUDES
 from utils.logger import logger
 from utils.rest import expect_json_data
@@ -49,7 +47,7 @@ def patch_recommendation(recommendation_id):
     query = Recommendation.query.filter_by(id=dehumanize(recommendation_id))
     recommendation = query.first_or_404()
     recommendation.populate_from_dict(request.json)
-    PcObject.save(recommendation)
+    ApiHandler.save(recommendation)
     return jsonify(_serialize_recommendation(recommendation)), 200
 
 

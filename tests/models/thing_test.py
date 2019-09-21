@@ -1,6 +1,7 @@
 import pytest
+from sqlalchemy_api_handler import ApiErrors, ApiHandler 
 
-from models import PcObject, ApiErrors, ThingType
+from models import ThingType
 from tests.conftest import clean_database
 from tests.test_utils import create_product_with_thing_type
 
@@ -53,7 +54,7 @@ def test_thing_error_when_thing_type_is_offlineOnly_but_has_url(app):
 
     # When
     with pytest.raises(ApiErrors) as errors:
-        PcObject.save(thing_product)
+        ApiHandler.save(thing_product)
 
     # Then
     assert errors.value.errors['url'] == ['Une offre de type Jeux (support physique) ne peut pas être numérique']

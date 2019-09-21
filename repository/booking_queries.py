@@ -1,9 +1,11 @@
 from datetime import datetime
 from typing import Set, List
-
 from postgresql_audit.flask import versioning_manager
 from sqlalchemy import and_, text, func
 from sqlalchemy.orm import Query
+from sqlalchemy_api_handler.api_errors import ResourceNotFoundError
+from sqlalchemy_api_handler.utils.listify import check_order_by, \
+                                                 query_with_order_by
 
 from domain.keywords import create_filter_matching_all_keywords_in_any_model, \
     create_get_filter_matching_ts_query_in_any_model
@@ -14,9 +16,7 @@ from models import Booking, \
     User, \
     Product, \
     Venue, Offerer, ThingType, Payment, EventType
-from models.api_errors import ResourceNotFoundError
 from models.db import db
-from utils.rest import query_with_order_by, check_order_by
 
 get_filter_matching_ts_query_for_booking = create_get_filter_matching_ts_query_in_any_model(
     Product,

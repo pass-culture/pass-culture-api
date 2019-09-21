@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
-
 import pandas
+from sqlalchemy_api_handler import ApiHandler
 
-from models import PcObject, EventType, ThingType
+from models import EventType, ThingType
 from scripts.dashboard.diversification_statistics import get_offerers_with_offer_available_on_discovery_count, \
     get_offerers_with_non_cancelled_bookings_count, get_offers_with_user_offerer_and_stock_count, \
     get_offers_available_on_discovery_count, get_offers_with_non_cancelled_bookings_count, \
@@ -31,7 +31,7 @@ class GetOffererCountTest:
         second_offerer = create_offerer(siren='222222222')
         second_venue = create_venue(first_offerer, postal_code='37150', siret='22222222200002')
         create_user_offerer(second_user, second_offerer)
-        PcObject.save(first_offerer, first_venue, second_offerer, second_venue)
+        ApiHandler.save(first_offerer, first_venue, second_offerer, second_venue)
 
         # When
         number_of_offerers = get_offerer_count()
@@ -51,7 +51,7 @@ class GetOffererCountTest:
         second_offerer = create_offerer(siren='222222222')
         second_venue = create_venue(first_offerer, postal_code='37150', siret='22222222200002')
         create_user_offerer(second_user, second_offerer)
-        PcObject.save(first_offerer, first_venue, second_offerer, second_venue)
+        ApiHandler.save(first_offerer, first_venue, second_offerer, second_venue)
 
         # When
         number_of_offerers = get_offerer_count('37')
@@ -78,7 +78,7 @@ class GetOffererCountWithStockTest:
         second_stock = create_stock(offer=second_offer)
         create_user_offerer(second_user, second_offerer)
 
-        PcObject.save(first_offerer, first_venue, second_offerer, second_venue)
+        ApiHandler.save(first_offerer, first_venue, second_offerer, second_venue)
 
         # When
         number_of_offerers = get_offerer_with_stock_count()
@@ -103,7 +103,7 @@ class GetOffererCountWithStockTest:
         second_stock = create_stock(offer=second_offer)
         create_user_offerer(second_user, second_offerer)
 
-        PcObject.save(first_offerer, first_venue, second_offerer, second_venue)
+        ApiHandler.save(first_offerer, first_venue, second_offerer, second_venue)
 
         # When
         number_of_offerers = get_offerer_with_stock_count('37')
@@ -121,7 +121,7 @@ class GetOfferersWithOfferAvailableOnDiscoveryCountTest:
         offer = create_offer_with_thing_product(venue, is_active=False)
         mediation = create_mediation(offer)
         stock = create_stock(offer=offer)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         number_of_offerers = get_offerers_with_offer_available_on_discovery_count()
@@ -136,7 +136,7 @@ class GetOfferersWithOfferAvailableOnDiscoveryCountTest:
         venue = create_venue(offerer)
         offer = create_offer_with_thing_product(venue, is_active=True)
         mediation = create_mediation(offer)
-        PcObject.save(offer)
+        ApiHandler.save(offer)
 
         # When
         number_of_offerers = get_offerers_with_offer_available_on_discovery_count()
@@ -152,7 +152,7 @@ class GetOfferersWithOfferAvailableOnDiscoveryCountTest:
         offer = create_offer_with_thing_product(venue, is_active=True)
         stock = create_stock(offer=offer)
         mediation = create_mediation(offer)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         number_of_offerers = get_offerers_with_offer_available_on_discovery_count()
@@ -167,7 +167,7 @@ class GetOfferersWithOfferAvailableOnDiscoveryCountTest:
         venue = create_venue(offerer, validation_token='XDFCGHVJBK')
         offer = create_offer_with_thing_product(venue, is_active=True)
         stock = create_stock(offer=offer)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         number_of_offerers = get_offerers_with_offer_available_on_discovery_count()
@@ -183,7 +183,7 @@ class GetOfferersWithOfferAvailableOnDiscoveryCountTest:
         venue = create_venue(offerer, validation_token='XDFCGHVJBK')
         offer = create_offer_with_event_product(venue, is_active=True)
         stock = create_stock(offer=offer, beginning_datetime=yesterday)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         number_of_offerers = get_offerers_with_offer_available_on_discovery_count()
@@ -198,7 +198,7 @@ class GetOfferersWithOfferAvailableOnDiscoveryCountTest:
         venue = create_venue(offerer, validation_token='XDFCGHVJBK')
         offer = create_offer_with_event_product(venue, is_active=True)
         stock = create_stock(offer=offer)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         number_of_offerers = get_offerers_with_offer_available_on_discovery_count()
@@ -213,7 +213,7 @@ class GetOfferersWithOfferAvailableOnDiscoveryCountTest:
         venue = create_venue(offerer, validation_token='XDFCGHVJBK')
         offer = create_offer_with_event_product(venue, is_active=True)
         stock = create_stock(offer=offer)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         number_of_offerers = get_offerers_with_offer_available_on_discovery_count()
@@ -228,7 +228,7 @@ class GetOfferersWithOfferAvailableOnDiscoveryCountTest:
         venue = create_venue(offerer, validation_token='XDFCGHVJBK')
         offer = create_offer_with_thing_product(venue, is_active=True, thing_type='ThingType.ACTIVATION')
         stock = create_stock(offer=offer)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         number_of_offerers = get_offerers_with_offer_available_on_discovery_count()
@@ -244,7 +244,7 @@ class GetOfferersWithOfferAvailableOnDiscoveryCountTest:
         offer = create_offer_with_thing_product(venue, is_active=True)
         stock = create_stock(offer=offer)
         mediation = create_mediation(offer)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         number_of_offerers = get_offerers_with_offer_available_on_discovery_count()
@@ -263,7 +263,7 @@ class GetOfferersWithOfferAvailableOnDiscoveryCountTest:
         stock2 = create_stock(offer=offer2)
         mediation1 = create_mediation(offer1)
         mediation2 = create_mediation(offer2)
-        PcObject.save(stock1, stock2, offer2)
+        ApiHandler.save(stock1, stock2, offer2)
 
         # When
         number_of_offerers = get_offerers_with_offer_available_on_discovery_count()
@@ -290,7 +290,7 @@ class GetOfferersWithOfferAvailableOnDiscoveryCountTest:
         create_user_offerer(second_user, second_offerer)
         mediation2 = create_mediation(second_offer)
 
-        PcObject.save(first_offerer, first_venue, second_offerer, second_venue)
+        ApiHandler.save(first_offerer, first_venue, second_offerer, second_venue)
 
         # When
         number_of_offerers = get_offerers_with_offer_available_on_discovery_count('76')
@@ -304,7 +304,7 @@ class GetOfferersWithNonCancelledBookingsCountTest:
     def test_returns_0_if_no_bookings(self, app):
         # Given
         offerer = create_offerer()
-        PcObject.save(offerer)
+        ApiHandler.save(offerer)
 
         # When
         number_of_offerers = get_offerers_with_non_cancelled_bookings_count()
@@ -321,7 +321,7 @@ class GetOfferersWithNonCancelledBookingsCountTest:
         stock = create_stock(offer=offer, price=0)
         user = create_user()
         booking = create_booking(user, stock)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         number_of_offerers = get_offerers_with_non_cancelled_bookings_count()
@@ -340,7 +340,7 @@ class GetOfferersWithNonCancelledBookingsCountTest:
         user = create_user()
         booking1 = create_booking(user, stock1)
         booking2 = create_booking(user, stock2)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         number_of_offerers = get_offerers_with_non_cancelled_bookings_count()
@@ -365,7 +365,7 @@ class GetOfferersWithNonCancelledBookingsCountTest:
         second_stock = create_stock(offer=second_offer, price=0)
         second_booking = create_booking(user, second_stock)
 
-        PcObject.save(first_booking, second_booking)
+        ApiHandler.save(first_booking, second_booking)
 
         # When
         number_of_offerers = get_offerers_with_non_cancelled_bookings_count('41')
@@ -382,7 +382,7 @@ class GetOfferersWithNonCancelledBookingsCountTest:
         stock = create_stock(offer=offer, price=0)
         user = create_user()
         booking = create_booking(user, stock, is_cancelled=True)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         number_of_offerers = get_offerers_with_non_cancelled_bookings_count()
@@ -404,7 +404,7 @@ class GetOfferersWithNonCancelledBookingsCountTest:
         user = create_user()
         booking1 = create_booking(user, stock1)
         booking2 = create_booking(user, stock2)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         number_of_offerers = get_offerers_with_non_cancelled_bookings_count()
@@ -421,7 +421,7 @@ class GetOffersWithUserOffererAndStockCountTest:
         venue = create_venue(offerer)
         offer = create_offer_with_thing_product(venue)
         stock = create_stock(offer=offer)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         number_of_offers = get_offers_with_user_offerer_and_stock_count()
@@ -438,7 +438,7 @@ class GetOffersWithUserOffererAndStockCountTest:
         venue = create_venue(offerer)
         offer = create_offer_with_thing_product(venue)
         stock = create_stock(offer=offer)
-        PcObject.save(stock, user_offerer)
+        ApiHandler.save(stock, user_offerer)
 
         # When
         number_of_offers = get_offers_with_user_offerer_and_stock_count()
@@ -454,7 +454,7 @@ class GetOffersWithUserOffererAndStockCountTest:
         user_offerer = create_user_offerer(user, offerer)
         venue = create_venue(offerer)
         offer = create_offer_with_thing_product(venue)
-        PcObject.save(user_offerer)
+        ApiHandler.save(user_offerer)
 
         # When
         number_of_offers = get_offers_with_user_offerer_and_stock_count()
@@ -473,7 +473,7 @@ class GetOffersWithUserOffererAndStockCountTest:
         venue = create_venue(offerer)
         offer = create_offer_with_thing_product(venue)
         stock = create_stock(offer=offer)
-        PcObject.save(stock, user_offerer1)
+        ApiHandler.save(stock, user_offerer1)
 
         # When
         number_of_offers = get_offers_with_user_offerer_and_stock_count()
@@ -491,7 +491,7 @@ class GetOffersWithUserOffererAndStockCountTest:
         offer = create_offer_with_thing_product(venue)
         stock1 = create_stock(offer=offer)
         stock2 = create_stock(offer=offer)
-        PcObject.save(stock1, stock2, user_offerer)
+        ApiHandler.save(stock1, stock2, user_offerer)
 
         # When
         number_of_offers = get_offers_with_user_offerer_and_stock_count()
@@ -516,7 +516,7 @@ class GetOffersWithUserOffererAndStockCountTest:
         second_offer = create_offer_with_thing_product(second_venue)
         second_stock = create_stock(offer=second_offer, price=0)
 
-        PcObject.save(first_stock, second_stock)
+        ApiHandler.save(first_stock, second_stock)
 
         # When
         number_of_offers = get_offers_with_user_offerer_and_stock_count('76')
@@ -538,7 +538,7 @@ class GetOffersWithUserOffererAndStockCountTest:
         stock2 = create_stock(offer=offer2, booking_limit_datetime=tomorrow,
                               beginning_datetime=tomorrow + timedelta(hours=1),
                               end_datetime=tomorrow + timedelta(hours=3))
-        PcObject.save(stock1, stock2, user_offerer)
+        ApiHandler.save(stock1, stock2, user_offerer)
 
         # When
         number_of_offers = get_offers_with_user_offerer_and_stock_count()
@@ -556,7 +556,7 @@ class GetOffersAvailableOnDiscoveryCountTest:
         offer = create_offer_with_thing_product(venue, is_active=False)
         mediation = create_mediation(offer)
         stock = create_stock(offer=offer)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         number_of_offers = get_offers_available_on_discovery_count()
@@ -571,7 +571,7 @@ class GetOffersAvailableOnDiscoveryCountTest:
         venue = create_venue(offerer)
         offer = create_offer_with_thing_product(venue, is_active=True)
         mediation = create_mediation(offer)
-        PcObject.save(offer)
+        ApiHandler.save(offer)
 
         # When
         number_of_offers = get_offers_available_on_discovery_count()
@@ -587,7 +587,7 @@ class GetOffersAvailableOnDiscoveryCountTest:
         offer = create_offer_with_thing_product(venue, is_active=True)
         stock = create_stock(offer=offer)
         mediation = create_mediation(offer)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         number_of_offers = get_offers_available_on_discovery_count()
@@ -602,7 +602,7 @@ class GetOffersAvailableOnDiscoveryCountTest:
         venue = create_venue(offerer)
         offer = create_offer_with_thing_product(venue, is_active=True)
         stock = create_stock(offer=offer)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         number_of_offers = get_offers_available_on_discovery_count()
@@ -617,7 +617,7 @@ class GetOffersAvailableOnDiscoveryCountTest:
         venue = create_venue(offerer)
         offer = create_offer_with_thing_product(venue, is_active=True, thumb_count=0)
         stock = create_stock(offer=offer)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         number_of_offers = get_offers_available_on_discovery_count()
@@ -633,7 +633,7 @@ class GetOffersAvailableOnDiscoveryCountTest:
         venue = create_venue(offerer)
         offer = create_offer_with_event_product(venue, is_active=True)
         stock = create_stock(offer=offer, beginning_datetime=yesterday)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         number_of_offers = get_offers_available_on_discovery_count()
@@ -648,7 +648,7 @@ class GetOffersAvailableOnDiscoveryCountTest:
         venue = create_venue(offerer)
         offer = create_offer_with_event_product(venue, is_active=True)
         stock = create_stock(offer=offer)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         number_of_offers = get_offers_available_on_discovery_count()
@@ -663,7 +663,7 @@ class GetOffersAvailableOnDiscoveryCountTest:
         venue = create_venue(offerer)
         offer = create_offer_with_event_product(venue, is_active=True)
         stock = create_stock(offer=offer)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         number_of_offers = get_offers_available_on_discovery_count()
@@ -678,7 +678,7 @@ class GetOffersAvailableOnDiscoveryCountTest:
         venue = create_venue(offerer)
         offer = create_offer_with_thing_product(venue, is_active=True, thing_type=str(ThingType.ACTIVATION))
         stock = create_stock(offer=offer)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         number_of_offers = get_offers_available_on_discovery_count()
@@ -694,7 +694,7 @@ class GetOffersAvailableOnDiscoveryCountTest:
         offer = create_offer_with_thing_product(venue, is_active=True)
         stock = create_stock(offer=offer)
         mediation = create_mediation(offer)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         number_of_offers = get_offers_available_on_discovery_count()
@@ -713,7 +713,7 @@ class GetOffersAvailableOnDiscoveryCountTest:
         stock2 = create_stock(offer=offer2)
         mediation1 = create_mediation(offer1)
         mediation2 = create_mediation(offer2)
-        PcObject.save(stock1, stock2)
+        ApiHandler.save(stock1, stock2)
 
         # When
         number_of_offers = get_offers_available_on_discovery_count()
@@ -740,7 +740,7 @@ class GetOffersAvailableOnDiscoveryCountTest:
         second_mediation = create_mediation(second_offer)
         second_stock = create_stock(offer=second_offer, price=0)
 
-        PcObject.save(first_stock, second_stock)
+        ApiHandler.save(first_stock, second_stock)
 
         # When
         number_of_offers = get_offers_available_on_discovery_count('41')
@@ -756,7 +756,7 @@ class GetOffersWithNonCancelledBookingsCountTest:
         offerer = create_offerer()
         venue = create_venue(offerer)
         offer = create_offer_with_thing_product(venue)
-        PcObject.save(offer)
+        ApiHandler.save(offer)
 
         # When
         number_of_offers = get_offers_with_non_cancelled_bookings_count()
@@ -773,7 +773,7 @@ class GetOffersWithNonCancelledBookingsCountTest:
         stock = create_stock(offer=offer, price=0)
         user = create_user()
         booking = create_booking(user, stock)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         number_of_offers = get_offers_with_non_cancelled_bookings_count()
@@ -792,7 +792,7 @@ class GetOffersWithNonCancelledBookingsCountTest:
         user = create_user()
         booking1 = create_booking(user, stock1)
         booking2 = create_booking(user, stock2)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         number_of_offers = get_offers_with_non_cancelled_bookings_count()
@@ -821,7 +821,7 @@ class GetOffersWithNonCancelledBookingsCountTest:
         booking1 = create_booking(user_with_bookings, first_stock)
         booking2 = create_booking(user_with_bookings, second_stock)
 
-        PcObject.save(first_stock, second_stock, booking1, booking2)
+        ApiHandler.save(first_stock, second_stock, booking1, booking2)
 
         # When
         number_of_offers = get_offers_with_non_cancelled_bookings_count('41')
@@ -838,7 +838,7 @@ class GetOffersWithNonCancelledBookingsCountTest:
         stock = create_stock(offer=offer, price=0)
         user = create_user()
         booking = create_booking(user, stock, is_cancelled=True)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         number_of_offerers = get_offers_with_non_cancelled_bookings_count()
@@ -858,7 +858,7 @@ class GetOffersWithNonCancelledBookingsCountTest:
         user = create_user()
         booking1 = create_booking(user, stock1)
         booking2 = create_booking(user, stock2)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         number_of_offers = get_offers_with_non_cancelled_bookings_count()
@@ -881,7 +881,7 @@ class GetAllBookingsCount:
 
         booking1 = create_booking(user_in_76, stock)
         booking2 = create_booking(user_in_41, stock, is_cancelled=True)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         number_of_bookings = get_all_bookings_count()
@@ -902,7 +902,7 @@ class GetAllBookingsCount:
 
         booking1 = create_booking(user_in_76, stock)
         booking2 = create_booking(user_in_41, stock, is_cancelled=True)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         number_of_bookings = get_all_bookings_count('41')
@@ -932,7 +932,7 @@ class QueryGetOfferCountsByTypeAndMediumTest:
         stock_cinema2 = create_stock(offer=offer_cinema2)
         stock_musique_digital = create_stock(offer=offer_musique_digital)
         stock_musique_physical = create_stock(offer=offer_musique_physical)
-        PcObject.save(stock_cinema1, stock_cinema2, stock_musique_digital, stock_musique_physical, user_offerer1,
+        ApiHandler.save(stock_cinema1, stock_cinema2, stock_musique_digital, stock_musique_physical, user_offerer1,
                       user_offerer2)
 
         # When
@@ -957,7 +957,7 @@ class QueryGetOfferCountsByTypeAndMediumTest:
         offer_musique_digital = create_offer_with_thing_product(virtual_venue, url='http://url.test',
                                                                 thing_type=ThingType.MUSIQUE)
         offer_musique_physical = create_offer_with_thing_product(physical_venue, thing_type=ThingType.MUSIQUE)
-        PcObject.save(offer_cinema1, offer_cinema2, offer_musique_digital, offer_musique_physical, user_offerer)
+        ApiHandler.save(offer_cinema1, offer_cinema2, offer_musique_digital, offer_musique_physical, user_offerer)
 
         # When
         offer_counts = query_get_offer_counts_grouped_by_type_and_medium().fetchall()
@@ -980,7 +980,7 @@ class QueryGetOfferCountsByTypeAndMediumTest:
         stock_cinema2 = create_stock(offer=offer_cinema2)
         stock_musique_digital = create_stock(offer=offer_musique_digital)
         stock_musique_physical = create_stock(offer=offer_musique_physical)
-        PcObject.save(stock_cinema1, stock_cinema2, stock_musique_digital, stock_musique_physical)
+        ApiHandler.save(stock_cinema1, stock_cinema2, stock_musique_digital, stock_musique_physical)
 
         # When
         offer_counts = query_get_offer_counts_grouped_by_type_and_medium().fetchall()
@@ -1010,7 +1010,7 @@ class QueryGetOfferCountsPerTypeAndMediumForDepartementTest:
         stock_cinema2 = create_stock(offer=offer_cinema2)
         stock_musique_digital = create_stock(offer=offer_musique_digital)
         stock_musique_physical = create_stock(offer=offer_musique_physical)
-        PcObject.save(stock_cinema1, stock_cinema2, stock_musique_digital, stock_musique_physical, user_offerer1,
+        ApiHandler.save(stock_cinema1, stock_cinema2, stock_musique_digital, stock_musique_physical, user_offerer1,
                       user_offerer2)
 
         # When
@@ -1031,7 +1031,7 @@ class QueryGetOfferCountsPerTypeAndMediumForDepartementTest:
         virtual_venue = create_venue(offerer, is_virtual=True, siret=None)
         offer_musique_digital = create_offer_with_thing_product(virtual_venue, url='http://url.test',
                                                                 thing_type=ThingType.MUSIQUE)
-        PcObject.save(offer_musique_digital, user_offerer)
+        ApiHandler.save(offer_musique_digital, user_offerer)
 
         # When
         offer_counts = query_get_offer_counts_grouped_by_type_and_medium_for_departement('33').fetchall()
@@ -1047,7 +1047,7 @@ class QueryGetOfferCountsPerTypeAndMediumForDepartementTest:
         offer_musique_digital = create_offer_with_thing_product(virtual_venue, url='http://url.test',
                                                                 thing_type=ThingType.MUSIQUE)
         stock_musique_digital = create_stock(offer=offer_musique_digital)
-        PcObject.save(stock_musique_digital)
+        ApiHandler.save(stock_musique_digital)
 
         # When
         offer_counts = query_get_offer_counts_grouped_by_type_and_medium_for_departement('33').fetchall()
@@ -1068,7 +1068,7 @@ class QueryGetOfferCountsPerTypeAndMediumForDepartementTest:
         stock_cinema1 = create_stock(offer=offer_cinema1)
         stock_cinema2 = create_stock(offer=offer_cinema2)
         stock_musique_physical = create_stock(offer=offer_musique_physical)
-        PcObject.save(stock_cinema1, stock_cinema2, stock_musique_physical, user_offerer)
+        ApiHandler.save(stock_cinema1, stock_cinema2, stock_musique_physical, user_offerer)
 
         # When
         offer_counts = query_get_offer_counts_grouped_by_type_and_medium_for_departement('33').fetchall()
@@ -1108,7 +1108,7 @@ class GetCountsByTypeAndDigitalCountsTest:
         stock_cinema2 = create_stock(offer=offer_cinema2)
         stock_musique_digital = create_stock(offer=offer_musique_digital)
         stock_musique_physical = create_stock(offer=offer_musique_physical)
-        PcObject.save(stock_cinema1, stock_cinema2, stock_musique_digital, stock_musique_physical, user_offerer)
+        ApiHandler.save(stock_cinema1, stock_cinema2, stock_musique_digital, stock_musique_physical, user_offerer)
 
         expected_dataframe = pandas.read_csv('tests/scripts/dashboard/offers_by_type_and_digital_counts.csv')
 
@@ -1141,7 +1141,7 @@ class GetCountsByTypeAndDigitalCountsTest:
         booking_musique_physical1 = create_booking(user_booking, stock_musique_physical)
         booking_musique_physical2 = create_booking(user_booking, stock_musique_physical, quantity=2)
         booking_musique_digital = create_booking(user_booking, stock_musique_digital)
-        PcObject.save(stock_cinema1, stock_cinema2, booking_musique_physical1, booking_musique_physical2,
+        ApiHandler.save(stock_cinema1, stock_cinema2, booking_musique_physical1, booking_musique_physical2,
                       booking_musique_digital, user_offerer)
 
         expected_dataframe = pandas.read_csv('tests/scripts/dashboard/bookings_by_type_and_medium_counts.csv')
@@ -1175,7 +1175,7 @@ class QueryGetBookingCountsPerTypeAndDigitalTest:
         booking_musique_physical1 = create_booking(user, stock_musique_physical, quantity=2)
         booking_musique_physical2 = create_booking(user, stock_musique_physical, quantity=2)
         booking_musique_digital = create_booking(user, stock_musique_digital)
-        PcObject.save(stock_cinema1, stock_cinema2, booking_musique_physical1, booking_musique_physical2,
+        ApiHandler.save(stock_cinema1, stock_cinema2, booking_musique_physical1, booking_musique_physical2,
                       booking_musique_digital)
 
         # When
@@ -1196,7 +1196,7 @@ class QueryGetBookingCountsPerTypeAndDigitalTest:
         offer = create_offer_with_event_product(physical_venue, event_type=EventType.CINEMA)
         stock = create_stock(offer=offer, price=0)
         cancelled_booking = create_booking(user_booking, stock, is_cancelled=True)
-        PcObject.save(offer, cancelled_booking)
+        ApiHandler.save(offer, cancelled_booking)
 
         # When
         booking_counts = query_get_booking_counts_grouped_by_type_and_medium().fetchall()
@@ -1226,7 +1226,7 @@ class QueryGetBookingCountsPerTypeAndMediumForDepartementTest:
         booking_musique_physical1 = create_booking(user, stock_musique_physical, quantity=2)
         booking_musique_physical2 = create_booking(user, stock_musique_physical, quantity=2)
         booking_musique_digital = create_booking(user, stock_musique_digital)
-        PcObject.save(stock_cinema1, stock_cinema2, booking_musique_physical1, booking_musique_physical2,
+        ApiHandler.save(stock_cinema1, stock_cinema2, booking_musique_physical1, booking_musique_physical2,
                       booking_musique_digital)
 
         # When
@@ -1246,7 +1246,7 @@ class QueryGetBookingCountsPerTypeAndMediumForDepartementTest:
         offer = create_offer_with_event_product(physical_venue, event_type=EventType.CINEMA)
         stock = create_stock(offer=offer, price=0)
         cancelled_booking = create_booking(user, stock, is_cancelled=True)
-        PcObject.save(offer, cancelled_booking)
+        ApiHandler.save(offer, cancelled_booking)
 
         # When
         booking_counts = query_get_booking_counts_grouped_by_type_and_medium_for_departement('33').fetchall()
@@ -1268,7 +1268,7 @@ class QueryGetBookingCountsPerTypeAndMediumForDepartementTest:
         stock_musique_physical = create_stock(offer=offer_musique_physical, price=0)
         booking_musique_physical1 = create_booking(user, stock_musique_physical)
         booking_musique_physical2 = create_booking(user, stock_musique_physical, quantity=2)
-        PcObject.save(stock_cinema1, stock_cinema2, booking_musique_physical1, booking_musique_physical2)
+        ApiHandler.save(stock_cinema1, stock_cinema2, booking_musique_physical1, booking_musique_physical2)
 
         # When
         booking_counts = query_get_booking_counts_grouped_by_type_and_medium_for_departement('33').fetchall()
@@ -1292,7 +1292,7 @@ class CountAllCancelledBookingsTest:
         booking1 = create_booking(user_in_76, stock, is_cancelled=True)
         booking2 = create_booking(user_in_41, stock, is_cancelled=True)
         booking3 = create_booking(user_in_41, stock, is_cancelled=False)
-        PcObject.save(booking1, booking2, booking3)
+        ApiHandler.save(booking1, booking2, booking3)
 
         # When
         number_of_bookings = count_all_cancelled_bookings()
@@ -1314,7 +1314,7 @@ class CountAllCancelledBookingsTest:
         booking1 = create_booking(user_in_76, stock, is_cancelled=True)
         booking2 = create_booking(user_in_41, stock, is_cancelled=True)
         booking3 = create_booking(user_in_41, stock, is_cancelled=False)
-        PcObject.save(booking1, booking2, booking3)
+        ApiHandler.save(booking1, booking2, booking3)
 
         # When
         number_of_bookings = count_all_cancelled_bookings('41')
@@ -1333,7 +1333,7 @@ class GetAllUsedOrFinishedBookingsTest:
         stock = create_stock(offer=offer, price=0)
         user = create_user(departement_code='76')
         booking = create_booking(user, stock, is_used=True)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         number_of_bookings = get_all_used_or_finished_bookings('76')
@@ -1350,7 +1350,7 @@ class GetAllUsedOrFinishedBookingsTest:
         stock = create_stock(offer=offer, price=0)
         user = create_user(departement_code='54')
         booking = create_booking(user, stock, is_used=True)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         number_of_bookings = get_all_used_or_finished_bookings('76')
@@ -1367,7 +1367,7 @@ class GetAllUsedOrFinishedBookingsTest:
         thing_stock = create_stock(offer=thing_offer, price=0)
         user = create_user(departement_code='76')
         thing_booking = create_booking(user, thing_stock, is_used=False)
-        PcObject.save(thing_booking)
+        ApiHandler.save(thing_booking)
 
         # When
         number_of_bookings = get_all_used_or_finished_bookings('76')
@@ -1389,7 +1389,7 @@ class GetAllUsedOrFinishedBookingsTest:
         booking1 = create_booking(user_in_76, event_stock, is_used=True)
         booking2 = create_booking(user_in_41, event_stock, is_used=True)
         booking3 = create_booking(user_in_41, event_stock, is_used=True)
-        PcObject.save(booking1, booking2, booking3)
+        ApiHandler.save(booking1, booking2, booking3)
 
         # When
         number_of_bookings = get_all_used_or_finished_bookings('41')
@@ -1411,7 +1411,7 @@ class GetAllUsedOrFinishedBookingsTest:
 
         booking1 = create_booking(user, stock1, is_used=True)
         booking2 = create_booking(user, stock2, is_used=True)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         number_of_bookings = get_all_used_or_finished_bookings('41')
@@ -1433,7 +1433,7 @@ class GetAllUsedOrFinishedBookingsTest:
         booking1 = create_booking(user_in_76, event_stock, is_used=True)
         booking2 = create_booking(user_in_41, event_stock, is_used=True)
         booking3 = create_booking(user_in_41, event_stock, is_used=True)
-        PcObject.save(booking1, booking2, booking3)
+        ApiHandler.save(booking1, booking2, booking3)
 
         # When
         number_of_bookings = get_all_used_or_finished_bookings(None)

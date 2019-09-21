@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from sqlalchemy_api_handler import dehumanize
 
 from connectors.api_demarches_simplifiees import get_application_details
 from domain.bank_account import format_raw_iban_or_bic
@@ -11,7 +12,6 @@ from repository import offerer_queries
 from repository.local_provider_event_queries import find_latest_sync_end_event
 from repository import venue_queries
 from utils.date import DATE_ISO_FORMAT
-from utils.human_ids import dehumanize
 
 
 class NoOffererFoundException(Exception):

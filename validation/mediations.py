@@ -1,8 +1,6 @@
 from io import BytesIO
-
 from PIL import Image
-
-from models import ApiErrors
+from sqlalchemy_api_handler import ApiErrors
 
 MINIMUM_FILE_SIZE = 100 * 1000
 

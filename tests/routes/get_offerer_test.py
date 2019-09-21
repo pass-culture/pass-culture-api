@@ -1,7 +1,7 @@
-from models import PcObject
+from sqlalchemy_api_handler import ApiHandler, humanize
+
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_user, create_offerer, create_venue, create_bank_information, create_user_offerer
-from utils.human_ids import humanize
 
 
 class Get:
@@ -10,7 +10,7 @@ class Get:
         def when_user_offerer_does_not_exist(self, app):
             # Given
             user = create_user()
-            PcObject.save(user)
+            ApiHandler.save(user)
             invalid_id = 12
 
             # When
@@ -31,7 +31,7 @@ class Get:
             venue = create_venue(offerer)
             create_bank_information(venue=venue, id_at_providers=venue.siret)
             user_offerer = create_user_offerer(user, offerer)
-            PcObject.save(user_offerer, venue)
+            ApiHandler.save(user_offerer, venue)
             # when
             response = TestClient(app.test_client()) \
                 .with_auth(user.email) \

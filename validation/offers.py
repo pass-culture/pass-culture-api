@@ -1,7 +1,7 @@
 from flask import Request
+from sqlalchemy_api_handler.api_errors import ApiErrors, ResourceNotFoundError
 
 from models import RightsType, Offer
-from models.api_errors import ResourceNotFoundError, ApiErrors
 from models.offer_type import ProductType
 from utils.rest import ensure_current_user_has_rights
 

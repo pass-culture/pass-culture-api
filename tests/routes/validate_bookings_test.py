@@ -1,14 +1,14 @@
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
+from sqlalchemy_api_handler import ApiHandler, humanize
 
-from models import PcObject, EventType, ThingType, Deposit, Booking, User
+from models import EventType, ThingType, Deposit, Booking, User
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_offer_with_thing_product, create_deposit, create_stock_with_event_offer, \
     create_venue, \
     create_offerer, \
     create_user, create_booking, create_offer_with_event_product, \
     create_event_occurrence, create_stock_from_event_occurrence, create_user_offerer, create_stock_from_offer
-from utils.human_ids import humanize
 
 
 class Patch:
@@ -30,7 +30,7 @@ class Patch:
                                                   end_datetime=Patch.tomorrow_plus_one_hour,
                                                   booking_limit_datetime=Patch.tomorrow_minus_one_hour)
             booking = create_booking(user, stock, venue=venue)
-            PcObject.save(booking, user_offerer)
+            ApiHandler.save(booking, user_offerer)
             booking_id = booking.id
             url = '/bookings/token/{}'.format(booking.token)
 
@@ -54,7 +54,7 @@ class Patch:
                                                   end_datetime=Patch.tomorrow_plus_one_hour,
                                                   booking_limit_datetime=Patch.tomorrow_minus_one_hour)
             booking = create_booking(user, stock, venue=venue)
-            PcObject.save(booking, user_offerer)
+            ApiHandler.save(booking, user_offerer)
             booking_id = booking.id
             url = '/bookings/token/{}'.format(booking.token)
 
@@ -82,7 +82,7 @@ class Patch:
                                                        booking_limit_date=Patch.tomorrow_minus_one_hour)
             booking = create_booking(user, stock, venue=venue)
 
-            PcObject.save(user_offerer, booking)
+            ApiHandler.save(user_offerer, booking)
             url_email = urlencode({'email': 'user+plus@email.fr'})
             url = '/bookings/token/{}?{}'.format(booking.token, url_email)
 
@@ -105,7 +105,7 @@ class Patch:
             stock = create_stock_from_event_occurrence(activation_event_occurrence, price=0,
                                                        booking_limit_date=Patch.tomorrow_minus_one_hour)
             booking = create_booking(user, stock, venue=venue)
-            PcObject.save(booking, user_offerer)
+            ApiHandler.save(booking, user_offerer)
             user_id = user.id
             url = '/bookings/token/{}'.format(booking.token)
 
@@ -135,7 +135,7 @@ class Patch:
             stock = create_stock_from_event_occurrence(activation_event_occurrence, price=0,
                                                        booking_limit_date=Patch.tomorrow_minus_one_hour)
             booking = create_booking(user, stock, venue=venue)
-            PcObject.save(booking, user_offerer)
+            ApiHandler.save(booking, user_offerer)
             user_id = user.id
             url = '/bookings/token/{}'.format(booking.token)
 
@@ -163,7 +163,7 @@ class Patch:
                                                   end_datetime=Patch.tomorrow_plus_one_hour,
                                                   booking_limit_datetime=Patch.tomorrow_minus_one_hour)
             booking = create_booking(user, stock, venue=venue)
-            PcObject.save(booking, admin_user)
+            ApiHandler.save(booking, admin_user)
             booking_id = booking.id
             url = '/bookings/token/{}?email={}'.format(booking.token, user.email)
 
@@ -188,7 +188,7 @@ class Patch:
             four_days_from_now = datetime.utcnow() + timedelta(days=4)
             stock = create_stock_from_offer(offer, price=0, beginning_datetime=four_days_from_now)
             booking = create_booking(user, stock, venue=venue)
-            PcObject.save(booking, user_offerer)
+            ApiHandler.save(booking, user_offerer)
             url = '/bookings/token/{}'.format(booking.token)
 
             # When
@@ -216,7 +216,7 @@ class Patch:
             stock = create_stock_from_event_occurrence(activation_event_occurrence, price=0,
                                                        booking_limit_date=Patch.tomorrow_minus_one_hour)
             booking = create_booking(user, stock, venue=venue)
-            PcObject.save(booking, user_offerer)
+            ApiHandler.save(booking, user_offerer)
             url = '/bookings/token/{}'.format(booking.token)
 
             # When
@@ -237,7 +237,7 @@ class Patch:
                                                   end_datetime=Patch.tomorrow_plus_one_hour,
                                                   booking_limit_datetime=Patch.tomorrow_minus_one_hour)
             booking = create_booking(user, stock, venue=venue)
-            PcObject.save(booking, admin_user)
+            ApiHandler.save(booking, admin_user)
             booking_id = booking.id
             url = '/bookings/token/{}?email={}'.format(booking.token, 'wrong@email.fr')
 
@@ -263,7 +263,7 @@ class Patch:
                                                        booking_limit_date=Patch.tomorrow_minus_one_hour)
             booking = create_booking(user, stock, venue=venue)
 
-            PcObject.save(user_offerer, booking)
+            ApiHandler.save(user_offerer, booking)
             url = '/bookings/token/{}?email={}'.format(booking.token, user.email)
 
             # When
@@ -283,7 +283,7 @@ class Patch:
                                                   end_datetime=Patch.tomorrow_plus_one_hour,
                                                   booking_limit_datetime=Patch.tomorrow_minus_one_hour)
             booking = create_booking(user, stock, venue=venue)
-            PcObject.save(booking, admin_user)
+            ApiHandler.save(booking, admin_user)
             booking_id = booking.id
             url = '/bookings/token/{}?email={}&offer_id={}'.format(booking.token, user.email, humanize(123))
 
@@ -312,7 +312,7 @@ class Patch:
                                                        booking_limit_date=Patch.tomorrow_minus_one_hour)
             booking = create_booking(user, stock, venue=venue)
             deposit = create_deposit(user, amount=500)
-            PcObject.save(booking, user_offerer, deposit)
+            ApiHandler.save(booking, user_offerer, deposit)
             user_id = user.id
             url = '/bookings/token/{}'.format(booking.token)
 
@@ -339,7 +339,7 @@ class Patch:
                                                   booking_limit_datetime=Patch.tomorrow_minus_one_hour)
             booking = create_booking(user, stock, venue=venue)
             booking.isCancelled = True
-            PcObject.save(booking, user_offerer)
+            ApiHandler.save(booking, user_offerer)
             booking_id = booking.id
             url = '/bookings/token/{}'.format(booking.token)
 
@@ -364,7 +364,7 @@ class Patch:
                                                   booking_limit_datetime=Patch.tomorrow_minus_one_hour)
             booking = create_booking(user, stock, venue=venue)
             booking.isUsed = True
-            PcObject.save(booking, user_offerer)
+            ApiHandler.save(booking, user_offerer)
             booking_id = booking.id
 
             url = '/bookings/token/{}'.format(booking.token)

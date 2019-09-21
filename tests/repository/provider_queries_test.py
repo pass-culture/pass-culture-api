@@ -1,4 +1,6 @@
-from models import Provider, PcObject
+from sqlalchemy_api_handler import ApiHandler
+
+from models import Provider
 from models.db import db
 from repository.provider_queries import get_enabled_providers_for_pro
 from tests.conftest import clean_database
@@ -19,7 +21,7 @@ class GetEnabledProvidersForProTest:
         provider2.localClass = 'TiteLive'
         provider2.isActive = True
         provider2.enabledForPro = True
-        PcObject.save(provider1, provider2)
+        ApiHandler.save(provider1, provider2)
 
         # when
         enabled_providers = get_enabled_providers_for_pro()

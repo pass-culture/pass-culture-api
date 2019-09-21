@@ -1,13 +1,12 @@
 from datetime import datetime
 from unittest.mock import patch
+from sqlalchemy_api_handler import ApiErrors, ApiHandler, humanize
 
-from models import PcObject, ApiErrors
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_stock_with_thing_offer, \
     create_deposit, create_venue, create_offerer, \
     create_user, create_booking, create_user_offerer, create_offer_with_thing_product, create_stock_from_offer, \
     create_offer_with_event_product
-from utils.human_ids import humanize
 
 
 class Get:
@@ -35,7 +34,7 @@ class Get:
             booking5 = create_booking(user, stock4, venue=venue3, token='ABCDEJ')
             booking6 = create_booking(user, stock4, venue=venue3, token='ABCDEK')
 
-            PcObject.save(deposit, booking1, booking2, booking3,
+            ApiHandler.save(deposit, booking1, booking2, booking3,
                           booking4, booking5, booking6, user_offerer1,
                           user_offerer2)
 
@@ -54,7 +53,7 @@ class Get:
         def when_user_has_no_offerer_attached(self, app):
             # Given
             user = create_user(email='user+plus@email.fr')
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -88,7 +87,7 @@ class Get:
             booking3 = create_booking(user, stock2, venue=venue2, token='ABCDEH')
             booking4 = create_booking(user, stock3, venue=venue3, token='ABCDEI')
 
-            PcObject.save(deposit, booking1, booking2, booking3,
+            ApiHandler.save(deposit, booking1, booking2, booking3,
                           booking4, user_offerer1, user_offerer2)
 
             url = '/bookings/csv?venueId=%s' % (humanize(venue1.id))
@@ -122,7 +121,7 @@ class Get:
             booking_on_physical_venue = create_booking(user, stock1, venue=physical_venue, token='ABCDEF')
             booking_on_digital_venue = create_booking(user, stock2, venue=virtual_venue, token='ABCDEH')
 
-            PcObject.save(deposit, booking_on_physical_venue, booking_on_digital_venue, user_offerer1)
+            ApiHandler.save(deposit, booking_on_physical_venue, booking_on_digital_venue, user_offerer1)
 
             url = '/bookings/csv?onlyDigitalVenues=true'
 
@@ -156,7 +155,7 @@ class Get:
             booking_on_target_offer_and_date = create_booking(user, stock1, venue=venue, token='ABCDEH', date_created=datetime.strptime("2020-05-01T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ"))
             booking_on_other_date = create_booking(user, stock1, venue=venue, token='ABCDEG', date_created=datetime.strptime("2020-04-30T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ"))
 
-            PcObject.save(deposit, booking_on_other_offer, booking_on_target_offer_and_date, booking_on_other_date, user_offerer1)
+            ApiHandler.save(deposit, booking_on_other_offer, booking_on_target_offer_and_date, booking_on_other_date, user_offerer1)
 
             target_offer_id = humanize(target_offer.id)
             url = f'/bookings/csv?onlyDigitalVenues=true&offerId={target_offer_id}&dateFrom=2020-05-01T00:00:00.000Z&dateTo=2020-05-01T00:00:00.000Z'
@@ -179,7 +178,7 @@ class Get:
         def when_user_is_admin(self, check_rights_to_get_bookings_csv, app):
             # Given
             user_admin = create_user(email='user+plus@email.fr', is_admin=True, can_book_free_offers=False)
-            PcObject.save(user_admin)
+            ApiHandler.save(user_admin)
 
             api_errors = ApiErrors()
             api_errors.status_code = 400

@@ -1,4 +1,3 @@
-""" venue """
 from sqlalchemy import BigInteger, \
     Column, \
     ForeignKey, \
@@ -11,6 +10,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.sql.functions import coalesce
+from sqlalchemy_api_handler import ApiHandler
 
 from domain.keywords import create_ts_vector_and_table_args
 from models.db import Model
@@ -18,7 +18,6 @@ from models.has_address_mixin import HasAddressMixin
 from models.has_thumb_mixin import HasThumbMixin
 from models.needs_validation_mixin import NeedsValidationMixin
 from models.offerer import Offerer
-from models.pc_object import PcObject
 from models.providable_mixin import ProvidableMixin
 from models.versioned_mixin import VersionedMixin
 
@@ -49,7 +48,7 @@ CONSTRAINT_CHECK_HAS_SIRET_XOR_HAS_COMMENT_XOR_IS_VIRTUAL = """
 """
 
 
-class Venue(PcObject,
+class Venue(ApiHandler,
             Model,
             HasThumbMixin,
             HasAddressMixin,

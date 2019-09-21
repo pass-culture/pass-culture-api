@@ -1,10 +1,10 @@
-from models import PcObject
+from sqlalchemy_api_handler import ApiHandler, humanize
+
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_venue, \
     create_offerer, \
     create_user, \
     create_user_offerer
-from utils.human_ids import humanize
 
 
 class Get:
@@ -18,7 +18,7 @@ class Get:
             user = create_user(email='user.pro@test.com')
             user_offerer = create_user_offerer(user, offerer)
 
-            PcObject.save(user_offerer, venue)
+            ApiHandler.save(user_offerer, venue)
             auth_request = TestClient(app.test_client()).with_auth(email=user.email)
 
             # when
@@ -44,7 +44,7 @@ class Get:
             bookshop_user_offerer = create_user_offerer(bookshop_user, bookshop_offerer)
             bookshop_venue = create_venue(bookshop_offerer, name='Contes et légendes', siret='12345678912345')
 
-            PcObject.save(theater_user_offerer, theater_venue, bookshop_user_offerer, bookshop_venue)
+            ApiHandler.save(theater_user_offerer, theater_venue, bookshop_user_offerer, bookshop_venue)
 
             auth_request = TestClient(app.test_client()).with_auth(email=bookshop_user.email)
 
@@ -63,7 +63,7 @@ class Get:
             offerer = create_offerer()
             user = create_user(email='user.pro@test.com')
             venue = create_venue(offerer, name='L\'encre et la plume')
-            PcObject.save(user, venue)
+            ApiHandler.save(user, venue)
             auth_request = TestClient(app.test_client()).with_auth(email=user.email)
 
             # when

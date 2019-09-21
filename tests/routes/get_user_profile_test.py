@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
+from sqlalchemy_api_handler import ApiHandler
 
-from models import PcObject, ThingType
+from models import ThingType
 from tests.conftest import clean_database, TestClient
-
 from tests.test_utils import create_offer_with_thing_product, create_user, create_offerer, create_user_offerer, create_venue, create_stock_with_thing_offer, create_recommendation, create_deposit, create_booking
 
 class Get:
@@ -11,7 +11,7 @@ class Get:
         def when_user_is_logged_in_and_has_no_deposit(self, app):
             # Given
             user = create_user(public_name='Toto', departement_code='93', email='toto@btmx.fr')
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             # When
             response = TestClient(app.test_client()) \
@@ -32,11 +32,11 @@ class Get:
         def when_user_is_logged_in_and_has_a_deposit(self, app):
             # Given
             user = create_user(public_name='Test', departement_code='93', email='wallet_test@email.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             deposit = create_deposit(user, amount=10)
             deposit.dateCreated = datetime(2000,1,1,2,2)
-            PcObject.save(deposit)
+            ApiHandler.save(deposit)
 
             # When
             response = TestClient(app.test_client()).with_auth('wallet_test@email.com').get('/users/current')
@@ -58,7 +58,7 @@ class Get:
             deposit_2 = create_deposit(user, amount=10)
             booking = create_booking(user, stock, venue, recommendation, quantity=1)
 
-            PcObject.save(user, venue, deposit_1, deposit_2, booking)
+            ApiHandler.save(user, venue, deposit_1, deposit_2, booking)
 
             # When
             response = TestClient(app.test_client()).with_auth('wallet_test@email.com').get('/users/current')
@@ -85,7 +85,7 @@ class Get:
             offer = create_offer_with_thing_product(offerer_virtual_venue, thing_type=ThingType.JEUX_VIDEO_ABO, url='http://fake.url')
             offer2 = create_offer_with_thing_product(offerer2_physical_venue)
 
-            PcObject.save(offer, offer2, offerer2_virtual_venue, user_offerer, user_offerer2)
+            ApiHandler.save(offer, offer2, offerer2_virtual_venue, user_offerer, user_offerer2)
 
             # When
             response = TestClient(app.test_client()).with_auth('test@email.com').get('/users/current')
@@ -99,7 +99,7 @@ class Get:
         def when_header_not_in_whitelist(self, app):
             # Given
             user = create_user(email='e@mail.com', can_book_free_offers=True, is_admin=False)
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             # When
             response = TestClient(app.test_client()) \

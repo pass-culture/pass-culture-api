@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 import random
-
 import pytest
 from freezegun import freeze_time
+from sqlalchemy_api_handler import ApiHandler
 
-from models import Offer, PcObject, Stock, Product, Criterion, OfferCriterion
+from models import Offer, Stock, Product, Criterion, OfferCriterion
 from models.offer_type import EventType, ThingType
 from repository.offer_queries import department_or_national_offers, \
     find_activation_offers, \
@@ -43,7 +43,7 @@ class DepartmentOrNationalOffersTest:
         offerer = create_offerer()
         venue = create_venue(offerer, postal_code='34000', departement_code='34')
         offer = create_offer_with_thing_product(venue, product)
-        PcObject.save(offer)
+        ApiHandler.save(offer)
         query = Product.query.filter_by(name='Lire un livre')
 
         # when
@@ -59,7 +59,7 @@ class DepartmentOrNationalOffersTest:
         offerer = create_offerer()
         venue = create_venue(offerer, is_virtual=False, postal_code='29000', departement_code='29')
         offer = create_offer_with_event_product(venue, product)
-        PcObject.save(offer)
+        ApiHandler.save(offer)
         query = Product.query.filter_by(name='Voir une pièce')
 
         # when
@@ -75,7 +75,7 @@ class DepartmentOrNationalOffersTest:
         offerer = create_offerer()
         venue = create_venue(offerer, is_virtual=False, postal_code='29000', departement_code='29')
         offer = create_offer_with_event_product(venue, product)
-        PcObject.save(offer)
+        ApiHandler.save(offer)
         query = Product.query.filter_by(name='Voir une pièce')
 
         # when
@@ -91,7 +91,7 @@ class DepartmentOrNationalOffersTest:
         offerer = create_offerer()
         venue = create_venue(offerer, is_virtual=False, postal_code='29000', departement_code='29')
         offer = create_offer_with_event_product(venue, product)
-        PcObject.save(offer)
+        ApiHandler.save(offer)
         query = Product.query.filter_by(name='Voir une pièce')
 
         # when
@@ -107,7 +107,7 @@ class DepartmentOrNationalOffersTest:
         offerer = create_offerer()
         venue = create_venue(offerer, is_virtual=False, postal_code='29000', departement_code='29')
         offer = create_offer_with_event_product(venue, product)
-        PcObject.save(offer)
+        ApiHandler.save(offer)
         query = Product.query.filter_by(name='Voir une pièce')
 
         # when
@@ -162,7 +162,7 @@ class GetOffersForRecommendationsSearchTest:
         conference_stock2 = create_stock_from_event_occurrence(conference_event_occurrence2)
         concert_stock = create_stock_from_event_occurrence(concert_event_occurrence)
 
-        PcObject.save(conference_stock1, conference_stock2, concert_stock)
+        ApiHandler.save(conference_stock1, conference_stock2, concert_stock)
 
         # When
         offers = get_offers_for_recommendations_search(
@@ -202,7 +202,7 @@ class GetOffersForRecommendationsSearchTest:
         ko_stock1 = create_stock_from_offer(ko_offer)
         ko_stock2 = create_stock_from_event_occurrence(ko_event_occurrence)
 
-        PcObject.save(ok_stock1, ok_stock2, ko_stock1, ko_stock2)
+        ApiHandler.save(ok_stock1, ok_stock2, ko_stock1, ko_stock2)
 
         # When
         offers = get_offers_for_recommendations_search(
@@ -228,7 +228,7 @@ class GetOffersForRecommendationsSearchTest:
         ko_stock_after = _create_event_stock_and_offer_for_date(venue, datetime(2018, 1, 10, 12, 30))
         ok_stock_with_thing = create_stock_with_thing_offer(offerer, venue)
 
-        PcObject.save(ok_stock, ko_stock_before, ko_stock_after)
+        ApiHandler.save(ok_stock, ko_stock_before, ko_stock_after)
 
         # When
         search_result_offers = get_offers_for_recommendations_search(
@@ -258,7 +258,7 @@ class GetOffersForRecommendationsSearchTest:
         event_ko_stock = create_stock_from_event_occurrence(event_ko_occurrence)
         thing_ok_stock = create_stock_from_offer(thing_ok_offer)
         thing_ko_stock = create_stock_from_offer(thing_ko_offer)
-        PcObject.save(event_ko_stock, thing_ok_stock, thing_ko_stock)
+        ApiHandler.save(event_ko_stock, thing_ok_stock, thing_ko_stock)
 
         # When
         offers = get_offers_for_recommendations_search(keywords_string='renc michel')
@@ -276,7 +276,7 @@ class GetOffersForRecommendationsSearchTest:
         venue = create_venue(offerer)
         thing_ok_offer = create_offer_with_thing_product(venue, thing_product_ok)
         thing_ok_stock = create_stock_from_offer(thing_ok_offer)
-        PcObject.save(thing_ok_stock)
+        ApiHandler.save(thing_ok_stock)
 
         # When
         offers = get_offers_for_recommendations_search(keywords_string='nez a')
@@ -292,7 +292,7 @@ class GetOffersForRecommendationsSearchTest:
         venue = create_venue(offerer)
         thing_ok_offer = create_offer_with_thing_product(venue, thing_ok)
         thing_ok_stock = create_stock_from_offer(thing_ok_offer)
-        PcObject.save(thing_ok_stock)
+        ApiHandler.save(thing_ok_stock)
 
         # When
         offers = get_offers_for_recommendations_search(keywords_string='deja')
@@ -310,7 +310,7 @@ class GetOffersForRecommendationsSearchTest:
         offer = create_offer_with_thing_product(venue, thing_type=type_label)
         outdated_stock = create_stock_from_offer(offer, booking_limit_datetime=three_hours_ago)
 
-        PcObject.save(outdated_stock)
+        ApiHandler.save(outdated_stock)
 
         # When
         search_result_offers = get_offers_for_recommendations_search(type_values=[
@@ -333,7 +333,7 @@ class GetOffersForRecommendationsSearchTest:
                                                             end_datetime=datetime.utcnow())
         stock = create_stock_from_event_occurrence(outdated_event_occurrence, booking_limit_date=None)
 
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # When
         search_result_offers = get_offers_for_recommendations_search(type_values=[
@@ -361,7 +361,7 @@ class GetOffersForRecommendationsSearchTest:
         future_stock = create_stock_from_event_occurrence(future_event_occurrence, booking_limit_date=None)
         outdated_stock = create_stock_from_event_occurrence(outdated_event_occurrence, booking_limit_date=None)
 
-        PcObject.save(future_stock, outdated_stock)
+        ApiHandler.save(future_stock, outdated_stock)
 
         # When
         search_result_offers = get_offers_for_recommendations_search(type_values=[
@@ -411,7 +411,7 @@ class GetActiveOffersTest:
         stock_75 = create_stock_from_offer(offer_75)
         user = create_user(departement_code='00')
 
-        PcObject.save(user, stock_34, stock_93, stock_75)
+        ApiHandler.save(user, stock_34, stock_93, stock_75)
 
         # When
         offers = get_active_offers(departement_codes=['00'], offer_id=None)
@@ -436,7 +436,7 @@ class GetActiveOffersTest:
         stock1 = create_stock_from_offer(offer1, price=0)
         stock2 = create_stock_from_event_occurrence(event_occurrence, price=0, available=10,
                                                     booking_limit_date=now + timedelta(days=2))
-        PcObject.save(user, stock1, stock2, mediation)
+        ApiHandler.save(user, stock1, stock2, mediation)
 
         # When
         offers = get_active_offers(user=user, departement_codes=['93'])
@@ -457,7 +457,7 @@ class GetActiveOffersTest:
         stock_activation_93 = create_stock_from_event_occurrence(event_occurrence_activation_93)
         user = create_user(departement_code='00')
 
-        PcObject.save(user, stock_93, stock_activation_93)
+        ApiHandler.save(user, stock_93, stock_activation_93)
 
         # When
         offers = get_active_offers(user=user, departement_codes=['00'], offer_id=None)
@@ -477,7 +477,7 @@ class GetActiveOffersTest:
         stock_activation_93 = create_stock_from_offer(thing_activation_93)
         user = create_user(departement_code='00')
 
-        PcObject.save(user, stock_93, stock_activation_93)
+        ApiHandler.save(user, stock_93, stock_activation_93)
 
         # When
         offers = get_active_offers(user=user, departement_codes=['00'], offer_id=None)
@@ -495,7 +495,7 @@ class GetActiveOffersTest:
         offer = create_offer_with_thing_product(venue, product)
         stock = create_stock_from_offer(offer, available=2)
         booking = create_booking(create_user(), stock, venue=venue, quantity=2, is_cancelled=True)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         offers = get_active_offers(user=create_user(email="plop@plop.com"), departement_codes=['00'], offer_id=None)
@@ -515,8 +515,8 @@ class GetActiveOffersTest:
 
         stock2 = create_stock_with_thing_offer(offerer, venue, name='thing_without_mediation')
 
-        PcObject.save(stock2, mediation)
-        PcObject.save(stock1)
+        ApiHandler.save(stock2, mediation)
+        ApiHandler.save(stock1)
 
         # When
         offers = get_active_offers(user=create_user(email="plop@plop.com"),
@@ -549,9 +549,9 @@ class GetActiveOffersTest:
                                                name='event_occurs_later',
                                                thumb_count=1)
 
-        PcObject.save(stock3)
-        PcObject.save(stock2)
-        PcObject.save(stock1)
+        ApiHandler.save(stock3)
+        ApiHandler.save(stock2)
+        ApiHandler.save(stock1)
 
         # When
         offers = get_active_offers(user=create_user(email="plop@plop.com"),
@@ -581,7 +581,7 @@ class GetActiveOffersTest:
         stock5 = create_stock_with_thing_offer(offerer, venue, name='thing', thing_type=ThingType.AUDIOVISUEL)
         stock6 = create_stock_with_thing_offer(offerer, venue, name='thing', thing_type=ThingType.JEUX)
 
-        PcObject.save(stock1, stock2, stock3, stock4, stock5, stock6)
+        ApiHandler.save(stock1, stock2, stock3, stock4, stock5, stock6)
 
         def first_four_offers_have_different_type_and_onlineness(offers):
             return len(set([o.type + (o.url or '')
@@ -608,7 +608,7 @@ class GetActiveOffersTest:
         user = create_user()
         booking1 = create_booking(user, stock, venue=venue, quantity=2, is_cancelled=True)
         booking2 = create_booking(user, stock, venue=venue, quantity=2)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         offers = get_active_offers(user=create_user(email="plop@plop.com"), departement_codes=['00'], offer_id=None)
@@ -629,7 +629,7 @@ def test_find_activation_offers_returns_activation_offers_in_given_departement(a
     stock1 = create_stock_from_offer(offer1)
     stock2 = create_stock_from_offer(offer2)
     stock3 = create_stock_from_offer(offer3)
-    PcObject.save(stock1, stock2, stock3)
+    ApiHandler.save(stock1, stock2, stock3)
 
     # when
     offers = find_activation_offers('34').all()
@@ -652,7 +652,7 @@ def test_find_activation_offers_returns_activation_offers_if_offer_is_national(a
     stock2 = create_stock_from_offer(offer2)
     stock3 = create_stock_from_offer(offer3)
     stock4 = create_stock_from_offer(offer4)
-    PcObject.save(stock1, stock2, stock3, stock4)
+    ApiHandler.save(stock1, stock2, stock3, stock4)
 
     # when
     offers = find_activation_offers('34').all()
@@ -674,7 +674,7 @@ def test_find_activation_offers_returns_activation_offers_in_all_ile_de_france_i
     stock1 = create_stock_from_offer(offer1)
     stock2 = create_stock_from_offer(offer2)
     stock3 = create_stock_from_offer(offer3)
-    PcObject.save(stock1, stock2, stock3)
+    ApiHandler.save(stock1, stock2, stock3)
 
     # when
     offers = find_activation_offers('93').all()
@@ -698,7 +698,7 @@ def test_find_activation_offers_returns_activation_offers_with_available_stocks(
     stock2 = create_stock_from_offer(offer2, price=0, available=10)
     stock3 = create_stock_from_offer(offer3, price=0, available=1)
     booking = create_booking(create_user(), stock3, venue=venue3, quantity=1)
-    PcObject.save(stock1, stock2, stock3, booking, offer4)
+    ApiHandler.save(stock1, stock2, stock3, booking, offer4)
 
     # when
     offers = find_activation_offers('93').all()
@@ -723,7 +723,7 @@ def test_find_activation_offers_returns_activation_offers_with_future_booking_li
     stock1 = create_stock_from_offer(offer1, price=0, booking_limit_datetime=five_days_ago)
     stock2 = create_stock_from_offer(offer2, price=0, booking_limit_datetime=next_week)
     stock3 = create_stock_from_offer(offer3, price=0, booking_limit_datetime=None)
-    PcObject.save(stock1, stock2, stock3)
+    ApiHandler.save(stock1, stock2, stock3)
 
     # when
     offers = find_activation_offers('93').all()
@@ -758,7 +758,7 @@ def test_find_offers_with_filter_parameters_with_partial_keywords_and_filter_by_
     ko_offer2 = create_offer_with_event_product(venue1, event_product2)
     ko_offer3 = create_offer_with_thing_product(ko_venue3, thing1_product)
     ko_offer4 = create_offer_with_thing_product(venue2, thing2_product)
-    PcObject.save(
+    ApiHandler.save(
         user_offerer1, user_offerer2, ko_offerer3,
         ok_offer1, ko_offer2, ko_offer3, ko_offer4
     )
@@ -788,7 +788,7 @@ def test_offer_remaining_stock_filter_does_not_filter_offer_with_cancelled_booki
     offer = create_offer_with_thing_product(venue, product)
     stock = create_stock_from_offer(offer, available=2)
     booking = create_booking(create_user(), stock, venue=venue, quantity=2, is_cancelled=True)
-    PcObject.save(booking)
+    ApiHandler.save(booking)
 
     # When
     nb_offers_with_remaining_stock = Offer.query \
@@ -811,7 +811,7 @@ def test_offer_remaining_stock_filter_filters_offer_with_no_remaining_stock(app)
     user = create_user()
     booking1 = create_booking(user, stock, venue=venue, quantity=2, is_cancelled=True)
     booking2 = create_booking(user, stock, venue=venue, quantity=2)
-    PcObject.save(booking1, booking2)
+    ApiHandler.save(booking1, booking2)
 
     # When
     nb_offers_with_remaining_stock = Offer.query \
@@ -834,7 +834,7 @@ def test_offer_remaining_stock_filter_filters_offer_with_one_full_stock_and_one_
     stock2 = create_stock_from_offer(offer, available=2, price=0)
     user = create_user()
     booking1 = create_booking(user, stock1, venue=venue, quantity=2)
-    PcObject.save(booking1, stock2)
+    ApiHandler.save(booking1, stock2)
 
     # When
     nb_offers_with_remaining_stock = Offer.query \
@@ -853,7 +853,7 @@ def test_find_offers_by_venue_id_return_offers_matching_venue_id(app):
     offerer = create_offerer()
     venue = create_venue(offerer, postal_code='34000', departement_code='34')
     offer = create_offer_with_thing_product(venue, product)
-    PcObject.save(offer)
+    ApiHandler.save(offer)
 
     # When
     offers = find_offers_by_venue_id(venue.id)
@@ -889,7 +889,7 @@ class BaseScoreTest:
         offer1.criteria = [criterion_negative]
         offer2.criteria = [criterion_negative, criterion_positive]
 
-        PcObject.save(offer1, offer2)
+        ApiHandler.save(offer1, offer2)
 
         # When
         offers = Offer.query \
@@ -913,7 +913,7 @@ class GetActiveOffersTest:
         stock3 = create_stock_with_thing_offer(offerer, venue, name='thing', thing_type=ThingType.AUDIOVISUEL)
         stock4 = create_stock_with_thing_offer(offerer, venue, name='thing', thing_type=ThingType.JEUX)
 
-        PcObject.save(stock1, stock2, stock3, stock4)
+        ApiHandler.save(stock1, stock2, stock3, stock4)
 
         # When
         offers = get_active_offers(departement_codes=['00'],
@@ -936,7 +936,7 @@ class GetActiveOffersTest:
         stock2 = create_stock_from_offer(offer2, price=0)
         offer2.criteria = [create_criterion(name='positive', score_delta=1)]
 
-        PcObject.save(stock1, stock2)
+        ApiHandler.save(stock1, stock2)
 
         # When
         offers = get_active_offers(departement_codes=['00'],
@@ -964,7 +964,7 @@ class GetActiveOffersTest:
         stock3 = create_stock_from_offer(offer3, price=0)
         offer3.criteria = []
 
-        PcObject.save(stock1, stock2, stock3)
+        ApiHandler.save(stock1, stock2, stock3)
 
         # When
         offers = get_active_offers(departement_codes=['00'],

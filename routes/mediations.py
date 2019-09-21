@@ -1,15 +1,13 @@
 from flask import current_app as app, jsonify, request
 from flask_login import current_user, login_required
+from sqlalchemy_api_handler import ApiHandler, as_dict, dehumanize, load_or_404
 
 from connectors.thumb_storage import read_thumb, save_thumb
 from domain.mediations import create_new_mediation
 from models.mediation import Mediation
-from models.pc_object import PcObject
 from models.user_offerer import RightsType
-from routes.serialization import as_dict
-from utils.human_ids import dehumanize
 from utils.includes import MEDIATION_INCLUDES
-from utils.rest import ensure_current_user_has_rights, load_or_404, expect_json_data
+from utils.rest import ensure_current_user_has_rights, expect_json_data
 from validation.mediations import check_thumb_in_request, check_thumb_quality
 
 
@@ -24,7 +22,7 @@ def create_mediation():
     mediation = create_new_mediation(offer_id, offerer_id, current_user, credit)
     thumb = read_thumb(files=request.files, form=request.form)
     check_thumb_quality(thumb)
-    PcObject.save(mediation)
+    ApiHandler.save(mediation)
     save_thumb(mediation, thumb, 0, crop=_get_crop(request.form))
     return jsonify(as_dict(mediation)), 201
 
@@ -45,7 +43,7 @@ def update_mediation(mediation_id):
     mediation = Mediation.query.filter_by(id=dehumanize(mediation_id)).first()
     data = request.json
     mediation.populate_from_dict(data)
-    PcObject.save(mediation)
+    ApiHandler.save(mediation)
     return jsonify(as_dict(mediation, includes=MEDIATION_INCLUDES)), 200
 
 

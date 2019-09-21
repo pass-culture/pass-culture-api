@@ -1,6 +1,6 @@
-from models import EventType, Product
-from models.api_errors import ForbiddenError
+from sqlalchemy_api_handler.api_errors import ForbiddenError
 
+from models import EventType, Product
 
 def check_user_can_create_activation_event(user, product: Product):
     if product.type == str(EventType.ACTIVATION):

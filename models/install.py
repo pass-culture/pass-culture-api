@@ -1,8 +1,8 @@
 from postgresql_audit.flask import versioning_manager
 from sqlalchemy import orm
 from sqlalchemy.exc import ProgrammingError
+from sqlalchemy_api_handler import ApiHandler
 
-from models import PcObject
 from models.db import db
 from models.feature import FeatureToggle, Feature
 
@@ -56,4 +56,4 @@ def install_features():
             }
         )
         features.append(feature)
-    PcObject.save(*features)
+    ApiHandler.save(*features)

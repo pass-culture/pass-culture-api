@@ -1,25 +1,20 @@
-""" stocks """
 from flask import current_app as app, jsonify, request
 from flask_login import current_user
+from sqlalchemy_api_handler import ApiHandler, as_dict, dehumanize, listify, load_or_404
 
 from domain.stocks import delete_stock_and_cancel_bookings
 from domain.user_emails import send_batch_cancellation_emails_to_users, send_batch_cancellation_email_to_offerer
 from models import Product
 from models.mediation import Mediation
-from models.pc_object import PcObject
 from models.stock import Stock
 from models.user_offerer import RightsType
 from models.venue import Venue
 from repository import offerer_queries
 from repository.offer_queries import get_offer_by_id
 from repository.stock_queries import find_stocks_with_possible_filters
-from routes.serialization import as_dict
-from utils.human_ids import dehumanize
 from utils.mailing import MailServiceException, send_raw_email
 from utils.rest import ensure_current_user_has_rights, \
     expect_json_data, \
-    handle_rest_get_list, \
-    load_or_404, \
     login_or_api_key_required
 from validation.stocks import check_request_has_offer_id, check_dates_are_allowed_on_new_stock, \
     check_dates_are_allowed_on_existing_stock
@@ -36,7 +31,8 @@ search_models = [
 @login_or_api_key_required
 def list_stocks():
     filters = request.args.copy()
-    return handle_rest_get_list(Stock, query=find_stocks_with_possible_filters(filters, current_user), paginate=50)
+    return jsonify(listify(Stock,
+        query=find_stocks_with_possible_filters(filters, current_user), paginate=50))
 
 
 @app.route('/stocks/<stock_id>',
@@ -75,7 +71,7 @@ def create_stock():
     ensure_current_user_has_rights(RightsType.editor, offerer.id)
 
     new_stock = Stock(from_dict=request_data)
-    PcObject.save(new_stock)
+    ApiHandler.save(new_stock)
 
     return jsonify(as_dict(new_stock)), 201
 
@@ -95,7 +91,7 @@ def edit_stock(stock_id):
     ensure_current_user_has_rights(RightsType.editor, offerer_id)
 
     stock.populate_from_dict(stock_data)
-    PcObject.save(stock)
+    ApiHandler.save(stock)
 
     return jsonify(as_dict(stock)), 200
 
@@ -108,7 +104,7 @@ def delete_stock(id):
     offerer_id = stock.resolvedOffer.venue.managingOffererId
     ensure_current_user_has_rights(RightsType.editor, offerer_id)
     bookings = delete_stock_and_cancel_bookings(stock)
-    
+
     if bookings:
         try:
             send_batch_cancellation_emails_to_users(bookings, send_raw_email)
@@ -116,6 +112,6 @@ def delete_stock(id):
         except MailServiceException as e:
             app.logger.error('Mail service failure', e)
 
-    PcObject.save(stock, *bookings)
+    ApiHandler.save(stock, *bookings)
 
     return jsonify(as_dict(stock)), 200

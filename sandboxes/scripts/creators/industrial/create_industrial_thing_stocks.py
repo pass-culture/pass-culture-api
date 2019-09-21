@@ -1,7 +1,10 @@
-from models.pc_object import PcObject
+from sqlalchemy_api_handler import ApiHandler
+
 from sandboxes.scripts.utils.select import remove_every
+from tests.test_utils import create_stock_from_offer, \
+                             get_price_by_short_name, \
+                             get_occurrence_short_name
 from utils.logger import logger
-from tests.test_utils import create_stock_from_offer, get_price_by_short_name, get_occurrence_short_name
 
 THING_OFFERS_WITH_STOCK_REMOVE_MODULO = 3
 
@@ -39,7 +42,7 @@ def create_industrial_thing_stocks(thing_offers_by_name):
             price=price
         )
 
-    PcObject.save(*thing_stocks_by_name.values())
+    ApiHandler.save(*thing_stocks_by_name.values())
 
     logger.info('created {} thing_stocks'.format(len(thing_stocks_by_name)))
 

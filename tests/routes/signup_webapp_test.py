@@ -1,12 +1,11 @@
 from datetime import datetime
 from unittest.mock import patch
-
 from freezegun import freeze_time
+from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler.serialization.serialize import serialize
 
 from models.feature import FeatureToggle, Feature
-from models.pc_object import PcObject
 from models.user import User
-from routes.serialization import serialize
 from tests.conftest import clean_database, TestClient
 
 BASE_DATA = {
@@ -313,7 +312,7 @@ class Post:
             data = BASE_DATA.copy()
             feature = Feature.query.filter_by(name=FeatureToggle.WEBAPP_SIGNUP).first()
             feature.isActive = False
-            PcObject.save(feature)
+            ApiHandler.save(feature)
 
             # When
             response = TestClient(app.test_client()) \

@@ -1,6 +1,6 @@
-from decimal import Decimal, InvalidOperation
+from sqlalchemy_api_handler import ApiErrors
 
-from models import ApiErrors
+from decimal import Decimal, InvalidOperation
 
 MAX_LONGITUDE = 180
 MAX_LATITUDE = 90

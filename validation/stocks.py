@@ -1,4 +1,6 @@
-from models import ApiErrors, Offer
+from sqlalchemy_api_handler import ApiErrors
+
+from models import Offer
 
 
 def check_offer_offerer_exists(offerer):
@@ -54,4 +56,3 @@ def _forbid_dates_on_stock_for_thing_offer(request_data):
             {'global': [
                 'Impossible de mettre des dates de début et fin si l\'offre ne porte pas sur un évenement'
             ]})
-

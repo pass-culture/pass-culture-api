@@ -1,7 +1,7 @@
-from models import PcObject
+from sqlalchemy_api_handler import ApiHandler, dehumanize
+
 from repository.offer_queries import find_offers_by_venue_id
 from repository.venue_queries import find_by_id
-from utils.human_ids import dehumanize
 
 
 def delete_venue_and_offers_for_venue_id(humanized_venue_id: str):
@@ -13,7 +13,7 @@ def delete_venue_and_offers_for_venue_id(humanized_venue_id: str):
         raise AttributeError('Offres non supprimables car au moins une contient des stocks')
 
     for offer in offers:
-        PcObject.delete(offer)
+        ApiHandler.delete(offer)
 
     if venue:
-        PcObject.delete(venue)
+        ApiHandler.delete(venue)

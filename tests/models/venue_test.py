@@ -1,6 +1,6 @@
+from sqlalchemy_api_handler import ApiErrors, ApiHandler
 import pytest
 
-from models import ApiErrors, PcObject
 from models.venue import TooManyVirtualVenuesException
 from tests.conftest import clean_database
 from tests.test_utils import create_offerer, create_venue, create_offer_with_thing_product, \
@@ -12,28 +12,28 @@ from tests.test_utils import create_offerer, create_venue, create_offer_with_thi
 def test_offerer_cannot_have_address_and_isVirtual(app):
     # Given
     offerer = create_offerer('123456789', '1 rue Test', 'Test city', '93000', 'Test offerer')
-    PcObject.save(offerer)
+    ApiHandler.save(offerer)
 
     venue = create_venue(offerer, name='Venue_name', booking_email='booking@email.com', is_virtual=True, siret=None)
     venue.address = '1 test address'
 
     # When
     with pytest.raises(ApiErrors):
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
 
 @clean_database
 def test_offerer_not_isVirtual_and_has_siret_can_have_null_address(app):
     # Given
     offerer = create_offerer('123456789', '1 rue Test', 'Test city', '93000', 'Test offerer')
-    PcObject.save(offerer)
+    ApiHandler.save(offerer)
 
     venue = create_venue(offerer, siret='12345678912345', name='Venue_name', booking_email='booking@email.com',
                          address=None, postal_code='75000', city='Paris', departement_code='75', is_virtual=False)
 
     # When
     try:
-        PcObject.save(venue)
+        ApiHandler.save(venue)
     except ApiErrors:
         # Then
         assert pytest.fail(
@@ -44,7 +44,7 @@ def test_offerer_not_isVirtual_and_has_siret_can_have_null_address(app):
 def test_offerer_not_isVirtual_and_has_siret_cannot_have_null_postal_code_nor_city_nor_departement_code(app):
     # Given
     offerer = create_offerer('123456789', '1 rue Test', 'Test city', '93000', 'Test offerer')
-    PcObject.save(offerer)
+    ApiHandler.save(offerer)
 
     venue = create_venue(offerer, siret='12345678912345', name='Venue_name', booking_email='booking@email.com',
                          address='3 rue de valois', postal_code=None, city=None, departement_code=None,
@@ -52,7 +52,7 @@ def test_offerer_not_isVirtual_and_has_siret_cannot_have_null_postal_code_nor_ci
 
     # When
     with pytest.raises(ApiErrors):
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
 
 @clean_database
@@ -60,21 +60,21 @@ def test_offerer_not_isVirtual_and_has_no_siret_cannot_have_null_address_nor_pos
         app):
     # Given
     offerer = create_offerer('123456789', '1 rue Test', 'Test city', '93000', 'Test offerer')
-    PcObject.save(offerer)
+    ApiHandler.save(offerer)
 
     venue = create_venue(offerer, siret=None, name='Venue_name', booking_email='booking@email.com', address=None,
                          postal_code=None, city=None, departement_code=None, is_virtual=False)
 
     # When
     with pytest.raises(ApiErrors):
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
 
 @clean_database
 def test_offerer_not_isVirtual_and_has_no_siret_and_has_address_and_postal_code_and_city_and_departement_code(app):
     # Given
     offerer = create_offerer('123456789', '1 rue Test', 'Test city', '93000', 'Test offerer')
-    PcObject.save(offerer)
+    ApiHandler.save(offerer)
 
     venue = create_venue(offerer, siret=None, comment="fake comment", name='Venue_name',
                          booking_email='booking@email.com', address='3 rue valois', postal_code='75000', city='Paris',
@@ -82,7 +82,7 @@ def test_offerer_not_isVirtual_and_has_no_siret_and_has_address_and_postal_code_
 
     # When
     try:
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
     except ApiErrors:
         # Then
@@ -94,18 +94,18 @@ def test_offerer_not_isVirtual_and_has_no_siret_and_has_address_and_postal_code_
 def test_offerer_cannot_create_a_second_virtual_venue(app):
     # Given
     offerer = create_offerer('123456789', '1 rue Test', 'Test city', '93000', 'Test offerer')
-    PcObject.save(offerer)
+    ApiHandler.save(offerer)
 
     venue = create_venue(offerer, name='Venue_name', booking_email='booking@email.com', address=None, postal_code=None,
                          city=None, departement_code=None, is_virtual=True, siret=None)
-    PcObject.save(venue)
+    ApiHandler.save(venue)
 
     new_venue = create_venue(offerer, name='Venue_name', booking_email='booking@email.com', address=None,
                              postal_code=None, city=None, departement_code=None, is_virtual=True, siret=None)
 
     # When
     with pytest.raises(TooManyVirtualVenuesException):
-        PcObject.save(new_venue)
+        ApiHandler.save(new_venue)
 
 
 @clean_database
@@ -113,14 +113,14 @@ def test_offerer_cannot_update_a_second_venue_to_be_virtual(app):
     # Given
     siren = '132547698'
     offerer = create_offerer(siren, '1 rue Test', 'Test city', '93000', 'Test offerer')
-    PcObject.save(offerer)
+    ApiHandler.save(offerer)
 
     venue = create_venue(offerer, address=None, postal_code=None, city=None, departement_code=None, is_virtual=True,
                          siret=None)
-    PcObject.save(venue)
+    ApiHandler.save(venue)
 
     new_venue = create_venue(offerer, is_virtual=False, siret=siren + '98765')
-    PcObject.save(new_venue)
+    ApiHandler.save(new_venue)
 
     # When
     new_venue.isVirtual = True
@@ -132,7 +132,7 @@ def test_offerer_cannot_update_a_second_venue_to_be_virtual(app):
 
     # Then
     with pytest.raises(TooManyVirtualVenuesException):
-        PcObject.save(new_venue)
+        ApiHandler.save(new_venue)
 
 
 @clean_database
@@ -143,7 +143,7 @@ def test_venue_raises_exception_when_is_virtual_and_has_siret(app):
 
     # when
     with pytest.raises(ApiErrors):
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
 
 @clean_database
@@ -154,7 +154,7 @@ def test_venue_raises_exception_when_no_siret_and_no_comment(app):
 
     # when
     with pytest.raises(ApiErrors):
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
 
 @clean_database
@@ -165,7 +165,7 @@ def test_venue_raises_exception_when_siret_and_comment_but_virtual(app):
 
     # when
     with pytest.raises(ApiErrors):
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
 
 @clean_database
@@ -177,7 +177,7 @@ def test_venue_should_not_raise_exception_when_siret_and_comment(app):
 
     # when
     try:
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
     except ApiErrors:
         # Then
@@ -192,7 +192,7 @@ def test_venue_should_not_raise_exception_when_no_siret_but_comment(app):
 
     # when
     try:
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
     except ApiErrors:
         # Then
@@ -207,7 +207,7 @@ def test_nOffers(app):
     offer_2 = create_offer_with_event_product(venue)
     offer_4 = create_offer_with_event_product(venue)
     offer_5 = create_offer_with_thing_product(venue)
-    PcObject.save(offer_1, offer_2, offer_4, offer_5)
+    ApiHandler.save(offer_1, offer_2, offer_4, offer_5)
 
     # when
     n_offers = venue.nOffers
@@ -223,7 +223,7 @@ class VenueBankInformationTest:
         offerer = create_offerer(siren='123456789')
         venue = create_venue(offerer, siret='12345678912345')
         bank_information = create_bank_information(bic='BDFEFR2LCCB', id_at_providers='12345678912345', venue=venue)
-        PcObject.save(bank_information)
+        ApiHandler.save(bank_information)
 
         # When
         bic = venue.bic
@@ -236,7 +236,7 @@ class VenueBankInformationTest:
         # Given
         offerer = create_offerer(siren='123456789')
         venue = create_venue(offerer, siret='12345678912345')
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
         # When
         bic = venue.bic
@@ -251,7 +251,7 @@ class VenueBankInformationTest:
         venue = create_venue(offerer, siret='12345678912345')
         bank_information = create_bank_information(iban='FR7630007000111234567890144', id_at_providers='12345678912345',
                                                    venue=venue)
-        PcObject.save(bank_information)
+        ApiHandler.save(bank_information)
 
         # When
         iban = venue.iban
@@ -264,7 +264,7 @@ class VenueBankInformationTest:
         # Given
         offerer = create_offerer(siren='123456789')
         venue = create_venue(offerer, siret='12345678912345')
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
         # When
         iban = venue.iban

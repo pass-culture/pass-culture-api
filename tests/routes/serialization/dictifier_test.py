@@ -1,5 +1,6 @@
-from models import PcObject, Stock
-from routes.serialization import as_dict
+from sqlalchemy_api_handler import ApiHandler, as_dict
+
+from models import Stock
 from tests.conftest import clean_database
 from tests.test_utils import create_user, create_offerer, create_user_offerer, create_product_with_event_type, \
     create_mediation, create_offer_with_event_product, create_venue, create_booking
@@ -12,7 +13,7 @@ class AsDictTest:
         user = create_user(postal_code=None)
         offerer = create_offerer()
         user_offerer = create_user_offerer(user, offerer)
-        PcObject.save(user_offerer)
+        ApiHandler.save(user_offerer)
         USER_INCLUDES = []
 
         # when
@@ -29,7 +30,7 @@ class AsDictTest:
         user = create_user(postal_code=None)
         offerer = create_offerer()
         user_offerer = create_user_offerer(user, offerer)
-        PcObject.save(user_offerer)
+        ApiHandler.save(user_offerer)
         USER_INCLUDES = ['-password', '-resetPasswordToken']
 
         # when
@@ -45,7 +46,7 @@ class AsDictTest:
         user = create_user(postal_code=None)
         offerer = create_offerer()
         user_offerer = create_user_offerer(user, offerer)
-        PcObject.save(user_offerer)
+        ApiHandler.save(user_offerer)
         USER_INCLUDES = []
 
         # when
@@ -61,7 +62,7 @@ class AsDictTest:
         user = create_user(postal_code=None)
         offerer = create_offerer()
         user_offerer = create_user_offerer(user, offerer)
-        PcObject.save(user_offerer)
+        ApiHandler.save(user_offerer)
         USER_INCLUDES = ['hasPhysicalVenues', 'hasOffers']
 
         # when
@@ -77,7 +78,7 @@ class AsDictTest:
         user = create_user()
         offerer = create_offerer()
         user_offerer = create_user_offerer(user, offerer)
-        PcObject.save(user_offerer)
+        ApiHandler.save(user_offerer)
         USER_INCLUDES = ['offerers']
 
         # when
@@ -96,7 +97,7 @@ class AsDictTest:
         event_product = create_product_with_event_type(event_name='My Event')
         offer = create_offer_with_event_product(venue, product=event_product)
         mediation = create_mediation(offer)
-        PcObject.save(mediation)
+        ApiHandler.save(mediation)
         EVENT_INCLUDES = [
             {
                 "key": "mediations",
@@ -118,7 +119,7 @@ class AsDictTest:
         event_product = create_product_with_event_type(event_name='My Event')
         offer = create_offer_with_event_product(venue, product=event_product)
         mediation = create_mediation(offer)
-        PcObject.save(mediation)
+        ApiHandler.save(mediation)
         EVENT_INCLUDES = [
             {
                 "key": "mediations",

@@ -1,12 +1,10 @@
 from unittest.mock import patch
-
 import pytest
+from sqlalchemy_api_handler import ApiErrors, ApiHandler, humanize
 
-from models import PcObject, ApiErrors
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_offerer, create_venue, create_user, activate_provider, \
     check_titelive_stocks_api_is_down, create_product_with_thing_type
-from utils.human_ids import humanize
 
 
 class Post:
@@ -17,7 +15,7 @@ class Post:
             # given
             offerer = create_offerer(siren='775671464')
             venue = create_venue(offerer, name='Librairie Titelive', siret='77567146400110')
-            PcObject.save(venue)
+            ApiHandler.save(venue)
 
             provider = activate_provider('TiteLiveStocks')
             product = create_product_with_thing_type(id_at_providers='0002730757438')
@@ -26,7 +24,7 @@ class Post:
                                    'venueId': humanize(venue.id),
                                    'venueIdAtOfferProvider': '77567146400110'}
             user = create_user(is_admin=True, can_book_free_offers=False)
-            PcObject.save(product, user)
+            ApiHandler.save(product, user)
             auth_request = TestClient(app.test_client()) \
                 .with_auth(email=user.email)
 
@@ -54,7 +52,7 @@ class Post:
             validate_new_venue_provider_information.side_effect = api_errors
 
             user = create_user(is_admin=True, can_book_free_offers=False)
-            PcObject.save(user)
+            ApiHandler.save(user)
             auth_request = TestClient(app.test_client()) \
                 .with_auth(email=user.email)
             venue_provider_data = {

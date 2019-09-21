@@ -1,4 +1,6 @@
-from models import PcObject, User
+from sqlalchemy_api_handler import ApiHandler
+
+from models import User
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_user
 
@@ -9,7 +11,7 @@ class PostChangePassword:
         def when_current_user_changes_password(self, app):
             # given
             user = create_user(email='user@test.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
             data = {'oldPassword': user.clearTextPassword, 'newPassword': 'N3W_p4ssw0rd'}
             user_id = user.id
 
@@ -28,7 +30,7 @@ class PostChangePassword:
         def when_old_password_is_missing(self, app):
             # given
             user = create_user(email='user@test.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
             data = {'newPassword': 'N3W_p4ssw0rd'}
 
             # when
@@ -44,7 +46,7 @@ class PostChangePassword:
         def when_new_password_is_missing(self, app):
             # given
             user = create_user(email='user@test.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
             data = {'oldPassword': '0ldp4ssw0rd'}
 
             # when
@@ -60,7 +62,7 @@ class PostChangePassword:
         def when_new_password_is_not_strong_enough(self, app):
             # given
             user = create_user(email='user@test.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
             data = {'oldPassword': '0ldp4ssw0rd', 'newPassword': 'weakpassword'}
 
             # when

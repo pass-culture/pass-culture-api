@@ -1,4 +1,4 @@
-from models import ApiErrors
+from sqlalchemy_api_handler import ApiErrors
 
 
 def is_url_safe(url: str):

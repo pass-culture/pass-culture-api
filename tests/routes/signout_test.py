@@ -1,4 +1,6 @@
-from models import UserSession, PcObject
+from sqlalchemy_api_handler import ApiHandler
+
+from models import UserSession
 from tests.conftest import TestClient, clean_database
 from tests.test_utils import create_user
 
@@ -9,7 +11,7 @@ class Get:
         def expect_the_existing_user_session_to_be_deleted_deleted(self, app):
             # given
             user = create_user(email='test@mail.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
             auth_request = TestClient(app.test_client()).with_auth(email=user.email)
 
             assert auth_request.get('/bookings').status_code == 200

@@ -1,4 +1,3 @@
-""" booking model """
 from datetime import datetime, timedelta
 
 from sqlalchemy import BigInteger, \
@@ -12,15 +11,14 @@ from sqlalchemy import BigInteger, \
     String, Numeric
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import expression
+from sqlalchemy_api_handler import ApiHandler, humanize
 
 from models.db import Model
-from models.pc_object import PcObject
 from models.versioned_mixin import VersionedMixin
-from utils.human_ids import humanize
 from utils.string_processing import format_decimal
 
 
-class Booking(PcObject, Model, VersionedMixin):
+class Booking(ApiHandler, Model, VersionedMixin):
 
     id = Column(BigInteger,
                 primary_key=True,
@@ -111,7 +109,7 @@ class Booking(PcObject, Model, VersionedMixin):
         elif 'insufficientFunds' in str(ie.orig):
             return ['insufficientFunds',
                                 "Le solde de votre pass est insuffisant pour réserver cette offre."]
-        return PcObject.restize_integrity_error(ie)
+        return ApiHandler.restize_integrity_error(ie)
 
     @property
     def isEventExpired(self):

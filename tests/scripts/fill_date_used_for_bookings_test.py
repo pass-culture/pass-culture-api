@@ -1,6 +1,7 @@
 from datetime import datetime
+from sqlalchemy_api_handler import ApiHandler
 
-from models import PcObject, Booking
+from models import Booking
 from scripts.fill_date_used_for_bookings import fill_date_used_for_bookings
 from tests.conftest import clean_database
 from tests.test_utils import create_booking, create_user, create_deposit, create_booking_activity, save_all_activities
@@ -14,7 +15,7 @@ class FillDateUsedForBookingsTest:
         deposit = create_deposit(user)
         booking = create_booking(user)
         booking.isUsed = True
-        PcObject.save(user, deposit, booking)
+        ApiHandler.save(user, deposit, booking)
 
         activity_update = create_booking_activity(
             booking, 'booking', 'update', issued_at=datetime(2018, 2, 12),
@@ -37,7 +38,7 @@ class FillDateUsedForBookingsTest:
         booking = create_booking(user)
         booking.isUsed = True
         booking.dateUsed = datetime(2019, 2, 12)
-        PcObject.save(user, deposit, booking)
+        ApiHandler.save(user, deposit, booking)
 
         activity_update = create_booking_activity(
             booking, 'booking', 'update', issued_at=datetime(2018, 2, 12),

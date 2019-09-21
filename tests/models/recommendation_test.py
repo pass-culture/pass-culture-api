@@ -1,6 +1,6 @@
 from unittest.mock import patch
+from sqlalchemy_api_handler import ApiHandler
 
-from models import PcObject
 from tests.conftest import clean_database
 from tests.test_utils import create_recommendation, create_offer_with_thing_product, create_product_with_thing_type, \
     create_venue, create_offerer, \
@@ -69,7 +69,7 @@ def test_model_should_return_false_if_no_favorite_exists_for_offer_mediation_and
 
     # when
     recommendation = create_recommendation(offer, user, mediation=mediation)
-    PcObject.save(recommendation)
+    ApiHandler.save(recommendation)
 
     # then
     assert recommendation.isFavorite is False
@@ -84,11 +84,11 @@ def test_model_should_return_true_if_favorite_exists_for_offer_mediation_and_use
     offer = create_offer_with_event_product(venue)
     mediation = create_mediation(offer)
     favorite = create_favorite(mediation, offer, user)
-    PcObject.save(favorite)
+    ApiHandler.save(favorite)
 
     # when
     recommendation = create_recommendation(offer, user, mediation=mediation)
-    PcObject.save(recommendation)
+    ApiHandler.save(recommendation)
 
     # then
     assert recommendation.isFavorite is True
@@ -103,11 +103,11 @@ def test_model_should_return_true_if_favorite_exists_for_offer_without_mediation
     offer = create_offer_with_event_product(venue)
     mediation = None
     favorite = create_favorite(mediation, offer, user)
-    PcObject.save(favorite)
+    ApiHandler.save(favorite)
 
     # when
     recommendation = create_recommendation(offer, user, mediation=mediation)
-    PcObject.save(recommendation)
+    ApiHandler.save(recommendation)
 
     # then
     assert recommendation.isFavorite is True

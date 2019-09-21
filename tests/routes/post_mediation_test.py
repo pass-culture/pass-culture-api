@@ -2,8 +2,8 @@ import os
 from io import BytesIO
 from pathlib import Path
 from unittest.mock import patch
+from sqlalchemy_api_handler import ApiHandler, humanize
 
-from models import PcObject
 from tests.conftest import clean_database, TestClient
 from tests.files.images import ONE_PIXEL_PNG
 from tests.test_utils import create_user, \
@@ -11,7 +11,6 @@ from tests.test_utils import create_user, \
     create_offerer, \
     create_user_offerer, \
     create_venue
-from utils.human_ids import humanize
 
 MODULE_PATH = Path(os.path.dirname(os.path.realpath(__file__)))
 
@@ -28,8 +27,8 @@ class Post:
             offer = create_offer_with_event_product(venue)
             user_offerer = create_user_offerer(user, offerer)
 
-            PcObject.save(offer)
-            PcObject.save(user, venue, offerer, user_offerer)
+            ApiHandler.save(offer)
+            ApiHandler.save(user, venue, offerer, user_offerer)
 
             auth_request = TestClient(app.test_client()).with_auth(email=user.email)
 
@@ -57,8 +56,8 @@ class Post:
             offer = create_offer_with_event_product(venue)
             user_offerer = create_user_offerer(user, offerer)
 
-            PcObject.save(offer)
-            PcObject.save(user, venue, offerer, user_offerer)
+            ApiHandler.save(offer)
+            ApiHandler.save(user, venue, offerer, user_offerer)
 
             auth_request = TestClient(app.test_client()).with_auth(email=user.email)
 
@@ -86,7 +85,7 @@ class Post:
             venue = create_venue(offerer)
             offer = create_offer_with_event_product(venue)
             user_offerer = create_user_offerer(user, offerer)
-            PcObject.save(user, venue, user_offerer)
+            ApiHandler.save(user, venue, user_offerer)
 
             auth_request = TestClient(app.test_client()).with_auth(email=user.email)
 
@@ -111,7 +110,7 @@ class Post:
             venue = create_venue(offerer)
             offer = create_offer_with_event_product(venue)
             user_offerer = create_user_offerer(user, offerer)
-            PcObject.save(user, venue, user_offerer)
+            ApiHandler.save(user, venue, user_offerer)
 
             data = {
                 'offerId': humanize(offer.id),
@@ -136,7 +135,7 @@ class Post:
             venue = create_venue(offerer)
             offer = create_offer_with_event_product(venue)
             user_offerer = create_user_offerer(user, offerer)
-            PcObject.save(user, venue, user_offerer)
+            ApiHandler.save(user, venue, user_offerer)
             with open(MODULE_PATH / '..' / 'files/mouette_small.jpg', 'rb') as f:
                 thumb = f.read()
             data = {
@@ -155,15 +154,15 @@ class Post:
             assert response.json['thumb'] == ["L'image doit faire 100 ko minimum et 400 * 400 px minimum"]
 
         @clean_database
-        @patch('routes.mediations.PcObject')
-        def expect_mediation_not_to_be_saved(self, PcObject, app):
+        @patch('routes.mediations.ApiHandler')
+        def expect_mediation_not_to_be_saved(self, ApiHandler, app):
             # given
             user = create_user()
             offerer = create_offerer()
             venue = create_venue(offerer)
             offer = create_offer_with_event_product(venue)
             user_offerer = create_user_offerer(user, offerer)
-            PcObject.save(user, venue, user_offerer)
+            ApiHandler.save(user, venue, user_offerer)
             with open(MODULE_PATH / '..' / 'files/mouette_small.jpg', 'rb') as f:
                 thumb = f.read()
             data = {
@@ -171,7 +170,7 @@ class Post:
                 'offererId': humanize(offerer.id),
                 'thumb': (BytesIO(thumb), 'image.png')
             }
-            PcObject.reset_mock()
+            ApiHandler.reset_mock()
 
             # when
             TestClient(app.test_client()) \
@@ -179,4 +178,4 @@ class Post:
                 .post('/mediations', form=data)
 
             # then
-            PcObject.save.assert_not_called()
+            ApiHandler.save.assert_not_called()

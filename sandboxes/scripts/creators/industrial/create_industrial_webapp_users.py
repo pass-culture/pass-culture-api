@@ -1,6 +1,6 @@
 import uuid
+from sqlalchemy_api_handler import ApiHandler
 
-from models.pc_object import PcObject
 from tests.test_utils import create_user
 from utils.logger import logger
 
@@ -54,7 +54,7 @@ def create_industrial_webapp_users():
                 reset_password_token=reset_password_token
             )
 
-    PcObject.save(*users_by_name.values())
+    ApiHandler.save(*users_by_name.values())
 
     logger.info('created {} users'.format(len(users_by_name)))
 

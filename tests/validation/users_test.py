@@ -1,8 +1,8 @@
 from unittest.mock import Mock
-
+from sqlalchemy_api_handler import ApiErrors, ApiHandler
 import pytest
 
-from models import ApiErrors, User, PcObject
+from models import User
 from tests.conftest import clean_database
 from tests.test_utils import create_offerer, create_user, create_user_offerer
 from validation.users import check_valid_signup_webapp, check_user_can_validate_bookings, check_valid_signup_pro
@@ -143,7 +143,7 @@ def test_check_user_can_validate_bookings_return_true_when_user_is_authenticated
     user = create_user()
     offerer = create_offerer()
     user_offerer = create_user_offerer(user, offerer, None)
-    PcObject.save(user, offerer, user_offerer)
+    ApiHandler.save(user, offerer, user_offerer)
 
     # When
     result = check_user_can_validate_bookings(user, offerer.id)

@@ -1,7 +1,8 @@
-from models import PcObject, Venue
+from sqlalchemy_api_handler import ApiHandler, humanize
+
+from models import Venue
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_venue, create_offerer, create_user, create_user_offerer
-from utils.human_ids import humanize
 
 
 class Patch:
@@ -14,7 +15,7 @@ class Patch:
             user_offerer = create_user_offerer(user, offerer, is_admin=True)
             siret = offerer.siren + '11111'
             venue = create_venue(offerer, comment="Pas de siret", siret=None)
-            PcObject.save(user_offerer, venue)
+            ApiHandler.save(user_offerer, venue)
             venue_data = {
                 'siret': siret,
             }
@@ -36,7 +37,7 @@ class Patch:
             user_offerer = create_user_offerer(user, offerer, is_admin=True)
             siret = offerer.siren + '11111'
             venue = create_venue(offerer, siret=siret)
-            PcObject.save(user_offerer, venue)
+            ApiHandler.save(user_offerer, venue)
             venue_data = {
                 'siret': siret,
             }
@@ -56,7 +57,7 @@ class Patch:
             user = create_user(email='user.pro@test.com')
             venue = create_venue(offerer, name='L\'encre et la plume')
             user_offerer = create_user_offerer(user, offerer)
-            PcObject.save(user_offerer, venue)
+            ApiHandler.save(user_offerer, venue)
             auth_request = TestClient(app.test_client()).with_auth(email=user.email)
             venue_id = venue.id
 
@@ -81,7 +82,7 @@ class Patch:
             user_offerer = create_user_offerer(user, offerer, is_admin=True)
             siret = offerer.siren + '11111'
             venue = create_venue(offerer, siret=siret)
-            PcObject.save(user_offerer, venue)
+            ApiHandler.save(user_offerer, venue)
             venue_data = {
                 'siret': offerer.siren + '12345',
             }
@@ -102,7 +103,7 @@ class Patch:
             venue1 = create_venue(offerer, name='Les petits papiers', is_virtual=True, siret=None)
             venue2 = create_venue(offerer, name='L\'encre et la plume', is_virtual=False)
             user_offerer = create_user_offerer(user, offerer)
-            PcObject.save(user_offerer, venue1, venue2)
+            ApiHandler.save(user_offerer, venue1, venue2)
             auth_request = TestClient(app.test_client()).with_auth(email=user.email)
 
             # when
@@ -120,7 +121,7 @@ class Patch:
             user = create_user(email='user.pro@test.com')
             venue = create_venue(offerer, name='Les petits papiers', is_virtual=False)
             user_offerer = create_user_offerer(user, offerer)
-            PcObject.save(user_offerer, venue)
+            ApiHandler.save(user_offerer, venue)
             auth_request = TestClient(app.test_client()).with_auth(email=user.email)
             data = {'latitude': -98.82387, 'longitude': '112°3534'}
 
@@ -140,7 +141,7 @@ class Patch:
             user = create_user(email='user.pro@test.com')
             venue = create_venue(offerer, name='Les petits papiers', is_virtual=False)
             user_offerer = create_user_offerer(user, offerer)
-            PcObject.save(user_offerer, venue, other_offerer)
+            ApiHandler.save(user_offerer, venue, other_offerer)
             auth_request = TestClient(app.test_client()).with_auth(email=user.email)
 
             # When

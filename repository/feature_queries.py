@@ -1,7 +1,7 @@
 import os
+from sqlalchemy_api_handler.api_errors import ResourceNotFoundError
 
 from models import Feature
-from models.api_errors import ResourceNotFoundError
 from models.feature import FeatureToggle
 from utils.config import IS_PROD, IS_INTEGRATION
 

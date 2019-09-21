@@ -1,6 +1,7 @@
 import secrets
+from sqlalchemy_api_handler import ApiHandler
 
-from models import Offerer, PcObject
+from models import Offerer
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_user, create_offerer, create_user_offerer
 
@@ -15,7 +16,7 @@ class Get:
                                      validation_token=offerer_token)
             user = create_user()
             user_offerer = create_user_offerer(user, offerer, is_admin=True)
-            PcObject.save(offerer, user_offerer)
+            ApiHandler.save(offerer, user_offerer)
             offerer_id = offerer.id
             del (offerer)
 

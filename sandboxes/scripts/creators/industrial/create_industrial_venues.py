@@ -1,10 +1,9 @@
 import re
+from sqlalchemy_api_handler import ApiHandler
 
-from models.pc_object import PcObject
-from models import Offerer, Venue
 from sandboxes.scripts.mocks.venue_mocks import MOCK_NAMES
-from utils.logger import logger
 from tests.test_utils import create_venue, create_bank_information
+from utils.logger import logger
 
 OFFERERS_WITH_PHYSICAL_VENUE_REMOVE_MODULO = 3
 OFFERERS_WITH_PHYSICAL_VENUE_WITH_SIRET_REMOVE_MODULO = OFFERERS_WITH_PHYSICAL_VENUE_REMOVE_MODULO * 2
@@ -83,7 +82,7 @@ def create_industrial_venues(offerers_by_name: dict) -> dict:
             siret=None
         )
 
-    PcObject.save(*venue_by_name.values())
+    ApiHandler.save(*venue_by_name.values())
 
     logger.info('created {} venues'.format(len(venue_by_name)))
 

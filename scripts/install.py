@@ -1,8 +1,7 @@
+from sqlalchemy_api_handler import ApiErrors, ApiHandler
 
 def install_scripts():
     from models.versioned_mixin import VersionedMixin
-    from models.api_errors import ApiErrors
-    from models.pc_object import PcObject
     from models.deactivable_mixin import DeactivableMixin
     from models.extra_data_mixin import ExtraDataMixin
     from models.has_address_mixin import HasAddressMixin

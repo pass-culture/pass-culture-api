@@ -1,5 +1,7 @@
+from sqlalchemy_api_handler import ApiErrors
+
 from domain.password import check_password_strength
-from models import ApiErrors, RightsType
+from models import RightsType
 
 
 def check_allowed_changes_for_user(data):

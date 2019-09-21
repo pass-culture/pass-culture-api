@@ -2,7 +2,6 @@ import os
 from functools import wraps
 from pprint import pprint
 from unittest.mock import Mock
-
 import pytest
 from flask import Flask, jsonify
 from flask.testing import FlaskClient
@@ -10,6 +9,7 @@ from flask_login import LoginManager, login_user
 from mailjet_rest import Client
 from requests import Response
 from requests.auth import _basic_auth_str
+from sqlalchemy_api_handler import ApiHandler
 
 from local_providers.install import install_local_providers
 from models.db import db
@@ -42,6 +42,7 @@ def app():
     login_manager = LoginManager()
     login_manager.init_app(app)
     db.init_app(app)
+    ApiHandler.set_db(db)
 
     app.app_context().push()
     install_database_extensions()

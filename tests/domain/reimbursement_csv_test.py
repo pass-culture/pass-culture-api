@@ -1,11 +1,10 @@
 from datetime import datetime
 from freezegun import freeze_time
-
-from freezegun import freeze_time
+from sqlalchemy_api_handler import ApiHandler
 
 from domain.reimbursement import ReimbursementDetails
 from domain.reimbursement import generate_reimbursement_details_csv
-from models import Payment, PcObject
+from models import Payment 
 from models.feature import FeatureToggle
 from models.payment_status import TransactionStatus, PaymentStatus
 from repository.reimbursement_queries import find_all_offerer_reimbursement_details
@@ -44,7 +43,7 @@ class ReimbursementDetailsCSVTest:
         booking1 = create_booking(user, stock1, venue=venue1, token='ABCDEF', is_used=True)
         booking2 = create_booking(user, stock1, venue=venue1, token='ABCDEG')
 
-        PcObject.save(deposit, booking1, booking2, user_offerer1, bank_information1)
+        ApiHandler.save(deposit, booking1, booking2, user_offerer1, bank_information1)
 
         generate_new_payments()
 

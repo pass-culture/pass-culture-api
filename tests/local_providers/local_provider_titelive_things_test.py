@@ -1,9 +1,9 @@
 from datetime import datetime
 from unittest.mock import patch
+from sqlalchemy_api_handler import ApiHandler
 
 from local_providers import TiteLiveThings
 from models import Product, BookFormat
-from models.pc_object import PcObject
 from repository.provider_queries import get_provider_by_local_class
 from tests.conftest import clean_database
 from tests.test_utils import create_offerer, create_venue, provider_test, create_product_with_thing_type
@@ -74,7 +74,7 @@ class TiteliveThingsTest:
         # given
         offerer = create_offerer(siren='775671464')
         venue = create_venue(offerer, name='Librairie Titelive', siret='77567146400110')
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
         provider_test(app,
                       TiteLiveThings,
@@ -159,7 +159,7 @@ class TiteliveThingsTest:
         # given
         offerer = create_offerer(siren='775671464')
         venue = create_venue(offerer, name='Librairie Titelive', siret='77567146400110')
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
         provider_test(app,
                       TiteLiveThings,
@@ -246,7 +246,7 @@ class TiteliveThingsTest:
                                                  thing_name='Toto à la playa',
                                                  date_modified_at_last_provider=datetime(2001, 1, 1),
                                                  last_provider_id=titelive_things_provider.id)
-        PcObject.save(venue, product)
+        ApiHandler.save(venue, product)
 
         provider_test(app,
                       TiteLiveThings,
@@ -276,7 +276,7 @@ class TiteliveThingsTest:
         # given
         offerer = create_offerer(siren='775671464')
         venue = create_venue(offerer, name='Librairie Titelive', siret='77567146400110')
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
         provider_test(app,
                       TiteLiveThings,
@@ -313,7 +313,7 @@ class TiteliveThingsTest:
 
         offerer = create_offerer(siren='775671464')
         venue = create_venue(offerer, name='Librairie Titelive', siret='77567146400110')
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
         provider_test(app,
                       TiteLiveThings,
@@ -398,7 +398,7 @@ class TiteliveThingsTest:
 
         offerer = create_offerer(siren='775671464')
         venue = create_venue(offerer, name='Librairie Titelive', siret='77567146400110')
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
         provider_test(app,
                       TiteLiveThings,

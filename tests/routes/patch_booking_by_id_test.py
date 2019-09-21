@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
+from sqlalchemy_api_handler import ApiHandler, humanize
 
-from models import PcObject, Booking
+from models import Booking
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_deposit, create_venue, create_offerer, \
     create_user, create_booking, create_offer_with_event_product, \
     create_event_occurrence, create_stock_from_event_occurrence
-from utils.human_ids import humanize
 
 
 class Patch:
@@ -25,7 +25,7 @@ class Patch:
                                                        end_datetime=in_five_days)
             stock = create_stock_from_event_occurrence(event_occurrence)
             booking = create_booking(user, stock, venue)
-            PcObject.save(user, deposit, booking)
+            ApiHandler.save(user, deposit, booking)
             booking_id = booking.id
 
             # When
@@ -51,7 +51,7 @@ class Patch:
                                                        end_datetime=in_five_days)
             stock = create_stock_from_event_occurrence(event_occurrence)
             booking = create_booking(user, stock, venue)
-            PcObject.save(user, deposit, booking)
+            ApiHandler.save(user, deposit, booking)
             booking_id = booking.id
 
             # When
@@ -70,7 +70,7 @@ class Patch:
             deposit_date = datetime.utcnow() - timedelta(minutes=2)
             deposit = create_deposit(other_user, amount=500)
             booking = create_booking(other_user)
-            PcObject.save(admin_user, other_user, deposit, booking)
+            ApiHandler.save(admin_user, other_user, deposit, booking)
             booking_id = booking.id
 
             # When
@@ -89,7 +89,7 @@ class Patch:
             deposit_date = datetime.utcnow() - timedelta(minutes=2)
             deposit = create_deposit(user, amount=500)
             booking = create_booking(user, is_used=True)
-            PcObject.save(user, deposit, booking)
+            ApiHandler.save(user, deposit, booking)
             booking_id = booking.id
 
             # When
@@ -108,7 +108,7 @@ class Patch:
             deposit_date = datetime.utcnow() - timedelta(minutes=2)
             deposit = create_deposit(user, amount=500)
             booking = create_booking(user, quantity=1)
-            PcObject.save(user, deposit, booking)
+            ApiHandler.save(user, deposit, booking)
             booking_id = booking.id
 
             # When
@@ -127,7 +127,7 @@ class Patch:
             deposit = create_deposit(user, amount=500)
             booking = create_booking(user)
             booking.isCancelled = True
-            PcObject.save(user, deposit, booking)
+            ApiHandler.save(user, deposit, booking)
             booking_id = booking.id
 
             # When
@@ -152,7 +152,7 @@ class Patch:
             event_occurrence = create_event_occurrence(offer, beginning_datetime=in_one_days, end_datetime=in_five_days)
             stock = create_stock_from_event_occurrence(event_occurrence)
             booking = create_booking(user, stock, venue)
-            PcObject.save(user, deposit, booking)
+            ApiHandler.save(user, deposit, booking)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email) \
@@ -170,7 +170,7 @@ class Patch:
             deposit = create_deposit(other_user, amount=500)
             booking = create_booking(other_user)
             user = create_user(email='test@email.com')
-            PcObject.save(user, other_user, deposit, booking)
+            ApiHandler.save(user, other_user, deposit, booking)
             booking_id = booking.id
 
             # When
@@ -186,7 +186,7 @@ class Patch:
         def when_the_booking_does_not_exist(self, app):
             # Given
             user = create_user(email='test@email.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email) \

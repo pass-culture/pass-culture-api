@@ -13,17 +13,17 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import expression
+from sqlalchemy_api_handler import ApiHandler
 
 from domain.expenses import get_expenses
 from models.versioned_mixin import VersionedMixin
 from models.db import Model, db
 from models.needs_validation_mixin import NeedsValidationMixin
-from models.pc_object import PcObject
 from models.user_offerer import UserOfferer, RightsType
 from models.deposit import Deposit
 
 
-class User(PcObject,
+class User(ApiHandler,
            Model,
            NeedsValidationMixin,
            VersionedMixin

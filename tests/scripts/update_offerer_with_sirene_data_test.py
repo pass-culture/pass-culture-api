@@ -1,4 +1,5 @@
-from models import PcObject
+from sqlalchemy_api_handler import ApiHandler
+
 from models.db import db
 from scripts.update_offerer_with_sirene_data import update_offerer_with_sirene_data
 from tests.conftest import clean_database
@@ -27,7 +28,7 @@ def test_update_offerer_with_sirene_data_changes_given_offerer_information(app):
         latitude='48.863',
         longitude='2.36',
         postal_code='75001')
-    PcObject.save(offerer)
+    ApiHandler.save(offerer)
 
     # When
     update_offerer_with_sirene_data(sirene_data)
@@ -64,7 +65,7 @@ def test_update_offerer_with_sirene_data_keeps_old_information_when_not_given_by
         latitude='48.863',
         longitude='2.36',
         postal_code='75001')
-    PcObject.save(offerer)
+    ApiHandler.save(offerer)
 
     # When
     update_offerer_with_sirene_data(sirene_data)

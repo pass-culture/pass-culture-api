@@ -1,6 +1,5 @@
 from datetime import datetime, time
 from math import floor
-
 from babel.dates import format_datetime as babel_format_datetime
 from dateutil import tz
 
@@ -28,13 +27,6 @@ def english_to_french_month(year, month_number, day=1):
     english_month = datetime(year, month_number, day).strftime("%B")
     return ENGLISH_TO_FRENCH_MONTH[english_month]
 
-class DateTimes:
-    def __init__(self, *datetimes):
-        self.datetimes = list(datetimes)
-
-    def __eq__(self, other):
-        return self.datetimes == other.datetimes
-
 def read_json_date(date):
     if '.' not in date:
         date = date + '.0'
@@ -42,14 +34,6 @@ def read_json_date(date):
 
 def strftime(date):
     return date.strftime(DATE_ISO_FORMAT)
-
-def match_format(value: str, format: str):
-    try:
-        datetime.strptime(value, format)
-    except ValueError:
-        return False
-    else:
-        return True
 
 
 def format_datetime(dt):

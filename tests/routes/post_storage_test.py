@@ -1,11 +1,10 @@
 from io import BytesIO
+from sqlalchemy_api_handler import ApiHandler, humanize
 
-from models import PcObject
 from tests.conftest import clean_database, TestClient
 from tests.files.images import ONE_PIXEL_PNG
 from tests.test_utils import create_venue, create_offerer, create_user, \
     create_mediation, create_offer_with_event_product, create_user_offerer
-from utils.human_ids import humanize
 
 
 class Post:
@@ -19,7 +18,7 @@ class Post:
             venue = create_venue(offerer)
             offer = create_offer_with_event_product(venue)
             mediation = create_mediation(offer)
-            PcObject.save(user_offerer, mediation)
+            ApiHandler.save(user_offerer, mediation)
 
             auth_request = TestClient(app.test_client()).with_auth(email=user.email)
 
@@ -39,7 +38,7 @@ class Post:
             user = create_user()
             offerer = create_offerer()
             venue = create_venue(offerer)
-            PcObject.save(user, venue, offerer)
+            ApiHandler.save(user, venue, offerer)
 
             auth_request = TestClient(app.test_client()).with_auth(email=user.email)
 
@@ -62,7 +61,7 @@ class Post:
             venue = create_venue(offerer)
             offer = create_offer_with_event_product(venue)
             mediation = create_mediation(offer)
-            PcObject.save(user, offer, mediation, venue, offerer)
+            ApiHandler.save(user, offer, mediation, venue, offerer)
 
             auth_request = TestClient(app.test_client()).with_auth(email=user.email)
 

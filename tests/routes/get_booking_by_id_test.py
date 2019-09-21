@@ -1,9 +1,9 @@
-from models import PcObject
+from sqlalchemy_api_handler import ApiHandler, humanize
+
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_stock_with_thing_offer, \
     create_offer_with_thing_product, create_venue, create_offerer, \
     create_user, create_booking
-from utils.human_ids import humanize
 
 
 class Get:
@@ -19,7 +19,7 @@ class Get:
             stock = create_stock_with_thing_offer(offerer=offerer, venue=venue, offer=offer, price=0)
             booking = create_booking(user, stock, venue=venue, token='ABCDEF')
 
-            PcObject.save(booking)
+            ApiHandler.save(booking)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email).get(

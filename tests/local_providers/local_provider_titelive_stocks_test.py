@@ -1,12 +1,10 @@
-""" local providers test """
 from unittest.mock import patch
-
 import pytest
 import requests
+from sqlalchemy_api_handler import ApiHandler
 
 from local_providers import TiteLiveStocks
 from models import Offer, Stock
-from models.pc_object import PcObject
 from models.venue_provider import VenueProvider
 from repository.provider_queries import get_provider_by_local_class
 from tests.conftest import clean_database
@@ -43,7 +41,7 @@ def test_titelive_stock_provider_create_1_stock_and_1_offer_with_wanted_attribut
 
     offerer = create_offerer(siren='775671464')
     venue = create_venue(offerer, name='Librairie Titelive', siret='77567146400110')
-    PcObject.save(venue)
+    ApiHandler.save(venue)
 
     tite_live_things_provider = get_provider_by_local_class('TiteLiveThings')
     venue_provider = VenueProvider()
@@ -51,10 +49,10 @@ def test_titelive_stock_provider_create_1_stock_and_1_offer_with_wanted_attribut
     venue_provider.provider = tite_live_things_provider
     venue_provider.isActive = True
     venue_provider.venueIdAtOfferProvider = '77567146400110'
-    PcObject.save(venue_provider)
+    ApiHandler.save(venue_provider)
 
     product = create_product_with_thing_type(id_at_providers='0002730757438')
-    PcObject.save(product)
+    ApiHandler.save(product)
 
     # When / Then
     provider_test(app,
@@ -104,7 +102,7 @@ def test_titelive_stock_provider_update_1_stock_and_1_offer(get_data, app):
 
     offerer = create_offerer(siren='987654321')
     venue = create_venue(offerer, name='Librairie Titelive', siret='77567146400110')
-    PcObject.save(venue)
+    ApiHandler.save(venue)
 
     tite_live_things_provider = get_provider_by_local_class('TiteLiveThings')
     venue_provider = VenueProvider()
@@ -112,12 +110,12 @@ def test_titelive_stock_provider_update_1_stock_and_1_offer(get_data, app):
     venue_provider.provider = tite_live_things_provider
     venue_provider.isActive = True
     venue_provider.venueIdAtOfferProvider = '77567146400110'
-    PcObject.save(venue_provider)
+    ApiHandler.save(venue_provider)
 
     product = create_product_with_thing_type(id_at_providers='0002730757438')
     offer = create_offer_with_thing_product(venue, product=product, id_at_providers='0002730757438@77567146400110')
     stock = create_stock(offer=offer, id_at_providers='0002730757438@77567146400110')
-    PcObject.save(product, offer, stock)
+    ApiHandler.save(product, offer, stock)
 
     # When / Then
     provider_test(app,
@@ -153,7 +151,7 @@ def test_titelive_stock_provider_create_1_stock_and_update_1_existing_offer(get_
 
     offerer = create_offerer(siren='987654321')
     venue = create_venue(offerer, name='Librairie Titelive', siret='77567146400110')
-    PcObject.save(venue)
+    ApiHandler.save(venue)
 
     tite_live_things_provider = get_provider_by_local_class('TiteLiveThings')
     venue_provider = VenueProvider()
@@ -161,11 +159,11 @@ def test_titelive_stock_provider_create_1_stock_and_update_1_existing_offer(get_
     venue_provider.provider = tite_live_things_provider
     venue_provider.isActive = True
     venue_provider.venueIdAtOfferProvider = '77567146400110'
-    PcObject.save(venue_provider)
+    ApiHandler.save(venue_provider)
 
     product = create_product_with_thing_type(id_at_providers='0002730757438')
     offer = create_offer_with_thing_product(venue, product=product, id_at_providers='0002730757438@77567146400110')
-    PcObject.save(product, offer)
+    ApiHandler.save(product, offer)
 
     # When / Then
     provider_test(app,
@@ -208,7 +206,7 @@ def test_titelive_stock_provider_create_2_stock_and_2_offer_even_if_existing_off
 
     offerer = create_offerer(siren='987654321')
     venue = create_venue(offerer, name='Librairie Titelive', siret='77567146400110')
-    PcObject.save(venue)
+    ApiHandler.save(venue)
 
     tite_live_things_provider = get_provider_by_local_class('TiteLiveThings')
     venue_provider = VenueProvider()
@@ -216,12 +214,12 @@ def test_titelive_stock_provider_create_2_stock_and_2_offer_even_if_existing_off
     venue_provider.provider = tite_live_things_provider
     venue_provider.isActive = True
     venue_provider.venueIdAtOfferProvider = '77567146400110'
-    PcObject.save(venue_provider)
+    ApiHandler.save(venue_provider)
 
     thing_1 = create_product_with_thing_type(id_at_providers='0002730757438')
     thing_2 = create_product_with_thing_type(id_at_providers='0002736409898')
     offer = create_offer_with_thing_product(venue=venue, product=thing_1, id_at_providers="not_titelive")
-    PcObject.save(thing_1, offer, thing_2)
+    ApiHandler.save(thing_1, offer, thing_2)
 
     # When / Then
     provider_test(app,
@@ -246,7 +244,7 @@ def test_titelive_stock_provider_create_nothing_if_siret_is_not_in_titelive_data
     # given
     offerer = create_offerer(siren='987654321')
     venue = create_venue(offerer, name='Librairie Titelive', siret='12345678912345')
-    PcObject.save(venue)
+    ApiHandler.save(venue)
 
     tite_live_things_provider = get_provider_by_local_class('TiteLiveThings')
     venue_provider = VenueProvider()
@@ -254,11 +252,11 @@ def test_titelive_stock_provider_create_nothing_if_siret_is_not_in_titelive_data
     venue_provider.provider = tite_live_things_provider
     venue_provider.isActive = True
     venue_provider.venueIdAtOfferProvider = '12345678912345'
-    PcObject.save(venue_provider)
+    ApiHandler.save(venue_provider)
 
     product = create_product_with_thing_type(id_at_providers='0002730757438')
     offer = create_offer_with_thing_product(venue=venue, product=product)
-    PcObject.save(product, offer)
+    ApiHandler.save(product, offer)
 
     # When / Then
     provider_test(app,
@@ -295,7 +293,7 @@ def test_titelive_stock_provider_deactivate_offer_if_stock_available_equals_0(ge
 
     offerer = create_offerer(siren='775671464')
     venue = create_venue(offerer, name='Librairie Titelive', siret='77567146400110')
-    PcObject.save(venue)
+    ApiHandler.save(venue)
 
     tite_live_things_provider = get_provider_by_local_class('TiteLiveThings')
     venue_provider = VenueProvider()
@@ -303,12 +301,12 @@ def test_titelive_stock_provider_deactivate_offer_if_stock_available_equals_0(ge
     venue_provider.provider = tite_live_things_provider
     venue_provider.isActive = True
     venue_provider.venueIdAtOfferProvider = '77567146400110'
-    PcObject.save(venue_provider)
+    ApiHandler.save(venue_provider)
 
     product = create_product_with_thing_type(id_at_providers='0002730757438')
     offer = create_offer_with_thing_product(venue, product=product, id_at_providers='0002730757438@77567146400110')
     stock = create_stock(offer=offer, id_at_providers='0002730757438@77567146400110')
-    PcObject.save(product, offer, stock)
+    ApiHandler.save(product, offer, stock)
 
     # When / Then
     provider_test(app,

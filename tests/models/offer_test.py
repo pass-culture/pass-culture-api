@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
-
+from sqlalchemy_api_handler import ApiErrors, ApiHandler, as_dict
+from sqlalchemy_api_handler.utils.date import DateTimes
 import pytest
 
-from models import Offer, PcObject, ApiErrors, ThingType, EventType, Product
-from routes.serialization import as_dict
+from models import Offer, ThingType, EventType, Product
 from tests.conftest import clean_database
 from tests.test_utils import create_booking, create_user, create_mediation, create_recommendation, \
     create_stock_from_offer, create_deposit
@@ -15,7 +15,6 @@ from tests.test_utils import create_criterion, \
     create_venue
 from tests.test_utils import create_offer_with_event_product, \
     create_product_with_event_type
-from utils.date import DateTimes
 
 now = datetime.utcnow()
 two_days_ago = now - timedelta(days=2)
@@ -34,7 +33,7 @@ class AddStockAlertMessageToOfferTest:
             venue = create_venue(offerer)
             offer = create_offer_with_thing_product(venue)
 
-            PcObject.save(user, offer)
+            ApiHandler.save(user, offer)
 
             # when
             result = offer.stockAlertMessage
@@ -57,7 +56,7 @@ class AddStockAlertMessageToOfferTest:
             deposit = create_deposit(user2, amount=500)
             booking = create_booking(user2, stock, venue, recommendation, quantity=3)
 
-            PcObject.save(booking, deposit, user, offer, stock, stock2, user2)
+            ApiHandler.save(booking, deposit, user, offer, stock, stock2, user2)
 
             # when
             result = offer.stockAlertMessage
@@ -80,7 +79,7 @@ class AddStockAlertMessageToOfferTest:
             deposit = create_deposit(user2, amount=500)
             booking = create_booking(user2, stock, venue, recommendation, quantity=3)
 
-            PcObject.save(booking, deposit, user, offer, stock, stock2, user2)
+            ApiHandler.save(booking, deposit, user, offer, stock, stock2, user2)
 
             # when
             result = offer.stockAlertMessage
@@ -103,7 +102,7 @@ class AddStockAlertMessageToOfferTest:
             deposit = create_deposit(user2, amount=500)
             booking = create_booking(user2, stock, venue, recommendation, quantity=3)
 
-            PcObject.save(booking, deposit, user, offer, stock, stock2, user2)
+            ApiHandler.save(booking, deposit, user, offer, stock, stock2, user2)
 
             # when
             result = offer.stockAlertMessage
@@ -127,7 +126,7 @@ class AddStockAlertMessageToOfferTest:
             booking = create_booking(user2, stock, venue, recommendation, quantity=3)
             booking2 = create_booking(user2, stock2, venue, recommendation, quantity=10)
 
-            PcObject.save(booking, booking2, deposit, user, offer, stock, stock2, user2)
+            ApiHandler.save(booking, booking2, deposit, user, offer, stock, stock2, user2)
 
             # when
             result = offer.stockAlertMessage
@@ -151,7 +150,7 @@ class AddStockAlertMessageToOfferTest:
             booking = create_booking(user2, stock, venue, recommendation, quantity=3)
             booking2 = create_booking(user2, stock2, venue, recommendation, quantity=20)
 
-            PcObject.save(booking, booking2, deposit, user, offer, stock, stock2, user2)
+            ApiHandler.save(booking, booking2, deposit, user, offer, stock, stock2, user2)
 
             # when
             result = offer.stockAlertMessage
@@ -174,7 +173,7 @@ class AddStockAlertMessageToOfferTest:
             deposit = create_deposit(user2, amount=500)
             booking = create_booking(user2, stock2, venue, recommendation, quantity=10)
 
-            PcObject.save(booking, deposit, user, offer, stock, stock2, user2)
+            ApiHandler.save(booking, deposit, user, offer, stock, stock2, user2)
 
             # when
             result = offer.stockAlertMessage
@@ -201,7 +200,7 @@ class AddStockAlertMessageToOfferTest:
             booking = create_booking(user2, stock2, venue, recommendation, quantity=5)
             booking2 = create_booking(user2, stock3, venue, recommendation, quantity=1)
 
-            PcObject.save(booking, booking2, deposit, user, offer, stock, stock2, stock3, stock4, user2)
+            ApiHandler.save(booking, booking2, deposit, user, offer, stock, stock2, stock3, stock4, user2)
 
             # when
             result = offer.stockAlertMessage
@@ -218,7 +217,7 @@ class AddStockAlertMessageToOfferTest:
             venue = create_venue(offerer)
             offer = create_offer_with_event_product(venue)
 
-            PcObject.save(user, offer)
+            ApiHandler.save(user, offer)
 
             # when
             result = offer.stockAlertMessage
@@ -241,7 +240,7 @@ class AddStockAlertMessageToOfferTest:
             deposit = create_deposit(user2, amount=500)
             booking = create_booking(user2, stock, venue, recommendation, quantity=3)
 
-            PcObject.save(booking, deposit, user, offer, stock, stock2, user2)
+            ApiHandler.save(booking, deposit, user, offer, stock, stock2, user2)
 
             # when
             result = offer.stockAlertMessage
@@ -264,7 +263,7 @@ class AddStockAlertMessageToOfferTest:
             deposit = create_deposit(user2, amount=500)
             booking = create_booking(user2, stock, venue, recommendation, quantity=3)
 
-            PcObject.save(booking, deposit, user, offer, stock, stock2, user2)
+            ApiHandler.save(booking, deposit, user, offer, stock, stock2, user2)
 
             # when
             result = offer.stockAlertMessage
@@ -287,7 +286,7 @@ class AddStockAlertMessageToOfferTest:
             deposit = create_deposit(user2, amount=500)
             booking = create_booking(user2, stock, venue, recommendation, quantity=3)
 
-            PcObject.save(booking, deposit, user, offer, stock, stock2, user2)
+            ApiHandler.save(booking, deposit, user, offer, stock, stock2, user2)
 
             # when
             result = offer.stockAlertMessage
@@ -311,7 +310,7 @@ class AddStockAlertMessageToOfferTest:
             booking = create_booking(user2, stock, venue, recommendation, quantity=3)
             booking2 = create_booking(user2, stock2, venue, recommendation, quantity=10)
 
-            PcObject.save(booking, booking2, deposit, user, offer, stock, stock2, user2)
+            ApiHandler.save(booking, booking2, deposit, user, offer, stock, stock2, user2)
 
             # when
             result = offer.stockAlertMessage
@@ -335,7 +334,7 @@ class AddStockAlertMessageToOfferTest:
             booking = create_booking(user2, stock, venue, recommendation, quantity=3)
             booking2 = create_booking(user2, stock2, venue, recommendation, quantity=11)
 
-            PcObject.save(booking, booking2, deposit, user, offer, stock, stock2, user2)
+            ApiHandler.save(booking, booking2, deposit, user, offer, stock, stock2, user2)
 
             # when
             result = offer.stockAlertMessage
@@ -358,7 +357,7 @@ class AddStockAlertMessageToOfferTest:
             deposit = create_deposit(user2, amount=500)
             booking = create_booking(user2, stock2, venue, recommendation, quantity=10)
 
-            PcObject.save(booking, deposit, user, offer, stock, stock2, user2)
+            ApiHandler.save(booking, deposit, user, offer, stock, stock2, user2)
 
             # when
             result = offer.stockAlertMessage
@@ -385,7 +384,7 @@ class AddStockAlertMessageToOfferTest:
             booking = create_booking(user2, stock2, venue, recommendation, quantity=5)
             booking2 = create_booking(user2, stock3, venue, recommendation, quantity=1)
 
-            PcObject.save(booking, booking2, deposit, user, offer, stock, stock2, stock3, stock4, user2)
+            ApiHandler.save(booking, booking2, deposit, user, offer, stock, stock2, stock3, stock4, user2)
 
             # when
             result = offer.stockAlertMessage
@@ -428,7 +427,7 @@ class BaseScoreTest:
         venue = create_venue(offerer)
         offer = create_offer_with_event_product(venue)
         offer.criteria = []
-        PcObject.save(offer)
+        ApiHandler.save(offer)
 
         # Then
         assert offer.baseScore == 0
@@ -441,7 +440,7 @@ class BaseScoreTest:
         offer = create_offer_with_event_product(venue)
         offer.criteria = [create_criterion(name='negative', score_delta=-1),
                           create_criterion(name='positive', score_delta=2)]
-        PcObject.save(offer)
+        ApiHandler.save(offer)
 
         # Then
         assert offer.baseScore == 1
@@ -537,12 +536,12 @@ class CreateOfferTest:
         digital_thing = create_product_with_thing_type(thing_type=ThingType.JEUX_VIDEO, url=url, is_national=True)
         offerer = create_offerer()
         virtual_venue = create_venue(offerer, is_virtual=True, siret=None)
-        PcObject.save(virtual_venue)
+        ApiHandler.save(virtual_venue)
 
         offer = create_offer_with_thing_product(virtual_venue, digital_thing)
 
         # When
-        PcObject.save(digital_thing, offer)
+        ApiHandler.save(digital_thing, offer)
 
         # Then
         assert offer.url == url
@@ -553,12 +552,12 @@ class CreateOfferTest:
         physical_thing = create_product_with_thing_type(thing_type=ThingType.LIVRE_EDITION, url=None)
         offerer = create_offerer()
         physical_venue = create_venue(offerer, is_virtual=False, siret=offerer.siren + '12345')
-        PcObject.save(physical_venue)
+        ApiHandler.save(physical_venue)
 
         offer = create_offer_with_thing_product(physical_venue, physical_thing)
 
         # When
-        PcObject.save(physical_thing, offer)
+        ApiHandler.save(physical_thing, offer)
 
         # Then
         assert offer.url is None
@@ -569,12 +568,12 @@ class CreateOfferTest:
         digital_thing = create_product_with_thing_type(thing_type=ThingType.JEUX_VIDEO, url='http://mygame.fr/offre')
         offerer = create_offerer()
         physical_venue = create_venue(offerer)
-        PcObject.save(physical_venue)
+        ApiHandler.save(physical_venue)
         offer = create_offer_with_thing_product(physical_venue, digital_thing)
 
         # When
         with pytest.raises(ApiErrors) as errors:
-            PcObject.save(offer)
+            ApiHandler.save(offer)
 
         # Then
         assert errors.value.errors['venue'] == [
@@ -586,12 +585,12 @@ class CreateOfferTest:
         physical_thing = create_product_with_thing_type(thing_type=ThingType.JEUX_VIDEO, url=None)
         offerer = create_offerer()
         digital_venue = create_venue(offerer, is_virtual=True, siret=None)
-        PcObject.save(digital_venue)
+        ApiHandler.save(digital_venue)
         offer = create_offer_with_thing_product(digital_venue, physical_thing)
 
         # When
         with pytest.raises(ApiErrors) as errors:
-            PcObject.save(offer)
+            ApiHandler.save(offer)
 
         # Then
         assert errors.value.errors['venue'] == [
@@ -603,11 +602,11 @@ class CreateOfferTest:
         event_product = create_product_with_event_type(duration_minutes=None)
         offerer = create_offerer()
         venue = create_venue(offerer)
-        PcObject.save(venue)
+        ApiHandler.save(venue)
         offer = create_offer_with_event_product(venue, event_product)
 
         # When
-        PcObject.save(offer)
+        ApiHandler.save(offer)
 
         # Then
         assert offer.durationMinutes is None
@@ -660,12 +659,12 @@ class CreateOfferTest:
         digital_thing = create_product_with_thing_type(thing_type=ThingType.JEUX_VIDEO, url=url, is_national=True)
         offerer = create_offerer()
         virtual_venue = create_venue(offerer, is_virtual=True, siret=None)
-        PcObject.save(virtual_venue)
+        ApiHandler.save(virtual_venue)
 
         offer = create_offer_with_thing_product(virtual_venue, digital_thing)
 
         # When
-        PcObject.save(digital_thing, offer)
+        ApiHandler.save(digital_thing, offer)
 
         # Then
         assert offer.product.url == url
@@ -676,12 +675,12 @@ class CreateOfferTest:
         digital_thing = create_product_with_thing_type(thing_type=ThingType.JEUX_VIDEO, url='http://mygame.fr/offre')
         offerer = create_offerer()
         physical_venue = create_venue(offerer)
-        PcObject.save(physical_venue)
+        ApiHandler.save(physical_venue)
         offer = create_offer_with_thing_product(physical_venue, digital_thing)
 
         # When
         with pytest.raises(ApiErrors) as errors:
-            PcObject.save(offer)
+            ApiHandler.save(offer)
 
         # Then
         assert errors.value.errors['venue'] == [

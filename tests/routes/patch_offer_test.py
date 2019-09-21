@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta
+from sqlalchemy_api_handler import ApiHandler, humanize
+from sqlalchemy_api_handler.serialization.serialize import serialize
 
-from models import PcObject, Offer, Recommendation, Product, Provider
-from routes.serialization import serialize
+from models import Offer, Recommendation, Product, Provider
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_user, create_offerer, create_user_offerer, create_venue, \
     create_offer_with_thing_product, API_URL, create_product_with_event_type, create_offer_with_event_product, \
     create_product_with_thing_type, create_recommendation, activate_provider
-from utils.human_ids import humanize
 
 
 class Patch:
@@ -20,7 +20,7 @@ class Patch:
             venue = create_venue(offerer)
             offer = create_offer_with_thing_product(venue, booking_email='old@email.com')
 
-            PcObject.save(offer, user, user_offerer)
+            ApiHandler.save(offer, user, user_offerer)
 
             json = {
                 'bookingEmail': 'offer@email.com',
@@ -45,7 +45,7 @@ class Patch:
             venue = create_venue(offerer)
             offer = create_offer_with_thing_product(venue, booking_email='old@email.com')
             recommendation = create_recommendation(offer, user, valid_until_date=seven_days_from_now)
-            PcObject.save(offer, user, user_offerer, recommendation)
+            ApiHandler.save(offer, user, user_offerer, recommendation)
             recommendation_id = recommendation.id
 
             json = {
@@ -70,7 +70,7 @@ class Patch:
             venue = create_venue(owning_offerer)
             product = create_product_with_thing_type(thing_name='Old Name', owning_offerer=owning_offerer)
             offer = create_offer_with_thing_product(venue, product)
-            PcObject.save(offer, user_offerer)
+            ApiHandler.save(offer, user_offerer)
             offer_id = offer.id
             product_id = product.id
 
@@ -98,7 +98,7 @@ class Patch:
             venue = create_venue(editor_offerer)
             product = create_product_with_thing_type(thing_name='Old Name', owning_offerer=owning_offerer)
             offer = create_offer_with_thing_product(venue, product)
-            PcObject.save(offer, editor_user_offerer, owning_offerer)
+            ApiHandler.save(offer, editor_user_offerer, owning_offerer)
             offer_id = offer.id
             product_id = product.id
 
@@ -125,7 +125,7 @@ class Patch:
             venue = create_venue(offerer)
             product = create_product_with_thing_type(thing_name='Old Name', owning_offerer=None)
             offer = create_offer_with_thing_product(venue, product)
-            PcObject.save(offer, user_offerer)
+            ApiHandler.save(offer, user_offerer)
 
             json = {
                 'name': 'New Name'
@@ -150,7 +150,7 @@ class Patch:
             venue = create_venue(offerer)
             provider = activate_provider('TiteLiveStocks')
             offer = create_offer_with_thing_product(venue, id_at_providers='id_provider', last_provider_id=provider.id)
-            PcObject.save(offer, user_offerer)
+            ApiHandler.save(offer, user_offerer)
             offer_id = offer.id
 
             json = {
@@ -178,7 +178,7 @@ class Patch:
                                                     is_active=False,
                                                     id_at_providers='id_provider',
                                                     last_provider_id=provider.id)
-            PcObject.save(offer, user_offerer)
+            ApiHandler.save(offer, user_offerer)
             offer_id = offer.id
 
             json = {
@@ -205,7 +205,7 @@ class Patch:
             thing_product = create_product_with_thing_type(thing_name='Old Name', owning_offerer=None)
             offer = create_offer_with_thing_product(venue, thing_product)
 
-            PcObject.save(offer, user, user_offerer)
+            ApiHandler.save(offer, user, user_offerer)
 
             forbidden_keys = ['idAtProviders', 'dateModifiedAtLastProvider', 'thumbCount', 'firstThumbDominantColor',
                               'owningOffererId', 'id', 'lastProviderId', 'dateCreated']
@@ -248,7 +248,7 @@ class Patch:
                                                     booking_email='old@email.com',
                                                     last_provider_id=tite_live_provider.id)
 
-            PcObject.save(offer, user, user_offerer)
+            ApiHandler.save(offer, user, user_offerer)
             json = {
                 'bookingEmail': 'offer@email.com',
             }
@@ -273,7 +273,7 @@ class Patch:
             venue = create_venue(offerer)
             offer = create_offer_with_event_product(venue, event_product)
 
-            PcObject.save(event_product, offer, user, venue)
+            ApiHandler.save(event_product, offer, user, venue)
 
             json = {
                 'name': 'New name',
@@ -295,7 +295,7 @@ class Patch:
         def test_returns_404_if_offer_does_not_exist(self, app):
             # given
             user = create_user()
-            PcObject.save(user)
+            ApiHandler.save(user)
             auth_request = TestClient(app.test_client()).with_auth(email=user.email)
 
             # when

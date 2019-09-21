@@ -1,22 +1,22 @@
 from flask import current_app as app, jsonify, request
 from flask_login import current_user, login_required
+from sqlalchemy_api_handler import ApiHandler, as_dict, dehumanize, listify, load_or_404
+from sqlalchemy_api_handler.api_errors import ResourceNotFoundError
 
 from domain.admin_emails import send_offer_creation_notification_to_administration
 from domain.create_offer import fill_offer_with_new_data, initialize_offer_from_product_id
-from models import Offer, PcObject, Venue, RightsType
-from models.api_errors import ResourceNotFoundError
+from models import Offer, Venue, RightsType
 from repository import venue_queries, offer_queries
 from repository.offer_queries import find_activation_offers, \
     find_offers_with_filter_parameters
 from repository.recommendation_queries import invalidate_recommendations
-from routes.serialization import as_dict
 from utils.config import PRO_URL
-from utils.human_ids import dehumanize
 from utils.includes import OFFER_INCLUDES
 from utils.mailing import send_raw_email
 from utils.rest import expect_json_data, \
-    handle_rest_get_list, \
-    load_or_404, login_or_api_key_required, load_or_raise_error, ensure_current_user_has_rights
+                      login_or_api_key_required, \
+                      load_or_raise_error, \
+                      ensure_current_user_has_rights
 from validation.offers import check_venue_exists_when_requested, check_user_has_rights_for_query, check_valid_edition, \
     check_has_venue_id, check_offer_type_is_valid, check_offer_is_editable
 
@@ -38,8 +38,8 @@ def list_offers():
         keywords_string=request.args.get('keywords')
     )
 
-    return handle_rest_get_list(Offer, query=query, order_by='offer.id desc', includes=OFFER_INCLUDES, paginate=10,
-                                page=request.args.get('page'))
+    return jsonify(listify(Offer, query=query, order_by='offer.id desc', includes=OFFER_INCLUDES, paginate=10,
+                                page=request.args.get('page')))
 
 
 @app.route('/offers/<id>', methods=['GET'])
@@ -78,7 +78,7 @@ def post_offer():
 
     offer.venue = venue
     offer.bookingEmail = request.json.get('bookingEmail', None)
-    PcObject.save(offer)
+    ApiHandler.save(offer)
     send_offer_creation_notification_to_administration(offer, current_user, PRO_URL, send_raw_email)
 
     return jsonify(as_dict(offer, includes=OFFER_INCLUDES)), 201
@@ -101,7 +101,7 @@ def patch_offer(id: int):
         check_offer_is_editable(offer)
     offer.populate_from_dict(request_data)
     offer.update_with_product_data(request_data)
-    PcObject.save(offer)
+    ApiHandler.save(offer)
 
     request_data_contains_deactivation = 'isActive' in request_data and not request_data['isActive']
 

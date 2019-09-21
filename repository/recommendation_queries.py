@@ -1,18 +1,17 @@
 from datetime import datetime
 from sqlalchemy import func, or_, and_
 from sqlalchemy.sql.expression import literal
+from sqlalchemy_api_handler import dehumanize
+from sqlalchemy_api_handler.api_errors import ResourceNotFoundError
 
 from models import Mediation, \
                    Offer, \
                    Recommendation, \
                    Stock
-from models.api_errors import ResourceNotFoundError
 from models.db import db
-from models.mediation import Mediation
 from repository import mediation_queries
 from repository.offer_queries import find_searchable_offer
 from utils.config import BLOB_SIZE
-from utils.human_ids import dehumanize
 from utils.logger import logger
 
 

@@ -1,7 +1,10 @@
+from sqlalchemy_api_handler import ApiHandler
+
 from models.offer_type import EventType
-from models.pc_object import PcObject
 from sandboxes.scripts.utils.select import remove_every
-from tests.test_utils import create_stock_from_event_occurrence, get_price_by_short_name, get_occurrence_short_name
+from tests.test_utils import create_stock_from_event_occurrence, \
+                             get_price_by_short_name, \
+                             get_occurrence_short_name
 from utils.logger import logger
 
 EVENT_OCCURRENCES_WITH_STOCKS_REMOVE_MODULO = 4
@@ -47,7 +50,7 @@ def create_industrial_event_stocks(event_occurrences_by_name):
             price=price
         )
 
-    PcObject.save(*event_stocks_by_name.values())
+    ApiHandler.save(*event_stocks_by_name.values())
 
     logger.info('created {} event_stocks'.format(len(event_stocks_by_name)))
 

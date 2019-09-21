@@ -1,4 +1,6 @@
-from models import Provider, PcObject
+from sqlalchemy_api_handler import ApiHandler
+
+from models import Provider
 from repository.venue_provider_queries import find_venue_provider
 from tests.conftest import clean_database
 from tests.test_utils import create_offerer, create_user, create_user_offerer, create_venue, create_venue_provider
@@ -19,7 +21,7 @@ class FindVenueProviderTest:
         user_offerer = create_user_offerer(user, offerer, is_admin=True)
         venue = create_venue(offerer, name='Librairie Titelive', siret='77567146400110')
         venue_provider = create_venue_provider(venue, provider, venue_id_at_offer_provider="775671464")
-        PcObject.save(provider, user_offerer, venue, venue_provider)
+        ApiHandler.save(provider, user_offerer, venue, venue_provider)
 
         # when
         existing_venue_provider = find_venue_provider(provider.id, venue.id, "775671464")
@@ -40,7 +42,7 @@ class FindVenueProviderTest:
         user_offerer = create_user_offerer(user, offerer, is_admin=True)
         venue = create_venue(offerer, name='Librairie Titelive', siret='77567146400110')
         venue_provider = create_venue_provider(venue, provider, venue_id_at_offer_provider="775671464")
-        PcObject.save(provider, user_offerer, venue, venue_provider)
+        ApiHandler.save(provider, user_offerer, venue, venue_provider)
 
         # when
         existing_venue_provider = find_venue_provider(provider.id, venue.id, "7666666")

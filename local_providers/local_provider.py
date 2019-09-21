@@ -4,6 +4,7 @@ from collections import Iterator
 from datetime import datetime
 from io import BytesIO
 from pprint import pprint
+from sqlalchemy_api_handler import ApiHandler, humanize
 
 from connectors.thumb_storage import save_thumb
 from local_providers.chunk_manager import get_existing_pc_obj, save_chunks
@@ -11,10 +12,8 @@ from local_providers.providable_info import ProvidableInfo
 from models.db import db, Model
 from models.has_thumb_mixin import HasThumbMixin
 from models.local_provider_event import LocalProviderEvent, LocalProviderEventType
-from models.pc_object import PcObject
 from repository.providable_queries import get_last_modification_date_for_provider
 from repository.provider_queries import get_provider_by_local_class
-from utils.human_ids import humanize
 from utils.inflect_engine import inflect_engine
 from utils.logger import logger
 
@@ -57,7 +56,7 @@ class LocalProvider(Iterator):
     def get_object_thumb_index(self) -> int:
         return None
 
-    def get_object_thumb_date(self, obj: PcObject) -> datetime:
+    def get_object_thumb_date(self, obj: ApiHandler) -> datetime:
         return None
 
     def getObjectThumbDates(self, obj):
@@ -289,4 +288,4 @@ class LocalProvider(Iterator):
         self.logEvent(LocalProviderEventType.SyncEnd)
         if self.venueProvider is not None:
             self.venueProvider.lastSyncDate = datetime.utcnow()
-            PcObject.save(self.venueProvider)
+            ApiHandler.save(self.venueProvider)

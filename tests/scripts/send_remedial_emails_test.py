@@ -1,9 +1,8 @@
 from datetime import datetime
 from unittest.mock import MagicMock
-
 from freezegun import freeze_time
+from sqlalchemy_api_handler import ApiHandler
 
-from models import PcObject
 from models.db import db
 from models.email import EmailStatus
 from scripts.send_remedial_emails import send_remedial_emails
@@ -23,7 +22,7 @@ def test_send_remedial_emails_sets_status_to_sent_and_datetime_to_now_only_to_em
     email2 = create_email(email_content2, status='SENT', time=datetime(2018, 12, 1, 12, 0, 0))
     email_content3 = {'Html-part': '<html><body>Hello</body></html>', 'To': ['recipient2@email']}
     email3 = create_email(email_content3, status='ERROR', time=datetime(2018, 12, 1, 12, 0, 0))
-    PcObject.save(email1, email2, email3)
+    ApiHandler.save(email1, email2, email3)
     mocked_response = MagicMock()
     mocked_response.status_code = 200
     app.mailjet_client.send.create.return_value = mocked_response
@@ -54,7 +53,7 @@ def test_send_remedial_emails_does_not_change_email_when_unsuccessfully_sent_and
     email2 = create_email(email_content2, status='SENT', time=datetime(2018, 12, 1, 12, 0, 0))
     email_content3 = {'Html-part': '<html><body>Hello</body></html>', 'To': ['recipient2@email']}
     email3 = create_email(email_content3, status='ERROR', time=datetime(2018, 12, 1, 12, 0, 0))
-    PcObject.save(email1, email2, email3)
+    ApiHandler.save(email1, email2, email3)
     mocked_response = MagicMock()
     mocked_response.status_code = 500
     app.mailjet_client.send.create.return_value = mocked_response

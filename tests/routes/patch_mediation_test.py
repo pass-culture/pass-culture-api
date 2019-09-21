@@ -1,4 +1,6 @@
-from models import PcObject, Mediation
+from sqlalchemy_api_handler import ApiHandler, humanize
+
+from models import Mediation
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_user, \
     create_offer_with_event_product, \
@@ -6,7 +8,6 @@ from tests.test_utils import create_user, \
     create_offerer, \
     create_user_offerer, \
     create_venue
-from utils.human_ids import humanize
 
 
 class Patch:
@@ -20,8 +21,8 @@ class Patch:
             offer = create_offer_with_event_product(venue)
             user_offerer = create_user_offerer(user, offerer)
             mediation = create_mediation(offer)
-            PcObject.save(mediation)
-            PcObject.save(user, venue, offerer, user_offerer)
+            ApiHandler.save(mediation)
+            ApiHandler.save(user, venue, offerer, user_offerer)
             mediation_id = mediation.id
             auth_request = TestClient(app.test_client()).with_auth(email=user.email)
             data = {'frontText': 'new front text', 'backText': 'new back text', 'isActive': False}
@@ -53,8 +54,8 @@ class Patch:
             offer = create_offer_with_event_product(venue)
             user_offerer = create_user_offerer(other_user, offerer)
             mediation = create_mediation(offer)
-            PcObject.save(mediation)
-            PcObject.save(other_user, current_user, venue, offerer, user_offerer)
+            ApiHandler.save(mediation)
+            ApiHandler.save(other_user, current_user, venue, offerer, user_offerer)
 
             auth_request = TestClient(app.test_client()).with_auth(email=current_user.email)
 
@@ -69,7 +70,7 @@ class Patch:
         def when_mediation_does_not_exist(self, app):
             # given
             user = create_user()
-            PcObject.save(user)
+            ApiHandler.save(user)
             auth_request = TestClient(app.test_client()).with_auth(email=user.email)
 
             # when

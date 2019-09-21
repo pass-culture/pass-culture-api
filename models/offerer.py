@@ -1,11 +1,10 @@
-""" offerer """
 from datetime import datetime
-
 from sqlalchemy import BigInteger, \
     Column, \
     DateTime, \
     String
 from sqlalchemy.orm import relationship
+from sqlalchemy_api_handler import ApiHandler
 
 from domain.keywords import create_ts_vector_and_table_args
 from models.db import Model
@@ -13,13 +12,12 @@ from models.deactivable_mixin import DeactivableMixin
 from models.has_address_mixin import HasAddressMixin
 from models.has_thumb_mixin import HasThumbMixin
 from models.needs_validation_mixin import NeedsValidationMixin
-from models.pc_object import PcObject
 from models.providable_mixin import ProvidableMixin
 from models.user_offerer import UserOfferer
 from models.versioned_mixin import VersionedMixin
 
 
-class Offerer(PcObject,
+class Offerer(ApiHandler,
               Model,
               HasThumbMixin,
               HasAddressMixin,

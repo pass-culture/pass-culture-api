@@ -1,8 +1,8 @@
 from typing import List
-
 import pandas
+from sqlalchemy_api_handler import ApiHandler
 
-from models import PcObject, ThingType, EventType
+from models import ThingType, EventType
 from models.payment_status import TransactionStatus
 from scripts.dashboard.finance_statistics import get_total_deposits, get_total_amount_spent, get_total_amount_to_pay, \
     _query_get_top_20_offers_by_number_of_bookings, get_top_20_offers_table, \
@@ -30,7 +30,7 @@ class GetTotalDepositsTest:
         user2 = create_user(email='test2@email.com')
         deposit2 = create_deposit(user2, amount=500)
 
-        PcObject.save(deposit1, deposit2)
+        ApiHandler.save(deposit1, deposit2)
 
         # When
         total_deposits = get_total_deposits()
@@ -46,7 +46,7 @@ class GetTotalDepositsTest:
         user2 = create_user(email='test2@email.com', departement_code='95')
         deposit2 = create_deposit(user2, amount=500)
 
-        PcObject.save(deposit1, deposit2)
+        ApiHandler.save(deposit1, deposit2)
 
         # When
         total_deposits = get_total_deposits('95')
@@ -77,7 +77,7 @@ class GetTotalAmountSpentTest:
         stock = create_stock(price=10, offer=offer)
         booking1 = create_booking(user1, stock, venue=venue)
         booking2 = create_booking(user2, stock, venue=venue)
-        PcObject.save(booking1, booking2, deposit1, deposit2)
+        ApiHandler.save(booking1, booking2, deposit1, deposit2)
 
         # When
         total_amount_spent = get_total_amount_spent()
@@ -98,7 +98,7 @@ class GetTotalAmountSpentTest:
         stock = create_stock(price=10, offer=offer)
         booking1 = create_booking(user1, stock, venue=venue)
         booking2 = create_booking(user2, stock, venue=venue, is_cancelled=True)
-        PcObject.save(booking1, booking2, deposit1, deposit2)
+        ApiHandler.save(booking1, booking2, deposit1, deposit2)
 
         # When
         total_amount_spent = get_total_amount_spent()
@@ -116,7 +116,7 @@ class GetTotalAmountSpentTest:
         offer = create_offer_with_thing_product(venue)
         stock = create_stock(price=10, offer=offer)
         booking = create_booking(user, stock, venue=venue, quantity=2)
-        PcObject.save(booking, deposit)
+        ApiHandler.save(booking, deposit)
 
         # When
         total_amount_spent = get_total_amount_spent()
@@ -138,7 +138,7 @@ class GetTotalAmountSpentTest:
         stock = create_stock(price=15, offer=offer)
         booking_in_67 = create_booking(user67, stock, venue=venue)
         booking_in_89 = create_booking(user89, stock, venue=venue)
-        PcObject.save(booking_in_67, booking_in_89, user67, user89)
+        ApiHandler.save(booking_in_67, booking_in_89, user67, user89)
 
         # When
         total_amount_spent = get_total_amount_spent('67')
@@ -171,7 +171,7 @@ class GetTotalAmountToPayTest:
         booking2 = create_booking(user2, stock, venue=venue)
         payment1 = create_payment(booking1, offerer, amount=5)
         payment2 = create_payment(booking2, offerer, amount=10)
-        PcObject.save(payment1, payment2)
+        ApiHandler.save(payment1, payment2)
 
         # When
         total_amount_to_pay = get_total_amount_to_pay()
@@ -190,7 +190,7 @@ class GetTotalAmountToPayTest:
         stock = create_stock(price=10, offer=offer)
         booking = create_booking(user, stock, venue=venue)
         payment = create_payment(booking, offerer, amount=5, status=TransactionStatus.BANNED)
-        PcObject.save(payment)
+        ApiHandler.save(payment)
 
         # When
         total_amount_to_pay = get_total_amount_to_pay()
@@ -210,7 +210,7 @@ class GetTotalAmountToPayTest:
         booking = create_booking(user, stock, venue=venue)
         payment = create_payment(booking, offerer, amount=5, status=TransactionStatus.BANNED)
         payment.setStatus(TransactionStatus.RETRY)
-        PcObject.save(payment)
+        ApiHandler.save(payment)
 
         # When
         total_amount_to_pay = get_total_amount_to_pay()
@@ -237,7 +237,7 @@ class GetTotalAmountToPayTest:
         payment1 = create_payment(booking_in_35, offerer, amount=20)
         payment2 = create_payment(booking_in_78, offerer, amount=10)
 
-        PcObject.save(user_in_35, venue, payment1, payment2)
+        ApiHandler.save(user_in_35, venue, payment1, payment2)
 
         # When
         total_amount_to_pay = get_total_amount_to_pay('35')
@@ -252,7 +252,7 @@ class QueryGetTop20OffersByNumberOfBookingsTest:
         # Given
         quantities = [14, 15, 16, 17, 18, 19, 20, 21, 22, 22, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
         bookings = _create_bookings_with_quantities(quantities)
-        PcObject.save(*bookings)
+        ApiHandler.save(*bookings)
         expected_counts = [
             ('8', 22, 0), ('9', 22, 0), ('7', 21, 0), ('6', 20, 0), ('5', 19, 0), ('4', 18, 0),
             ('3', 17, 0), ('2', 16, 0), ('1', 15, 0), ('0', 14, 0), ('23', 14, 0), ('22', 13, 0),
@@ -275,7 +275,7 @@ class QueryGetTop20OffersByNumberOfBookingsTest:
         stock = create_stock(offer=offer, price=0)
         user = create_user()
         booking = create_booking(user, stock, quantity=1, is_cancelled=True)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         bookings_counts = _query_get_top_20_offers_by_number_of_bookings()
@@ -296,7 +296,7 @@ class QueryGetTop20OffersByNumberOfBookingsTest:
         booking1 = create_booking(user, stock1, quantity=1, is_cancelled=False)
         booking2 = create_booking(user, stock2, quantity=2, is_cancelled=False)
         booking3 = create_booking(user, stock2, quantity=1, is_cancelled=True)
-        PcObject.save(booking1, booking2, booking3)
+        ApiHandler.save(booking1, booking2, booking3)
 
         # When
         bookings_counts = _query_get_top_20_offers_by_number_of_bookings()
@@ -317,7 +317,7 @@ class QueryGetTop20OffersByNumberOfBookingsTest:
         create_deposit(user, amount=500)
         booking1 = create_booking(user, stock1, quantity=1, is_cancelled=False)
         booking2 = create_booking(user, stock2, quantity=1, is_cancelled=False)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         bookings_counts = _query_get_top_20_offers_by_number_of_bookings()
@@ -338,7 +338,7 @@ class QueryGetTop20OffersByNumberOfBookingsTest:
         create_deposit(user_in_35, amount=500)
         booking1 = create_booking(user_in_78, stock, quantity=1)
         booking2 = create_booking(user_in_35, stock, quantity=2)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         bookings_counts = _query_get_top_20_offers_by_number_of_bookings('35')
@@ -359,7 +359,7 @@ class QueryGetTop20OffersByNumberOfBookingsTest:
         create_deposit(user, amount=500)
         booking1 = create_booking(user, stock1, quantity=1, is_cancelled=False)
         booking2 = create_booking(user, stock2, quantity=1, is_cancelled=False)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         bookings_counts = _query_get_top_20_offers_by_number_of_bookings('35')
@@ -374,7 +374,7 @@ class GetTop20OffersByNumberOfBookingsTest:
         # Given
         quantities = [14, 15, 16, 17, 18, 19, 20, 21, 22, 22, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
         bookings = _create_bookings_with_quantities(quantities)
-        PcObject.save(*bookings)
+        ApiHandler.save(*bookings)
         expected_counts = [
             ('8', 22, 0), ('9', 22, 0), ('7', 21, 0), ('6', 20, 0), ('5', 19, 0), ('4', 18, 0),
             ('3', 17, 0), ('2', 16, 0), ('1', 15, 0), ('0', 14, 0), ('23', 14, 0), ('22', 13, 0),
@@ -395,7 +395,7 @@ class GetTop20OffersByNumberOfBookingsTest:
         # Given
         quantities = [14, 15, 16, 17, 18, 19, 20, 21, 22, 22, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
         bookings = _create_bookings_with_quantities(quantities)
-        PcObject.save(*bookings)
+        ApiHandler.save(*bookings)
         expected_counts = [
             ('8', 22, 0), ('9', 22, 0), ('7', 21, 0), ('6', 20, 0), ('5', 19, 0), ('4', 18, 0),
             ('3', 17, 0), ('2', 16, 0), ('1', 15, 0), ('0', 14, 0), ('23', 14, 0), ('22', 13, 0),
@@ -418,7 +418,7 @@ class QueryGetTop20OfferersByNumberOfBookingsTest:
         # Given
         quantities = [14, 15, 16, 17, 18, 19, 20, 21, 22, 22, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
         bookings = _create_bookings_with_quantities(quantities)
-        PcObject.save(*bookings)
+        ApiHandler.save(*bookings)
         expected_counts = [
             ('Offerer 8', 22, 0), ('Offerer 9', 22, 0), ('Offerer 7', 21, 0), ('Offerer 6', 20, 0),
             ('Offerer 5', 19, 0), ('Offerer 4', 18, 0), ('Offerer 3', 17, 0), ('Offerer 2', 16, 0),
@@ -442,7 +442,7 @@ class QueryGetTop20OfferersByNumberOfBookingsTest:
         stock = create_stock(offer=offer, price=0)
         user = create_user()
         booking = create_booking(user, stock, quantity=1, is_cancelled=True)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         bookings_counts = _query_get_top_20_offerers_by_number_of_bookings()
@@ -463,7 +463,7 @@ class QueryGetTop20OfferersByNumberOfBookingsTest:
         booking1 = create_booking(user, stock1, quantity=1, is_cancelled=False)
         booking2 = create_booking(user, stock2, quantity=2, is_cancelled=False)
         booking3 = create_booking(user, stock2, quantity=1, is_cancelled=True)
-        PcObject.save(booking1, booking2, booking3)
+        ApiHandler.save(booking1, booking2, booking3)
 
         # When
         bookings_counts = _query_get_top_20_offerers_by_number_of_bookings()
@@ -484,7 +484,7 @@ class QueryGetTop20OfferersByNumberOfBookingsTest:
         create_deposit(user_57, amount=500)
         booking1 = create_booking(user_30, stock, quantity=3)
         booking2 = create_booking(user_57, stock, quantity=2)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         bookings_counts = _query_get_top_20_offerers_by_number_of_bookings('30')
@@ -505,7 +505,7 @@ class QueryGetTop20OfferersByNumberOfBookingsTest:
         create_deposit(user, amount=500)
         booking1 = create_booking(user, stock1, quantity=1, is_cancelled=False)
         booking2 = create_booking(user, stock2, quantity=2, is_cancelled=False)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         bookings_counts = _query_get_top_20_offerers_by_number_of_bookings()
@@ -526,7 +526,7 @@ class QueryGetTop20OfferersByNumberOfBookingsTest:
         create_deposit(user, amount=500)
         booking1 = create_booking(user, stock1, quantity=1, is_cancelled=False)
         booking2 = create_booking(user, stock2, quantity=2, is_cancelled=False)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         bookings_counts = _query_get_top_20_offerers_by_number_of_bookings('76')
@@ -541,7 +541,7 @@ class GetTop20OfferersByNumberOfBookingsTest:
         # Given
         quantities = [14, 15, 16, 17, 18, 19, 20, 21, 22, 22, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
         bookings = _create_bookings_with_quantities(quantities)
-        PcObject.save(*bookings)
+        ApiHandler.save(*bookings)
         expected_counts = [
             ('Offerer 8', 22, 0), ('Offerer 9', 22, 0), ('Offerer 7', 21, 0), ('Offerer 6', 20, 0),
             ('Offerer 5', 19, 0), ('Offerer 4', 18, 0), ('Offerer 3', 17, 0), ('Offerer 2', 16, 0),
@@ -569,7 +569,7 @@ class QueryGetTop20OfferersByAmountTest:
         stock = create_stock(offer=offer, price=0)
         user = create_user()
         booking = create_booking(user, stock, quantity=1, is_cancelled=True)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         bookings_counts = _query_get_top_20_offerers_by_booking_amounts()
@@ -583,7 +583,7 @@ class QueryGetTop20OfferersByAmountTest:
         prices = [2, 115, 16, 18, 46, 145, 123, 12, 1, 35, 256, 25, 25, 252, 258, 156, 254, 13, 45, 145, 23]
 
         bookings = _create_bookings_with_prices(prices)
-        PcObject.save(*bookings)
+        ApiHandler.save(*bookings)
         expected_counts = [
             ('Offerer 14', 1, 258), ('Offerer 10', 1, 256), ('Offerer 16', 1, 254), ('Offerer 13', 1, 252), (
                 'Offerer 15', 1, 156), ('Offerer 19', 1, 145), ('Offerer 5', 1, 145), ('Offerer 6', 1, 123), (
@@ -611,7 +611,7 @@ class QueryGetTop20OfferersByAmountTest:
         booking1 = create_booking(user, stock1, quantity=1, is_cancelled=False)
         booking2 = create_booking(user, stock2, quantity=2, is_cancelled=False)
         booking3 = create_booking(user, stock2, quantity=1, is_cancelled=True)
-        PcObject.save(booking1, booking2, booking3)
+        ApiHandler.save(booking1, booking2, booking3)
 
         # When
         bookings_counts = _query_get_top_20_offerers_by_booking_amounts()
@@ -640,7 +640,7 @@ class QueryGetTop20OfferersByAmountTest:
         booking2 = create_booking(user_76, stock2, quantity=2)
         booking3 = create_booking(user_77, stock2, quantity=2)
 
-        PcObject.save(booking1, booking2, booking3)
+        ApiHandler.save(booking1, booking2, booking3)
 
         # When
         bookings_counts = _query_get_top_20_offerers_by_booking_amounts('76')
@@ -661,7 +661,7 @@ class QueryGetTop20OfferersByAmountTest:
         create_deposit(user, amount=500)
         booking1 = create_booking(user, stock1, quantity=1, is_cancelled=False)
         booking2 = create_booking(user, stock2, quantity=2, is_cancelled=False)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         bookings_counts = _query_get_top_20_offerers_by_booking_amounts()
@@ -682,7 +682,7 @@ class QueryGetTop20OfferersByAmountTest:
         create_deposit(user, amount=500)
         booking1 = create_booking(user, stock1, quantity=1, is_cancelled=False)
         booking2 = create_booking(user, stock2, quantity=2, is_cancelled=False)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         bookings_counts = _query_get_top_20_offerers_by_booking_amounts('34')
@@ -697,7 +697,7 @@ class GetTop20OfferersByAmountTable:
         # Given
         prices = [2, 115, 16, 18, 46, 145, 123, 12, 1, 35, 256, 25, 25, 252, 258, 156, 254, 13, 45, 145, 23]
         bookings = _create_bookings_with_prices(prices)
-        PcObject.save(*bookings)
+        ApiHandler.save(*bookings)
         expected_counts = [
             ('Offerer 14', 1, 258), ('Offerer 10', 1, 256), ('Offerer 16', 1, 254), ('Offerer 13', 1, 252), (
                 'Offerer 15', 1, 156), ('Offerer 19', 1, 145), ('Offerer 5', 1, 145), ('Offerer 6', 1, 123), (

@@ -1,7 +1,8 @@
 from datetime import datetime
+from sqlalchemy_api_handler import ApiHandler
 
 from domain.bookings import generate_bookings_details_csv
-from models import Booking, PcObject
+from models import Booking
 from tests.conftest import clean_database
 from tests.test_utils import create_booking, create_deposit, create_stock, create_user, create_offerer, create_venue, \
     create_offer_with_thing_product
@@ -40,7 +41,7 @@ class BookingsCSVTest:
         booking = create_booking(user, stock, date_created=datetime(2010, 1, 1, 0, 0, 0, 0))
         deposit1 = create_deposit(user, amount=100)
 
-        PcObject.save(user, offerer, venue, offer, stock, booking, deposit1)
+        ApiHandler.save(user, offerer, venue, offer, stock, booking, deposit1)
 
         bookings = Booking.query.all()
 

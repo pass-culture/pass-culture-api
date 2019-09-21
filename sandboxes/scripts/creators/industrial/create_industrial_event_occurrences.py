@@ -1,10 +1,10 @@
 from datetime import timedelta
+from sqlalchemy_api_handler import ApiHandler
 
-from models.pc_object import PcObject
 from sandboxes.scripts.utils.select import remove_every
+from tests.test_utils import create_event_occurrence
 from utils.date import strftime, today
 from utils.logger import logger
-from tests.test_utils import create_event_occurrence
 
 EVENT_OCCURRENCE_BEGINNING_DATETIMES = [
     today,

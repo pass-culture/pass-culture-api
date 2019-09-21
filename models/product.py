@@ -1,6 +1,4 @@
-""" model product """
 import enum
-
 from sqlalchemy import BigInteger, \
     Boolean, \
     CheckConstraint, \
@@ -15,13 +13,13 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import cast, false
 from sqlalchemy.sql.functions import coalesce
+from sqlalchemy_api_handler import ApiHandler
 
 from domain.keywords import create_ts_vector_and_table_args
 from models.db import Model
 from models.extra_data_mixin import ExtraDataMixin
 from models.has_thumb_mixin import HasThumbMixin
-from models.offer_type import EventType, ThingType, ProductType
-from models.pc_object import PcObject
+from models.offer_type import EventType, ThingType
 from models.providable_mixin import ProvidableMixin
 
 
@@ -35,7 +33,7 @@ class BookFormat(enum.Enum):
     MOYEN_FORMAT = "MOYEN FORMAT"
 
 
-class Product(PcObject,
+class Product(ApiHandler,
               Model,
               ExtraDataMixin,
               HasThumbMixin,

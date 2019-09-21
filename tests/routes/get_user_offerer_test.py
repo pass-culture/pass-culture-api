@@ -1,9 +1,9 @@
-from models import PcObject
+from sqlalchemy_api_handler import ApiHandler, humanize
+
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_user, \
     create_user_offerer, \
     create_offerer
-from utils.human_ids import humanize
 
 
 class Get:
@@ -16,7 +16,7 @@ class Get:
             offerer = create_offerer(siren='123456781')
             user_offerer1 = create_user_offerer(user1, offerer)
             user_offerer2 = create_user_offerer(user2, offerer)
-            PcObject.save(user_offerer1, user_offerer2)
+            ApiHandler.save(user_offerer1, user_offerer2)
 
             # when
             response = TestClient(app.test_client()) \
@@ -37,7 +37,7 @@ class Get:
             offerer = create_offerer(siren='123456781')
             user_offerer1 = create_user_offerer(user1, offerer)
             user_offerer2 = create_user_offerer(user2, offerer)
-            PcObject.save(user_offerer1, user_offerer2)
+            ApiHandler.save(user_offerer1, user_offerer2)
             non_existing_offerer_id = 'B9'
 
             # when

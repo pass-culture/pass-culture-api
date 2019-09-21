@@ -1,19 +1,16 @@
-""" venues """
 from flask import current_app as app, jsonify, request
 from flask_login import login_required, current_user
+from sqlalchemy_api_handler import ApiHandler, as_dict, load_or_404
 
 from domain.admin_emails import send_venue_validation_email
 from domain.offers import update_is_active_status
-from models import PcObject
 from models.user_offerer import RightsType
 from models.venue import Venue
 from repository.venue_queries import save_venue, find_by_managing_user
-from routes.serialization import as_dict
 from utils.includes import OFFER_INCLUDES, VENUE_INCLUDES
 from utils.mailing import MailServiceException, send_raw_email
 from utils.rest import ensure_current_user_has_rights, \
-    expect_json_data, \
-    load_or_404
+    expect_json_data
 from validation.venues import validate_coordinates, check_valid_edition
 
 
@@ -73,7 +70,7 @@ def activate_venue_offers(venueId):
     ensure_current_user_has_rights(RightsType.editor, venue.managingOffererId)
     offers = venue.offers
     activated_offers = update_is_active_status(offers, True)
-    PcObject.save(*activated_offers)
+    ApiHandler.save(*activated_offers)
     return jsonify([as_dict(offer, includes=OFFER_INCLUDES) for offer in activated_offers]), 200
 
 
@@ -84,5 +81,5 @@ def deactivate_venue_offers(venueId):
     ensure_current_user_has_rights(RightsType.editor, venue.managingOffererId)
     offers = venue.offers
     deactivated_offers = update_is_active_status(offers, False)
-    PcObject.save(*deactivated_offers)
+    ApiHandler.save(*deactivated_offers)
     return jsonify([as_dict(offer, includes=OFFER_INCLUDES) for offer in deactivated_offers]), 200

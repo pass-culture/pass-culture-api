@@ -1,6 +1,7 @@
 from datetime import datetime
+from sqlalchemy_api_handler import ApiHandler
 
-from models import Provider, LocalProviderEvent, PcObject
+from models import Provider, LocalProviderEvent
 from models.local_provider_event import LocalProviderEventType
 from repository.local_provider_event_queries import find_latest_sync_end_event
 from tests.conftest import clean_database
@@ -32,7 +33,7 @@ class FindLatestSyncEndEventTest:
         older_event.type = LocalProviderEventType.SyncEnd
         older_event.date = datetime(1900, 1, 1)
 
-        PcObject.save(older_event, most_recent_event)
+        ApiHandler.save(older_event, most_recent_event)
 
         # When
         last_event = find_latest_sync_end_event(provider)

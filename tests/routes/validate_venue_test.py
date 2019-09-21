@@ -1,4 +1,5 @@
-from models import PcObject
+from sqlalchemy_api_handler import ApiHandler
+
 from models.db import db
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_offerer, create_venue
@@ -12,7 +13,7 @@ class Get:
             offerer = create_offerer()
             venue = create_venue(offerer)
             venue.generate_validation_token()
-            PcObject.save(venue)
+            ApiHandler.save(venue)
 
             token = venue.validationToken
 

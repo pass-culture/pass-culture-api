@@ -1,10 +1,9 @@
 import enum
-
 from sqlalchemy import String, Column, Enum
+from sqlalchemy_api_handler import ApiHandler
 
 from models.db import Model
 from models.deactivable_mixin import DeactivableMixin
-from models.pc_object import PcObject
 
 
 class FeatureToggle(enum.Enum):
@@ -13,7 +12,7 @@ class FeatureToggle(enum.Enum):
     DEGRESSIVE_REIMBURSEMENT_RATE = 'Permettre le remboursement avec un barème dégressif par lieu'
 
 
-class Feature(PcObject, Model, DeactivableMixin):
+class Feature(ApiHandler, Model, DeactivableMixin):
     name = Column(Enum(FeatureToggle), unique=True, nullable=False)
     description = Column(String(300), nullable=False)
 

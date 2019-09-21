@@ -1,19 +1,17 @@
 from typing import List
-
 from flask import current_app as app, jsonify, request
 from flask_login import current_user, login_required
+from sqlalchemy_api_handler import ApiHandler, as_dict, dehumanize, load_or_404
 
 from domain.favorites import create_favorite
 from domain.favorites import find_first_matching_booking_from_favorite
-from models import Mediation, Offer, PcObject, Favorite
+from models import Mediation, Offer, Favorite
 from models.feature import FeatureToggle
-from repository.favorite_queries import find_favorite_for_offer_and_user, find_all_favorites_by_user_id
-from routes.serialization import as_dict
+from repository.favorite_queries import find_favorite_for_offer_and_user, \
+                                        find_all_favorites_by_user_id
 from utils.feature import feature_required
-from utils.human_ids import dehumanize
 from utils.includes import FAVORITE_INCLUDES, \
     WEBAPP_GET_BOOKING_INCLUDES
-from utils.rest import load_or_404
 from validation.offers import check_offer_id_is_present_in_request
 
 
@@ -31,7 +29,7 @@ def add_to_favorite():
         mediation = load_or_404(Mediation, mediation_id)
 
     favorite = create_favorite(mediation, offer, current_user)
-    PcObject.save(favorite)
+    ApiHandler.save(favorite)
 
     return jsonify(_serialize_favorite(favorite)), 201
 
@@ -46,7 +44,7 @@ def delete_favorite(offer_id):
                                                 current_user.id) \
         .first_or_404()
 
-    PcObject.delete(favorite)
+    ApiHandler.delete(favorite)
 
     return jsonify(as_dict(favorite)), 200
 

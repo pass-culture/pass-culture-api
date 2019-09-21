@@ -1,4 +1,6 @@
-from models import Deposit, PcObject
+from sqlalchemy_api_handler import ApiHandler
+
+from models import Deposit
 from tests.conftest import clean_database
 from tests.test_utils import create_user
 
@@ -14,7 +16,7 @@ def test_deposit_creation_1(app):
     deposit.source = "test money"
 
     # when
-    PcObject.save(deposit)
+    ApiHandler.save(deposit)
 
     # then
     assert Deposit.query.count() == 1
@@ -31,7 +33,7 @@ def test_deposit_creation_2(app):
     deposit.source = "test money"
 
     # when
-    PcObject.save(deposit)
+    ApiHandler.save(deposit)
 
     # then
     assert Deposit.query.count() == 1

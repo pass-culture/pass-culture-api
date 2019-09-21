@@ -1,13 +1,11 @@
-""" local providers test """
 from pathlib import Path
 from unittest.mock import patch
-
 import os
 from zipfile import ZipFile
+from sqlalchemy_api_handler import ApiHandler
 
 from local_providers import TiteLiveThingThumbs
 from local_providers.titelive_thing_thumbs import THUMB_FOLDER_NAME_TITELIVE, extract_thumb_index
-from models import PcObject
 from tests.conftest import clean_database
 from tests.test_utils import provider_test, create_product_with_thing_type
 
@@ -45,7 +43,7 @@ class TiteliveThingThumbsTest:
         # given
         product1 = create_product_with_thing_type(id_at_providers='9780847858903', thumb_count=0)
         product2 = create_product_with_thing_type(id_at_providers='9782016261903', thumb_count=0)
-        PcObject.save(product1, product2)
+        ApiHandler.save(product1, product2)
 
         # mock TiteliveThingThumb
         files = get_ordered_zip_thumbs_files_from_sandbox_files()

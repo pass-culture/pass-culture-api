@@ -1,9 +1,8 @@
 import os
 from pathlib import Path
-
+from sqlalchemy_api_handler import ApiErrors
 import pytest
 
-from models import ApiErrors
 from validation.mediations import check_thumb_quality
 
 MODULE_PATH = Path(os.path.dirname(os.path.realpath(__file__)))

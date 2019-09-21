@@ -1,9 +1,8 @@
 import uuid
 from datetime import datetime
-
 import pytest
+from sqlalchemy_api_handler import ApiHandler
 
-from models import PcObject
 from models.payment_status import TransactionStatus
 from scripts.payment.banishment import do_ban_payments, parse_raw_payments_ids
 from tests.conftest import clean_database
@@ -52,7 +51,7 @@ class DoBanPaymentsTest:
         payment5 = create_payment(booking, offerer, 5, transaction_end_to_end_id=uuid1, payment_message=transaction1)
         payment6 = create_payment(booking, offerer, 5, transaction_end_to_end_id=uuid1, payment_message=transaction1)
 
-        PcObject.save(deposit, payment1, payment2, payment3, payment4, payment5, payment6)
+        ApiHandler.save(deposit, payment1, payment2, payment3, payment4, payment5, payment6)
 
         # when
         do_ban_payments('XML1', [payment1.id, payment5.id])
@@ -81,7 +80,7 @@ class DoBanPaymentsTest:
         payment1 = create_payment(booking, offerer, 5, transaction_end_to_end_id=uuid1, payment_message=transaction1)
         payment2 = create_payment(booking, offerer, 5, transaction_end_to_end_id=uuid2, payment_message=transaction2)
 
-        PcObject.save(deposit, payment1, payment2)
+        ApiHandler.save(deposit, payment1, payment2)
 
         # when
         do_ban_payments('XML1', [payment1.id, 123456])

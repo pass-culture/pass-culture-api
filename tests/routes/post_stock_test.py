@@ -1,12 +1,11 @@
 from datetime import timedelta, datetime
+from sqlalchemy_api_handler import ApiHandler, dehumanize, humanize
+from sqlalchemy_api_handler.serialization.serialize import serialize
 
 from models import Stock, Provider
-from models.pc_object import PcObject
-from routes.serialization import serialize
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_user, create_offerer, create_venue, \
     create_offer_with_event_product, create_user_offerer, create_offer_with_thing_product
-from utils.human_ids import dehumanize, humanize
 
 
 class Post:
@@ -19,10 +18,10 @@ class Post:
             user_offerer = create_user_offerer(user, offerer)
             venue = create_venue(offerer)
             offer = create_offer_with_thing_product(venue)
-            PcObject.save(user_offerer, offer)
+            ApiHandler.save(user_offerer, offer)
 
             stock_data = {'price': 1222, 'offerId': humanize(offer.id)}
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             # When
             response = TestClient(app.test_client()).with_auth('test@email.fr') \
@@ -42,7 +41,7 @@ class Post:
             offerer = create_offerer()
             venue = create_venue(offerer)
             offer = create_offer_with_thing_product(venue)
-            PcObject.save(user, offer)
+            ApiHandler.save(user, offer)
 
             data = {
                 'price': 0,
@@ -72,7 +71,7 @@ class Post:
             offerer = create_offerer()
             venue = create_venue(offerer)
             offer = create_offer_with_thing_product(venue)
-            PcObject.save(user, offer)
+            ApiHandler.save(user, offer)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email) \
@@ -89,7 +88,7 @@ class Post:
             offerer = create_offerer()
             venue = create_venue(offerer)
             offer = create_offer_with_event_product(venue)
-            PcObject.save(user, offer)
+            ApiHandler.save(user, offer)
 
             beginningDatetime = datetime(2019, 2, 14)
 
@@ -118,7 +117,7 @@ class Post:
             offerer = create_offerer()
             venue = create_venue(offerer)
             offer = create_offer_with_thing_product(venue)
-            PcObject.save(user, offer)
+            ApiHandler.save(user, offer)
 
             data = {
                 'price': 0,
@@ -142,7 +141,7 @@ class Post:
             offerer = create_offerer()
             venue = create_venue(offerer)
             offer = create_offer_with_event_product(venue)
-            PcObject.save(user, offer)
+            ApiHandler.save(user, offer)
 
             data = {
                 'price': 0,
@@ -167,7 +166,7 @@ class Post:
             offerer = create_offerer()
             venue = create_venue(offerer)
             offer = create_offer_with_thing_product(venue)
-            PcObject.save(user, offer)
+            ApiHandler.save(user, offer)
             beginningDatetime = datetime(2019, 2, 14)
 
             data = {
@@ -201,10 +200,10 @@ class Post:
             user_offerer = create_user_offerer(user, offerer)
             venue = create_venue(offerer)
             offer = create_offer_with_thing_product(venue, last_provider_id=tite_live_provider.id)
-            PcObject.save(user_offerer, offer)
+            ApiHandler.save(user_offerer, offer)
 
             stock_data = {'price': 1222, 'offerId': humanize(offer.id)}
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             # When
             response = TestClient(app.test_client()).with_auth('test@email.fr') \
@@ -224,7 +223,7 @@ class Post:
             offerer = create_offerer()
             venue = create_venue(offerer)
             offer = create_offer_with_thing_product(venue)
-            PcObject.save(user, offer)
+            ApiHandler.save(user, offer)
 
             data = {'price': 1222, 'offerId': humanize(offer.id)}
 

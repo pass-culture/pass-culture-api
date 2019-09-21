@@ -1,7 +1,7 @@
-from models.mediation import Mediation
+from sqlalchemy_api_handler import ApiHandler
 
+from models.mediation import Mediation
 from models.offer_type import EventType, ProductType
-from models.pc_object import PcObject
 from recommendations_engine.offers import get_departement_codes_from_user
 from repository.offer_queries import get_active_offers
 from sandboxes.scripts.utils.select import remove_every
@@ -113,7 +113,7 @@ def create_industrial_recommendations(mediations_by_name, offers_by_name, users_
                     user=user
                 )
 
-    PcObject.save(*recommendations_by_name.values())
+    ApiHandler.save(*recommendations_by_name.values())
 
     for recommendation in recommendations_by_name.values():
         if recommendation.offer:

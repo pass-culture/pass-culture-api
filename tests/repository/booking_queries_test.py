@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
-
 import pytest
+from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler.api_errors import ApiErrors, ResourceNotFoundError
 
-from models import PcObject, ThingType, Booking, EventType
-from models.api_errors import ResourceNotFoundError, ApiErrors
+from models import ThingType, Booking, EventType
 from repository.booking_queries import find_all_ongoing_bookings_by_stock, \
     find_offerer_bookings_paginated, \
     find_eligible_bookings_for_offerer, \
@@ -54,7 +54,7 @@ def test_find_all_by_offerer_with_event_and_things(app):
     booking1 = create_booking(user, stock1, venue1, recommendation=None, quantity=2)
     booking2 = create_booking(user, stock2, venue1, recommendation=None, quantity=1)
     booking3 = create_booking(user, stock3, venue2, recommendation=None, quantity=2)
-    PcObject.save(booking1, booking2, booking3)
+    ApiHandler.save(booking1, booking2, booking3)
 
     # when
     bookings = find_offerer_bookings_paginated(offerer1.id)
@@ -82,7 +82,7 @@ class FindAllOffererBookingsByVenueIdTest:
         booking2 = create_booking(user, stock2, venue2, recommendation=None, quantity=2)
         booking3 = create_booking(user, stock3, venue3, recommendation=None, quantity=2)
 
-        PcObject.save(booking1, booking2, booking3)
+        ApiHandler.save(booking1, booking2, booking3)
 
         # when
         bookings = find_all_offerer_bookings(offerer1.id)
@@ -109,7 +109,7 @@ class FindAllOffererBookingsByVenueIdTest:
         booking1 = create_booking(user, stock1, venue1, recommendation=None, quantity=2)
         booking2 = create_booking(user, stock2, venue1, recommendation=None, quantity=2)
         booking3 = create_booking(user, stock3, venue2, recommendation=None, quantity=2)
-        PcObject.save(booking1, booking2, booking3)
+        ApiHandler.save(booking1, booking2, booking3)
 
         # when
         bookings = find_all_offerer_bookings(offerer1.id, venue_id=venue1.id)
@@ -146,7 +146,7 @@ class FindAllOffererBookingsByVenueIdTest:
         other_booking_3 = create_booking(user, other_stock, venue, recommendation=None, quantity=2,
                                          date_created=datetime(2020, 6, 1))
 
-        PcObject.save(other_booking_1, other_booking_2, other_booking_3, target_booking_1, target_booking_2)
+        ApiHandler.save(other_booking_1, other_booking_2, other_booking_3, target_booking_1, target_booking_2)
 
         target_offer_id = target_offer.id
 
@@ -189,7 +189,7 @@ class FindAllOffererBookingsByVenueIdTest:
         other_booking_2 = create_booking(user, other_stock_2, venue, recommendation=None, quantity=2)
         other_booking_3 = create_booking(user, other_stock_3, venue, recommendation=None, quantity=2)
 
-        PcObject.save(other_booking_1, other_booking_2, target_booking, other_booking_3)
+        ApiHandler.save(other_booking_1, other_booking_2, target_booking, other_booking_3)
 
         target_offer_id = target_offer.id
 
@@ -217,7 +217,7 @@ class FindAllDigitalBookingsForOffererTest:
         booking_for_digital = create_booking(user, stock1, digital_venue, recommendation=None, quantity=2)
         booking_for_physical = create_booking(user, stock2, physical_venue, recommendation=None, quantity=2)
 
-        PcObject.save(booking_for_digital, booking_for_physical)
+        ApiHandler.save(booking_for_digital, booking_for_physical)
 
         # when
         bookings = find_all_digital_bookings_for_offerer(offerer1.id)
@@ -245,7 +245,7 @@ class FindAllDigitalBookingsForOffererTest:
         targeet_booking = create_booking(user, target_stock, target_digital_venue, recommendation=None, quantity=2)
         other_booking = create_booking(user, other_stock, other_digital_venue, recommendation=None, quantity=2)
 
-        PcObject.save(targeet_booking, other_booking)
+        ApiHandler.save(targeet_booking, other_booking)
 
         # when
         bookings = find_all_digital_bookings_for_offerer(target_offerer.id)
@@ -267,7 +267,7 @@ class FindAllDigitalBookingsForOffererTest:
         booking_for_offerer1 = create_booking(user, stock1, digital_venue_for_offerer1, recommendation=None, quantity=2)
         booking_for_offerer2 = create_booking(user, stock2, digital_venue_for_offerer1, recommendation=None, quantity=2)
 
-        PcObject.save(booking_for_offerer1, booking_for_offerer2)
+        ApiHandler.save(booking_for_offerer1, booking_for_offerer2)
 
         # when
         bookings = find_all_digital_bookings_for_offerer(offerer1.id, stock2.offer.id)
@@ -297,7 +297,7 @@ class FindAllDigitalBookingsForOffererTest:
         booking_for_offerer5 = create_booking(user, stock1, digital_venue_for_offerer1, recommendation=None, quantity=2,
                                               date_created=datetime(2020, 6, 30))
 
-        PcObject.save(booking_for_offerer1, booking_for_offerer2, booking_for_offerer3, booking_for_offerer4,
+        ApiHandler.save(booking_for_offerer1, booking_for_offerer2, booking_for_offerer3, booking_for_offerer4,
                       booking_for_offerer5)
 
         # when
@@ -314,16 +314,16 @@ class FindAllDigitalBookingsForOffererTest:
 def test_find_all_ongoing_bookings(app):
     # Given
     offerer = create_offerer(siren='985281920')
-    PcObject.save(offerer)
+    ApiHandler.save(offerer)
     venue = create_venue(offerer)
     stock = create_stock_with_thing_offer(offerer, venue, offer=None, price=0)
     user = create_user()
     cancelled_booking = create_booking(user, stock, is_cancelled=True)
     validated_booking = create_booking(user, stock, is_used=True)
     ongoing_booking = create_booking(user, stock, is_cancelled=False, is_used=False)
-    PcObject.save(ongoing_booking)
-    PcObject.save(validated_booking)
-    PcObject.save(cancelled_booking)
+    ApiHandler.save(ongoing_booking)
+    ApiHandler.save(validated_booking)
+    ApiHandler.save(cancelled_booking)
 
     # When
     all_ongoing_bookings = find_all_ongoing_bookings_by_stock(stock)
@@ -352,7 +352,7 @@ class FindFinalOffererBookingsTest:
         stock = create_stock_with_thing_offer(offerer2, venue, offer)
         booking3 = create_booking(user, stock=stock, venue=venue, is_used=True)
 
-        PcObject.save(deposit, booking1, booking2, booking3)
+        ApiHandler.save(deposit, booking1, booking2, booking3)
 
         # When
         bookings = find_eligible_bookings_for_offerer(offerer1.id)
@@ -379,7 +379,7 @@ class FindFinalOffererBookingsTest:
         payment1 = create_payment(booking4, offerer, 5)
         payment2 = create_payment(booking3, offerer, 5)
 
-        PcObject.save(deposit, booking1, booking2, booking3, booking4, payment1, payment2)
+        ApiHandler.save(deposit, booking1, booking2, booking3, booking4, payment1, payment2)
 
         # When
         bookings = find_eligible_bookings_for_offerer(offerer.id)
@@ -403,7 +403,7 @@ class FindFinalOffererBookingsTest:
         booking1 = create_booking(user, stock=stock, venue=venue, is_used=True)
         booking2 = create_booking(user, stock=stock, venue=venue, is_cancelled=True, is_used=True)
 
-        PcObject.save(deposit, booking1, booking2)
+        ApiHandler.save(deposit, booking1, booking2)
 
         # When
         bookings = find_eligible_bookings_for_offerer(offerer1.id)
@@ -425,7 +425,7 @@ class FindFinalOffererBookingsTest:
         booking1 = create_booking(user, stock=stock, venue=venue, is_used=True)
         booking2 = create_booking(user, stock=stock, venue=venue, is_used=False)
 
-        PcObject.save(deposit, booking1, booking2)
+        ApiHandler.save(deposit, booking1, booking2)
 
         # When
         bookings = find_eligible_bookings_for_offerer(offerer1.id)
@@ -455,7 +455,7 @@ class FindFinalVenueBookingsTest:
         stock = create_stock_with_thing_offer(offerer2, venue2, offer)
         booking3 = create_booking(user, stock=stock, venue=venue2, is_used=True)
 
-        PcObject.save(deposit, booking1, booking2, booking3)
+        ApiHandler.save(deposit, booking1, booking2, booking3)
 
         # When
         bookings = find_eligible_bookings_for_venue(venue1.id)
@@ -481,7 +481,7 @@ class FindFinalVenueBookingsTest:
         booking1 = create_booking(user, stock=stock1, venue=venue, is_used=False)
         booking2 = create_booking(user, stock=stock2, venue=venue, is_used=False)
 
-        PcObject.save(deposit, booking1, booking2)
+        ApiHandler.save(deposit, booking1, booking2)
 
         # When
         bookings = find_eligible_bookings_for_offerer(offerer1.id)
@@ -498,7 +498,7 @@ class FindDateUsedTest:
         user = create_user()
         deposit = create_deposit(user, amount=500)
         booking = create_booking(user, is_used=True, date_used=datetime(2018, 2, 12))
-        PcObject.save(user, deposit, booking)
+        ApiHandler.save(user, deposit, booking)
 
         # when
         date_used = find_date_used(booking)
@@ -512,7 +512,7 @@ class FindDateUsedTest:
         user = create_user()
         deposit = create_deposit(user, amount=500)
         booking = create_booking(user)
-        PcObject.save(user, deposit, booking)
+        ApiHandler.save(user, deposit, booking)
 
         activity_insert = create_booking_activity(
             booking, 'booking', 'insert', issued_at=datetime(2018, 1, 28)
@@ -535,7 +535,7 @@ class FindDateUsedTest:
         user = create_user()
         deposit = create_deposit(user, amount=500)
         booking = create_booking(user)
-        PcObject.save(user, deposit, booking)
+        ApiHandler.save(user, deposit, booking)
 
         activity_insert = create_booking_activity(
             booking, 'booking', 'insert', issued_at=datetime(2018, 1, 28)
@@ -560,7 +560,7 @@ class FindUserActivationBookingTest:
         activation_offer = create_offer_with_thing_product(venue_online, thing_type=ThingType.ACTIVATION)
         activation_stock = create_stock_from_offer(activation_offer, available=200, price=0)
         activation_booking = create_booking(user, stock=activation_stock, venue=venue_online)
-        PcObject.save(activation_booking)
+        ApiHandler.save(activation_booking)
 
         # when
         booking = find_user_activation_booking(user)
@@ -577,7 +577,7 @@ class FindUserActivationBookingTest:
         book_offer = create_offer_with_thing_product(venue_online, thing_type=ThingType.LIVRE_EDITION)
         book_stock = create_stock_from_offer(book_offer, available=200, price=0)
         book_booking = create_booking(user, stock=book_stock, venue=venue_online)
-        PcObject.save(book_booking)
+        ApiHandler.save(book_booking)
 
         # when
         booking = find_user_activation_booking(user)
@@ -598,7 +598,7 @@ class GetExistingTokensTest:
         booking1 = create_booking(user, stock=book_stock, venue=venue_online)
         booking2 = create_booking(user, stock=book_stock, venue=venue_online)
         booking3 = create_booking(user, stock=book_stock, venue=venue_online)
-        PcObject.save(booking1, booking2, booking3)
+        ApiHandler.save(booking1, booking2, booking3)
 
         # when
         tokens = get_existing_tokens()
@@ -627,7 +627,7 @@ class FindAllActiveByUserIdTest:
         booking1 = create_booking(user, stock=book_stock, venue=venue_online, is_cancelled=True)
         booking2 = create_booking(user, stock=book_stock, venue=venue_online, is_used=True)
         booking3 = create_booking(user, stock=book_stock, venue=venue_online)
-        PcObject.save(booking1, booking2, booking3)
+        ApiHandler.save(booking1, booking2, booking3)
 
         # when
         bookings = find_active_bookings_by_user_id(user.id)
@@ -647,7 +647,7 @@ class FindByTest:
             venue = create_venue(offerer)
             stock = create_stock_with_thing_offer(offerer, venue, price=0)
             booking = create_booking(user, stock=stock)
-            PcObject.save(booking)
+            ApiHandler.save(booking)
 
             # when
             result = find_by(booking.token)
@@ -663,7 +663,7 @@ class FindByTest:
             venue = create_venue(offerer)
             stock = create_stock_with_thing_offer(offerer, venue, price=0)
             booking = create_booking(user, stock=stock)
-            PcObject.save(booking)
+            ApiHandler.save(booking)
 
             # when
             with pytest.raises(ResourceNotFoundError) as e:
@@ -681,7 +681,7 @@ class FindByTest:
             venue = create_venue(offerer)
             stock = create_stock_with_thing_offer(offerer, venue, price=0)
             booking = create_booking(user, stock=stock)
-            PcObject.save(booking)
+            ApiHandler.save(booking)
 
             # when
             result = find_by(booking.token, email='user@example.com')
@@ -697,7 +697,7 @@ class FindByTest:
             venue = create_venue(offerer)
             stock = create_stock_with_thing_offer(offerer, venue, price=0)
             booking = create_booking(user, stock=stock)
-            PcObject.save(booking)
+            ApiHandler.save(booking)
 
             # when
             result = find_by(booking.token, email='USER@example.COM')
@@ -713,7 +713,7 @@ class FindByTest:
             venue = create_venue(offerer)
             stock = create_stock_with_thing_offer(offerer, venue, price=0)
             booking = create_booking(user, stock=stock)
-            PcObject.save(booking)
+            ApiHandler.save(booking)
 
             # when
             result = find_by(booking.token, email='   user@example.com  ')
@@ -729,7 +729,7 @@ class FindByTest:
             venue = create_venue(offerer)
             stock = create_stock_with_thing_offer(offerer, venue, price=0)
             booking = create_booking(user, stock=stock)
-            PcObject.save(booking)
+            ApiHandler.save(booking)
 
             # when
             with pytest.raises(ResourceNotFoundError) as e:
@@ -747,7 +747,7 @@ class FindByTest:
             venue = create_venue(offerer)
             stock = create_stock_with_thing_offer(offerer, venue, price=0)
             booking = create_booking(user, stock=stock)
-            PcObject.save(booking)
+            ApiHandler.save(booking)
 
             # when
             result = find_by(booking.token, email='user@example.com', offer_id=stock.resolvedOffer.id)
@@ -763,7 +763,7 @@ class FindByTest:
             venue = create_venue(offerer)
             stock = create_stock_with_event_offer(offerer, venue, price=0)
             booking = create_booking(user, venue=venue, stock=stock)
-            PcObject.save(booking)
+            ApiHandler.save(booking)
 
             # when
             result = find_by(booking.token, email='user@example.com', offer_id=stock.resolvedOffer.id)
@@ -779,7 +779,7 @@ class FindByTest:
             venue = create_venue(offerer)
             stock = create_stock_with_thing_offer(offerer, venue, price=0)
             booking = create_booking(user, stock=stock)
-            PcObject.save(booking)
+            ApiHandler.save(booking)
 
             # when
             with pytest.raises(ResourceNotFoundError) as e:
@@ -800,11 +800,11 @@ class SaveBookingTest:
         user_cancelled = create_user(email='cancelled@booking.com')
         user_booked = create_user(email='booked@email.com')
         cancelled_booking = create_booking(user_cancelled, stock, is_cancelled=True)
-        PcObject.save(cancelled_booking)
+        ApiHandler.save(cancelled_booking)
         booking = create_booking(user_booked, stock, is_cancelled=False)
 
         # When
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # Then
         assert Booking.query.filter_by(isCancelled=False).count() == 1
@@ -820,12 +820,12 @@ class SaveBookingTest:
         user1 = create_user(email='cancelled@booking.com')
         user2 = create_user(email='booked@email.com')
         booking1 = create_booking(user1, stock, is_cancelled=False)
-        PcObject.save(booking1)
+        ApiHandler.save(booking1)
         booking2 = create_booking(user2, stock, is_cancelled=False)
 
         # When
         with pytest.raises(ApiErrors) as e:
-            PcObject.save(booking2)
+            ApiHandler.save(booking2)
 
         # Then
         assert e.value.errors['global'] == ['la quantité disponible pour cette offre est atteinte']
@@ -841,7 +841,7 @@ class CountNonCancelledBookingsTest:
         offer = create_offer_with_thing_product(venue)
         stock = create_stock(offer=offer, price=0)
         booking = create_booking(user_having_booked, stock, is_cancelled=False)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         count = count_non_cancelled_bookings()
@@ -858,7 +858,7 @@ class CountNonCancelledBookingsTest:
         offer = create_offer_with_thing_product(venue)
         stock = create_stock(offer=offer, price=0)
         booking = create_booking(user_having_booked, stock, is_cancelled=True)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         count = count_non_cancelled_bookings()
@@ -879,7 +879,7 @@ class CountNonCancelledBookingsTest:
         stock2 = create_stock(offer=offer2, price=0)
         booking1 = create_booking(user1, stock1)
         booking2 = create_booking(user2, stock2)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         count = count_non_cancelled_bookings()
@@ -898,7 +898,7 @@ class CountNonCancelledBookingsByDepartementTest:
         offer = create_offer_with_thing_product(venue)
         stock = create_stock(offer=offer, price=0)
         booking = create_booking(user_having_booked, stock, is_cancelled=False)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         count = count_non_cancelled_bookings_by_departement('76')
@@ -915,7 +915,7 @@ class CountNonCancelledBookingsByDepartementTest:
         offer = create_offer_with_thing_product(venue)
         stock = create_stock(offer=offer, price=0)
         booking = create_booking(user_having_booked, stock, is_cancelled=True)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         count = count_non_cancelled_bookings_by_departement('76')
@@ -932,7 +932,7 @@ class CountNonCancelledBookingsByDepartementTest:
         offer = create_offer_with_thing_product(venue)
         stock = create_stock(offer=offer, price=0)
         booking = create_booking(user_having_booked, stock, is_cancelled=False)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         count = count_non_cancelled_bookings_by_departement('81')
@@ -953,7 +953,7 @@ class CountNonCancelledBookingsByDepartementTest:
         stock2 = create_stock(offer=offer2, price=0)
         booking1 = create_booking(user1, stock1)
         booking2 = create_booking(user2, stock2)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         count = count_non_cancelled_bookings_by_departement('76')
@@ -979,7 +979,7 @@ class GetAllCancelledBookingsCountTest:
         )
         user = create_user()
         booking = create_booking(user, event_stock, is_cancelled=False)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         number_of_bookings = count_all_cancelled_bookings()
@@ -1003,7 +1003,7 @@ class GetAllCancelledBookingsCountTest:
         )
         user = create_user()
         booking = create_booking(user, event_stock, is_cancelled=True)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         number_of_bookings = count_all_cancelled_bookings()
@@ -1030,7 +1030,7 @@ class GetAllCancelledBookingsCountTest:
         user = create_user()
         booking1 = create_booking(user, stock1, is_cancelled=True)
         booking2 = create_booking(user, stock2, is_cancelled=True)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         number_of_bookings = count_all_cancelled_bookings()
@@ -1056,7 +1056,7 @@ class GetAllCancelledBookingsByDepartementCountTest:
         )
         user = create_user(departement_code='76')
         booking = create_booking(user, event_stock, is_cancelled=False)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         number_of_bookings = count_all_cancelled_bookings_by_departement('76')
@@ -1080,7 +1080,7 @@ class GetAllCancelledBookingsByDepartementCountTest:
         )
         user = create_user(departement_code='76')
         booking = create_booking(user, event_stock, is_cancelled=True)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         number_of_bookings = count_all_cancelled_bookings_by_departement('76')
@@ -1102,7 +1102,7 @@ class GetAllCancelledBookingsByDepartementCountTest:
         booking1 = create_booking(user_in_76, stock, is_cancelled=True)
         booking2 = create_booking(user_in_41, stock, is_cancelled=True)
         booking3 = create_booking(user_in_41, stock, is_cancelled=False)
-        PcObject.save(booking1, booking2, booking3)
+        ApiHandler.save(booking1, booking2, booking3)
 
         # When
         number_of_bookings = count_all_cancelled_bookings_by_departement('41')
@@ -1124,7 +1124,7 @@ class GetAllCancelledBookingsByDepartementCountTest:
 
         booking1 = create_booking(user, stock1, is_cancelled=True)
         booking2 = create_booking(user, stock2, is_cancelled=True)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         number_of_bookings = count_all_cancelled_bookings_by_departement('41')
@@ -1157,14 +1157,14 @@ class CountAllBookingsTest:
                                   is_cancelled=False,
                                   is_used=True,
                                   date_used=one_day_before_stock_last_update)
-        PcObject.save(booking1)
+        ApiHandler.save(booking1)
         booking2 = create_booking(user2,
                                   stock,
                                   is_cancelled=False,
                                   is_used=False)
 
         # When
-        PcObject.save(booking2)
+        ApiHandler.save(booking2)
 
         # Then
         assert Booking.query.filter_by(stock=stock).count() == 2
@@ -1179,7 +1179,7 @@ class CountAllBookingsTest:
         user = create_user()
         booking1 = create_booking(user, stock)
         booking2 = create_booking(user, stock, is_cancelled=True)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         number_of_bookings = count_all_bookings()
@@ -1197,7 +1197,7 @@ class CountAllBookingsTest:
         user = create_user()
         booking1 = create_booking(user, stock)
         booking2 = create_booking(user, stock, is_cancelled=True)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         number_of_bookings = count_all_bookings()
@@ -1217,7 +1217,7 @@ class CountAllBookingsTest:
         user = create_user()
         booking1 = create_booking(user, stock1)
         booking2 = create_booking(user, stock2)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         number_of_bookings = count_all_bookings()
@@ -1245,7 +1245,7 @@ class CountBookingsByDepartementTest:
         user = create_user(departement_code='74')
         booking1 = create_booking(user, stock)
         booking2 = create_booking(user, stock, is_cancelled=True)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         number_of_bookings = count_bookings_by_departement('74')
@@ -1266,7 +1266,7 @@ class CountBookingsByDepartementTest:
 
         booking1 = create_booking(user_in_76, stock)
         booking2 = create_booking(user_in_41, stock, is_cancelled=True)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         number_of_bookings = count_bookings_by_departement('76')
@@ -1287,7 +1287,7 @@ class CountBookingsByDepartementTest:
 
         booking1 = create_booking(user, stock1)
         booking2 = create_booking(user, stock1)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # When
         number_of_bookings = count_bookings_by_departement('76')
@@ -1306,7 +1306,7 @@ class CountAllUsedOrNonCancelledBookingsTest:
         stock = create_stock(offer=offer, price=0)
         user = create_user()
         booking = create_booking(user, stock, is_used=True)
-        PcObject.save(booking)
+        ApiHandler.save(booking)
 
         # When
         number_of_bookings = count_all_used_or_non_cancelled_bookings()
@@ -1323,7 +1323,7 @@ class CountAllUsedOrNonCancelledBookingsTest:
         thing_stock = create_stock(offer=thing_offer, price=0)
         user = create_user()
         thing_booking = create_booking(user, thing_stock, is_used=False)
-        PcObject.save(thing_booking)
+        ApiHandler.save(thing_booking)
 
         # When
         number_of_bookings = count_all_used_or_non_cancelled_bookings()
@@ -1347,7 +1347,7 @@ class CountAllUsedOrNonCancelledBookingsTest:
         )
         user = create_user()
         event_booking = create_booking(user, event_stock, is_used=False)
-        PcObject.save(event_booking)
+        ApiHandler.save(event_booking)
 
         # When
         number_of_bookings = count_all_used_or_non_cancelled_bookings()
@@ -1367,7 +1367,7 @@ class FindAllNotUsedAndNotCancelledTest:
         offer = create_offer_with_event_product(venue)
         stock = create_stock(offer=offer)
         booking = create_booking(user, stock=stock, is_used=True, date_used=datetime(2019, 10, 12))
-        PcObject.save(user, deposit, booking)
+        ApiHandler.save(user, deposit, booking)
 
         # When
         bookings = find_all_not_used_and_not_cancelled()
@@ -1385,7 +1385,7 @@ class FindAllNotUsedAndNotCancelledTest:
         offer = create_offer_with_event_product(venue)
         stock = create_stock(offer=offer)
         booking = create_booking(user, stock=stock, is_cancelled=True)
-        PcObject.save(user, deposit, booking)
+        ApiHandler.save(user, deposit, booking)
 
         # When
         bookings = find_all_not_used_and_not_cancelled()
@@ -1403,7 +1403,7 @@ class FindAllNotUsedAndNotCancelledTest:
         offer = create_offer_with_event_product(venue)
         stock = create_stock(offer=offer)
         booking = create_booking(user, stock=stock, is_used=True, is_cancelled=True)
-        PcObject.save(user, deposit, booking)
+        ApiHandler.save(user, deposit, booking)
 
         # When
         bookings = find_all_not_used_and_not_cancelled()
@@ -1423,7 +1423,7 @@ class FindAllNotUsedAndNotCancelledTest:
         booking1 = create_booking(user, stock=stock, is_used=False, is_cancelled=False)
         booking2 = create_booking(user, stock=stock, is_used=True)
         booking3 = create_booking(user, stock=stock, is_cancelled=True)
-        PcObject.save(user, deposit, booking1, booking2, booking3)
+        ApiHandler.save(user, deposit, booking1, booking2, booking3)
 
         # When
         bookings = find_all_not_used_and_not_cancelled()

@@ -1,8 +1,7 @@
 import json
-
 import pytest
+from sqlalchemy_api_handler import ApiHandler
 
-from models import PcObject
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import API_URL, create_user
 
@@ -14,7 +13,7 @@ class Get:
         def when_user_is_logged_in(self, app):
             # given
             user = create_user()
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             # when
             response = TestClient(app.test_client()).with_auth(user.email) \

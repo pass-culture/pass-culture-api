@@ -1,8 +1,8 @@
-""" routes offerer """
 from datetime import timedelta, datetime
+from sqlalchemy_api_handler import ApiHandler, humanize
+from sqlalchemy_api_handler.serialization.serialize import serialize
 
-from models import PcObject, Offerer
-from routes.serialization import serialize
+from models import Offerer
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_offer_with_event_product, \
     create_offerer, \
@@ -11,7 +11,6 @@ from tests.test_utils import create_offer_with_event_product, \
     create_user, \
     create_user_offerer, \
     create_venue
-from utils.human_ids import humanize
 
 
 
@@ -23,7 +22,7 @@ class Patch:
             user = create_user()
             offerer = create_offerer()
             user_offerer = create_user_offerer(user, offerer, is_admin=False)
-            PcObject.save(user_offerer)
+            ApiHandler.save(user_offerer)
             body = {'isActive': False}
 
             # when
@@ -41,7 +40,7 @@ class Patch:
             user = create_user()
             offerer = create_offerer()
             user_offerer = create_user_offerer(user, offerer, is_admin=True)
-            PcObject.save(user_offerer)
+            ApiHandler.save(user_offerer)
             body = {'thumbCount': 0, 'idAtProviders': 'zfeej',
                     'dateModifiedAtLastProvider': serialize(datetime(2016, 2, 1)), 'address': '123 nouvelle adresse',
                     'postalCode': '75001',
@@ -81,7 +80,7 @@ class Patch:
             recommendation3 = create_recommendation(offer_venue2_2, other_user, valid_until_date=original_validity_date)
             recommendation4 = create_recommendation(offer_venue2_2, user, valid_until_date=original_validity_date)
             other_recommendation = create_recommendation(other_offer, user, valid_until_date=original_validity_date)
-            PcObject.save(recommendation1, recommendation2, recommendation3, recommendation4,
+            ApiHandler.save(recommendation1, recommendation2, recommendation3, recommendation4,
                           other_recommendation,
                           user_offerer)
             offerer_id = offerer.id

@@ -1,4 +1,5 @@
-from models import PcObject
+from sqlalchemy_api_handler import ApiHandler
+
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_offerer, \
     create_user, \
@@ -22,11 +23,11 @@ class Get:
             # given
             offerer1 = create_offerer(siren='123456781', name='offreur C')
             venue = create_venue(offerer1)
-            PcObject.save(offerer1, venue)
+            ApiHandler.save(offerer1, venue)
 
             user = create_user()
             user.offerers = [offerer1]
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             # when
             response = TestClient(app.test_client()) \
@@ -45,11 +46,11 @@ class Get:
             offerer1 = create_offerer(siren='123456781', name='offreur C')
             offerer2 = create_offerer(siren='123456782', name='offreur A')
             offerer3 = create_offerer(siren='123456783', name='offreur B')
-            PcObject.save(offerer1, offerer3, offerer2)
+            ApiHandler.save(offerer1, offerer3, offerer2)
 
             user = create_user()
             user.offerers = [offerer1, offerer2, offerer3]
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             # when
             response = TestClient(app.test_client()) \
@@ -73,7 +74,7 @@ class Get:
             user_offerer1 = create_user_offerer(user, offerer1, validation_token=None)
             user_offerer2 = create_user_offerer(user, offerer2, validation_token='AZE123')
             user_offerer3 = create_user_offerer(user, offerer3, validation_token=None)
-            PcObject.save(user_offerer1, user_offerer2, user_offerer3)
+            ApiHandler.save(user_offerer1, user_offerer2, user_offerer3)
 
             # when
             response = TestClient(app.test_client()) \
@@ -97,11 +98,11 @@ class Get:
             offerer1 = create_offerer(siren='123456781', name='offreur C')
             offerer2 = create_offerer(siren='123456782', name='offreur A')
             offerer3 = create_offerer(siren='123456783', name='offreur B')
-            PcObject.save(offerer1, offerer3, offerer2)
+            ApiHandler.save(offerer1, offerer3, offerer2)
 
             user = create_user(can_book_free_offers=True, is_admin=False)
             user.offerers = [offerer1, offerer2]
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             # when
             response = TestClient(app.test_client()) \
@@ -118,11 +119,11 @@ class Get:
             offerer1 = create_offerer(siren='123456781', name='offreur C')
             offerer2 = create_offerer(siren='123456782', name='offreur A')
             offerer3 = create_offerer(siren='123456783', name='offreur B')
-            PcObject.save(offerer1, offerer3, offerer2)
+            ApiHandler.save(offerer1, offerer3, offerer2)
 
             user = create_user(can_book_free_offers=False, is_admin=True)
             user.offerers = [offerer1, offerer2]
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             # when
             response = TestClient(app.test_client()) \
@@ -144,7 +145,7 @@ class Get:
 
             user = create_user(can_book_free_offers=False, is_admin=True)
             user.offerers = [offerer1, offerer2]
-            PcObject.save(user, bank_information1, bank_information2)
+            ApiHandler.save(user, bank_information1, bank_information2)
 
             # when
             response = TestClient(app.test_client()) \
@@ -174,7 +175,7 @@ class Get:
 
             user = create_user(can_book_free_offers=False, is_admin=True)
             user.offerers = [offerer1, offerer2]
-            PcObject.save(user, bank_information1, bank_information2)
+            ApiHandler.save(user, bank_information1, bank_information2)
 
             # when
             response = TestClient(app.test_client()) \
@@ -197,7 +198,7 @@ class Get:
             user_offerer1 = create_user_offerer(user, offerer1)
             user_offerer2 = create_user_offerer(user, offerer2)
             user_offerer3 = create_user_offerer(user, offerer3)
-            PcObject.save(user_offerer1, user_offerer2, user_offerer3)
+            ApiHandler.save(user_offerer1, user_offerer2, user_offerer3)
 
             # when
             response = TestClient(app.test_client()) \
@@ -218,7 +219,7 @@ class Get:
             user_offerer1 = create_user_offerer(user, offerer1)
             user_offerer2 = create_user_offerer(user, offerer2)
             user_offerer3 = create_user_offerer(user, offerer3)
-            PcObject.save(user_offerer1, user_offerer2, user_offerer3)
+            ApiHandler.save(user_offerer1, user_offerer2, user_offerer3)
 
             # when
             response = TestClient(app.test_client()) \
@@ -244,7 +245,7 @@ class Get:
             bank_information1 = create_bank_information(id_at_providers='123456781', offerer=offerer1)
             bank_information2 = create_bank_information(id_at_providers='123456782', offerer=offerer2)
             bank_information3 = create_bank_information(id_at_providers='123456783', offerer=offerer3)
-            PcObject.save(bank_information1, bank_information2, bank_information3, user_offerer1,
+            ApiHandler.save(bank_information1, bank_information2, bank_information3, user_offerer1,
                           user_offerer2, user_offerer3)
 
             # when
@@ -268,7 +269,7 @@ class Get:
             user = create_user()
             offerer1 = create_offerer(siren='123456781', name='offreur C')
             user_offerer1 = create_user_offerer(user, offerer1)
-            PcObject.save(user_offerer1)
+            ApiHandler.save(user_offerer1)
 
             # when
             response = TestClient(app.test_client()) \
@@ -288,11 +289,11 @@ class Get:
             offerer1 = create_offerer(siren='123456781', name='offreur C')
             offerer2 = create_offerer(siren='123456782', name='offreur A')
             offerer3 = create_offerer(siren='123456783', name='offreur B')
-            PcObject.save(offerer1, offerer3, offerer2)
+            ApiHandler.save(offerer1, offerer3, offerer2)
 
             user = create_user(can_book_free_offers=False, is_admin=True)
             user.offerers = [offerer1, offerer2]
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             # when
             response = TestClient(app.test_client()) \

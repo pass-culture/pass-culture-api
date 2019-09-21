@@ -1,9 +1,8 @@
-"""providers"""
 from flask import current_app as app, jsonify
+from sqlalchemy_api_handler import as_dict
 
 import local_providers
 from repository.provider_queries import get_enabled_providers_for_pro
-from routes.serialization import as_dict
 
 
 @app.route('/providers', methods=['GET'])
@@ -20,4 +19,3 @@ def list_providers():
         del p_dict['apiKeyGenerationDate']
         result.append(p_dict)
     return jsonify(result)
-

@@ -1,17 +1,15 @@
-""" validate """
-
 from flask import current_app as app, jsonify, request
 from flask_login import login_required, current_user
+from sqlalchemy_api_handler import ApiErrors, ApiHandler
+from sqlalchemy_api_handler.api_errors import ForbiddenError, ResourceNotFoundError
 
-import models
 from domain.admin_emails import maybe_send_offerer_validation_email
 from domain.user_emails import send_user_waiting_for_validation_by_admin_email
 from domain.payments import read_message_name_in_message_file, \
     generate_file_checksum
 from domain.user_emails import send_validation_confirmation_email, send_venue_validation_confirmation_email
-from models import ApiErrors, \
-    PcObject, UserOfferer, Offerer, Venue
-from models.api_errors import ResourceNotFoundError, ForbiddenError
+import models
+from models import UserOfferer, Offerer, Venue
 from repository import user_offerer_queries, offerer_queries, user_queries
 from repository.payment_queries import find_message_checksum
 from utils.config import IS_INTEGRATION
@@ -49,7 +47,7 @@ def validate():
     for obj in objects_to_validate:
         obj.validationToken = None
 
-    PcObject.save(*objects_to_validate)
+    ApiHandler.save(*objects_to_validate)
 
     user_offerers = iter([obj for obj in objects_to_validate if isinstance(obj, UserOfferer)])
     user_offerer = next(user_offerers, None)
@@ -70,7 +68,7 @@ def validate_venue():
     venue = Venue.query.filter_by(validationToken=token).first()
     check_venue_found(venue)
     venue.validationToken = None
-    PcObject.save(venue)
+    ApiHandler.save(venue)
 
     try:
         send_venue_validation_confirmation_email(venue, send_raw_email)
@@ -86,7 +84,7 @@ def validate_user(token):
     user_to_validate = user_queries.find_by_validation_token(token)
     check_valid_token_for_user_validation(user_to_validate)
     user_to_validate.validationToken = None
-    PcObject.save(user_to_validate)
+    ApiHandler.save(user_to_validate)
     user_offerer = user_offerer_queries.find_one_or_none_by_user_id(user_to_validate.id)
     if user_offerer:
         offerer = offerer_queries.find_first_by_user_offerer_id(user_offerer.id)
@@ -136,4 +134,4 @@ def _ask_for_validation(offerer: Offerer, user_offerer: UserOfferer):
 def _validate_offerer(offerer: Offerer, user_offerer: UserOfferer):
     offerer.validationToken = None
     user_offerer.validationToken = None
-    PcObject.save(offerer, user_offerer)
+    ApiHandler.save(offerer, user_offerer)

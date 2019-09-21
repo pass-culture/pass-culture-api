@@ -1,11 +1,10 @@
 import enum
 from datetime import datetime
-
 from sqlalchemy import Column, DateTime, BigInteger, String, ForeignKey, Enum
 from sqlalchemy.orm import relationship
+from sqlalchemy_api_handler import ApiHandler
 
 from models.db import Model
-from models.pc_object import PcObject
 
 
 class ImportStatus(enum.Enum):
@@ -16,7 +15,7 @@ class ImportStatus(enum.Enum):
     RETRY = 'RETRY'
 
 
-class BeneficiaryImportStatus(PcObject, Model):
+class BeneficiaryImportStatus(ApiHandler, Model):
     def __repr__(self):
         author = self.author.publicName if self.author else 'import automatisé'
         updated_at = datetime.strftime(self.date, '%d/%m/%Y')

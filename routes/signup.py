@@ -1,13 +1,13 @@
 from flask import current_app as app, jsonify, request, redirect
+from sqlalchemy_api_handler import ApiErrors, ApiHandler, as_dict
 
 from connectors.google_spreadsheet import get_authorized_emails_and_dept_codes
 from domain.departments import ILE_DE_FRANCE_DEPT_CODES
 from domain.user_emails import send_user_validation_email
-from models import ApiErrors, Deposit, Offerer, PcObject, User
+from models import Deposit, Offerer, User
 from models.feature import FeatureToggle
 from models.user_offerer import RightsType
 from models.venue import create_digital_venue
-from routes.serialization import as_dict
 from utils.config import IS_INTEGRATION
 from utils.feature import feature_required
 from utils.includes import USER_INCLUDES
@@ -41,7 +41,7 @@ def signup_webapp():
     new_user.isAdmin = False
     objects_to_save.append(new_user)
 
-    PcObject.save(*objects_to_save)
+    ApiHandler.save(*objects_to_save)
 
     if request.json.get('contact_ok'):
         try:
@@ -78,7 +78,7 @@ def signup_pro():
     new_user.generate_validation_token()
     objects_to_save.append(new_user)
 
-    PcObject.save(*objects_to_save)
+    ApiHandler.save(*objects_to_save)
 
     try:
         send_user_validation_email(new_user, send_raw_email, app_origin_url, is_webapp=False)

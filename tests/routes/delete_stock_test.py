@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta
+from sqlalchemy_api_handler import ApiHandler, humanize
 
 from models import Booking, Provider
-from models.pc_object import PcObject
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_booking, create_user, create_user_offerer, create_offerer, create_venue, \
     create_stock_with_event_offer, create_offer_with_thing_product, create_stock
-from utils.human_ids import humanize
 
 NOW = datetime.utcnow()
 
@@ -20,7 +19,7 @@ class Delete:
             user_offerer = create_user_offerer(user, offerer)
             venue = create_venue(offerer)
             stock = create_stock_with_event_offer(offerer, venue)
-            PcObject.save(user, stock, user_offerer)
+            ApiHandler.save(user, stock, user_offerer)
 
             # when
             response = TestClient(app.test_client()).with_auth('test@email.com') \
@@ -41,7 +40,7 @@ class Delete:
             stock = create_stock_with_event_offer(offerer, venue, price=0)
             booking1 = create_booking(other_user, stock=stock, is_cancelled=False)
             booking2 = create_booking(other_user, stock=stock, is_cancelled=False)
-            PcObject.save(user, stock, user_offerer, booking1, booking2)
+            ApiHandler.save(user, stock, user_offerer, booking1, booking2)
 
             # when
             response = TestClient(app.test_client()).with_auth('test@email.com').delete('/stocks/' + humanize(stock.id))
@@ -66,7 +65,7 @@ class Delete:
                 beginning_datetime=NOW - timedelta(days=5),
                 end_datetime=NOW - timedelta(days=4)
             )
-            PcObject.save(user, stock, user_offerer)
+            ApiHandler.save(user, stock, user_offerer)
 
             # when
             response = TestClient(app.test_client()).with_auth('test@email.com') \
@@ -91,7 +90,7 @@ class Delete:
             venue = create_venue(offerer)
             offer = create_offer_with_thing_product(venue, last_provider_id=tite_live_provider.id)
             stock = create_stock(offer=offer)
-            PcObject.save(user, stock, user_offerer)
+            ApiHandler.save(user, stock, user_offerer)
 
             # when
             response = TestClient(app.test_client()).with_auth('test@email.com') \
@@ -110,7 +109,7 @@ class Delete:
             offerer = create_offerer()
             venue = create_venue(offerer)
             stock = create_stock_with_event_offer(offerer, venue)
-            PcObject.save(user, stock)
+            ApiHandler.save(user, stock)
 
             # when
             response = TestClient(app.test_client()).with_auth('test@email.com') \

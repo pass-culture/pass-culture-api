@@ -1,12 +1,8 @@
-""" has address mixin """
 import re
-
 from sqlalchemy import Column, String
+from sqlalchemy_api_handler import ApiErrors
 
-from models.api_errors import ApiErrors
-
-
-# TODO: turn this into a custom type "Adress" ?
+# TODO: turn this into a custom type "Address" ?
 
 
 class HasAddressMixin(object):

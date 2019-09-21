@@ -1,11 +1,11 @@
-from models import PcObject
+from sqlalchemy_api_handler import ApiHandler, humanize
+
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_mediation, \
     create_offerer, \
     create_recommendation, \
     create_user, \
     create_venue, create_offer_with_thing_product
-from utils.human_ids import humanize
 
 RECOMMENDATION_URL = '/recommendations'
 
@@ -21,7 +21,7 @@ class Patch:
             offer = create_offer_with_thing_product(venue, thumb_count=0)
             mediation = create_mediation(offer, is_active=True)
             recommendation = create_recommendation(offer=offer, user=user, mediation=mediation, is_clicked=False)
-            PcObject.save(recommendation)
+            ApiHandler.save(recommendation)
 
             # when
             response = TestClient(app.test_client()) \

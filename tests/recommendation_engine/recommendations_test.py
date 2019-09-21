@@ -1,9 +1,8 @@
 from datetime import datetime
-
 from dateutil.tz import tzutc
 from freezegun import freeze_time
+from sqlalchemy_api_handler import ApiHandler, humanize
 
-from models import PcObject
 from models.db import db
 from recommendations_engine import create_recommendations_for_discovery, \
     get_recommendation_search_params, \
@@ -17,7 +16,6 @@ from tests.test_utils import create_mediation, \
     create_user, \
     create_venue
 from utils.date import strftime
-from utils.human_ids import humanize
 
 
 class GiveRequestedRecommendationToUserTest:
@@ -32,7 +30,7 @@ class GiveRequestedRecommendationToUserTest:
         mediation = create_mediation(offer_ok, is_active=False)
         reco_ok = create_recommendation(
             offer=offer_ok, user=user, mediation=mediation)
-        PcObject.save(reco_ok, stock)
+        ApiHandler.save(reco_ok, stock)
 
         # When
         result_reco = give_requested_recommendation_to_user(
@@ -53,7 +51,7 @@ class GiveRequestedRecommendationToUserTest:
         mediation = create_mediation(offer_ok, is_active=False)
         reco_ko = create_recommendation(
             offer=offer_ok, user=user, mediation=mediation)
-        PcObject.save(reco_ko, stock, user2)
+        ApiHandler.save(reco_ko, stock, user2)
 
         # When
         result_reco = give_requested_recommendation_to_user(
@@ -119,7 +117,7 @@ def test_create_recommendations_for_discovery_does_not_put_mediation_ids_of_inac
     stock2 = create_stock_from_offer(offer2, price=0)
     mediation2 = create_mediation(offer2, is_active=False)
     mediation3 = create_mediation(offer2, is_active=True)
-    PcObject.save(user, stock1, mediation1, stock2, mediation2, mediation3)
+    ApiHandler.save(user, stock1, mediation1, stock2, mediation2, mediation3)
 
     # When
     recommendations = create_recommendations_for_discovery(user=user)
@@ -149,7 +147,7 @@ def test_create_recommendations_for_discovery_should_include_recommendations_on_
     recommendation = create_recommendation(
         offer=offer2, user=user, mediation=mediation2, search="bla")
 
-    PcObject.save(user, stock1, mediation1, stock2, mediation2, recommendation)
+    ApiHandler.save(user, stock1, mediation1, stock2, mediation2, recommendation)
     db.session.refresh(offer2)
 
     # When

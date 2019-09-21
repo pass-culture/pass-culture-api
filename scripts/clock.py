@@ -1,11 +1,11 @@
 import os
 import subprocess
 from io import StringIO
-
 from apscheduler.schedulers.blocking import BlockingScheduler
 from flask import Flask
 from mailjet_rest import Client
 from sqlalchemy import orm
+from sqlalchemy_api_handler import ApiHandler
 
 from models.db import db
 from repository.feature_queries import feature_cron_send_final_booking_recaps_enabled, \
@@ -30,6 +30,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['DEBUG'] = True
 db.init_app(app)
+ApiHandler.set_db(db)
 
 
 def pc_send_final_booking_recaps():

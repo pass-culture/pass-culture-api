@@ -1,6 +1,6 @@
 from datetime import datetime
+from sqlalchemy_api_handler import ApiHandler
 
-from models import PcObject
 from scripts.payment.batch_steps import generate_new_payments
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_bank_information, create_stock_with_thing_offer, \
@@ -34,7 +34,7 @@ class Get:
             booking4 = create_booking(user, stock3, venue=venue3, token='ABCDEI', is_used=True)
             booking5 = create_booking(user, stock4, venue=venue3, token='ABCDEJ', is_used=True)
             booking6 = create_booking(user, stock4, venue=venue3, token='ABCDEK', is_used=True)
-            PcObject.save(deposit, booking1, booking2, booking3,
+            ApiHandler.save(deposit, booking1, booking2, booking3,
                           booking4, booking5, booking6, user_offerer1,
                           user_offerer2, bank_information1, bank_information2)
             generate_new_payments()
@@ -54,7 +54,7 @@ class Get:
         def when_user_has_no_offerer_attached(self, app):
             # Given
             user = create_user(email='user+plus@email.fr')
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email).get(

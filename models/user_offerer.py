@@ -1,12 +1,10 @@
-""" user offerer """
 import enum
-
 from sqlalchemy import BigInteger, Column, Enum, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
+from sqlalchemy_api_handler import ApiHandler
 
 from models.db import Model
 from models.needs_validation_mixin import NeedsValidationMixin
-from models.pc_object import PcObject
 
 
 class RightsType(enum.Enum):
@@ -14,7 +12,7 @@ class RightsType(enum.Enum):
     editor = "editor"
 
 
-class UserOfferer(PcObject, Model, NeedsValidationMixin):
+class UserOfferer(ApiHandler, Model, NeedsValidationMixin):
 
     userId = Column(BigInteger,
                     ForeignKey('user.id'),

@@ -1,9 +1,10 @@
 from datetime import datetime
-
 from sqlalchemy import BigInteger, Column, DateTime, desc, ForeignKey, String
 from sqlalchemy import and_, ARRAY, Boolean, CheckConstraint, false, Integer, Text, TEXT
 from sqlalchemy.orm import column_property, relationship
 from sqlalchemy.sql import select, func
+from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler.utils.date import DateTimes
 
 from domain.bookings import filter_bookings_to_compute_remaining_stock
 from domain.keywords import create_ts_vector_and_table_args
@@ -13,15 +14,12 @@ from models.db import db, Model
 from models.deactivable_mixin import DeactivableMixin
 from models.offer_criterion import OfferCriterion
 from models.offer_type import ThingType, EventType, ProductType
-from models.pc_object import PcObject
 from models.providable_mixin import ProvidableMixin
 from models.stock import Stock
 from models.venue import Venue
-from utils.date import DateTimes
 from utils.inflect_engine import pluralize
 
-
-class Offer(PcObject,
+class Offer(ApiHandler,
             Model,
             ExtraDataMixin,
             DeactivableMixin,

@@ -1,9 +1,7 @@
-""" credentials """
 from flask import session
+from sqlalchemy_api_handler import ApiErrors, ApiHandler
 
-from models.api_errors import ApiErrors
 from models.db import auto_close_db_transaction
-from models.pc_object import PcObject
 from models.user import User
 from repository.user_queries import find_user_by_email
 
@@ -34,4 +32,4 @@ def change_password(user, password):
         user = User.query.filter_by(email=user).one()
     user.setPassword(password)
     user = session.merge(user)
-    PcObject.save(user)
+    ApiHandler.save(user)

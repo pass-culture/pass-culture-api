@@ -1,7 +1,8 @@
+from sqlalchemy_api_handler import ApiHandler
+
 from domain.music_types import music_types
 from domain.types import get_formatted_active_product_types
 from models.offer_type import EventType, ThingType
-from models.pc_object import PcObject
 from sandboxes.scripts.mocks.thing_mocks import MOCK_AUTHOR_NAMES, \
                                                 MOCK_DESCRIPTIONS, \
                                                 MOCK_NAMES
@@ -75,7 +76,7 @@ def create_industrial_thing_products():
 
         type_index += len(thing_type_dicts)
 
-    PcObject.save(*thing_products_by_name.values())
+    ApiHandler.save(*thing_products_by_name.values())
 
     logger.info('created {} thing products'.format(len(thing_products_by_name)))
 

@@ -6,13 +6,14 @@ from flask_admin import Admin
 from flask_cors import CORS
 from flask_login import LoginManager
 from mailjet_rest import Client
+from sqlalchemy_api_handler import ApiHandler
 from werkzeug.middleware.profiler import ProfilerMiddleware
+
 from admin.install import install_admin_views
-from repository.feature_queries import feature_request_profiling_enabled
-from utils.tutorials import upsert_tuto_mediations
 from local_providers.install import install_local_providers
 from models.db import db
 from models.install import install_models, install_features, install_database_extensions
+from repository.feature_queries import feature_request_profiling_enabled
 from routes import install_routes
 from utils.config import IS_DEV
 from utils.json_encoder import EnumJSONEncoder
@@ -20,6 +21,7 @@ from utils.mailing import get_contact, \
     MAILJET_API_KEY, \
     MAILJET_API_SECRET, \
     subscribe_newsletter
+from utils.tutorials import upsert_tuto_mediations
 from validation.features import check_feature_consistency
 
 app = Flask(__name__, static_url_path='/static')
@@ -55,6 +57,7 @@ def remove_db_session(exc):
 
 admin.init_app(app)
 db.init_app(app)
+ApiHandler.set_db(db)
 login_manager.init_app(app)
 cors = CORS(app,
             resources={r"/*": {"origins": "*"}},

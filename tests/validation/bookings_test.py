@@ -1,15 +1,16 @@
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
-
+from sqlalchemy_api_handler import ApiHandler, humanize
+from sqlalchemy_api_handler.api_errors import ApiErrors, \
+                                              ResourceGoneError, \
+                                              ForbiddenError
 import pytest
 
 from domain.expenses import SUBVENTION_PHYSICAL_THINGS, SUBVENTION_DIGITAL_THINGS
-from models import ApiErrors, Booking, Stock, Offer, ThingType, PcObject
-from models.api_errors import ResourceGoneError, ForbiddenError
+from models import Booking, Stock, Offer, ThingType
 from tests.conftest import clean_database
 from tests.test_utils import create_booking_for_thing, create_product_with_thing_type, create_user, create_deposit, \
     create_venue, create_offerer, create_offer_with_event_product, create_user_offerer
-from utils.human_ids import humanize
 from validation.bookings import check_expenses_limits, check_booking_is_cancellable, check_booking_is_usable, \
     check_rights_to_get_bookings_csv
 
@@ -216,7 +217,7 @@ class CheckRightsToGetBookingsCsvTest:
         # given
         user_admin = create_user(can_book_free_offers=False, is_admin=True)
 
-        PcObject.save(user_admin)
+        ApiHandler.save(user_admin)
 
         # when
         with pytest.raises(ApiErrors) as e:
@@ -235,7 +236,7 @@ class CheckRightsToGetBookingsCsvTest:
 
         venue = create_venue(offerer1, siret=offerer1.siren + '12345')
 
-        PcObject.save(user_offerer1, user_with_no_rights_on_venue, venue)
+        ApiHandler.save(user_offerer1, user_with_no_rights_on_venue, venue)
 
         # when
         with pytest.raises(ApiErrors) as e:
@@ -254,7 +255,7 @@ class CheckRightsToGetBookingsCsvTest:
         venue = create_venue(offerer1, siret=offerer1.siren + '12345')
         offer = create_offer_with_event_product(venue)
 
-        PcObject.save(user_offerer1, user_with_no_rights_on_offer, venue)
+        ApiHandler.save(user_offerer1, user_with_no_rights_on_offer, venue)
 
         # when
         with pytest.raises(ApiErrors) as e:
@@ -267,7 +268,7 @@ class CheckRightsToGetBookingsCsvTest:
         # given
         user = create_user(is_admin=False, email='pro_with_no_right@example.net')
 
-        PcObject.save(user)
+        ApiHandler.save(user)
 
         # when
         with pytest.raises(ApiErrors) as e:
@@ -279,7 +280,7 @@ class CheckRightsToGetBookingsCsvTest:
         # given
         user = create_user(is_admin=False, email='pro_with_no_right@example.net')
 
-        PcObject.save(user)
+        ApiHandler.save(user)
 
         # when
         with pytest.raises(ApiErrors) as e:

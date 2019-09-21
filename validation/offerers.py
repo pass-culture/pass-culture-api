@@ -1,4 +1,4 @@
-from models import ApiErrors
+from sqlalchemy_api_handler import ApiErrors
 
 
 def check_valid_edition(data):

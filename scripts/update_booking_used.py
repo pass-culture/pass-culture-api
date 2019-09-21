@@ -1,7 +1,7 @@
 from datetime import datetime
+from sqlalchemy_api_handler import ApiHandler
 
 from domain.stocks import STOCK_DELETION_DELAY
-from models import PcObject
 from repository.booking_queries import find_all_not_used_and_not_cancelled
 
 
@@ -17,7 +17,7 @@ def update_booking_used_after_stock_occurrence():
                 booking.isUsed = True
                 booking.dateUsed = now
                 try:
-                    PcObject.save(booking)
+                    ApiHandler.save(booking)
                 except Exception:
                     bookings_id_errors.append(booking.id)
 

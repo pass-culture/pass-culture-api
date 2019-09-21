@@ -1,9 +1,9 @@
-from models import PcObject
+from sqlalchemy_api_handler import ApiHandler, humanize
+
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_offerer, \
     create_user, \
     create_venue, create_offer_with_thing_product, create_bank_information, create_stock, create_mediation
-from utils.human_ids import humanize
 
 
 class Get:
@@ -19,7 +19,7 @@ class Get:
             create_bank_information(venue=venue, id_at_providers=venue.siret)
             create_bank_information(offerer=offerer, id_at_providers=offerer.siren)
 
-            PcObject.save(user, stock)
+            ApiHandler.save(user, stock)
 
             # when
             response = TestClient(app.test_client()).with_auth(email='user@test.com') \
@@ -42,7 +42,7 @@ class Get:
             venue = create_venue(offerer)
             offer = create_offer_with_thing_product(venue)
             mediation = create_mediation(offer, is_active=True)
-            PcObject.save(user, mediation)
+            ApiHandler.save(user, mediation)
 
             # when
             response = TestClient(app.test_client()).with_auth(email='user@test.com') \

@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta
+from sqlalchemy_api_handler import ApiHandler, humanize
 
-from models import Offerer, PcObject, EventType, ThingType
+from models import Offerer, EventType, ThingType
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_stock_with_thing_offer, \
     create_offer_with_thing_product, create_deposit, create_stock_with_event_offer, create_venue, create_offerer, \
     create_recommendation, create_user, create_booking, create_offer_with_event_product, \
     create_event_occurrence, create_stock_from_event_occurrence
-from utils.human_ids import humanize
 
 
 class Post:
@@ -21,7 +21,7 @@ class Post:
             venue.generate_validation_token()
             thing_offer = create_offer_with_thing_product(venue)
             stock = create_stock_with_thing_offer(offerer, venue, thing_offer, price=10)
-            PcObject.save(stock, user, deposit)
+            ApiHandler.save(stock, user, deposit)
 
             booking_json = {
                 'stockId': humanize(stock.id),
@@ -51,10 +51,10 @@ class Post:
 
             expired_stock = create_stock_with_thing_offer(offerer=offerer, venue=venue, price=0)
             expired_stock.bookingLimitDatetime = datetime.utcnow() - timedelta(seconds=1)
-            PcObject.save(expired_stock)
+            ApiHandler.save(expired_stock)
 
             user = create_user(email='test@mail.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             recommendation = create_recommendation(thing_offer, user)
 
@@ -93,7 +93,7 @@ class Post:
 
             booking = create_booking(user2, too_many_bookings_stock, venue, quantity=2)
 
-            PcObject.save(booking, recommendation, user, deposit, deposit2, too_many_bookings_stock)
+            ApiHandler.save(booking, recommendation, user, deposit, deposit2, too_many_bookings_stock)
 
             booking_json = {
                 'stockId': humanize(too_many_bookings_stock.id),
@@ -115,28 +115,28 @@ class Post:
         def when_user_cannot_book_free_offers_and_free_offer(self, app):
             # Given
             user = create_user(email='cannotBook_freeOffers@email.com', can_book_free_offers=False)
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             offerer = create_offerer(siren='899999768', address='2 Test adress', city='Test city', postal_code='93000',
                                      name='Test offerer')
-            PcObject.save(offerer)
+            ApiHandler.save(offerer)
 
             venue = create_venue(offerer=offerer, name='Venue name', booking_email='booking@email.com',
                                  address='1 Test address', postal_code='93000', city='Test city', departement_code='93')
-            PcObject.save(venue)
+            ApiHandler.save(venue)
 
             thing_offer = create_offer_with_thing_product(venue)
-            PcObject.save(thing_offer)
+            ApiHandler.save(thing_offer)
 
             stock = create_stock_with_thing_offer(offerer, venue, thing_offer, price=0)
-            PcObject.save(stock)
+            ApiHandler.save(stock)
 
             recommendation = create_recommendation(thing_offer, user)
-            PcObject.save(recommendation)
+            ApiHandler.save(recommendation)
 
             deposit_date = datetime.utcnow() - timedelta(minutes=2)
             deposit = create_deposit(user, amount=500)
-            PcObject.save(deposit)
+            ApiHandler.save(deposit)
 
             booking_json = {
                 'stockId': humanize(stock.id),
@@ -169,9 +169,9 @@ class Post:
             deposit_date = datetime.utcnow() - timedelta(minutes=2)
             deposit = create_deposit(user, amount=0)
 
-            PcObject.save(recommendation)
-            PcObject.save(stock)
-            PcObject.save(deposit)
+            ApiHandler.save(recommendation)
+            ApiHandler.save(stock)
+            ApiHandler.save(deposit)
 
             booking_json = {
                 "stockId": humanize(stock.id),
@@ -194,34 +194,34 @@ class Post:
         def when_only_public_credit_and_limit_of_physical_thing_reached(self, app):
             # Given
             user = create_user(email='test@email.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             offerer = create_offerer()
-            PcObject.save(offerer)
+            ApiHandler.save(offerer)
 
             venue = create_venue(offerer)
-            PcObject.save(venue)
+            ApiHandler.save(venue)
 
             thing_offer = create_offer_with_thing_product(venue)
-            PcObject.save(thing_offer)
+            ApiHandler.save(thing_offer)
 
             thing_stock_price_190 = create_stock_with_thing_offer(offerer, venue, thing_offer, price=190)
 
             thing_stock_price_12 = create_stock_with_thing_offer(offerer, venue, thing_offer, price=12)
 
-            PcObject.save(thing_stock_price_190, thing_stock_price_12)
+            ApiHandler.save(thing_stock_price_190, thing_stock_price_12)
 
             deposit_date = datetime.utcnow() - timedelta(minutes=2)
 
             deposit = create_deposit(user, amount=500, source='public')
 
-            PcObject.save(deposit)
+            ApiHandler.save(deposit)
 
             booking_thing_price_190 = create_booking(user, thing_stock_price_190, venue, recommendation=None)
-            PcObject.save(booking_thing_price_190)
+            ApiHandler.save(booking_thing_price_190)
 
             recommendation = create_recommendation(thing_offer, user)
-            PcObject.save(recommendation)
+            ApiHandler.save(recommendation)
 
             booking_thing_price_12_json = {
                 "stockId": humanize(thing_stock_price_12.id),
@@ -244,7 +244,7 @@ class Post:
         def when_missing_stock_id(self, app):
             # Given
             user = create_user(email='test@email.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             booking_json = {
                 'stockId': None,
@@ -270,7 +270,7 @@ class Post:
             venue = create_venue(offerer)
             stock = create_stock_with_event_offer(offerer, venue, price=0)
 
-            PcObject.save(user, stock)
+            ApiHandler.save(user, stock)
             booking_json = {
                 'stockId': humanize(stock.id),
                 'recommendationId': 'AFQA',
@@ -293,7 +293,7 @@ class Post:
             venue = create_venue(offerer)
             thing_offer = create_offer_with_thing_product(venue)
             stock = create_stock_with_thing_offer(offerer, venue, thing_offer, price=90)
-            PcObject.save(stock, user)
+            ApiHandler.save(stock, user)
 
             booking_json = {
                 'stockId': humanize(stock.id),
@@ -318,7 +318,7 @@ class Post:
             thing_offer = create_offer_with_thing_product(venue)
             thing_offer.isActive = False
             stock = create_stock_with_thing_offer(offerer, venue, thing_offer, price=90)
-            PcObject.save(stock, user)
+            ApiHandler.save(stock, user)
 
             booking_json = {
                 'stockId': humanize(stock.id),
@@ -343,7 +343,7 @@ class Post:
             thing_offer = create_offer_with_thing_product(venue)
             offerer.isActive = False
             stock = create_stock_with_thing_offer(offerer, venue, thing_offer, price=90)
-            PcObject.save(stock, user)
+            ApiHandler.save(stock, user)
 
             booking_json = {
                 'stockId': humanize(stock.id),
@@ -368,7 +368,7 @@ class Post:
             thing_offer = create_offer_with_thing_product(venue)
             stock = create_stock_with_thing_offer(offerer, venue, thing_offer, price=90)
             stock.isSoftDeleted = True
-            PcObject.save(stock, user)
+            ApiHandler.save(stock, user)
 
             booking_json = {
                 'stockId': humanize(stock.id),
@@ -392,7 +392,7 @@ class Post:
             venue = create_venue(offerer)
             thing_offer = create_offer_with_thing_product(venue)
             stock = create_stock_with_thing_offer(offerer, venue, thing_offer, price=90)
-            PcObject.save(stock, user)
+            ApiHandler.save(stock, user)
 
             booking_json = {
                 'stockId': humanize(stock.id),
@@ -416,7 +416,7 @@ class Post:
             venue = create_venue(offerer)
             thing_offer = create_offer_with_thing_product(venue)
             stock = create_stock_with_thing_offer(offerer, venue, thing_offer, price=90)
-            PcObject.save(stock, user)
+            ApiHandler.save(stock, user)
 
             booking_json = {
                 'stockId': humanize(stock.id),
@@ -447,7 +447,7 @@ class Post:
                                                        end_datetime=four_days_ago)
             stock = create_stock_from_event_occurrence(event_occurrence, price=20)
 
-            PcObject.save(deposit, stock, user)
+            ApiHandler.save(deposit, stock, user)
 
             booking_json = {
                 'stockId': humanize(stock.id),
@@ -477,7 +477,7 @@ class Post:
 
             stock = create_stock_with_thing_offer(offerer, venue, price=20, booking_limit_datetime=four_days_ago)
 
-            PcObject.save(deposit, stock, user)
+            ApiHandler.save(deposit, stock, user)
 
             booking_json = {
                 'stockId': humanize(stock.id),
@@ -505,7 +505,7 @@ class Post:
             deposit = create_deposit(user, amount=200)
             stock = create_stock_with_thing_offer(offerer, venue, thing_offer, price=90)
             booking = create_booking(user, stock, venue, is_cancelled=False)
-            PcObject.save(stock, user, booking)
+            ApiHandler.save(stock, user, booking)
 
             booking_json = {
                 'stockId': humanize(stock.id),
@@ -531,13 +531,13 @@ class Post:
             ok_stock = create_stock_with_event_offer(offerer=offerer, venue=venue, price=0)
             ok_stock.bookingLimitDatetime = datetime.utcnow() + timedelta(minutes=2)
             ok_stock.bookingLimitDatetime = datetime.utcnow() + timedelta(minutes=2)
-            PcObject.save(ok_stock)
+            ApiHandler.save(ok_stock)
 
             user = create_user(email='test@mail.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             recommendation = create_recommendation(offer=ok_stock.offer, user=user)
-            PcObject.save(recommendation)
+            ApiHandler.save(recommendation)
 
             booking_json = {
                 'stockId': humanize(ok_stock.id),
@@ -558,13 +558,13 @@ class Post:
             ok_stock = create_stock_with_event_offer(offerer=offerer, venue=venue, price=0)
             ok_stock.bookingLimitDatetime = datetime.utcnow() + timedelta(minutes=2)
             ok_stock.bookingLimitDatetime = datetime.utcnow() + timedelta(minutes=2)
-            PcObject.save(ok_stock)
+            ApiHandler.save(ok_stock)
 
             user = create_user(email='test@mail.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             recommendation = create_recommendation(offer=ok_stock.offer, user=user)
-            PcObject.save(recommendation)
+            ApiHandler.save(recommendation)
 
             booking_json = {
                 'stockId': humanize(ok_stock.id),
@@ -592,7 +592,7 @@ class Post:
             thing_offer = create_offer_with_thing_product(venue)
             stock = create_stock_with_thing_offer(offerer, venue, thing_offer, price=20, booking_limit_datetime=None)
 
-            PcObject.save(deposit, stock, user)
+            ApiHandler.save(deposit, stock, user)
 
             booking_json = {
                 'stockId': humanize(stock.id),
@@ -615,16 +615,16 @@ class Post:
             thing_offer = create_offer_with_thing_product(venue)
 
             user = create_user(email='test@email.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             stock = create_stock_with_thing_offer(offerer, venue, thing_offer, price=50, available=1)
-            PcObject.save(stock)
+            ApiHandler.save(stock)
 
             recommendation = create_recommendation(thing_offer, user)
-            PcObject.save(recommendation)
+            ApiHandler.save(recommendation)
 
             deposit = create_deposit(user, amount=50)
-            PcObject.save(deposit)
+            ApiHandler.save(deposit)
 
             booking_json = {
                 'stockId': humanize(stock.id),
@@ -653,16 +653,16 @@ class Post:
             thing_offer = create_offer_with_thing_product(venue, thing_type=ThingType.JEUX_VIDEO_ABO)
 
             user = create_user(email='test@email.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             stock = create_stock_with_thing_offer(offerer, venue, thing_offer, price=210, available=1)
-            PcObject.save(stock)
+            ApiHandler.save(stock)
 
             recommendation = create_recommendation(thing_offer, user)
-            PcObject.save(recommendation)
+            ApiHandler.save(recommendation)
 
             deposit = create_deposit(user, amount=500)
-            PcObject.save(deposit)
+            ApiHandler.save(deposit)
 
             booking_json = {
                 'stockId': humanize(stock.id),
@@ -682,10 +682,10 @@ class Post:
         def when_user_has_enough_credit_after_cancelling_booking(self, app):
             # Given
             user = create_user(email='test@email.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             deposit = create_deposit(user, amount=50)
-            PcObject.save(deposit)
+            ApiHandler.save(deposit)
 
             offerer = create_offerer('819202819', '1 Fake Address', 'Fake city', '93000', 'Fake offerer')
             venue = create_venue(offerer, 'venue name', 'booking@email.com', '1 fake street', '93000', 'False city',
@@ -693,13 +693,13 @@ class Post:
             event_offer = create_offer_with_event_product(venue)
 
             stock = create_stock_with_event_offer(offerer, venue, price=50, available=1)
-            PcObject.save(stock)
+            ApiHandler.save(stock)
 
             booking = create_booking(user, stock, venue, is_cancelled=True)
-            PcObject.save(booking)
+            ApiHandler.save(booking)
 
             recommendation = create_recommendation(event_offer, user)
-            PcObject.save(recommendation)
+            ApiHandler.save(recommendation)
 
             booking_json = {
                 'stockId': humanize(stock.id),
@@ -718,28 +718,28 @@ class Post:
         @clean_database
         def when_user_cannot_book_free_offers_but_has_enough_credit_for_paid_offer(self, app):
             user = create_user(email='can_book_paid_offers@email.com', can_book_free_offers=False)
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             offerer = create_offerer(siren='899999768', address='2 Test adress', city='Test city', postal_code='93000',
                                      name='Test offerer')
-            PcObject.save(offerer)
+            ApiHandler.save(offerer)
 
             venue = create_venue(offerer, 'Test offerer', 'reservations@test.fr', '123 rue test', '93000', 'Test city',
                                  '93')
-            PcObject.save(venue)
+            ApiHandler.save(venue)
 
             thing_offer = create_offer_with_thing_product(venue)
-            PcObject.save(thing_offer)
+            ApiHandler.save(thing_offer)
 
             stock = create_stock_with_thing_offer(offerer, venue, thing_offer, price=10)
-            PcObject.save(stock)
+            ApiHandler.save(stock)
 
             recommendation = create_recommendation(thing_offer, user)
-            PcObject.save(recommendation)
+            ApiHandler.save(recommendation)
 
             deposit_date = datetime.utcnow() - timedelta(minutes=2)
             deposit = create_deposit(user, amount=500)
-            PcObject.save(deposit)
+            ApiHandler.save(deposit)
 
             booking_json = {
                 "stockId": humanize(stock.id),
@@ -769,7 +769,7 @@ class Post:
             deposit = create_deposit(user, amount=200)
             stock = create_stock_with_thing_offer(offerer, venue, thing_offer, price=90)
             booking = create_booking(user, stock, venue, is_cancelled=True)
-            PcObject.save(stock, user, booking)
+            ApiHandler.save(stock, user, booking)
 
             booking_json = {
                 'stockId': humanize(stock.id),

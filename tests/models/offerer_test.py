@@ -1,6 +1,6 @@
 from unittest.mock import patch
+from sqlalchemy_api_handler import ApiErrors, ApiHandler
 
-from models import PcObject, ApiErrors
 from tests.conftest import clean_database
 from tests.test_utils import create_offerer, create_venue, create_offer_with_thing_product, \
     create_offer_with_event_product, \
@@ -19,7 +19,7 @@ def test_nOffers(app):
     offer_v2_1 = create_offer_with_event_product(venue_2)
     offer_v2_2 = create_offer_with_event_product(venue_2)
     offer_v3_1 = create_offer_with_thing_product(venue_3)
-    PcObject.save(offer_v1_1, offer_v1_2, offer_v2_1, offer_v2_2, offer_v3_1)
+    ApiHandler.save(offer_v1_1, offer_v1_2, offer_v2_1, offer_v2_2, offer_v3_1)
 
     # when
     n_offers = offerer.nOffers
@@ -35,7 +35,7 @@ def test_offerer_can_have_null_address(app):
 
     try:
         # when
-        PcObject.save(offerer)
+        ApiHandler.save(offerer)
     except ApiErrors:
         # then
         assert False
@@ -47,7 +47,7 @@ class OffererBankInformationTest:
         # Given
         offerer = create_offerer(siren='123456789')
         bank_information = create_bank_information(bic='BDFEFR2LCCB', id_at_providers='123456789', offerer=offerer)
-        PcObject.save(bank_information)
+        ApiHandler.save(bank_information)
 
         # When
         bic = offerer.bic
@@ -59,7 +59,7 @@ class OffererBankInformationTest:
     def test_bic_property_returns_none_when_offerer_does_not_have_bank_information(self, app):
         # Given
         offerer = create_offerer(siren='123456789')
-        PcObject.save(offerer)
+        ApiHandler.save(offerer)
 
         # When
         bic = offerer.bic
@@ -73,7 +73,7 @@ class OffererBankInformationTest:
         offerer = create_offerer(siren='123456789')
         bank_information = create_bank_information(iban='FR7630007000111234567890144', id_at_providers='123456789',
                                                    offerer=offerer)
-        PcObject.save(bank_information)
+        ApiHandler.save(bank_information)
 
         # When
         iban = offerer.iban
@@ -85,7 +85,7 @@ class OffererBankInformationTest:
     def test_iban_property_returns_none_when_offerer_does_not_have_bank_information(self, app):
         # Given
         offerer = create_offerer(siren='123456789')
-        PcObject.save(offerer)
+        ApiHandler.save(offerer)
 
         # When
         iban = offerer.iban
@@ -101,7 +101,7 @@ class IsValidatedTest:
         offerer = create_offerer(siren='123456789')
         user = create_user(postal_code=None)
         user_offerer = create_user_offerer(user, offerer, validation_token=None)
-        PcObject.save(user_offerer)
+        ApiHandler.save(user_offerer)
 
         # When
         isValidated = offerer.isValidated
@@ -115,7 +115,7 @@ class IsValidatedTest:
         offerer = create_offerer(siren='123456789', validation_token='AAZRER')
         user = create_user(postal_code=None)
         user_offerer = create_user_offerer(user, offerer)
-        PcObject.save(user_offerer)
+        ApiHandler.save(user_offerer)
 
         # When
         isValidated = offerer.isValidated
@@ -153,7 +153,7 @@ class AppendUserHasAccessAttributeTest:
         current_user = create_user(postal_code=None)
         offerer = create_offerer()
         user_offerer = create_user_offerer(current_user, offerer, validation_token=None)
-        PcObject.save(user_offerer)
+        ApiHandler.save(user_offerer)
 
         # When
         offerer.append_user_has_access_attribute(current_user)
@@ -167,7 +167,7 @@ class AppendUserHasAccessAttributeTest:
         current_user = create_user(postal_code=None)
         offerer = create_offerer()
         user_offerer = create_user_offerer(current_user, offerer, validation_token='TOKEN')
-        PcObject.save(user_offerer)
+        ApiHandler.save(user_offerer)
 
         # When
         offerer.append_user_has_access_attribute(current_user)
@@ -182,7 +182,7 @@ class AppendUserHasAccessAttributeTest:
         user = create_user(postal_code=None)
         offerer = create_offerer()
         user_offerer = create_user_offerer(user, offerer, validation_token=None)
-        PcObject.save(user_offerer)
+        ApiHandler.save(user_offerer)
 
         # When
         offerer.append_user_has_access_attribute(current_user)
@@ -197,7 +197,7 @@ class AppendUserHasAccessAttributeTest:
         user = create_user(postal_code=None)
         offerer = create_offerer()
         user_offerer = create_user_offerer(user, offerer, validation_token=None)
-        PcObject.save(user_offerer)
+        ApiHandler.save(user_offerer)
 
         # When
         offerer.append_user_has_access_attribute(current_user)

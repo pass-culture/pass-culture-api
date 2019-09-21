@@ -1,16 +1,11 @@
 import subprocess
-
 from flask import current_app as app, jsonify, request
+from sqlalchemy_api_handler import ApiErrors, ApiHandler, as_dict, dehumanize, load_or_404
 
-from models.api_errors import ApiErrors
-from models.pc_object import PcObject
 from models.venue_provider import VenueProvider
-from routes.serialization import as_dict
 from utils.config import API_ROOT_PATH
-from utils.human_ids import dehumanize
 from utils.includes import VENUE_PROVIDER_INCLUDES
 from utils.rest import expect_json_data, \
-    load_or_404, \
     login_or_api_key_required
 from validation.venue_providers import validate_new_venue_provider_information
 
@@ -47,7 +42,7 @@ def create_venue_provider():
     validate_new_venue_provider_information(venue_provider_payload)
 
     new_venue_provider = VenueProvider(from_dict=venue_provider_payload)
-    PcObject.save(new_venue_provider)
+    ApiHandler.save(new_venue_provider)
 
     subprocess.Popen('PYTHONPATH="." python scripts/pc.py update_providables'
                      + ' --venue-provider-id %s' % str(new_venue_provider.id),

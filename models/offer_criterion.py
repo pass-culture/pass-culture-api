@@ -1,11 +1,11 @@
 from sqlalchemy import BigInteger, Column, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy_api_handler import ApiHandler
 
 from models.db import Model
-from models.pc_object import PcObject
 
 
-class OfferCriterion(PcObject, Model):
+class OfferCriterion(ApiHandler, Model):
     offerId = Column(BigInteger,
                      ForeignKey('offer.id'),
                      index=True,

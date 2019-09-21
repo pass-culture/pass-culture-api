@@ -1,10 +1,8 @@
 from typing import Callable
-
 import requests
+from sqlalchemy_api_handler import ApiErrors, ApiHandler
 
 from domain.mediations import DO_NOT_CROP, standardize_image, compute_dominant_color
-from models import ApiErrors
-from models.pc_object import PcObject
 from utils.logger import logger
 from utils.object_storage import store_public_object
 
@@ -67,7 +65,7 @@ def save_thumb(
     model_with_thumb.thumbCount = model_with_thumb.thumbCount + 1
 
     if need_save:
-        PcObject.save(model_with_thumb)
+        ApiHandler.save(model_with_thumb)
 
 
 def _fetch_image(thumb_url: str) -> bytes:

@@ -1,11 +1,12 @@
 import pytest
 from sqlalchemy import func
+from sqlalchemy_api_handler import ApiErrors, ApiHandler, humanize
+from sqlalchemy_api_handler.utils.listify import check_order_by
 
-from models import Offer, PcObject, Venue, ApiErrors
+from models import Offer, Venue
 from tests.conftest import clean_database
 from tests.test_utils import create_venue, create_offerer
-from utils.human_ids import humanize
-from utils.rest import check_order_by, load_or_raise_error
+from utils.rest import load_or_raise_error
 
 
 class TestLoadOrRaiseErrorTest:
@@ -26,7 +27,7 @@ class TestLoadOrRaiseErrorTest:
         # Given
         offerer = create_offerer()
         venue = create_venue(offerer)
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
         # When
         try:

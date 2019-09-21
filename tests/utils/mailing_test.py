@@ -2,11 +2,11 @@ import re
 import secrets
 from datetime import datetime, timezone, timedelta
 from unittest.mock import MagicMock, patch, Mock
-
 from bs4 import BeautifulSoup
 from freezegun import freeze_time
+from sqlalchemy_api_handler import ApiHandler
 
-from models import PcObject, Offerer, ThingType, EventType, User
+from models import Offerer, ThingType, EventType, User
 from models.db import db
 from models.email import Email, EmailStatus
 from tests.conftest import clean_database, mocked_mail
@@ -674,7 +674,7 @@ def test_make_offerer_booking_user_cancellation_email_for_physical_venue(app):
     booking_1 = create_booking(user_1, stock, venue)
     booking_2 = create_booking(user_2, stock, venue)
     booking_2.isCancelled = True
-    PcObject.save(booking_1, booking_2)
+    ApiHandler.save(booking_1, booking_2)
 
     # When
     with patch('utils.mailing.find_all_ongoing_bookings_by_stock', return_value=[booking_1]):
@@ -711,7 +711,7 @@ def test_make_offerer_booking_recap_email_after_user_cancellation_should_have_un
     booking_1 = create_booking(user_1, stock, venue)
     booking_2 = create_booking(user_2, stock, venue)
     booking_2.isCancelled = True
-    PcObject.save(booking_1, booking_2)
+    ApiHandler.save(booking_1, booking_2)
 
     # When
     with patch('utils.mailing.find_all_ongoing_bookings_by_stock', return_value=[booking_1]):
@@ -1037,7 +1037,7 @@ def test_make_offerer_booking_user_cancellation_for_thing_email_when_virtual_ven
     booking_1 = create_booking(user_1, stock, venue)
     booking_2 = create_booking(user_2, stock, venue)
     booking_2.isCancelled = True
-    PcObject.save(booking_1, booking_2)
+    ApiHandler.save(booking_1, booking_2)
 
     # When
     with patch('utils.mailing.find_all_ongoing_bookings_by_stock', return_value=[booking_1]):
@@ -1064,7 +1064,7 @@ def test_make_offerer_booking_user_cancellation_for_event_email_when_virtual_ven
     booking_1 = create_booking(user_1, stock, venue)
     booking_2 = create_booking(user_2, stock, venue)
     booking_2.isCancelled = True
-    PcObject.save(booking_1, booking_2)
+    ApiHandler.save(booking_1, booking_2)
 
     # When
     with patch('utils.mailing.find_all_ongoing_bookings_by_stock', return_value=[booking_1]):
@@ -1089,7 +1089,7 @@ def test_make_offerer_booking_user_cancellation_email_for_thing_has_cancellation
     booking_1 = create_booking(user_1, stock, venue)
     booking_2 = create_booking(user_2, stock, venue)
     booking_2.isCancelled = True
-    PcObject.save(booking_1, booking_2)
+    ApiHandler.save(booking_1, booking_2)
 
     # When
     with patch('utils.mailing.find_all_ongoing_bookings_by_stock', return_value=[booking_1]):
@@ -1113,7 +1113,7 @@ def test_make_offerer_booking_user_cancellation_email_for_event_has_cancellation
     booking_1 = create_booking(user_1, stock, venue)
     booking_2 = create_booking(user_2, stock, venue)
     booking_2.isCancelled = True
-    PcObject.save(booking_1, booking_2)
+    ApiHandler.save(booking_1, booking_2)
 
     # When
     with patch('utils.mailing.find_all_ongoing_bookings_by_stock', return_value=[booking_1]):
@@ -1135,7 +1135,7 @@ def test_make_offerer_booking_user_cancellation_has_recap_information_but_no_tok
     booking_1 = create_booking(user_1, stock, venue, token='12345')
     booking_2 = create_booking(user_2, stock, venue, token='56789')
     booking_2.isCancelled = True
-    PcObject.save(booking_1, booking_2)
+    ApiHandler.save(booking_1, booking_2)
 
     # When
     with patch('utils.mailing.find_all_ongoing_bookings_by_stock', return_value=[booking_1]):
@@ -1575,7 +1575,7 @@ def test_send_content_and_update_updates_email_when_send_mail_successful(app):
         'Html-part': '<html><body>Hello World</body></html>'
     }
     email = create_email(email_content, status='ERROR', time=datetime(2018, 12, 1, 12, 0, 0))
-    PcObject.save(email)
+    ApiHandler.save(email)
     mocked_response = MagicMock()
     mocked_response.status_code = 200
     app.mailjet_client.send.create.return_value = mocked_response
@@ -1604,7 +1604,7 @@ def test_send_content_and_update_does_not_update_email_when_send_mail_unsuccessf
         'Html-part': '<html><body>Hello World</body></html>'
     }
     email = create_email(email_content, status='ERROR', time=datetime(2018, 12, 1, 12, 0, 0))
-    PcObject.save(email)
+    ApiHandler.save(email)
     mocked_response = MagicMock()
     mocked_response.status_code = 500
     app.mailjet_client.send.create.return_value = mocked_response

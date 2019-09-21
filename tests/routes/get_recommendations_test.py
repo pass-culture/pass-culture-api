@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
+from sqlalchemy_api_handler import ApiHandler
 
-from models import PcObject, \
-    EventType
+from models import EventType
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_event_occurrence, \
     create_mediation, \
@@ -128,7 +128,7 @@ class Get:
             stock = create_stock_from_offer(
                 offer, beginning_datetime=TEN_DAYS_FROM_NOW, end_datetime=TWENTY_DAYS_FROM_NOW
             )
-            PcObject.save(stock, recommendation)
+            ApiHandler.save(stock, recommendation)
 
             # when
             response = TestClient(app.test_client())\
@@ -173,7 +173,7 @@ class Get:
             stock = create_stock_from_offer(
                 offer, beginning_datetime=TEN_DAYS_FROM_NOW, end_datetime=TWENTY_DAYS_FROM_NOW
             )
-            PcObject.save(stock, recommendation)
+            ApiHandler.save(stock, recommendation)
 
             # when
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -196,7 +196,7 @@ class Get:
             offer = create_offer_with_event_product(venue, event_name='Training in Modern Jazz')
             recommendation = create_recommendation(offer, user, search=search)
             stock = create_stock_from_offer(offer)
-            PcObject.save(stock, recommendation)
+            ApiHandler.save(stock, recommendation)
 
             # when
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -215,7 +215,7 @@ class Get:
             offer = create_offer_with_event_product(venue, event_name='www.test.fr event')
             recommendation = create_recommendation(offer, user)
             stock = create_stock_from_offer(offer)
-            PcObject.save(stock, recommendation)
+            ApiHandler.save(stock, recommendation)
 
             # when
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -236,7 +236,7 @@ class Get:
             offer = create_offer_with_event_product(venue, event_name='Training in Modern Jazz')
             recommendation = create_recommendation(offer, user, search=search)
             stock = create_stock_from_offer(offer)
-            PcObject.save(stock, recommendation)
+            ApiHandler.save(stock, recommendation)
 
             # when
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -255,7 +255,7 @@ class Get:
             offer = create_offer_with_event_product(venue, event_name="L'histoire sans fin")
             stock = create_stock_from_offer(offer,
                                             beginning_datetime=TEN_DAYS_FROM_NOW, end_datetime=TWENTY_DAYS_FROM_NOW)
-            PcObject.save(stock, user)
+            ApiHandler.save(stock, user)
 
             # when
             response = TestClient(app.test_client()).with_auth(user.email) \
@@ -276,7 +276,7 @@ class Get:
             offer = create_offer_with_event_product(venue, event_name="Vortek's")
             stock = create_stock_from_offer(offer, beginning_datetime=TEN_DAYS_FROM_NOW,
                                             end_datetime=TWENTY_DAYS_FROM_NOW)
-            PcObject.save(stock, user)
+            ApiHandler.save(stock, user)
 
             # when
             response = TestClient(app.test_client()).with_auth(user.email) \
@@ -301,7 +301,7 @@ class Get:
             recommendation = create_recommendation(offer, user, search=search)
             stock = create_stock_from_offer(offer, beginning_datetime=TEN_DAYS_FROM_NOW,
                                             end_datetime=TWENTY_DAYS_FROM_NOW)
-            PcObject.save(stock, recommendation)
+            ApiHandler.save(stock, recommendation)
 
             # when
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -324,7 +324,7 @@ class Get:
             recommendation = create_recommendation(offer, user, search=search)
             stock = create_stock_from_offer(offer, beginning_datetime=TEN_DAYS_FROM_NOW,
                                             end_datetime=TWENTY_DAYS_FROM_NOW)
-            PcObject.save(stock, recommendation)
+            ApiHandler.save(stock, recommendation)
 
             # when
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -346,7 +346,7 @@ class Get:
             recommendation = create_recommendation(offer, user, search=search)
             stock = create_stock_from_offer(offer, beginning_datetime=TEN_DAYS_FROM_NOW,
                                             end_datetime=TWENTY_DAYS_FROM_NOW)
-            PcObject.save(stock, recommendation)
+            ApiHandler.save(stock, recommendation)
 
             # when
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -380,7 +380,7 @@ class Get:
             stock2 = create_stock_from_event_occurrence(event_occurrence2, price=20, soft_deleted=True)
             stock3 = create_stock_from_event_occurrence(event_occurrence3, price=30, soft_deleted=True)
 
-            PcObject.save(stock1, stock2, stock3, recommendation1, recommendation2)
+            ApiHandler.save(stock1, stock2, stock3, recommendation1, recommendation2)
 
             # when
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -405,7 +405,7 @@ class Get:
                                             end_datetime=TWENTY_DAYS_FROM_NOW)
             stock2 = create_stock_from_offer(offer2, beginning_datetime=TEN_DAYS_FROM_NOW,
                                              end_datetime=TWENTY_DAYS_FROM_NOW)
-            PcObject.save(stock, recommendation, stock2, recommendation2)
+            ApiHandler.save(stock, recommendation, stock2, recommendation2)
 
             # when
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -435,7 +435,7 @@ class Get:
                                              beginning_datetime=TEN_DAYS_FROM_NOW, end_datetime=TWENTY_DAYS_FROM_NOW)
             stock3 = create_stock_from_offer(offer3,
                                              beginning_datetime=TEN_DAYS_FROM_NOW, end_datetime=TWENTY_DAYS_FROM_NOW)
-            PcObject.save(stock, recommendation, stock2, recommendation2, stock3, recommendation3)
+            ApiHandler.save(stock, recommendation, stock2, recommendation2, stock3, recommendation3)
 
             # when
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -460,7 +460,7 @@ class Get:
 
             recommendation = create_recommendation(offer, user)
             stock = create_stock_from_event_occurrence(event_occurrence)
-            PcObject.save(stock, recommendation)
+            ApiHandler.save(stock, recommendation)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -496,7 +496,7 @@ class Get:
             stock = create_stock_from_event_occurrence(event_occurrence)
             stock1 = create_stock_from_offer(offer2)
             thing_stock = create_stock(price=12, available=5, offer=thing_offer)
-            PcObject.save(stock, recommendation, recommendation2, recommendation3, thing_stock, stock1)
+            ApiHandler.save(stock, recommendation, recommendation2, recommendation3, thing_stock, stock1)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -529,7 +529,7 @@ class Get:
 
             recommendation = create_recommendation(offer, user)
             stock = create_stock_from_event_occurrence(event_occurrence)
-            PcObject.save(stock, recommendation)
+            ApiHandler.save(stock, recommendation)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -567,7 +567,7 @@ class Get:
             stock75 = create_stock_from_event_occurrence(event_occurrence75)
             stock973 = create_stock_from_event_occurrence(event_occurrence973)
 
-            PcObject.save(stock13, recommendation13, stock75, recommendation75, stock973, recommendation973)
+            ApiHandler.save(stock13, recommendation13, stock75, recommendation75, stock973, recommendation973)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -592,7 +592,7 @@ class Get:
 
             recommendation = create_recommendation(offer, user)
             stock = create_stock_from_event_occurrence(event_occurrence)
-            PcObject.save(stock, recommendation)
+            ApiHandler.save(stock, recommendation)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -619,7 +619,7 @@ class Get:
             stock = create_stock_from_event_occurrence(event_occurrence)
             stock1 = create_stock_from_offer(offer1, beginning_datetime=TEN_DAYS_FROM_NOW,
                                              end_datetime=TWENTY_DAYS_FROM_NOW)
-            PcObject.save(stock, stock1, recommendation, recommendation1)
+            ApiHandler.save(stock, stock1, recommendation, recommendation1)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -667,7 +667,7 @@ class Get:
             activation_event_occurence_stock = create_stock_from_event_occurrence(activation_event_occurrence)
             book_thing_stock = create_stock(price=12, available=5, offer=book_thing_offer)
 
-            PcObject.save(cinema_recommendation, book_recommendation, activation_recommendation,
+            ApiHandler.save(cinema_recommendation, book_recommendation, activation_recommendation,
                           cinema_event_occurence_stock, activation_event_occurence_stock, book_thing_stock)
 
             # When
@@ -697,7 +697,7 @@ class Get:
 
             recommendation = create_recommendation(offer, user)
             stock = create_stock_from_event_occurrence(event_occurrence)
-            PcObject.save(stock, recommendation)
+            ApiHandler.save(stock, recommendation)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -726,7 +726,7 @@ class Get:
             recommendation2 = create_recommendation(thingOffer, user)
             stock = create_stock_from_event_occurrence(event_occurrence)
             thing_stock = create_stock(price=12, available=5, offer=thingOffer)
-            PcObject.save(stock, recommendation, recommendation2, thing_stock)
+            ApiHandler.save(stock, recommendation, recommendation2, thing_stock)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -764,7 +764,7 @@ class Get:
             stock75 = create_stock_from_event_occurrence(event_occurrence75)
             stock973 = create_stock_from_event_occurrence(event_occurrence973)
 
-            PcObject.save(stock13, recommendation13, stock75, recommendation75, stock973, recommendation973)
+            ApiHandler.save(stock13, recommendation13, stock75, recommendation75, stock973, recommendation973)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -788,7 +788,7 @@ class Get:
 
             recommendation = create_recommendation(offer, user)
             stock = create_stock_from_event_occurrence(event_occurrence)
-            PcObject.save(stock, recommendation)
+            ApiHandler.save(stock, recommendation)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email).get(
@@ -817,7 +817,7 @@ class Get:
             recommendation2 = create_recommendation(offer2, user)
             stock1 = create_stock_from_event_occurrence(event_occurrence1)
             stock2 = create_stock_from_event_occurrence(event_occurrence2)
-            PcObject.save(stock1, stock2, recommendation1, recommendation2)
+            ApiHandler.save(stock1, stock2, recommendation1, recommendation2)
 
             # When
             response = TestClient(app.test_client()).with_auth(user.email).get(

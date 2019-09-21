@@ -1,4 +1,5 @@
-from models.pc_object import PcObject
+from sqlalchemy_api_handler import ApiHandler
+
 from repository.offerer_queries import check_if_siren_already_exists
 from sandboxes.scripts.mocks.offerer_mocks import MOCK_NAMES
 from sandboxes.scripts.mocks.user_mocks import MOCK_DOMAINS, \
@@ -7,7 +8,6 @@ from sandboxes.scripts.mocks.user_mocks import MOCK_DOMAINS, \
 from sandboxes.scripts.utils.helpers import get_email
 from sandboxes.scripts.utils.locations import create_locations_from_places, \
     OFFERER_PLACES
-
 OFFERER_PLACES
 from sandboxes.scripts.utils.select import pick_every
 from tests.test_utils import create_offerer, \
@@ -233,7 +233,7 @@ def create_industrial_offerers_with_pro_users():
                       list(users_by_name.values()) + \
                       list(user_offerers_by_name.values())
 
-    PcObject.save(*objects_to_save)
+    ApiHandler.save(*objects_to_save)
 
     logger.info('created {} offerers with pro users'.format(
         len(offerers_by_name)

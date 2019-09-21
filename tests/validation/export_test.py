@@ -1,6 +1,6 @@
 import pytest
+from sqlalchemy_api_handler import ApiErrors
 
-from models import ApiErrors
 from validation.exports import check_get_venues_params, check_get_offerers_params
 
 

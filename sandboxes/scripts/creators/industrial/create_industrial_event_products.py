@@ -1,16 +1,18 @@
+from sqlalchemy_api_handler import ApiHandler
+
 from domain.music_types import music_types
 from domain.show_types import show_types
 from domain.types import get_formatted_active_product_types
 from models.offer_type import EventType
-from models.pc_object import PcObject
 from sandboxes.scripts.mocks.event_mocks import MOCK_ACTIVATION_DESCRIPTION, \
                                                 MOCK_ACTIVATION_NAME, \
                                                 MOCK_DESCRIPTIONS, \
                                                 MOCK_NAMES
+from tests.test_utils import create_product_with_event_type
 from sandboxes.scripts.mocks.user_mocks import MOCK_FIRST_NAMES, \
                                                MOCK_LAST_NAMES
 from utils.logger import logger
-from tests.test_utils import create_product_with_event_type
+
 
 
 EVENT_COUNTS_PER_TYPE = 7
@@ -85,7 +87,7 @@ def create_industrial_event_products():
 
         type_index += len(event_type_dicts)
 
-    PcObject.save(*event_products_by_name.values())
+    ApiHandler.save(*event_products_by_name.values())
 
     logger.info('created {} event products'.format(len(event_products_by_name)))
 

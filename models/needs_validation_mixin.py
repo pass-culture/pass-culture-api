@@ -1,6 +1,4 @@
-""" needs validation mixin """
 import secrets
-
 from sqlalchemy import Column, String
 
 

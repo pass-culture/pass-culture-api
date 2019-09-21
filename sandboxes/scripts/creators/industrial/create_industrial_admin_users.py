@@ -1,4 +1,5 @@
-from models.pc_object import PcObject
+from sqlalchemy_api_handler import ApiHandler
+
 from tests.test_utils import create_user
 from utils.logger import logger
 
@@ -27,7 +28,7 @@ def create_industrial_admin_users():
                 public_name="PC Test Admin {} {}".format(departement_code, admin_count)
             )
 
-    PcObject.save(*users_by_name.values())
+    ApiHandler.save(*users_by_name.values())
 
     logger.info('created {} users'.format(len(users_by_name)))
 

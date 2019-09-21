@@ -1,8 +1,10 @@
 from itertools import chain
-
+from datetime import datetime
 import dateutil
 from flask import current_app as app, jsonify, request
 from flask_login import current_user, login_required
+from sqlalchemy_api_handler import ApiErrors, ApiHandler, as_dict, dehumanize, humanize
+from sqlalchemy_api_handler.serialization.serialize import serialize
 
 from domain.bookings import generate_bookings_details_csv
 from domain.expenses import get_expenses
@@ -10,15 +12,13 @@ from domain.user_activation import create_initial_deposit, check_is_activation_b
 from domain.user_emails import send_booking_recap_emails, \
     send_booking_confirmation_email_to_user, send_cancellation_emails_to_user_and_offerer, \
     send_activation_notification_email
-from models import ApiErrors, Booking, PcObject, Stock, RightsType, EventType, Offerer
+from models import Booking, Stock, RightsType, EventType, Offerer
 from models.offer_type import ProductType
 from repository import booking_queries
 from repository.booking_queries import find_active_bookings_by_user_id, \
     find_all_bookings_for_stock_and_user, \
     find_all_offerer_bookings, find_all_digital_bookings_for_offerer
 from repository.user_offerer_queries import filter_query_where_user_is_user_offerer_and_is_validated
-from routes.serialization import serialize, as_dict
-from utils.human_ids import dehumanize, humanize
 from utils.includes import WEBAPP_GET_BOOKING_INCLUDES, \
     WEBAPP_PATCH_POST_BOOKING_INCLUDES
 from utils.mailing import MailServiceException, send_raw_email
@@ -41,7 +41,6 @@ from validation.bookings import check_booking_is_usable, \
     check_booking_is_cancellable, check_stock_venue_is_validated, check_rights_for_activation_offer, \
     check_rights_to_get_bookings_csv
 from validation.users import check_user_can_validate_bookings
-from datetime import datetime
 
 
 @app.route('/bookings/csv', methods=['GET'])
@@ -153,7 +152,7 @@ def create_booking():
 
     expenses = get_expenses(bookings)
     check_expenses_limits(expenses, new_booking)
-    PcObject.save(new_booking)
+    ApiHandler.save(new_booking)
 
     try:
         send_booking_recap_emails(new_booking, send_raw_email)
@@ -191,7 +190,7 @@ def patch_booking(booking_id):
         return "Vous n'avez pas le droit d'annuler cette réservation", 403
 
     booking.isCancelled = True
-    PcObject.save(booking)
+    ApiHandler.save(booking)
 
     try:
         send_cancellation_emails_to_user_and_offerer(booking, is_offerer_cancellation, is_user_cancellation,
@@ -242,7 +241,7 @@ def patch_booking_by_token(token):
 
     booking.isUsed = True
     booking.dateUsed = datetime.utcnow()
-    PcObject.save(booking)
+    ApiHandler.save(booking)
 
     return '', 204
 
@@ -251,7 +250,7 @@ def activate_user(user_to_activate):
     check_rights_for_activation_offer(current_user)
     user_to_activate.canBookFreeOffers = True
     deposit = create_initial_deposit(user_to_activate)
-    PcObject.save(deposit)
+    ApiHandler.save(deposit)
 
 
 def _create_response_to_get_booking_by_token(booking):

@@ -1,13 +1,13 @@
 from datetime import datetime
 from urllib.parse import urlencode
+from sqlalchemy_api_handler import ApiHandler, humanize
 
-from models import PcObject, EventType, ThingType, Deposit, Booking, User
+from models import EventType, ThingType, Deposit, Booking, User
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_deposit, create_venue, create_offerer, \
     create_user, create_booking, create_offer_with_event_product, \
     create_event_occurrence, create_stock_from_event_occurrence, create_user_offerer
 from tests.test_utils import create_stock_with_event_offer
-from utils.human_ids import humanize
 
 
 class Patch:
@@ -21,7 +21,7 @@ class Patch:
                 venue = create_venue(offerer)
                 stock = create_stock_with_event_offer(offerer, venue, price=0)
                 booking = create_booking(user, stock, venue=venue)
-                PcObject.save(booking)
+                ApiHandler.save(booking)
                 booking_id = booking.id
                 url = '/bookings/token/{}?email={}&offer_id={}'.format(booking.token, user.email,
                                                                        humanize(stock.resolvedOffer.id))
@@ -44,7 +44,7 @@ class Patch:
                 venue = create_venue(offerer)
                 stock = create_stock_with_event_offer(offerer, venue, price=0)
                 booking = create_booking(user, stock, venue=venue)
-                PcObject.save(booking, user_offerer)
+                ApiHandler.save(booking, user_offerer)
                 booking_id = booking.id
                 url = '/bookings/token/{}'.format(booking.token)
 
@@ -65,7 +65,7 @@ class Patch:
                 venue = create_venue(offerer)
                 stock = create_stock_with_event_offer(offerer, venue, price=0)
                 booking = create_booking(user, stock, venue=venue)
-                PcObject.save(booking, user_offerer)
+                ApiHandler.save(booking, user_offerer)
                 booking_id = booking.id
                 booking_token = booking.token.lower()
                 url = '/bookings/token/{}'.format(booking_token)
@@ -87,7 +87,7 @@ class Patch:
                 venue = create_venue(offerer)
                 stock = create_stock_with_event_offer(offerer, venue, price=0)
                 booking = create_booking(user, stock, venue=venue)
-                PcObject.save(booking, user_offerer)
+                ApiHandler.save(booking, user_offerer)
                 booking_id = booking.id
                 url = '/bookings/token/{}'.format(booking.token)
 
@@ -113,7 +113,7 @@ class Patch:
                 stock = create_stock_from_event_occurrence(event_occurrence, price=0)
                 booking = create_booking(user, stock, venue=venue)
 
-                PcObject.save(user_offerer, booking)
+                ApiHandler.save(user_offerer, booking)
                 url_email = urlencode({'email': 'user+plus@email.fr'})
                 url = '/bookings/token/{}?{}'.format(booking.token, url_email)
 
@@ -135,7 +135,7 @@ class Patch:
                 activation_event_occurrence = create_event_occurrence(activation_offer)
                 stock = create_stock_from_event_occurrence(activation_event_occurrence, price=0)
                 booking = create_booking(user, stock, venue=venue)
-                PcObject.save(booking, user_offerer)
+                ApiHandler.save(booking, user_offerer)
                 user_id = user.id
                 url = '/bookings/token/{}'.format(booking.token)
 
@@ -158,7 +158,7 @@ class Patch:
                 venue = create_venue(offerer)
                 stock = create_stock_with_event_offer(offerer, venue, price=0)
                 booking = create_booking(user, stock, venue=venue)
-                PcObject.save(booking)
+                ApiHandler.save(booking)
                 url = '/bookings/token/{}?&offer_id={}'.format(booking.token,
                                                                humanize(stock.resolvedOffer.id))
 
@@ -178,7 +178,7 @@ class Patch:
                 venue = create_venue(offerer)
                 stock = create_stock_with_event_offer(offerer, venue, price=0)
                 booking = create_booking(user, stock, venue=venue)
-                PcObject.save(booking)
+                ApiHandler.save(booking)
                 url = '/bookings/token/{}?email={}'.format(booking.token, user.email)
 
                 # When
@@ -197,7 +197,7 @@ class Patch:
                 venue = create_venue(offerer)
                 stock = create_stock_with_event_offer(offerer, venue, price=0)
                 booking = create_booking(user, stock, venue=venue)
-                PcObject.save(booking)
+                ApiHandler.save(booking)
                 url = '/bookings/token/{}'.format(booking.token, user.email)
 
                 # When
@@ -218,12 +218,12 @@ class Patch:
                 venue = create_venue(offerer)
                 stock = create_stock_with_event_offer(offerer, venue, price=0)
                 booking = create_booking(user, stock, venue=venue)
-                PcObject.save(booking)
+                ApiHandler.save(booking)
                 url = '/bookings/token/{}?email={}&offer_id={}'.format(booking.token, user.email,
                                                                        humanize(stock.resolvedOffer.id))
 
                 stock.available = 0
-                PcObject.save(stock)
+                ApiHandler.save(stock)
 
                 # When
                 response = TestClient(app.test_client()).patch(url)
@@ -243,7 +243,7 @@ class Patch:
                 venue = create_venue(offerer)
                 stock = create_stock_with_event_offer(offerer, venue, price=0)
                 booking = create_booking(user, stock, venue=venue)
-                PcObject.save(booking, admin_user)
+                ApiHandler.save(booking, admin_user)
                 booking_id = booking.id
                 url = '/bookings/token/{}?email={}'.format(booking.token, user.email)
 
@@ -267,7 +267,7 @@ class Patch:
                 activation_event_occurrence = create_event_occurrence(activation_offer)
                 stock = create_stock_from_event_occurrence(activation_event_occurrence, price=0)
                 booking = create_booking(user, stock, venue=venue)
-                PcObject.save(booking, user_offerer)
+                ApiHandler.save(booking, user_offerer)
                 url = '/bookings/token/{}'.format(booking.token)
 
                 # When
@@ -286,7 +286,7 @@ class Patch:
                 venue = create_venue(offerer)
                 stock = create_stock_with_event_offer(offerer, venue, price=0)
                 booking = create_booking(user, stock, venue=venue)
-                PcObject.save(booking)
+                ApiHandler.save(booking)
                 url = '/bookings/token/{}?email={}&offer_id={}'.format(booking.token, 'wrong.email@test.com',
                                                                        humanize(stock.resolvedOffer.id))
 
@@ -307,7 +307,7 @@ class Patch:
                 venue = create_venue(offerer)
                 stock = create_stock_with_event_offer(offerer, venue, price=0)
                 booking = create_booking(user, stock, venue=venue)
-                PcObject.save(booking, admin_user)
+                ApiHandler.save(booking, admin_user)
                 booking_id = booking.id
                 url = '/bookings/token/{}?email={}'.format(booking.token, 'wrong@email.fr')
 
@@ -331,7 +331,7 @@ class Patch:
                 stock = create_stock_from_event_occurrence(event_occurrence, price=0)
                 booking = create_booking(user, stock, venue=venue)
 
-                PcObject.save(user_offerer, booking)
+                ApiHandler.save(user_offerer, booking)
                 url = '/bookings/token/{}?email={}'.format(booking.token, user.email)
 
                 # When
@@ -348,7 +348,7 @@ class Patch:
                 venue = create_venue(offerer)
                 stock = create_stock_with_event_offer(offerer, venue, price=0)
                 booking = create_booking(user, stock, venue=venue)
-                PcObject.save(booking, admin_user)
+                ApiHandler.save(booking, admin_user)
                 booking_id = booking.id
                 url = '/bookings/token/{}?email={}&offer_id={}'.format(booking.token, user.email,
                                                                        humanize(123))
@@ -375,7 +375,7 @@ class Patch:
                 stock = create_stock_from_event_occurrence(activation_event_occurrence, price=0)
                 booking = create_booking(user, stock, venue=venue)
                 deposit = create_deposit(user, amount=500)
-                PcObject.save(booking, user_offerer, deposit)
+                ApiHandler.save(booking, user_offerer, deposit)
                 user_id = user.id
                 url = '/bookings/token/{}'.format(booking.token)
 
@@ -401,7 +401,7 @@ class Patch:
                 stock = create_stock_with_event_offer(offerer, venue, price=0)
                 booking = create_booking(user, stock, venue=venue)
                 booking.isCancelled = True
-                PcObject.save(booking, user_offerer)
+                ApiHandler.save(booking, user_offerer)
                 booking_id = booking.id
                 url = '/bookings/token/{}'.format(booking.token)
 
@@ -424,7 +424,7 @@ class Patch:
                 stock = create_stock_with_event_offer(offerer, venue, price=0)
                 booking = create_booking(user, stock, venue=venue)
                 booking.isUsed = True
-                PcObject.save(booking, user_offerer)
+                ApiHandler.save(booking, user_offerer)
                 booking_id = booking.id
                 url = '/bookings/token/{}'.format(booking.token)
 

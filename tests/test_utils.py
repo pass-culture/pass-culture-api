@@ -7,10 +7,10 @@ from glob import glob
 from hashlib import sha256
 from inspect import isclass
 from unittest.mock import Mock
-
 import requests
 from postgresql_audit.flask import versioning_manager
 from simplejson import JSONDecodeError
+from sqlalchemy_api_handler import ApiHandler
 
 import models
 from models import Booking, \
@@ -36,7 +36,6 @@ from models.email import Email, EmailStatus
 from models.feature import FeatureToggle, Feature
 from models.payment import PaymentDetails
 from models.payment_status import PaymentStatus, TransactionStatus
-from models.pc_object import PcObject
 from repository.provider_queries import get_provider_by_local_class
 from utils.object_storage import STORAGE_DIR
 from utils.token import random_token
@@ -776,8 +775,8 @@ def saveCounts():
     for modelName in models.__all__:
         model = getattr(models, modelName)
         if isclass(model) \
-                and issubclass(model, PcObject) \
-                and modelName != "PcObject":
+                and issubclass(model, ApiHandler) \
+                and modelName != "ApiHandler":
             saved_counts[modelName] = model.query.count()
 
 
@@ -794,7 +793,7 @@ def assertCreatedCounts(**counts):
 def assertEmptyDb():
     for modelName in models.__all__:
         model = getattr(models, modelName)
-        if isinstance(model, PcObject):
+        if isinstance(model, ApiHandler):
             if modelName == 'Mediation':
                 assert model.query.count() == 2
             else:
@@ -811,7 +810,7 @@ def provider_test(app, provider, venue_provider, **counts):
     else:
         provider_object = provider(venue_provider)
     provider_object.dbObject.isActive = True
-    PcObject.save(provider_object.dbObject)
+    ApiHandler.save(provider_object.dbObject)
     saveCounts()
     provider_object.updateObjects()
 
@@ -880,11 +879,11 @@ def activate_provider(provider_classname):
     provider = get_provider_by_local_class(provider_classname)
     provider.isActive = True
     provider.enabledForPro = True
-    PcObject.save(provider)
+    ApiHandler.save(provider)
     return provider
 
 
 def deactivate_feature(feature_toggle: FeatureToggle):
     feature = Feature.query.filter_by(name=feature_toggle.name).one()
     feature.isActive = False
-    PcObject.save(feature)
+    ApiHandler.save(feature)

@@ -1,8 +1,8 @@
-""" pc """
 import os
 from flask import Flask
 from flask_script import Manager
 from mailjet_rest import Client
+from sqlalchemy_api_handler import ApiHandler
 
 from scripts.install import install_scripts
 from models.db import db
@@ -12,6 +12,7 @@ app = Flask(__name__, template_folder='../templates')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
+ApiHandler.set_db(db)
 
 
 def create_app(env=None):

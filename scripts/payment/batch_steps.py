@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Tuple
-
 from lxml.etree import DocumentInvalid
+from sqlalchemy_api_handler import ApiHandler
 
 from domain.admin_emails import send_payment_message_email, send_payment_details_email, send_wallet_balances_email, \
     send_payments_report_emails
@@ -11,7 +11,7 @@ from domain.payments import filter_out_already_paid_for_bookings, create_payment
     generate_payment_message, generate_file_checksum, group_payments_by_status, filter_out_bookings_without_cost, \
     keep_only_pending_payments, keep_only_not_processable_payments
 from domain.reimbursement import find_all_booking_reimbursements, NEW_RULES, CURRENT_RULES
-from models import Offerer, PcObject
+from models import Offerer
 from models.db import db
 from models.feature import FeatureToggle
 from models.payment import Payment
@@ -58,7 +58,7 @@ def generate_new_payments() -> Tuple[List[Payment], List[Payment]]:
             payments = list(map(create_payment_for_booking, booking_reimbursements_to_pay))
 
         if payments:
-            PcObject.save(*payments)
+            ApiHandler.save(*payments)
             all_payments.extend(payments)
         logger.info('[BATCH][PAYMENTS] Saved %s payments for offerer : %s' % (len(payments), offerer.name))
 
@@ -88,7 +88,7 @@ def send_transactions(payments: List[Payment], pass_culture_iban: str, pass_cult
     except DocumentInvalid as e:
         for payment in payments:
             payment.setStatus(TransactionStatus.NOT_PROCESSABLE, detail=str(e))
-        PcObject.save(*payments)
+        ApiHandler.save(*payments)
         raise
 
     checksum = generate_file_checksum(xml_file)
@@ -107,7 +107,7 @@ def send_transactions(payments: List[Payment], pass_culture_iban: str, pass_cult
     else:
         for payment in payments:
             payment.setStatus(TransactionStatus.ERROR, detail="Erreur d'envoi à MailJet")
-    PcObject.save(message, *payments)
+    ApiHandler.save(message, *payments)
 
 
 def send_payments_details(payments: List[Payment], recipients: List[str]) -> None:

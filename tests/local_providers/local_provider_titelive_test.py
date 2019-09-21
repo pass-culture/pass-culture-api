@@ -2,8 +2,8 @@ import os
 from pathlib import Path
 from unittest.mock import patch
 from zipfile import ZipFile
-
 from sqlalchemy import func
+from sqlalchemy_api_handler import ApiHandler
 
 from local_providers import TiteLiveThings, TiteLiveThingThumbs, TiteLiveThingDescriptions
 from local_providers.titelive_thing_descriptions import DESCRIPTION_FOLDER_NAME_TITELIVE
@@ -11,7 +11,6 @@ from local_providers.titelive_thing_thumbs import THUMB_FOLDER_NAME_TITELIVE
 from local_providers.titelive_things import THINGS_FOLDER_NAME_TITELIVE
 from models import Product
 from models.db import db
-from models.pc_object import PcObject
 from tests.conftest import clean_database
 from tests.test_utils import create_offerer, create_venue, \
     provider_test
@@ -49,7 +48,7 @@ class TiteliveTest:
         # given
         offerer = create_offerer(siren='775671464')
         venue = create_venue(offerer, name='Librairie Titelive', siret='77567146400110')
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
         # Import things
         provider_test(app,

@@ -1,6 +1,4 @@
-""" transfer model """
 from datetime import datetime
-
 from sqlalchemy import BigInteger, \
     Column, \
     ForeignKey, \
@@ -10,13 +8,13 @@ from sqlalchemy import BigInteger, \
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy_api_handler import ApiHandler
 
 from models.db import Model, db
 from models.payment_status import TransactionStatus, PaymentStatus
-from models.pc_object import PcObject
 
 
-class Payment(PcObject, Model):
+class Payment(ApiHandler, Model):
     id = Column(BigInteger,
                 primary_key=True,
                 autoincrement=True)

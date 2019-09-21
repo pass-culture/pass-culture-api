@@ -1,5 +1,4 @@
-from models.api_errors import ResourceNotFoundError, ApiErrors
-
+from sqlalchemy_api_handler.api_errors import ApiErrors, ResourceNotFoundError 
 
 def check_valid_token_for_user_validation(user_to_validate):
     if user_to_validate is None:

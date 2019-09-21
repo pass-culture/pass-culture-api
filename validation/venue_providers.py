@@ -1,9 +1,8 @@
 import json
+from sqlalchemy_api_handler import ApiErrors, dehumanize
 
-from models import ApiErrors
 from repository.provider_queries import find_provider_by_id
 from repository.venue_provider_queries import find_venue_provider
-from utils.human_ids import dehumanize
 
 
 def _validate_existing_provider(provider_id: str):

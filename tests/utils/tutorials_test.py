@@ -1,6 +1,7 @@
 from unittest.mock import patch
+from sqlalchemy_api_handler import ApiHandler
 
-from models import Mediation, PcObject
+from models import Mediation
 from tests.conftest import clean_database
 from tests.test_utils import create_mediation, create_offer_with_thing_product, create_venue, create_offerer
 from utils.tutorials import _upsert_tuto_mediation
@@ -38,7 +39,7 @@ class UpsertTutoMediationTest:
             venue = create_venue(offerer)
             offer = create_offer_with_thing_product(venue)
             mediation = create_mediation(offer, tuto_index=0)
-            PcObject.save(mediation)
+            ApiHandler.save(mediation)
 
             # When
             _upsert_tuto_mediation(0)

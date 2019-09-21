@@ -1,4 +1,3 @@
-""" provider """
 from sqlalchemy import BigInteger, \
     CheckConstraint, \
     Column, \
@@ -6,14 +5,14 @@ from sqlalchemy import BigInteger, \
     String, Boolean
 from sqlalchemy.dialects.postgresql import CHAR
 from sqlalchemy.orm import relationship
+from sqlalchemy_api_handler import ApiHandler
 
 from models.db import Model
 from models.deactivable_mixin import DeactivableMixin
-from models.pc_object import PcObject
 from models.venue_provider import VenueProvider
 
 
-class Provider(PcObject, Model, DeactivableMixin):
+class Provider(ApiHandler, Model, DeactivableMixin):
     id = Column(BigInteger,
                 primary_key=True)
 

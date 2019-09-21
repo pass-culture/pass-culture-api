@@ -1,4 +1,6 @@
-from models import PcObject, User
+from sqlalchemy_api_handler import ApiHandler
+
+from models import User
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_user
 
@@ -10,7 +12,7 @@ class Patch:
             # Given
             user = create_user()
             user.generate_validation_token()
-            PcObject.save(user)
+            ApiHandler.save(user)
             user_id = user.id
 
             # When

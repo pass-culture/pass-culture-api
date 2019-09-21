@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 import random
-
 import dateutil.parser
 from sqlalchemy import func
+from sqlalchemy_api_handler import ApiErrors, ApiHandler
 
 from domain.types import get_active_product_type_values_from_sublabels
-from models import ApiErrors, Recommendation, Offer, Mediation, PcObject, User
+from models import Recommendation, Mediation, User
 from models.db import db
 from recommendations_engine import get_offers_for_recommendations_discovery
 from repository import mediation_queries
@@ -29,7 +29,7 @@ def give_requested_recommendation_to_user(user, offer_id, mediation_id):
         if recommendation is None:
             with db.session.no_autoflush:
                 recommendation = _create_recommendation_from_ids(user, offer_id, mediation_id=mediation_id)
-            PcObject.save(recommendation)
+            ApiHandler.save(recommendation)
             logger.debug(lambda: 'Creating Recommendation with offer_id=%s mediation_id=%s' % (offer_id, mediation_id))
 
     return recommendation
@@ -65,7 +65,7 @@ def create_recommendations_for_discovery(limit=3, user=None):
             )
             inserted_tuto_mediations += 1
         recommendations.append(_create_recommendation(user, offer))
-    PcObject.save(*recommendations)
+    ApiHandler.save(*recommendations)
     return recommendations
 
 
@@ -81,7 +81,7 @@ def _create_tuto_mediation_if_non_existent_for_user(user: User, tuto_mediation: 
     recommendation.user = user
     recommendation.mediation = tuto_mediation
     recommendation.validUntilDate = datetime.utcnow() + timedelta(weeks=2)
-    PcObject.save(recommendation)
+    ApiHandler.save(recommendation)
 
 def _create_recommendation_from_ids(user, offer_id, mediation_id=None):
     mediation = None
@@ -126,7 +126,7 @@ def create_recommendations_for_search(user, **kwargs):
         recommendation.search = search
         recommendations.append(recommendation)
 
-    PcObject.save(*recommendations)
+    ApiHandler.save(*recommendations)
     return recommendations
 
 

@@ -1,6 +1,4 @@
-""" recommendation model """
 from datetime import datetime
-
 from sqlalchemy import BigInteger, \
     Boolean, \
     Column, \
@@ -11,14 +9,13 @@ from sqlalchemy import BigInteger, \
     exists
 from sqlalchemy.orm import relationship, column_property
 from sqlalchemy.sql import expression, select
-from utils.human_ids import humanize
+from sqlalchemy_api_handler import ApiHandler, humanize
 
 from models import Favorite
 from models.db import Model
-from models.pc_object import PcObject
 
 
-class Recommendation(PcObject, Model):
+class Recommendation(ApiHandler, Model):
     id = Column(BigInteger,
                 primary_key=True,
                 autoincrement=True)

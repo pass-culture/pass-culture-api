@@ -1,6 +1,8 @@
-from models.pc_object import PcObject
-from utils.logger import logger
+from sqlalchemy_api_handler import ApiHandler
+
 from tests.test_utils import create_offer_with_event_product
+from utils.logger import logger
+
 
 DEACTIVATED_OFFERS_PICK_MODULO = 3
 EVENTS_PER_OFFERER_WITH_PHYSICAL_VENUE = 5
@@ -52,7 +54,7 @@ def create_industrial_event_offers(
 
         event_index += EVENTS_PER_OFFERER_WITH_PHYSICAL_VENUE
 
-    PcObject.save(*event_offers_by_name.values())
+    ApiHandler.save(*event_offers_by_name.values())
 
     logger.info('created {} event_offers'.format(len(event_offers_by_name)))
 

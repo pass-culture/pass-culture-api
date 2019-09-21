@@ -1,16 +1,15 @@
 from datetime import datetime
-
 from sqlalchemy import Column, BigInteger, ForeignKey, desc
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
+from sqlalchemy_api_handler import ApiHandler
 
 from models.beneficiary_import_status import BeneficiaryImportStatus, ImportStatus
 from models.db import Model, db
-from models.pc_object import PcObject
 from models.user import User
 
 
-class BeneficiaryImport(PcObject, Model):
+class BeneficiaryImport(ApiHandler, Model):
     demarcheSimplifieeApplicationId = Column(BigInteger,
                                              unique=True,
                                              nullable=False)

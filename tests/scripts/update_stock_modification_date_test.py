@@ -1,7 +1,8 @@
 from datetime import datetime
+from sqlalchemy_api_handler import ApiHandler
 
 from models.db import db
-from models import PcObject, Stock
+from models import Stock
 from scripts.update_stock_modification_date import update_stock_modification_date_sql_version
 from tests.conftest import clean_database
 from tests.test_utils import save_all_activities, \
@@ -17,7 +18,7 @@ class UpdateStockModificationDateTest:
         venue = create_venue(offerer)
         offer = create_offer_with_thing_product(venue)
         stock = create_stock(offer=offer, available=10, date_modified=datetime(2019, 10, 13))
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         activity = create_stock_activity(
             stock=stock,
@@ -43,7 +44,7 @@ class UpdateStockModificationDateTest:
         venue = create_venue(offerer)
         offer = create_offer_with_thing_product(venue)
         stock = create_stock(offer=offer, available=10, date_modified=datetime(2019, 10, 13))
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         first_activity = create_stock_activity(
             stock=stock,
@@ -77,7 +78,7 @@ class UpdateStockModificationDateTest:
         offer = create_offer_with_thing_product(venue)
         first_stock = create_stock(offer=offer, available=10, date_modified=datetime(2019, 10, 13))
         second_stock = create_stock(offer=offer, available=10, date_modified=datetime(2018, 10, 13))
-        PcObject.save(first_stock, second_stock)
+        ApiHandler.save(first_stock, second_stock)
 
         activity_for_first_stock = create_stock_activity(
             stock=first_stock,

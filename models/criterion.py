@@ -1,10 +1,10 @@
 from sqlalchemy import Column, String, Text, Integer
+from sqlalchemy_api_handler import ApiHandler
 
 from models.db import Model
-from models.pc_object import PcObject
 
 
-class Criterion(PcObject, Model):
+class Criterion(ApiHandler, Model):
     name = Column(String(140), nullable=False)
 
     description = Column(Text, nullable=True)

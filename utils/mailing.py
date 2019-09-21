@@ -1,15 +1,14 @@
-""" mailing """
 import base64
 import os
 from datetime import datetime
 from pprint import pformat
 from typing import Dict, List
-
 from flask import current_app as app, render_template
+from sqlalchemy_api_handler import ApiHandler, humanize
 
 from connectors import api_entreprises
 from domain.user_activation import generate_set_password_url
-from models import Offer, Email, PcObject
+from models import Offer, Email
 from models import RightsType, User
 from models.email import EmailStatus
 from models.offer_type import ProductType
@@ -20,7 +19,6 @@ from repository.user_offerer_queries import find_user_offerer_email
 from utils import logger
 from utils.config import API_URL, ENV, WEBAPP_URL, PRO_URL
 from utils.date import format_datetime, utc_datetime_to_dept_timezone
-from utils.human_ids import humanize
 from utils.object_storage import get_storage_base_url
 
 MAILJET_API_KEY = os.environ.get('MAILJET_API_KEY')
@@ -65,7 +63,7 @@ def resend_email(email: Email) -> bool:
     if response.status_code == 200:
         email.status = EmailStatus.SENT
         email.datetime = datetime.utcnow()
-        PcObject.save(email)
+        ApiHandler.save(email)
         return True
     logger.logger.warning(
         f'[EMAIL] Trying to resend email # {email.id}, {email.content} failed with status code {response.status_code}')

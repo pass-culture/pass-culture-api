@@ -1,4 +1,5 @@
-from models import PcObject
+from sqlalchemy_api_handler import ApiHandler
+
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_user
 
@@ -19,7 +20,7 @@ class Get:
         def when_user_is_logged(self, app):
             # given
             user = create_user(email='test@email.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             # when
             response = TestClient(app.test_client()) \
@@ -41,7 +42,7 @@ class Get:
         def when_user_is_admin(self, app):
             # given
             admin_user = create_user(email='pctest.admin93.0@btmx.fr', can_book_free_offers=False, is_admin=True)
-            PcObject.save(admin_user)
+            ApiHandler.save(admin_user)
 
             # when
             response = TestClient(app.test_client()) \
@@ -61,7 +62,7 @@ class Get:
             # given
             user = create_user(email='test@email.com')
 
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             # when
             response = TestClient(app.test_client()) \

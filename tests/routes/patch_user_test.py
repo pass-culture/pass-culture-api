@@ -1,7 +1,8 @@
-from models import PcObject, User
+from sqlalchemy_api_handler import ApiHandler, humanize
+
+from models import User
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_user
-from utils.human_ids import humanize
 
 
 class Patch:
@@ -10,7 +11,7 @@ class Patch:
         def when_changes_are_allowed(self, app):
             # given
             user = create_user()
-            PcObject.save(user)
+            ApiHandler.save(user)
             user_id = user.id
             data = {'publicName': 'plop', 'email': 'new@email.com', 'postalCode': '93020', 'phoneNumber': '0612345678',
                     'departementCode': '97'}
@@ -40,7 +41,7 @@ class Patch:
         def when_changes_are_forbidden(self, app):
             # given
             user = create_user(can_book_free_offers=True, is_admin=False)
-            PcObject.save(user)
+            ApiHandler.save(user)
             user_id = user.id
 
             data = {'isAdmin': True, 'canBookFreeOffers': False, 'firstName': 'Jean', 'lastName': 'Martin',

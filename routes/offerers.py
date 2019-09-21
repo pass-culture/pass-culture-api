@@ -1,20 +1,17 @@
 from flask import current_app as app, jsonify, request
 from flask_login import current_user, login_required
+from sqlalchemy_api_handler import ApiHandler, as_dict, dehumanize, listify, load_or_404
 
 from domain.admin_emails import maybe_send_offerer_validation_email
-from models import Offerer, PcObject, RightsType, Venue
+from models import Offerer, RightsType, Venue
 from models.venue import create_digital_venue
 from repository.offerer_queries import filter_offerers_with_keywords_string, \
     find_by_siren, query_filter_offerer_by_user, query_filter_offerer_is_validated, \
     query_filter_offerer_is_not_validated
-from routes.serialization import as_dict
-from utils.human_ids import dehumanize
 from utils.includes import OFFERER_INCLUDES
 from utils.mailing import MailServiceException, send_raw_email
 from utils.rest import ensure_current_user_has_rights, \
     expect_json_data, \
-    handle_rest_get_list, \
-    load_or_404, \
     login_or_api_key_required
 from validation.offerers import check_valid_edition, parse_boolean_param_validated
 
@@ -53,12 +50,12 @@ def list_offerers():
         offerer.append_user_has_access_attribute(current_user)
 
 
-    return handle_rest_get_list(Offerer,
-                                query=query,
-                                order_by=Offerer.name,
-                                includes=OFFERER_INCLUDES,
-                                paginate=10,
-                                page=request.args.get('page'))
+    return jsonify(listify(Offerer,
+                            query=query,
+                            order_by=Offerer.name,
+                            includes=OFFERER_INCLUDES,
+                            paginate=10,
+                            page=request.args.get('page')))
 
 
 @app.route('/offerers/<id>', methods=['GET'])
@@ -80,7 +77,7 @@ def create_offerer():
     if offerer is not None:
         user_offerer = offerer.give_rights(current_user, RightsType.editor)
         user_offerer.generate_validation_token()
-        PcObject.save(user_offerer)
+        ApiHandler.save(user_offerer)
 
     else:
         offerer = Offerer()
@@ -88,7 +85,7 @@ def create_offerer():
         digital_venue = create_digital_venue(offerer)
         offerer.generate_validation_token()
         user_offerer = offerer.give_rights(current_user, RightsType.editor)
-        PcObject.save(offerer, digital_venue, user_offerer)
+        ApiHandler.save(offerer, digital_venue, user_offerer)
 
     try:
         maybe_send_offerer_validation_email(offerer, user_offerer, send_raw_email)
@@ -106,7 +103,7 @@ def patch_offerer(offererId):
     check_valid_edition(data)
     offerer = Offerer.query.filter_by(id=dehumanize(offererId)).first()
     offerer.populate_from_dict(data, skipped_keys=['validationToken'])
-    PcObject.save(offerer)
+    ApiHandler.save(offerer)
     return jsonify(get_dict_offerer(offerer)), 200
 
 

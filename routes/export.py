@@ -1,24 +1,19 @@
-""" user mediations routes """
 import csv
 import os
 from datetime import datetime
 from inspect import isclass
 from io import BytesIO, StringIO
-
 from flask import current_app as app, jsonify, request, send_file
 from flask_login import current_user, login_required
 from postgresql_audit.flask import versioning_manager
+from sqlalchemy_api_handler import ApiErrors, ApiHandler, as_dict
 
 import models
-from models.api_errors import ApiErrors
-from models.pc_object import PcObject
 from repository import offerer_queries
 from repository.offerer_queries import find_filtered_offerers
 from repository.venue_queries import find_filtered_venues
-from routes.serialization import as_dict
 from validation.exports import check_user_is_admin, check_get_venues_params, \
     check_get_offerers_params
-
 from utils.includes import OFFERER_FOR_PENDING_VALIDATION_INCLUDES
 from utils.rest import expect_json_data
 
@@ -231,9 +226,9 @@ def _check_token():
 
 def _is_exportable(model_name):
     model = getattr(models, model_name)
-    return not model_name == 'PcObject' \
+    return not model_name == 'ApiHandler' \
            and isclass(model) \
-           and issubclass(model, PcObject)
+           and issubclass(model, ApiHandler)
 
 
 def _clean_dict_for_export(model_name, dct):

@@ -1,9 +1,11 @@
 from datetime import datetime
+from sqlalchemy_api_handler.api_errors import ApiErrors, \
+                                              ResourceGoneError, \
+                                              ForbiddenError
 
 from domain.expenses import is_eligible_to_physical_products_capping, is_eligible_to_digital_products_capping
 from domain.bookings import BOOKING_CANCELLATION_DELAY
-from models import ApiErrors, Booking, RightsType
-from models.api_errors import ResourceGoneError, ForbiddenError
+from models import Booking, RightsType
 from repository.stock_queries import find_stock_by_id
 from utils.rest import ensure_current_user_has_rights
 from repository.venue_queries import find_by_id, find_by_offer_id
@@ -194,5 +196,3 @@ def check_rights_to_get_bookings_csv(user, venue_id=None, offer_id=None):
             api_errors.add_error('offerId', "Cette offre n'existe pas.")
             raise api_errors
         ensure_current_user_has_rights(user=user, rights=RightsType.editor, offerer_id=venue.managingOffererId)
-
-

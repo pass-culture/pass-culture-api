@@ -1,8 +1,9 @@
-from models import PcObject, Favorite
+from sqlalchemy_api_handler import ApiHandler, humanize
+
+from models import Favorite
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_user, API_URL, create_offerer, create_venue, create_offer_with_thing_product, \
     create_mediation, create_recommendation
-from utils.human_ids import humanize
 
 
 class Post:
@@ -11,7 +12,7 @@ class Post:
         def when_offer_id_is_not_received(self, app):
             # Given
             user = create_user(email='test@email.com')
-            PcObject.save(user)
+            ApiHandler.save(user)
 
             json = {
                 'mediationId': 'DA',
@@ -36,7 +37,7 @@ class Post:
             offer = create_offer_with_thing_product(venue, thumb_count=0)
             mediation = create_mediation(offer, is_active=True)
             recommendation = create_recommendation(offer=offer, user=user, mediation=mediation, is_clicked=False)
-            PcObject.save(recommendation, user)
+            ApiHandler.save(recommendation, user)
 
             json = {
                 'offerId': 'ABCD',
@@ -60,7 +61,7 @@ class Post:
             offer = create_offer_with_thing_product(venue, thumb_count=0)
             mediation = create_mediation(offer, is_active=True)
             recommendation = create_recommendation(offer=offer, user=user, mediation=mediation, is_clicked=False)
-            PcObject.save(recommendation, user)
+            ApiHandler.save(recommendation, user)
 
             json = {
                 'offerId': humanize(offer.id),
@@ -85,7 +86,7 @@ class Post:
             offer = create_offer_with_thing_product(venue, thumb_count=0)
             mediation = create_mediation(offer, is_active=True)
             recommendation = create_recommendation(offer=offer, user=user, mediation=mediation, is_clicked=False)
-            PcObject.save(recommendation, user)
+            ApiHandler.save(recommendation, user)
 
             json = {
                 'offerId': humanize(offer.id),
@@ -113,7 +114,7 @@ class Post:
             venue = create_venue(offerer, postal_code='29100', siret='12345678912341')
             offer = create_offer_with_thing_product(venue, thumb_count=0)
             recommendation = create_recommendation(offer=offer, user=user, is_clicked=False)
-            PcObject.save(recommendation, user)
+            ApiHandler.save(recommendation, user)
 
             json = {
                 'offerId': humanize(offer.id),

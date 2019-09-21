@@ -1,16 +1,14 @@
-""" local providers BankInformation test """
 import os
 from datetime import datetime
 from unittest.mock import patch, call
-
 import pytest
+from sqlalchemy_api_handler import ApiHandler, dehumanize, humanize
 
 from local_providers.demarches_simplifiees_bank_information_without_siret import \
     VenueWithoutSIRETBankInformationProvider, DemarchesSimplifieesMapper, NoOffererFoundException, NoVenueFoundException
-from models import BankInformation, PcObject, LocalProviderEvent
+from models import BankInformation, LocalProviderEvent
 from tests.conftest import clean_database
 from tests.test_utils import create_offerer, create_venue, provider_test, create_bank_information, activate_provider
-from utils.human_ids import dehumanize, humanize
 
 
 def _create_detail_response(application_id=145, offerer_id=267, venue_id=578, bic="TRPUFRP1",
@@ -152,7 +150,7 @@ class VenueWithoutSIRETBankInformationProviderTest:
         TOKEN = '4872'
         offerer = create_offerer(siren='793875030', idx=self.OFFERER_ID)
         venue = create_venue(offerer=offerer, idx=self.VENUE_ID)
-        PcObject.save(venue)
+        ApiHandler.save(venue)
 
         # when
         with patch.dict(os.environ, {
@@ -229,7 +227,7 @@ class VenueWithoutSIRETBankInformationProviderTest:
         last_provider_sync.date = datetime(2020, 1, 2)
         find_latest_sync_end_event.return_value = last_provider_sync
         offerer = create_offerer(siren='793875030', idx=49153)
-        PcObject.save(offerer)
+        ApiHandler.save(offerer)
 
         get_all_application_ids_for_procedure.return_value = [self.APPLICATION_ID]
         get_application_details.return_value = _create_detail_response(self.APPLICATION_ID, self.OFFERER_ID,
@@ -262,7 +260,7 @@ class VenueWithoutSIRETBankInformationProviderTest:
         BIC = 'BDFEFR2LCCB'
         offerer = create_offerer(siren='793875030', idx=self.OFFERER_ID)
         venue = create_venue(offerer=offerer, idx=self.VENUE_ID)
-        PcObject.save(venue)
+        ApiHandler.save(venue)
         last_provider_sync = LocalProviderEvent()
         last_provider_sync.date = datetime(2020, 1, 2)
         find_latest_sync_end_event.return_value = last_provider_sync
@@ -317,7 +315,7 @@ class VenueWithoutSIRETBankInformationProviderTest:
             venue=venue,
             id_at_providers=f"{self.OFFERER_ID}|{self.VENUE_ID}"
         )
-        PcObject.save(venue, bank_information)
+        ApiHandler.save(venue, bank_information)
         last_provider_sync = LocalProviderEvent()
         last_provider_sync.date = datetime(2020, 1, 2)
         find_latest_sync_end_event.return_value = last_provider_sync

@@ -1,6 +1,7 @@
 from typing import List
+from sqlalchemy_api_handler import ApiHandler
 
-from models import PcObject, Offerer, Stock
+from models import Offerer, Stock
 from recommendations_engine import create_recommendations_for_discovery
 from tests.conftest import clean_database
 from tests.test_utils import create_user, create_offerer, create_venue, create_offer_with_thing_product, create_stock
@@ -20,8 +21,8 @@ class CreateRecommendationsForDiscoveryTest:
                                                                                            departements_ok)
         expected_stocks_not_recommended = _create_and_save_stock_for_offererer_in_departements(offerer_ko,
                                                                                                departements_ko)
-        PcObject.save(user)
-        PcObject.save(*(expected_stocks_recommended + expected_stocks_not_recommended))
+        ApiHandler.save(user)
+        ApiHandler.save(*(expected_stocks_recommended + expected_stocks_not_recommended))
         offer_ids_in_adjacent_department = set([stock.offerId for stock in expected_stocks_recommended])
 
         #  when
@@ -41,8 +42,8 @@ class CreateRecommendationsForDiscoveryTest:
         offerer_ok = create_offerer()
         expected_stocks_recommended = _create_and_save_stock_for_offererer_in_departements(offerer_ok,
                                                                                            departements_ok)
-        PcObject.save(user)
-        PcObject.save(*expected_stocks_recommended)
+        ApiHandler.save(user)
+        ApiHandler.save(*expected_stocks_recommended)
         offer_ids_in_adjacent_department = set([stock.offerId for stock in expected_stocks_recommended])
 
         #  when

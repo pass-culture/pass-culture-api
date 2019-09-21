@@ -1,6 +1,7 @@
 import pytest
+from sqlalchemy_api_handler import ApiHandler
 
-from models import PcObject, Payment
+from models import Payment
 from models.payment_status import TransactionStatus
 from scripts import clean_database
 from scripts.payment.bank_information_retrial import retry_linked_payments
@@ -33,7 +34,7 @@ class RetryLinkedPaymentsTest:
         payment.setStatus(TransactionStatus.NOT_PROCESSABLE)
         other_payment.setStatus(TransactionStatus.NOT_PROCESSABLE)
 
-        PcObject.save(*(bank_information_list + [payment, other_payment]))
+        ApiHandler.save(*(bank_information_list + [payment, other_payment]))
 
         # When
         retry_linked_payments(bank_information_list)
@@ -56,7 +57,7 @@ class RetryLinkedPaymentsTest:
             create_bank_information(venue=other_venue, id_at_providers=other_venue.siret)
         ]
 
-        PcObject.save(*bank_information_list)
+        ApiHandler.save(*bank_information_list)
 
         try:
             # When

@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta
-
 import pytest
 from freezegun import freeze_time
 from pytest import approx
+from sqlalchemy_api_handler import ApiErrors, ApiHandler
+from sqlalchemy_api_handler.bases.delete import DeletedRecordException
 
-from models import ApiErrors, PcObject
-from models.pc_object import DeletedRecordException
 from models.stock import Stock
 from tests.conftest import clean_database
 from tests.test_utils import create_stock_with_event_offer, create_offerer, create_venue, \
@@ -24,7 +23,7 @@ def test_beginning_datetime_cannot_be_after_end_datetime(app):
 
     # when
     with pytest.raises(ApiErrors) as e:
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
     # then
     assert e.value.errors['endDatetime'] == [
@@ -39,12 +38,12 @@ def test_date_modified_should_be_updated_if_available_changed(app):
     venue = create_venue(offerer)
     offer = create_offer_with_thing_product(venue)
     stock = create_stock(offer=offer, date_modified=datetime(2018, 2, 12), available=1)
-    PcObject.save(stock)
+    ApiHandler.save(stock)
 
     # when
     stock = Stock.query.first()
     stock.available = 10
-    PcObject.save(stock)
+    ApiHandler.save(stock)
 
     # then
     stock = Stock.query.first()
@@ -77,7 +76,7 @@ def test_queryNotSoftDeleted_should_not_return_soft_deleted(app):
     venue = create_venue(offerer)
     stock = create_stock_with_event_offer(offerer, venue)
     stock.isSoftDeleted = True
-    PcObject.save(stock)
+    ApiHandler.save(stock)
 
     # When
     result = Stock.queryNotSoftDeleted().all()
@@ -93,7 +92,7 @@ def test_populate_dict_on_soft_deleted_object_raises_DeletedRecordException(app)
     venue = create_venue(offerer)
     stock = create_stock_from_offer(create_offer_with_event_product(venue))
     stock.isSoftDeleted = True
-    PcObject.save(stock)
+    ApiHandler.save(stock)
     # When
     with pytest.raises(DeletedRecordException):
         stock.populate_from_dict({"available": 5})
@@ -109,7 +108,7 @@ def test_stock_cannot_have_a_negative_price(app):
 
     # when
     with pytest.raises(ApiErrors) as e:
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
     # then
     assert e.value.errors['global'] is not None
@@ -125,7 +124,7 @@ def test_stock_cannot_have_a_negative_available_stock(app):
 
     # when
     with pytest.raises(ApiErrors) as e:
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
     # then
     assert e.value.errors['available'] == ["Le stock doit être positif"]
@@ -140,7 +139,7 @@ def test_stock_can_have_an_available_stock_equal_to_zero(app):
     stock = create_stock_from_offer(offer, available=0)
 
     # when
-    PcObject.save(stock)
+    ApiHandler.save(stock)
 
     # then
     assert stock.available == 0
@@ -153,18 +152,18 @@ def test_available_stocks_can_be_changed_even_when_bookings_with_cancellations_e
     venue = create_venue(offerer)
     offer = create_offer_with_thing_product(venue)
     stock = create_stock_from_offer(offer, available=2, price=0)
-    PcObject.save(stock)
+    ApiHandler.save(stock)
     user = create_user()
     cancelled_booking1 = create_booking(user, stock, quantity=1, is_cancelled=True)
     cancelled_booking2 = create_booking(user, stock, quantity=1, is_cancelled=True)
     booking1 = create_booking(user, stock, quantity=1, is_cancelled=False)
     booking2 = create_booking(create_user(email='test@mail.com'), stock, quantity=1, is_cancelled=False)
-    PcObject.save(cancelled_booking1, cancelled_booking2, booking1, booking2)
+    ApiHandler.save(cancelled_booking1, cancelled_booking2, booking1, booking2)
     stock.available = 3
 
     # When
     try:
-        PcObject.save(stock)
+        ApiHandler.save(stock)
     except:
         # Then
         assert False
@@ -177,14 +176,14 @@ def test_update_available_stocks_even_when_is_less_than_number_of_bookings(app):
     venue = create_venue(offerer)
     offer = create_offer_with_thing_product(venue)
     stock = create_stock_from_offer(offer, available=2, price=0)
-    PcObject.save(stock)
+    ApiHandler.save(stock)
     user = create_user()
     booking = create_booking(user, stock, quantity=2, is_cancelled=False)
-    PcObject.save(booking)
+    ApiHandler.save(booking)
     stock.available = 1
 
     # When
-    PcObject.save(stock)
+    ApiHandler.save(stock)
 
     # Then
     assert Stock.query.get(stock.id).available == 1
@@ -200,7 +199,7 @@ class StockRemainingQuantityTest:
         stock = create_stock_from_offer(offer, available=2, price=0)
 
         # When
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # Then
         assert Stock.query.get(stock.id).remainingQuantity == 2
@@ -212,13 +211,13 @@ class StockRemainingQuantityTest:
         venue = create_venue(offerer)
         offer = create_offer_with_thing_product(venue)
         stock = create_stock_from_offer(offer, available=2, price=0)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
         user = create_user()
         booking1 = create_booking(user, stock, quantity=1, is_cancelled=False)
         booking2 = create_booking(user, stock, quantity=1, is_cancelled=False)
 
         # When
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # Then
         assert Stock.query.get(stock.id).remainingQuantity == 0
@@ -230,15 +229,15 @@ class StockRemainingQuantityTest:
         venue = create_venue(offerer)
         offer = create_offer_with_thing_product(venue)
         stock = create_stock_from_offer(offer, available=2, price=0)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
         user = create_user()
         booking1 = create_booking(user, stock, quantity=1, is_cancelled=False, is_used=False)
         booking2 = create_booking(user, stock, quantity=1, is_cancelled=False, is_used=False)
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
         stock.available = 1
 
         # When
-        PcObject.save(stock)
+        ApiHandler.save(stock)
 
         # Then
         assert Stock.query.get(stock.id).remainingQuantity == 0
@@ -250,7 +249,7 @@ class StockRemainingQuantityTest:
         venue = create_venue(offerer)
         offer = create_offer_with_thing_product(venue)
         stock = create_stock_from_offer(offer, available=2, price=0)
-        PcObject.save(stock)
+        ApiHandler.save(stock)
         user = create_user()
         booking1 = create_booking(user, stock,
                                   quantity=1,
@@ -263,7 +262,7 @@ class StockRemainingQuantityTest:
                                   is_used=False)
 
         # When
-        PcObject.save(booking1, booking2)
+        ApiHandler.save(booking1, booking2)
 
         # Then
         assert Stock.query.get(stock.id).remainingQuantity == 1

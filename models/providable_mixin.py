@@ -1,6 +1,4 @@
-""" providable mixin """
 from datetime import datetime
-
 from sqlalchemy import BigInteger, \
     CheckConstraint, \
     Column, \
@@ -9,8 +7,8 @@ from sqlalchemy import BigInteger, \
     String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
+from sqlalchemy_api_handler import ApiErrors
 
-from models.api_errors import ApiErrors
 from models.versioned_mixin import VersionedMixin
 
 

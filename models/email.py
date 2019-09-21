@@ -1,10 +1,9 @@
 import enum
 from datetime import datetime
-
 from sqlalchemy import Column, DateTime, JSON, Enum
+from sqlalchemy_api_handler import ApiHandler
 
 from models.db import Model
-from models.pc_object import PcObject
 
 
 class EmailStatus(enum.Enum):
@@ -12,7 +11,7 @@ class EmailStatus(enum.Enum):
     ERROR = 'ERROR'
 
 
-class Email(PcObject, Model):
+class Email(ApiHandler, Model):
     content = Column(JSON,
                      nullable=False)
     status = Column(Enum(EmailStatus),
