@@ -3,7 +3,7 @@ import pytest
 from freezegun import freeze_time
 from pytest import approx
 from sqlalchemy_api_handler import ApiErrors, ApiHandler
-from sqlalchemy_api_handler.bases.delete import DeletedRecordException
+from sqlalchemy_api_handler.bases.soft_delete import SoftDeletedRecordException
 
 from models.stock import Stock
 from tests.conftest import clean_database
@@ -86,7 +86,7 @@ def test_queryNotSoftDeleted_should_not_return_soft_deleted(app):
 
 
 @clean_database
-def test_populate_dict_on_soft_deleted_object_raises_DeletedRecordException(app):
+def test_populate_dict_on_soft_deleted_object_raises_SoftDeletedRecordException(app):
     # Given
     offerer = create_offerer()
     venue = create_venue(offerer)
@@ -94,7 +94,7 @@ def test_populate_dict_on_soft_deleted_object_raises_DeletedRecordException(app)
     stock.isSoftDeleted = True
     ApiHandler.save(stock)
     # When
-    with pytest.raises(DeletedRecordException):
+    with pytest.raises(SoftDeletedRecordException):
         stock.populate_from_dict({"available": 5})
 
 
