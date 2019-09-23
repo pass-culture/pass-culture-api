@@ -134,7 +134,7 @@ class Post:
                 "postalCode": "75000",
                 "city": "Paris"
             }
-            offerer = Offerer(from_dict=json_offerer)
+            offerer = Offerer(**json_offerer)
             offerer.generate_validation_token()
             user = create_user(public_name='bobby', email='bobby@test.com')
             user_offerer = create_user_offerer(user, offerer, is_admin=False)
@@ -176,7 +176,7 @@ class Post:
                 "postalCode": "75000",
                 "city": "Paris"
             }
-            offerer = Offerer(from_dict=json_offerer)
+            offerer = Offerer(**json_offerer)
             ApiHandler.save(offerer)
 
             data = BASE_DATA_PRO.copy()
@@ -216,7 +216,7 @@ class Post:
                 "postalCode": "75000",
                 "city": "Paris"
             }
-            offerer = Offerer(from_dict=json_offerer)
+            offerer = Offerer(**json_offerer)
             ApiHandler.save(offerer)
 
             data = BASE_DATA_PRO.copy()

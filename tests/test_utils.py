@@ -99,10 +99,10 @@ def create_booking_for_thing(
         product_type=ThingType.JEUX,
         date_created=datetime.utcnow()
 ):
-    product = Product(from_dict={'url': url, 'type': str(product_type)})
-    offer = Offer(from_dict={'type': str(product_type)})
+    product = Product(url=url, type=str(product_type))
+    offer = Offer(type=str(product_type))
     stock = Stock()
-    booking = Booking(from_dict={'amount': amount})
+    booking = Booking(amount=amount)
     offer.product = product
     stock.offer = offer
     booking.stock = stock
@@ -121,10 +121,10 @@ def create_booking_for_event(
         type=EventType.CINEMA,
         date_created=datetime.utcnow()
 ):
-    product = Product(from_dict={'type': str(type)})
+    product = Product(type=str(type))
     offer = Offer()
     stock = Stock()
-    booking = Booking(from_dict={'amount': amount})
+    booking = Booking(amount=amount)
     offer.product = product
     stock.offer = offer
     booking.stock = stock

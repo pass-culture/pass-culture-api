@@ -139,14 +139,14 @@ def create_booking():
     except ApiErrors as api_errors:
         return jsonify(api_errors.errors), 400
 
-    new_booking = Booking(from_dict={
-        'stockId': stock_id,
-        'amount': stock.price,
-        'token': random_token(),
-        'userId': humanize(current_user.id),
-        'quantity': quantity,
-        'recommendationId': recommendation_id if recommendation_id else None
-    })
+    new_booking = Booking(
+        stockId=stock_id,
+        amount=stock.price,
+        token=random_token(),
+        userId=humanize(current_user.id),
+        quantity=quantity,
+        recommendationId=recommendation_id if recommendation_id else None
+    )
 
     bookings = find_active_bookings_by_user_id(current_user.id)
 

@@ -27,7 +27,7 @@ def signup_webapp():
     objects_to_save = []
     check_valid_signup_webapp(request)
 
-    new_user = User(from_dict=request.json)
+    new_user = User(**request.json)
 
     if IS_INTEGRATION:
         new_user.departementCode = '00'
@@ -58,7 +58,7 @@ def signup_pro():
     app_origin_url = request.headers.get('origin')
 
     check_valid_signup_pro(request)
-    new_user = User(from_dict=request.json)
+    new_user = User(**request.json)
 
     existing_offerer = Offerer.query.filter_by(siren=request.json['siren']).first()
     if existing_offerer:

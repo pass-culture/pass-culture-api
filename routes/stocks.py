@@ -70,7 +70,7 @@ def create_stock():
     offerer = offerer_queries.get_by_offer_id(offer_id)
     ensure_current_user_has_rights(RightsType.editor, offerer.id)
 
-    new_stock = Stock(from_dict=request_data)
+    new_stock = Stock(**request_data)
     ApiHandler.save(new_stock)
 
     return jsonify(as_dict(new_stock)), 201

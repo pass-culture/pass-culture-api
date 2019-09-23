@@ -34,7 +34,7 @@ def get_venues():
 @expect_json_data
 def create_venue():
     validate_coordinates(request.json.get('latitude', None), request.json.get('longitude', None))
-    venue = Venue(from_dict=request.json)
+    venue = Venue(**request.json)
     venue.departementCode = 'XX'  # avoid triggerring check on this
     siret = request.json.get('siret')
     if not siret:

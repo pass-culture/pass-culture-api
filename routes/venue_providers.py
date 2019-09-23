@@ -41,7 +41,7 @@ def create_venue_provider():
     venue_provider_payload = request.json
     validate_new_venue_provider_information(venue_provider_payload)
 
-    new_venue_provider = VenueProvider(from_dict=venue_provider_payload)
+    new_venue_provider = VenueProvider(**venue_provider_payload)
     ApiHandler.save(new_venue_provider)
 
     subprocess.Popen('PYTHONPATH="." python scripts/pc.py update_providables'

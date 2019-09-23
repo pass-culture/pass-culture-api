@@ -31,7 +31,7 @@ def create_event_occurrence():
         .filter(Offer.id == dehumanize(request.json['offerId'])) \
         .first_or_404()
 
-    occurrence = EventOccurrence(from_dict=request.json)
+    occurrence = EventOccurrence(**request.json)
     ApiHandler.save(occurrence)
     return jsonify(as_dict(occurrence, includes=EVENT_OCCURRENCE_INCLUDES)), 201
 ```

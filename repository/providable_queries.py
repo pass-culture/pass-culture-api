@@ -52,7 +52,7 @@ def _dict_to_object(object_dict: Dict, model_object: Model) -> Model:
             pc_object[key] = humanize(value)
         else:
             pc_object[key] = value
-    pc_obj = model_object(from_dict=pc_object)
+    pc_obj = model_object(**pc_object)
     pc_obj.id = pc_object['id']
     return pc_obj
 

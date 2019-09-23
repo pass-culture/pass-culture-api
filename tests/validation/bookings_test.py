@@ -22,7 +22,7 @@ class CheckExpenseLimitsTest:
             'physical': {'max': SUBVENTION_PHYSICAL_THINGS, 'actual': 190},
             'digital': {'max': SUBVENTION_DIGITAL_THINGS, 'actual': 10}
         }
-        booking = Booking(from_dict={'stockId': humanize(123), 'amount': 11, 'quantity': 1})
+        booking = Booking(stockId=humanize(123), amount=11, quantity=1)
         stock = create_booking_for_thing(url='http://on.line', product_type=ThingType.LIVRE_EDITION).stock
         mocked_query = Mock(return_value=stock)
 
@@ -40,7 +40,7 @@ class CheckExpenseLimitsTest:
             'physical': {'max': SUBVENTION_PHYSICAL_THINGS, 'actual': 10},
             'digital': {'max': SUBVENTION_DIGITAL_THINGS, 'actual': 190}
         }
-        booking = Booking(from_dict={'stockId': humanize(123), 'amount': 11, 'quantity': 1})
+        booking = Booking(stockId=humanize(123), amount=11, quantity=1)
         stock = create_booking_for_thing(url='http://on.line', product_type=ThingType.JEUX_VIDEO).stock
         mocked_query = Mock(return_value=stock)
 
@@ -58,7 +58,7 @@ class CheckExpenseLimitsTest:
             'physical': {'max': SUBVENTION_PHYSICAL_THINGS, 'actual': 90},
             'digital': {'max': SUBVENTION_DIGITAL_THINGS, 'actual': 90}
         }
-        booking = Booking(from_dict={'stockId': humanize(123), 'amount': 11, 'quantity': 1})
+        booking = Booking(stockId=humanize(123), amount=11, quantity=1)
         mocked_query = Mock()
 
         # when

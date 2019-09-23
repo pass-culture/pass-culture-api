@@ -19,6 +19,6 @@ def get_user_offerer(offerer_id):
 @app.route('/userOfferers', methods=['POST'])
 @login_required
 def create_user_offerer():
-    new_user_offerer = UserOfferer(from_dict=request.json)
+    new_user_offerer = UserOfferer(**request.json)
     ApiHandler.save(new_user_offerer)
     return jsonify(as_dict(new_user_offerer, includes=USER_OFFERER_INCLUDES)), 201
