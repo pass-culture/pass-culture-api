@@ -81,6 +81,20 @@ class Get:
             assert first_page_offers[-1]['dateCreated'] > second_page_offers[0]['dateCreated']
 
         @clean_database
+        def test_returns_total_data_count_in_metadata(self, app):
+            # given
+            user = create_user(email='user@test.com')
+            create_offers_for(user, 20)
+            auth_request = TestClient(app.test_client()).with_auth(email='user@test.com')
+
+            # when
+            response = auth_request.get('/offers')
+
+            # then
+            assert response.status_code == 200
+            assert 'Total-Data-Count' in response.headers
+
+        @clean_database
         def test_results_are_filtered_by_given_venue_id(self, app):
             # given
             user = create_user(email='user@test.com')

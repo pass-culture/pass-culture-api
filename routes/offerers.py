@@ -54,11 +54,12 @@ def list_offerers():
 
 
     return handle_rest_get_list(Offerer,
-                                query=query,
-                                order_by=Offerer.name,
                                 includes=OFFERER_INCLUDES,
+                                order_by=Offerer.name,
+                                page=request.args.get('page'),
                                 paginate=10,
-                                page=request.args.get('page'))
+                                query=query,
+                                with_total_data_count=True)
 
 
 @app.route('/offerers/<id>', methods=['GET'])
