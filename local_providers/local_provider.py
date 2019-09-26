@@ -127,19 +127,19 @@ class LocalProvider(Iterator):
             pprint(vars(e))
 
     def create_object(self, providable_info: ProvidableInfo) -> Model:
-        logger.debug('  Creating ' + providable_info.type.__name__
-                     + '# ' + providable_info.id_at_providers)
         obj = providable_info.type()
         obj.idAtProviders = providable_info.id_at_providers
+        obj.lastProviderId = self.provider.id
+        obj.dateModifiedAtLastProvider = providable_info.date_modified_at_provider
+        self.updateObject(obj)
         self.createdObjects += 1
         return obj
 
-    def handle_update(self, obj, providable_info, is_new_obj):
-        if not is_new_obj:
+    def handle_update(self, obj, providable_info):
+        try:
             logger.debug('  Updating ' + providable_info.type.__name__
                          + '# ' + providable_info.id_at_providers)
             self.updatedObjects += 1
-        try:
             self.updateObject(obj)
             obj.lastProviderId = self.provider.id
             obj.dateModifiedAtLastProvider = providable_info.date_modified_at_provider
@@ -185,76 +185,68 @@ class LocalProvider(Iterator):
                 self.providables = []
 
                 for providable_info in providable_infos:
-                    if providable_info is not None:
-                        chunk_key = providable_info.id_at_providers + '|' + str(providable_info.type.__name__)
+                    chunk_key = providable_info.id_at_providers + '|' + str(providable_info.type.__name__)
+                    pc_obj = get_existing_pc_obj(providable_info, chunk_to_insert, chunk_to_update)
 
-                        pc_obj = get_existing_pc_obj(providable_info, chunk_to_insert, chunk_to_update)
-
-                        date_modified_at_provider = None
-                        is_new_obj = False
-
-                        if pc_obj is None:
-                            is_new_obj = True
-                            if providable_info.date_modified_at_provider is None \
-                                    or not self.canCreate:
-                                logger.debug('  Not creating or updating ' + providable_info.type.__name__ +
-                                             '# ' + providable_info.id_at_providers)
-                                continue
-                            pc_obj = self.create_object(providable_info)
-                        else:
-                            date_modified_at_provider = get_last_modification_date_for_provider(self.provider.id,
-                                                                                                pc_obj)
+                    if pc_obj is None:
+                        if not self.canCreate:
+                            logger.debug('Not creating ' + providable_info.type.__name__ +
+                                         'for ' + providable_info.id_at_providers)
+                            continue
+                        pc_obj = self.create_object(providable_info)
+                        errors = pc_obj.errors()
+                        if errors and len(errors.errors) > 0:
+                            self.log_provider_event(LocalProviderEventType.SyncError, 'ApiErrors')
+                            continue
 
                         self.providables.append(pc_obj)
+                        chunk_to_insert[chunk_key] = pc_obj
+                    else:
+                        date_modified_at_provider = get_last_modification_date_for_provider(self.provider.id,
+                                                                                            pc_obj)
 
                         object_need_update = date_modified_at_provider is None \
                                              or date_modified_at_provider < providable_info.date_modified_at_provider
 
-                        if providable_info.date_modified_at_provider is not None \
-                                and object_need_update:
-                            self.handle_update(pc_obj, providable_info, is_new_obj)
+                        if object_need_update:
+                            self.providables.append(pc_obj)
+                            self.handle_update(pc_obj, providable_info)
 
                             errors = pc_obj.errors()
                             if errors and len(errors.errors) > 0:
                                 self.log_provider_event(LocalProviderEventType.SyncError, 'ApiErrors')
                                 continue
 
-                            if is_new_obj:
+                            if chunk_key in chunk_to_insert:
                                 chunk_to_insert[chunk_key] = pc_obj
                             else:
-                                if chunk_key in chunk_to_insert:
-                                    chunk_to_insert[chunk_key] = pc_obj
-                                else:
-                                    chunk_to_update[chunk_key] = pc_obj
-
+                                chunk_to_update[chunk_key] = pc_obj
                         else:
                             logger.debug('  Not creating or updating '
                                          + providable_info.type.__name__
                                          + '# ' + providable_info.id_at_providers)
 
-                        if pc_obj is not None:
-                            if isinstance(pc_obj, HasThumbMixin):
-                                initial_thumb_count = pc_obj.thumbCount
-                                self.handle_thumb(pc_obj)
+                    if isinstance(pc_obj, HasThumbMixin):
+                        initial_thumb_count = pc_obj.thumbCount
+                        self.handle_thumb(pc_obj)
 
-                                if pc_obj.thumbCount != initial_thumb_count:
-                                    errors = pc_obj.errors()
-                                    if errors and len(errors.errors) > 0:
-                                        self.log_provider_event(LocalProviderEventType.SyncError, 'ApiErrors')
-                                        continue
+                        if pc_obj.thumbCount != initial_thumb_count:
+                            errors = pc_obj.errors()
+                            if errors and len(errors.errors) > 0:
+                                self.log_provider_event(LocalProviderEventType.SyncError, 'ApiErrors')
+                                continue
 
-                                    chunk_to_update[chunk_key] = pc_obj
+                            chunk_to_update[chunk_key] = pc_obj
 
-                        if len(chunk_to_insert) + len(chunk_to_update) >= CHUNK_MAX_SIZE:
-                            save_chunks(chunk_to_insert, chunk_to_update, providable_info)
+                    if len(chunk_to_insert) + len(chunk_to_update) >= CHUNK_MAX_SIZE:
+                        save_chunks(chunk_to_insert, chunk_to_update, providable_info)
 
-                            chunk_to_insert = {}
-                            chunk_to_update = {}
+                        chunk_to_insert = {}
+                        chunk_to_update = {}
 
                     self.checkedObjects += 1
 
-                if limit is not None and \
-                        self.checkedObjects >= limit:
+                if limit is not None and self.checkedObjects >= limit:
                     break
         except Exception as e:
             if len(chunk_to_insert) + len(chunk_to_update) > 0:
