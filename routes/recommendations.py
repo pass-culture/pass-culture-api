@@ -1,6 +1,6 @@
 from flask import current_app as app, jsonify, request
 from flask_login import current_user, login_required
-from sqlalchemy_api_handler import ApiHandler, as_dict, dehumanize
+from sqlalchemy_api_handler import ApiHandler, as_dict, dehumanize, logger
 
 from domain.build_recommendations import move_requested_recommendation_first, \
     move_tutorial_recommendations_first
@@ -13,7 +13,6 @@ from repository.booking_queries import find_bookings_from_recommendation
 from repository.recommendation_queries import update_read_recommendations
 from utils.config import BLOB_SIZE
 from utils.includes import WEBAPP_GET_BOOKING_INCLUDES, RECOMMENDATION_INCLUDES
-from utils.logger import logger
 from utils.rest import expect_json_data
 
 

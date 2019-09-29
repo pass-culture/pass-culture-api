@@ -4,7 +4,7 @@ from datetime import datetime
 from pprint import pformat
 from typing import Dict, List
 from flask import current_app as app, render_template
-from sqlalchemy_api_handler import ApiHandler, humanize
+from sqlalchemy_api_handler import ApiHandler, humanize, logger
 
 from connectors import api_entreprises
 from domain.user_activation import generate_set_password_url
@@ -16,7 +16,6 @@ from repository import email_queries
 from repository.booking_queries import find_all_ongoing_bookings_by_stock
 from repository.feature_queries import feature_send_mail_to_users_enabled
 from repository.user_offerer_queries import find_user_offerer_email
-from utils import logger
 from utils.config import API_URL, ENV, WEBAPP_URL, PRO_URL
 from utils.date import format_datetime, utc_datetime_to_dept_timezone
 from utils.object_storage import get_storage_base_url

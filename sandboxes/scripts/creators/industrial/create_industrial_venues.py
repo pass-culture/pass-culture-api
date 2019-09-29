@@ -1,9 +1,8 @@
 import re
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from sandboxes.scripts.mocks.venue_mocks import MOCK_NAMES
 from tests.test_utils import create_venue, create_bank_information
-from utils.logger import logger
 
 OFFERERS_WITH_PHYSICAL_VENUE_REMOVE_MODULO = 3
 OFFERERS_WITH_PHYSICAL_VENUE_WITH_SIRET_REMOVE_MODULO = OFFERERS_WITH_PHYSICAL_VENUE_REMOVE_MODULO * 2

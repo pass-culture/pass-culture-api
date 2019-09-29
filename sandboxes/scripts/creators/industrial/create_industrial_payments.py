@@ -1,5 +1,6 @@
+from sqlalchemy_api_handler import logger
+
 from scripts.payment.batch_steps import generate_new_payments
-from utils.logger import logger
 
 def create_industrial_payments():
     logger.info('create_industrial_payments')

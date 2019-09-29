@@ -1,9 +1,9 @@
 from datetime import datetime
 from typing import Callable, List
+from sqlalchemy_api_handler import logger
 
 from connectors.api_demarches_simplifiees import get_all_applications_for_procedure
 from utils.date import DATE_ISO_FORMAT
-from utils.logger import logger
 
 
 def get_all_application_ids_for_procedure(

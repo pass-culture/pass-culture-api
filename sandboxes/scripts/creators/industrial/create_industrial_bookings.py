@@ -1,8 +1,7 @@
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from models.offer_type import EventType
 from sandboxes.scripts.utils.select import remove_every
-from utils.logger import logger
 from tests.test_utils import create_booking
 
 from pprint import pprint

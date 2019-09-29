@@ -1,10 +1,9 @@
-from sqlalchemy_api_handler import ApiHandler, humanize
+from sqlalchemy_api_handler import ApiHandler, humanize, logger
 
 from models import Provider
 from repository.provider_queries import get_provider_by_local_class
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_offerer, create_venue, create_user, create_venue_provider
-from utils.logger import logger
 
 
 class Get:

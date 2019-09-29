@@ -1,7 +1,6 @@
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from tests.test_utils import create_user
-from utils.logger import logger
 
 PROS_COUNT = 1
 departement_codes = ["93", "97"]

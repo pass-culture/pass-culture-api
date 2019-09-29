@@ -1,6 +1,7 @@
 import re
 from io import TextIOWrapper, BytesIO
 from typing import Dict
+from sqlalchemy_api_handler import logger
 
 from connectors.ftp_titelive import get_files_to_process_from_titelive_ftp, connect_to_titelive_ftp
 from domain.titelive import get_date_from_filename, read_things_date
@@ -9,7 +10,6 @@ from local_providers.providable_info import ProvidableInfo
 from models import Product, ThingType, BookFormat
 from models.local_provider_event import LocalProviderEventType
 from repository import local_provider_event_queries
-from utils.logger import logger
 from utils.string_processing import trim_with_elipsis
 
 DATE_REGEXP = re.compile('([a-zA-Z]+)(\d+).tit')

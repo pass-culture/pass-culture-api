@@ -1,10 +1,10 @@
 from models import Stock
+from sqlalchemy_api_handler import logger
 
 from sandboxes.scripts.save_sandbox import save_sandbox
 from tests.conftest import clean_database
 from tests.test_utils import assertCreatedCounts, \
     saveCounts
-from utils.logger import logger
 
 
 @clean_database

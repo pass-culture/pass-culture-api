@@ -24,11 +24,10 @@ from models import *
 from repository.offer_queries import *
 from sandboxes import *
 from sqlalchemy import *
-from sqlalchemy_api_handler import ApiErrors, humanize, dehumanize, as_dict
+from sqlalchemy_api_handler import ApiErrors, humanize, dehumanize, as_dict, logger
 from utils.config import *
 from utils.credentials import *
 from utils.distance import *
 from utils.import_module import *
 from utils.includes import *
-from utils.logger import *
 from utils.token import *

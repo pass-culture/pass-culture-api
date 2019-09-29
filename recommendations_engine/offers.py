@@ -1,10 +1,9 @@
-""" recommendations stocks """
 from typing import List
+from sqlalchemy_api_handler import logger
 
 from domain.departments import get_departement_codes_from_user
 from models import Offer
 from repository.offer_queries import get_active_offers, order_by_with_criteria
-from utils.logger import logger
 
 
 def get_offers_for_recommendations_discovery(limit=3, user=None) -> List[Offer]:

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Tuple
 from lxml.etree import DocumentInvalid
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from domain.admin_emails import send_payment_message_email, send_payment_details_email, send_wallet_balances_email, \
     send_payments_report_emails
@@ -20,7 +20,6 @@ from repository import payment_queries
 from repository.booking_queries import find_eligible_bookings_for_offerer, find_eligible_bookings_for_venue
 from repository.feature_queries import is_active
 from repository.user_queries import get_all_users_wallet_balances
-from utils.logger import logger
 from utils.mailing import MailServiceException, send_raw_email
 
 

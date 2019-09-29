@@ -1,12 +1,11 @@
 import io
 from typing import List
-
+from sqlalchemy_api_handler import logger
 import PIL
 from PIL.Image import Image
 from colorthief import ColorThief
 
 from models import Mediation, User
-from utils.logger import logger
 
 MAX_THUMB_WIDTH = 750
 CONVERSION_QUALITY = 90

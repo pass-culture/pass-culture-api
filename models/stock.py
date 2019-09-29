@@ -13,14 +13,13 @@ from sqlalchemy import BigInteger, \
     or_
 from sqlalchemy.orm import column_property, relationship
 from sqlalchemy.sql import select, func
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from models import Booking
 from models.db import Model
 from models.providable_mixin import ProvidableMixin
 from models.soft_deletable_mixin import SoftDeletableMixin
 from models.versioned_mixin import VersionedMixin
-from utils.logger import logger
 
 
 class Stock(ApiHandler,

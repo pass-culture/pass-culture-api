@@ -1,10 +1,8 @@
 from flask import url_for
 from flask_admin.contrib.sqla import ModelView
 from flask_login import current_user
+from sqlalchemy_api_handler import logger
 from werkzeug.utils import redirect
-
-from utils.logger import logger
-
 
 class BaseAdminView(ModelView):
     page_size = 25

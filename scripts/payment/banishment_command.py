@@ -1,7 +1,8 @@
 from flask import current_app as app
+from sqlalchemy_api_handler import logger
 
 from scripts.payment.banishment import do_ban_payments, parse_raw_payments_ids
-from utils.logger import logger
+
 
 
 @app.manager.option(

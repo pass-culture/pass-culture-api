@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 from typing import List
-
 from sqlalchemy import desc, func, or_
 from sqlalchemy.orm import aliased, joinedload
 from sqlalchemy.orm.query import Query
 from sqlalchemy.sql.elements import BinaryExpression
+from sqlalchemy_api_handler import logger
 
 from domain.departments import ILE_DE_FRANCE_DEPT_CODES
 from domain.keywords import create_filter_matching_all_keywords_in_any_model, \
@@ -21,7 +21,6 @@ from models import Booking, \
     Product
 from repository.user_offerer_queries import filter_query_where_user_is_user_offerer_and_is_validated
 from utils.distance import get_sql_geo_distance_in_kilometers
-from utils.logger import logger
 
 
 def build_offer_search_base_query():

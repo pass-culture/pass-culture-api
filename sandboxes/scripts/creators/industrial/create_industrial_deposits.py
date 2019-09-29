@@ -1,7 +1,6 @@
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from tests.test_utils import create_deposit
-from utils.logger import logger
 
 def create_industrial_deposits(users_by_name):
     logger.info('create_industrial_deposits')

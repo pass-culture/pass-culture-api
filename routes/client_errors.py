@@ -1,9 +1,8 @@
 from pprint import pformat
-
 from flask import current_app as app, request, jsonify
+from sqlalchemy_api_handler import logger
 
 from domain.admin_emails import send_dev_email
-from utils.logger import logger
 from utils.mailing import send_raw_email
 
 

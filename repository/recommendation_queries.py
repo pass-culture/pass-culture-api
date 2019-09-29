@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import func, or_, and_
 from sqlalchemy.sql.expression import literal
-from sqlalchemy_api_handler import dehumanize
+from sqlalchemy_api_handler import dehumanize, logger
 from sqlalchemy_api_handler.api_errors import ResourceNotFoundError
 
 from models import Mediation, \
@@ -12,7 +12,6 @@ from models.db import db
 from repository import mediation_queries
 from repository.offer_queries import find_searchable_offer
 from utils.config import BLOB_SIZE
-from utils.logger import logger
 
 
 def find_unseen_tutorials_for_user(seen_recommendation_ids, user):

@@ -1,4 +1,4 @@
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from domain.music_types import music_types
 from domain.show_types import show_types
@@ -11,7 +11,6 @@ from sandboxes.scripts.mocks.event_mocks import MOCK_ACTIVATION_DESCRIPTION, \
 from tests.test_utils import create_product_with_event_type
 from sandboxes.scripts.mocks.user_mocks import MOCK_FIRST_NAMES, \
                                                MOCK_LAST_NAMES
-from utils.logger import logger
 
 
 

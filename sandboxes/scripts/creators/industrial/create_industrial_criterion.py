@@ -1,7 +1,6 @@
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from models import Criterion, OfferCriterion
-from utils.logger import logger
 
 
 def create_industrial_criteria() -> dict:

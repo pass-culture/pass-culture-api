@@ -1,9 +1,8 @@
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from sandboxes.scripts.utils.select import remove_every
 from sandboxes.scripts.utils.storage_utils import store_public_object_from_sandbox_assets
 from tests.test_utils import create_mediation
-from utils.logger import logger
 
 OFFERS_WITH_MEDIATION_REMOVE_MODULO = 5
 

@@ -1,11 +1,9 @@
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from sandboxes.scripts.utils.select import remove_every
 from tests.test_utils import create_stock_from_offer, \
                              get_price_by_short_name, \
                              get_occurrence_short_name
-from utils.logger import logger
-
 THING_OFFERS_WITH_STOCK_REMOVE_MODULO = 3
 
 def create_industrial_thing_stocks(thing_offers_by_name):

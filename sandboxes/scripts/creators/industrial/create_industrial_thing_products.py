@@ -1,4 +1,4 @@
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from domain.music_types import music_types
 from domain.types import get_formatted_active_product_types
@@ -9,8 +9,6 @@ from sandboxes.scripts.mocks.thing_mocks import MOCK_AUTHOR_NAMES, \
 from sandboxes.scripts.mocks.user_mocks import MOCK_FIRST_NAMES, \
                                                MOCK_LAST_NAMES
 from utils.token import random_token
-
-from utils.logger import logger
 from tests.test_utils import create_product_with_thing_type
 
 THINGS_PER_TYPE = 7

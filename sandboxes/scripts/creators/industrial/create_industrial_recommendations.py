@@ -1,4 +1,4 @@
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from models.mediation import Mediation
 from models.offer_type import EventType, ProductType
@@ -6,7 +6,6 @@ from recommendations_engine.offers import get_departement_codes_from_user
 from repository.offer_queries import get_active_offers
 from sandboxes.scripts.utils.select import remove_every
 from sandboxes.scripts.utils.storage_utils import store_public_object_from_sandbox_assets
-from utils.logger import logger
 from tests.test_utils import create_recommendation
 
 ACTIVE_OFFERS_WITH_RECOMMENDATION_PER_USER_REMOVE_MODULO = 2

@@ -1,11 +1,10 @@
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from models.offer_type import EventType
 from sandboxes.scripts.utils.select import remove_every
 from tests.test_utils import create_stock_from_event_occurrence, \
                              get_price_by_short_name, \
                              get_occurrence_short_name
-from utils.logger import logger
 
 EVENT_OCCURRENCES_WITH_STOCKS_REMOVE_MODULO = 4
 

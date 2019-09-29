@@ -2,7 +2,7 @@ import os
 import re
 from datetime import datetime
 from typing import Callable, List
-from sqlalchemy_api_handler import ApiErrors, ApiHandler
+from sqlalchemy_api_handler import ApiErrors, ApiHandler, logger
 
 from connectors.api_demarches_simplifiees import get_application_details
 from domain.admin_emails import send_remote_beneficiaries_import_report_email
@@ -13,7 +13,6 @@ from models import ImportStatus, User
 from repository.beneficiary_import_queries import is_already_imported, save_beneficiary_import_with_status, \
     find_applications_ids_to_retry
 from repository.user_queries import find_by_civility, find_user_by_email
-from utils.logger import logger
 from utils.mailing import send_raw_email, parse_email_addresses, DEV_EMAIL_ADDRESS
 
 TOKEN = os.environ.get('DEMARCHES_SIMPLIFIEES_TOKEN', None)

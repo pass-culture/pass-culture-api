@@ -4,19 +4,18 @@ import os
 import re
 from datetime import datetime
 from typing import List, Set, Iterable, Callable
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from domain.admin_emails import send_users_activation_report
 from domain.password import generate_reset_token, random_password
 from domain.user_activation import generate_activation_users_csv
-from models import User, Booking, Stock 
+from models import User, Booking, Stock
 from models.booking import ActivationUser
 from repository.booking_queries import find_user_activation_booking, get_existing_tokens
 from repository.stock_queries import find_online_activation_stock
 from repository.user_queries import find_user_by_email
 from scripts.beneficiary import THIRTY_DAYS_IN_HOURS
 from scripts.interact import app
-from utils.logger import logger
 from utils.mailing import MailServiceException, parse_email_addresses, send_raw_email
 from utils.token import random_token
 

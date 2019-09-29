@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from models import EventType, ThingType, Venue
 from tests.test_utils import create_offerer, create_bank_information, create_venue, create_offer_with_event_product, \
     create_event_occurrence, create_stock, create_stock_from_event_occurrence, create_user, create_deposit, \
     create_booking, create_offer_with_thing_product, create_recommendation
-from utils.logger import logger
 
 now = datetime.utcnow()
 three_days = timedelta(days=3)

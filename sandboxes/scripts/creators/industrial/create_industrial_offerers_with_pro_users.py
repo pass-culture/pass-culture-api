@@ -1,4 +1,4 @@
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from repository.offerer_queries import check_if_siren_already_exists
 from sandboxes.scripts.mocks.offerer_mocks import MOCK_NAMES
@@ -13,7 +13,6 @@ from sandboxes.scripts.utils.select import pick_every
 from tests.test_utils import create_offerer, \
     create_user, \
     create_user_offerer, create_bank_information
-from utils.logger import logger
 
 ATTACHED_PRO_USERS_COUNT = 2
 VALIDATED_OFFERERS_REMOVE_MODULO = 5

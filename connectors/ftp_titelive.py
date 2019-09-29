@@ -1,12 +1,11 @@
 import ftplib
-
 import os
 from io import BytesIO
 from typing import Pattern
 from zipfile import ZipFile
+from sqlalchemy_api_handler import logger
 
 from domain.titelive import put_today_file_at_end_of_list
-from utils.logger import logger
 
 FTP_TITELIVE_URI = os.environ.get("FTP_TITELIVE_URI")
 FTP_TITELIVE_USER = os.environ.get("FTP_TITELIVE_USER")

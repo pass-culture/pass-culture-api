@@ -1,5 +1,5 @@
 from flask import current_app as app, jsonify, request, redirect
-from sqlalchemy_api_handler import ApiErrors, ApiHandler, as_dict
+from sqlalchemy_api_handler import ApiErrors, ApiHandler, as_dict, logger
 
 from connectors.google_spreadsheet import get_authorized_emails_and_dept_codes
 from domain.departments import ILE_DE_FRANCE_DEPT_CODES
@@ -11,7 +11,6 @@ from models.venue import create_digital_venue
 from utils.config import IS_INTEGRATION
 from utils.feature import feature_required
 from utils.includes import USER_INCLUDES
-from utils.logger import logger
 from utils.mailing import \
     subscribe_newsletter, MailServiceException, send_raw_email
 from validation.users import check_valid_signup_webapp, check_valid_signup_pro

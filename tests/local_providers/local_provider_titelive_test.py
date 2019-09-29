@@ -3,7 +3,7 @@ from pathlib import Path
 from unittest.mock import patch
 from zipfile import ZipFile
 from sqlalchemy import func
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from local_providers import TiteLiveThings, TiteLiveThingThumbs, TiteLiveThingDescriptions
 from local_providers.titelive_thing_descriptions import DESCRIPTION_FOLDER_NAME_TITELIVE
@@ -14,7 +14,6 @@ from models.db import db
 from tests.conftest import clean_database
 from tests.test_utils import create_offerer, create_venue, \
     provider_test
-from utils.logger import logger
 
 
 class TiteliveTest:

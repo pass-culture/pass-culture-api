@@ -1,9 +1,8 @@
 from typing import Callable
 import requests
-from sqlalchemy_api_handler import ApiErrors, ApiHandler
+from sqlalchemy_api_handler import ApiErrors, ApiHandler, logger
 
 from domain.mediations import DO_NOT_CROP, standardize_image, compute_dominant_color
-from utils.logger import logger
 from utils.object_storage import store_public_object
 
 ALLOWED_EXTENSIONS = {'jpg', 'png', 'jpeg', 'gif'}

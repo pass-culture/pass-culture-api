@@ -5,7 +5,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from flask import Flask
 from mailjet_rest import Client
 from sqlalchemy import orm
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from models.db import db
 from repository.feature_queries import feature_cron_send_final_booking_recaps_enabled, \
@@ -21,9 +21,7 @@ from repository.user_queries import find_most_recent_beneficiary_creation_date
 from scripts.beneficiary import remote_import
 from scripts.dashboard.write_dashboard import write_dashboard
 from utils.config import API_ROOT_PATH
-from utils.logger import logger
-from utils.mailing import MAILJET_API_KEY, MAILJET_API_SECRET
-from utils.mailing import parse_email_addresses
+from utils.mailing import MAILJET_API_KEY, MAILJET_API_SECRET, parse_email_addresses
 
 app = Flask(__name__, template_folder='../templates')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')

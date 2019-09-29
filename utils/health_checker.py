@@ -1,7 +1,6 @@
-""" health_checker """
-from models.user import User
-from utils.logger import logger
+from sqlalchemy_api_handler import logger
 
+from models.user import User
 
 def check_database_connection() -> bool:
     database_working = False

@@ -1,9 +1,8 @@
 from typing import List
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from domain.payments import apply_banishment, UnmatchedPayments
 from repository.payment_queries import find_payments_by_message
-from utils.logger import logger
 
 
 def parse_raw_payments_ids(raw_ids: str) -> List[int]:

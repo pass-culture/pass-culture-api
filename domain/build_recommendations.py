@@ -1,8 +1,8 @@
 from typing import List
+from sqlalchemy_api_handler import logger
 
 from models import Recommendation
 from repository.recommendation_queries import find_unseen_tutorials_for_user
-from utils.logger import logger
 
 
 def move_tutorial_recommendations_first(recos, seen_recommendation_ids, user):

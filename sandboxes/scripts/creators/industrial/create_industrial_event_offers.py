@@ -1,7 +1,6 @@
-from sqlalchemy_api_handler import ApiHandler
+from sqlalchemy_api_handler import ApiHandler, logger
 
 from tests.test_utils import create_offer_with_event_product
-from utils.logger import logger
 
 
 DEACTIVATED_OFFERS_PICK_MODULO = 3

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import random
 import dateutil.parser
 from sqlalchemy import func
-from sqlalchemy_api_handler import ApiErrors, ApiHandler
+from sqlalchemy_api_handler import ApiErrors, ApiHandler, logger
 
 from domain.types import get_active_product_type_values_from_sublabels
 from models import Recommendation, Mediation, User
@@ -16,7 +16,6 @@ from repository.recommendation_queries import count_read_recommendations_for_use
 from validation.recommendations import check_distance_is_digit, \
                                        check_latitude_is_defined, \
                                        check_longitude_is_defined
-from utils.logger import logger
 
 MAX_OF_MAX_DISTANCE = "20000"
 

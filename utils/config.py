@@ -1,6 +1,4 @@
-""" config """
 import os
-from logging import INFO as LOG_LEVEL_INFO
 from pathlib import Path
 
 API_ROOT_PATH = Path(os.path.dirname(os.path.realpath(__file__))) / '..'
@@ -11,7 +9,6 @@ IS_DEV = ENV == 'development'
 IS_INTEGRATION = ENV == 'integration'
 IS_STAGING = ENV == 'staging'
 IS_PROD = ENV == 'production'
-LOG_LEVEL = int(os.environ.get('LOG_LEVEL', LOG_LEVEL_INFO))
 
 if IS_DEV:
     API_URL = 'http://localhost'

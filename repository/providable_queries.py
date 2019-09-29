@@ -1,13 +1,12 @@
 import datetime
 from typing import Dict, Optional
 from sqlalchemy import select
-from sqlalchemy_api_handler import humanize
+from sqlalchemy_api_handler import humanize, logger
 
 import models
 from local_providers.providable_info import ProvidableInfo
 from models.db import db, Model
 from utils.date import read_json_date
-from utils.logger import logger
 
 
 def insert_chunk(chunk_to_insert: Dict):

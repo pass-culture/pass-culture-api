@@ -4,7 +4,7 @@ from collections import Iterator
 from datetime import datetime
 from io import BytesIO
 from pprint import pprint
-from sqlalchemy_api_handler import ApiHandler, humanize
+from sqlalchemy_api_handler import ApiHandler, humanize, logger
 
 from connectors.thumb_storage import save_thumb
 from local_providers.chunk_manager import get_existing_pc_obj, save_chunks
@@ -15,7 +15,6 @@ from models.local_provider_event import LocalProviderEvent, LocalProviderEventTy
 from repository.providable_queries import get_last_modification_date_for_provider
 from repository.provider_queries import get_provider_by_local_class
 from utils.inflect_engine import inflect_engine
-from utils.logger import logger
 
 CHUNK_MAX_SIZE = 1000
 
