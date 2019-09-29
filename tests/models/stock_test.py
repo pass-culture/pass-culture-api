@@ -57,12 +57,12 @@ def test_date_modified_should_not_be_updated_if_price_changed(app):
     venue = create_venue(offerer)
     offer = create_offer_with_thing_product(venue)
     stock = create_stock(offer=offer, date_modified=datetime(2018, 2, 12), available=1, price=1)
-    PcObject.save(stock)
+    ApiHandler.save(stock)
 
     # when
     stock = Stock.query.first()
     stock.price = 5
-    PcObject.save(stock)
+    ApiHandler.save(stock)
 
     # then
     stock = Stock.query.first()

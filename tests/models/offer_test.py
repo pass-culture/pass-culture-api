@@ -410,7 +410,7 @@ class AddStockAlertMessageToOfferTest:
                                      is_used=True,
                                      date_used=datetime.utcnow() - timedelta(days=3))
 
-            PcObject.save(booking, deposit, user, offer, stock, user2)
+            ApiHandler.save(booking, deposit, user, offer, stock, user2)
 
             # when
             result = offer.stockAlertMessage

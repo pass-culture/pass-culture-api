@@ -385,7 +385,7 @@ class GetOffersForRecommendationsSearchTest:
 
             things_stock.append(thing_stock)
 
-        PcObject.save(*things_stock)
+        ApiHandler.save(*things_stock)
 
         # When
         search_result_offers = get_offers_for_recommendations_search(page=1, keywords_string="snif")

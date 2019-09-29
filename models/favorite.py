@@ -3,8 +3,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy_api_handler import ApiHandler
 
 from models.db import Model
-from models.pc_object import PcObject
-
 
 class Favorite(ApiHandler, Model):
     userId = Column(BigInteger,

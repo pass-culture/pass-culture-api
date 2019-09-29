@@ -1,4 +1,5 @@
-from models import PcObject
+from sqlalchemy_api_handler import ApiHandler
+
 from tests.conftest import clean_database, TestClient
 from tests.test_utils import create_stock_with_thing_offer, \
     create_offer_with_thing_product, create_venue, create_offerer, \
@@ -22,7 +23,7 @@ class Get:
             favorite1 = create_favorite(offer=offer, user=user1)
             favorite2 = create_favorite(offer=offer, user=user2)
 
-            PcObject.save(booking1, booking2, booking3, favorite1, favorite2)
+            ApiHandler.save(booking1, booking2, booking3, favorite1, favorite2)
 
             # When
             response = TestClient(app.test_client()).with_auth(user1.email).get('/bookings')
