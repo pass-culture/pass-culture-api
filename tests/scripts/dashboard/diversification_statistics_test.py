@@ -1087,7 +1087,6 @@ class GetOffersByTypeAndDigitalTableTest:
         type_and_digital_dataframe = _get_offers_grouped_by_type_and_medium()
 
         # Then
-        equality_df = type_and_digital_dataframe.eq(expected_dataframe)
         assert type_and_digital_dataframe.equals(expected_dataframe)
 
 
