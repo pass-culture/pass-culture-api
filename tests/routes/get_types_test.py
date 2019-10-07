@@ -77,10 +77,10 @@ class Get:
 
             assert "Livres papier ou numérique, abonnements lecture" in pro_labels
             assert "Conférences, rencontres et découverte des métiers" in pro_labels
-            assert "Musées, galeries, patrimoine - entrées libres, abonnement" in pro_labels
+            assert "Musées, galeries, patrimoine - entrées libres, abonnements" in pro_labels
             assert "Pratique artistique - séances d'essai et stages ponctuels" in pro_labels
             assert "Livres papier ou numérique, abonnements lecture" in pro_labels
-            assert "Livre audio numérique" in pro_labels
+            assert "Livres audio numériques" in pro_labels
             assert "Vente et location d’instruments de musique" in pro_labels
             assert "Vente d'œuvres d'art" in pro_labels
 

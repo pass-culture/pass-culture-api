@@ -6,16 +6,16 @@ Catégorie,Support,type
 "Conférences, rencontres et découverte des métiers",Physique,EventType.CONFERENCE_DEBAT_DEDICACE
 "Jeux (support physique)",Physique,ThingType.JEUX
 "Jeux vidéo en ligne",Numérique,ThingType.JEUX_VIDEO
-"Jeux — abonnements",Numérique,ThingType.JEUX_VIDEO_ABO
-"Jeux — évenements, rencontres, concours",Physique,EventType.JEUX
-"Livre audio numérique",Numérique,ThingType.LIVRE_AUDIO
+"Jeux - abonnements",Numérique,ThingType.JEUX_VIDEO_ABO
+"Jeux - événements, rencontres, concours",Physique,EventType.JEUX
+"Livres audio numériques",Numérique,ThingType.LIVRE_AUDIO
 "Livres papier ou numérique, abonnements lecture",Numérique,ThingType.LIVRE_EDITION
 "Livres papier ou numérique, abonnements lecture",Physique,ThingType.LIVRE_EDITION
 "Musique - cartes d'abonnement concerts",Physique,ThingType.MUSIQUE_ABO
-"Musique - support physique ou en ligne",Numérique,ThingType.MUSIQUE
-"Musique - support physique ou en ligne",Physique,ThingType.MUSIQUE
-"Musique — concerts, festivals",Physique,EventType.MUSIQUE
-"Musées, galeries, patrimoine - entrées libres, abonnement",Physique,ThingType.MUSEES_PATRIMOINE_ABO
+"Musique - supports physique ou en ligne",Numérique,ThingType.MUSIQUE
+"Musique - supports physique ou en ligne",Physique,ThingType.MUSIQUE
+"Musique - concerts, festivals",Physique,EventType.MUSIQUE
+"Musées, galeries, patrimoine - entrées libres, abonnements",Physique,ThingType.MUSEES_PATRIMOINE_ABO
 "Musées, galeries, patrimoine - visites ponctuelles, visites guidées, activités spécifiques",Physique,EventType.MUSEES_PATRIMOINE
 "Pass Culture : activation en ligne",Numérique,ThingType.ACTIVATION
 "Pass Culture : activation évènementielle",Physique,EventType.ACTIVATION

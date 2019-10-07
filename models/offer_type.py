@@ -54,7 +54,7 @@ class EventType(SearchableType):
         'isActive': True
     }
     JEUX = {
-        'proLabel': "Jeux — évenements, rencontres, concours",
+        'proLabel': "Jeux - événements, rencontres, concours",
         'appLabel': "Évenements, Rencontres, Concours",
         'offlineOnly': True,
         'onlineOnly': False,
@@ -64,7 +64,7 @@ class EventType(SearchableType):
         'isActive': True
     }
     MUSIQUE = {
-        'proLabel': "Musique — concerts, festivals",
+        'proLabel': "Musique - concerts, festivals",
         'appLabel': "Concert ou festival",
         'offlineOnly': True,
         'onlineOnly': False,
@@ -126,7 +126,7 @@ class ThingType(SearchableType):
         'isActive': True
     }
     AUDIOVISUEL = {
-        'proLabel': "Audiovisuel — films sur supports physiques et VOD",
+        'proLabel': "Audiovisuel - films sur supports physiques et VOD",
         'appLabel': "Film",
         'offlineOnly': False,
         'onlineOnly': False,
@@ -156,8 +156,8 @@ class ThingType(SearchableType):
         'isActive': False
     }
     JEUX_VIDEO_ABO = {
-        'proLabel': "Jeux — abonnements",
-        'appLabel': "Jeux — abonnements",
+        'proLabel': "Jeux - abonnements",
+        'appLabel': "Jeux - abonnements",
         'offlineOnly': False,
         'onlineOnly': True,
         'sublabel': "Jouer",
@@ -176,7 +176,7 @@ class ThingType(SearchableType):
         'isActive': True
     }
     LIVRE_AUDIO = {
-        'proLabel': "Livre audio numérique",
+        'proLabel': "Livres audio numériques",
         'appLabel': "Livre audio numérique",
         'offlineOnly': False,
         'onlineOnly': True,
@@ -196,7 +196,7 @@ class ThingType(SearchableType):
         'isActive': True
     }
     MUSEES_PATRIMOINE_ABO = {
-        'proLabel': "Musées, galeries, patrimoine - entrées libres, abonnement",
+        'proLabel': "Musées, galeries, patrimoine - entrées libres, abonnements",
         'appLabel': "Musée, arts visuels et patrimoine",
         'offlineOnly': True,
         'onlineOnly': False,
@@ -216,7 +216,7 @@ class ThingType(SearchableType):
         'isActive': True
     }
     MUSIQUE = {
-        'proLabel': "Musique - support physique ou en ligne",
+        'proLabel': "Musique - supports physique ou en ligne",
         'appLabel': "Musique",
         'offlineOnly': False,
         'onlineOnly': False,
