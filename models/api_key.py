@@ -21,3 +21,4 @@ class ApiKey(PcObject, Model):
     offerer = relationship('Offerer',
                            foreign_keys=[offererId],
                            backref=backref('apiKey', uselist=False))
+
