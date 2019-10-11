@@ -1,10 +1,12 @@
 """ api key model """
 
 from sqlalchemy import BigInteger, Column, CHAR, ForeignKey
-from sqlalchemy.orm import relationship, backref
+
 
 from models.db import Model
 from models.pc_object import PcObject
+
+from sqlalchemy.orm import relationship, backref
 
 
 class ApiKey(PcObject, Model):
@@ -21,4 +23,3 @@ class ApiKey(PcObject, Model):
     offerer = relationship('Offerer',
                            foreign_keys=[offererId],
                            backref=backref('apiKey', uselist=False))
-
