@@ -10,7 +10,6 @@ from sqlalchemy.orm import relationship, backref
 
 
 class ApiKey(PcObject, Model):
-    # child
     value = Column(CHAR(64),
                    index=True,
                    nullable=False
@@ -19,7 +18,7 @@ class ApiKey(PcObject, Model):
     offererId = Column(BigInteger,
                        ForeignKey('offerer.id'),
                        index=True,
-                       nullable=False)
+                       nullable=True)
 
     offerer = relationship('Offerer',
                            foreign_keys=[offererId],
