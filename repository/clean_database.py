@@ -1,9 +1,8 @@
 from local_providers.install import install_local_providers
 from models.activity import load_activity
+from models.beneficiary_import import BeneficiaryImport
 from models.db import db
-from models import ApiKey,\
-    BeneficiaryImport, \
-    Booking, \
+from models import Booking, \
     Deposit, \
     Mediation, \
     Payment, \
@@ -19,9 +18,10 @@ from models import ApiKey,\
     Venue, \
     Provider, \
     VenueProvider, \
-    PaymentMessage, \
+    PaymentMessage,\
     BankInformation, \
     LocalProviderEvent, \
+    Feature, \
     Favorite, \
     BeneficiaryImportStatus, \
     OfferCriterion, \
@@ -50,7 +50,6 @@ def clean_all_database(*args, **kwargs):
     BankInformation.query.delete()
     Venue.query.delete()
     UserOfferer.query.delete()
-    ApiKey.query.delete()
     Offerer.query.delete()
     Deposit.query.delete()
     BeneficiaryImportStatus.query.delete()
@@ -62,5 +61,6 @@ def clean_all_database(*args, **kwargs):
     LocalProviderEvent.query.delete()
     Provider.query.delete()
     db.session.commit()
+
     install_features()
     install_local_providers()
