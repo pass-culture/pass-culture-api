@@ -15,9 +15,8 @@ class ApiKey(PcObject, Model):
     offererId = Column(BigInteger,
                        ForeignKey('offerer.id'),
                        index=True,
-                       nullable=True)
+                       nullable=False)
 
     offerer = relationship('Offerer',
                            foreign_keys=[offererId],
-                           backref='apiKey',
-                           uselist=False)
+                           backref='apiKey')
