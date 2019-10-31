@@ -4,7 +4,7 @@ import random
 import pytest
 from freezegun import freeze_time
 
-from models import Offer, PcObject, Stock, Product, Criterion, OfferCriterion
+from models import Offer, PcObject, Stock, Product
 from models.offer_type import EventType, ThingType
 from repository.offer_queries import department_or_national_offers, \
     find_activation_offers, \
@@ -920,71 +920,123 @@ def test_find_offers_with_filter_parameters_with_partial_keywords_and_filter_by_
     assert ko_offer4.id not in offers_id
 
 
-@clean_database
-def test_offer_remaining_stock_filter_does_not_filter_offer_with_cancelled_bookings(app):
-    # Given
-    product = create_product_with_thing_type(thing_name='Lire un livre', is_national=True)
-    offerer = create_offerer()
-    venue = create_venue(offerer, postal_code='34000', departement_code='34')
-    offer = create_offer_with_thing_product(venue, product)
-    stock = create_stock_from_offer(offer, available=2)
-    booking = create_booking(create_user(), stock, venue=venue, quantity=2, is_cancelled=True)
-    PcObject.save(booking)
 
-    # When
-    nb_offers_with_remaining_stock = Offer.query \
-        .join(Stock) \
-        .filter(_build_has_remaining_stock_predicate()) \
-        .count()
+class buildHasRemainingStockPredicateTest:
+    @clean_database
+    def test_filter_offer_with_all_available_stock_booked(self, app):
+        # Given
+        thing = create_product_with_thing_type()
+        user = create_user()
+        offerer = create_offerer()
+        venue = create_venue(offerer)
+        offer = create_offer_with_thing_product(venue, thing)
+        stock = create_stock_from_offer(offer, available=3, price=0)
+        booking_1 = create_booking(user, stock, quantity=2)
+        booking_2 = create_booking(user, stock, quantity=1)
+        PcObject.save(stock, booking_1, booking_2)
 
-    # Then
-    assert nb_offers_with_remaining_stock == 1
+        # When
+        nb_offers_with_remaining_stock = Offer.query \
+            .join(Stock) \
+            .filter(_build_has_remaining_stock_predicate()) \
+            .count()
 
-
-@clean_database
-def test_offer_remaining_stock_filter_filters_offer_with_no_remaining_stock(app):
-    # Given
-    product = create_product_with_thing_type(thing_name='Lire un livre', is_national=True)
-    offerer = create_offerer()
-    venue = create_venue(offerer, postal_code='34000', departement_code='34')
-    offer = create_offer_with_thing_product(venue, product)
-    stock = create_stock_from_offer(offer, available=2, price=0)
-    user = create_user()
-    booking1 = create_booking(user, stock, venue=venue, quantity=2, is_cancelled=True)
-    booking2 = create_booking(user, stock, venue=venue, quantity=2)
-    PcObject.save(booking1, booking2)
-
-    # When
-    nb_offers_with_remaining_stock = Offer.query \
-        .join(Stock) \
-        .filter(_build_has_remaining_stock_predicate()) \
-        .count()
-
-    # Then
-    assert nb_offers_with_remaining_stock == 0
+        # Then
+        assert nb_offers_with_remaining_stock == 0
 
 
-@clean_database
-def test_offer_remaining_stock_filter_filters_offer_with_one_full_stock_and_one_empty_stock(app):
-    # Given
-    product = create_product_with_thing_type(thing_name='Lire un livre', is_national=True)
-    offerer = create_offerer()
-    venue = create_venue(offerer, postal_code='34000', departement_code='34')
-    offer = create_offer_with_thing_product(venue, product)
-    stock1 = create_stock_from_offer(offer, available=2, price=0)
-    stock2 = create_stock_from_offer(offer, available=2, price=0)
-    user = create_user()
-    booking1 = create_booking(user, stock1, venue=venue, quantity=2)
-    PcObject.save(booking1, stock2)
+    @clean_database
+    def test_does_not_filter_offer_with_stock_update_after_booking(self, app):
+        # Given
+        thing = create_product_with_thing_type()
+        user = create_user()
+        offerer = create_offerer()
+        venue = create_venue(offerer)
+        offer = create_offer_with_thing_product(venue, thing)
+        stock = create_stock_from_offer(offer, available=1, price=0)
+        booking = create_booking(user, stock, quantity=1, is_used=True)
+        stock.dateModified = datetime.utcnow() + timedelta(days=1)
+        PcObject.save(stock, booking)
 
-    # When
-    nb_offers_with_remaining_stock = Offer.query \
-        .join(Stock) \
-        .filter(_build_has_remaining_stock_predicate()) \
-        .count()
+        nb_offers_with_remaining_stock = Offer.query \
+            .join(Stock) \
+            .filter(_build_has_remaining_stock_predicate()) \
+            .count()
 
-    # Then
-    assert nb_offers_with_remaining_stock == 1
+        # Then
+        assert nb_offers_with_remaining_stock == 1
+
+
+    @clean_database
+    def test_does_not_filter_offer_with_cancelled_bookings(app):
+        # Given
+        product = create_product_with_thing_type(thing_name='Lire un livre', is_national=True)
+        offerer = create_offerer()
+        venue = create_venue(offerer, postal_code='34000', departement_code='34')
+        offer = create_offer_with_thing_product(venue, product)
+        stock = create_stock_from_offer(offer, available=2)
+        booking = create_booking(create_user(), stock, venue=venue, quantity=2, is_cancelled=True)
+        PcObject.save(booking)
+
+        # When
+        nb_offers_with_remaining_stock = Offer.query \
+            .join(Stock) \
+            .filter(_build_has_remaining_stock_predicate()) \
+            .count()
+
+        # Then
+        assert nb_offers_with_remaining_stock == 1
+
+
+    @clean_database
+    def test_filters_offer_with_no_remaining_stock(app):
+        # Given
+        product = create_product_with_thing_type(thing_name='Lire un livre', is_national=True)
+        offerer = create_offerer()
+        venue = create_venue(offerer, postal_code='34000', departement_code='34')
+        offer = create_offer_with_thing_product(venue, product)
+        stock = create_stock_from_offer(offer, available=2, price=0)
+        user = create_user()
+        booking1 = create_booking(user, stock, venue=venue, quantity=2, is_cancelled=True)
+        booking2 = create_booking(user, stock, venue=venue, quantity=2)
+        PcObject.save(booking1, booking2)
+
+        # When
+        nb_offers_with_remaining_stock = Offer.query \
+            .join(Stock) \
+            .filter(_build_has_remaining_stock_predicate()) \
+            .count()
+
+        # Then
+        assert nb_offers_with_remaining_stock == 0
+
+
+    @clean_database
+    def test_filters_offer_with_one_full_stock_and_one_empty_stock(app):
+        # Given
+        product = create_product_with_thing_type(thing_name='Lire un livre', is_national=True)
+        offerer = create_offerer()
+        venue = create_venue(offerer, postal_code='34000', departement_code='34')
+        offer = create_offer_with_thing_product(venue, product)
+        stock1 = create_stock_from_offer(offer, available=2, price=0)
+        stock2 = create_stock_from_offer(offer, available=2, price=0)
+        user = create_user()
+        booking1 = create_booking(user, stock1, venue=venue, quantity=2)
+        PcObject.save(booking1, stock2)
+
+        # When
+        nb_offers_with_remaining_stock = Offer.query \
+            .join(Stock) \
+            .filter(_build_has_remaining_stock_predicate()) \
+            .count()
+
+        # Then
+        assert nb_offers_with_remaining_stock == 1
+
+
+
+
+
 
 
 @clean_database

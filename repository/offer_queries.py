@@ -291,13 +291,9 @@ def find_offers_with_filter_parameters(
 
 
 def _build_has_remaining_stock_predicate():
-    stock_has_undefined_available = Stock.available == None
-    booked_stock_quantity = Booking.query.filter(
-        (Booking.stockId == Stock.id) & \
-        (Booking.isCancelled == False)
-    ).statement.with_only_columns([func.coalesce(func.sum(Booking.quantity), 0)])
-    still_more_available_than_booked_stock = Stock.available > booked_stock_quantity
-    return stock_has_undefined_available | still_more_available_than_booked_stock
+    stock_is_unlimited = Stock.available == None
+    still_more_available_than_booked_stock = Stock.remainingQuantity > 0
+    return stock_is_unlimited | still_more_available_than_booked_stock
 
 
 def find_searchable_offer(offer_id):
