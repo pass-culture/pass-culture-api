@@ -1789,7 +1789,7 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
         beginning_datetime = datetime(2019, 11, 6, 14, 00, 0, tzinfo=timezone.utc)
         stock = create_stock_from_offer(thing_offer, beginning_datetime=beginning_datetime, price=0, available=10)
         booking_1 = create_booking(user_1, stock, venue, token='ACVSDC')
-        booking_2 = create_booking(user_2, stock, venue, token='TESTES')
+        booking_2 = create_booking(user_2, stock, venue, token='TEST95')
         stock.bookings = [booking_1, booking_2]
         recipient = ['dev@passculture.app', ADMINISTRATION_EMAIL_ADDRESS]
 
@@ -1834,7 +1834,7 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
                               {"firstName": "Jaja",
                                "lastName": "Dudu",
                                "email": "mail@example.com",
-                               "contremarque": "TESTES"}
+                               "contremarque": "TEST95"}
                               ]
                 }
         }
