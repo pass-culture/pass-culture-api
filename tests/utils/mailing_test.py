@@ -1465,13 +1465,12 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
     def test_should_write_email_with_right_data_when_offer_is_an_event(self, app):
         # Given
         user = create_user(email='test@example.com')
-        offerer = create_offerer()
-        venue = create_venue(offerer, 'Test offerer', 'reservations@test.fr', is_virtual=True, siret=None)
-        event_offer = create_offer_with_event_product(venue)
+        offerer = create_offerer(idx=1)
+        venue = create_venue(offerer, 'Test offerer', 'reservations@test.fr', is_virtual=True, siret=None, idx=1)
+        event_offer = create_offer_with_event_product(venue, idx=1)
         beginning_datetime = datetime(2019, 11, 6, 14, 00, 0, tzinfo=timezone.utc)
         stock = create_stock_from_offer(event_offer, beginning_datetime=beginning_datetime, price=0, available=10)
-        booking = create_booking(user, stock, venue)
-        booking.token ='ABC123'
+        booking = create_booking(user, stock, venue, token='ABC123')
         recipient = ['dev@passculture.app']
         stock.bookings = [booking]
 
@@ -1500,7 +1499,7 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
                     'contremarque': 'ABC123',
                     'env': '-development',
                     'ISBN': '',
-                    'lien_offre_pcpro': 'http://localhost:3001/offres/BA?lieu=BA&structure=BA',
+                    'lien_offre_pcpro': 'http://localhost:3001/offres/AE?lieu=AE&structure=AE',
                     'offer_type': 'EventType.SPECTACLE_VIVANT',
                     'departement': '93',
                     'users': [{"firstName": "John",
@@ -1517,14 +1516,14 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
     def test_should_write_email_with_right_data_when_offer_is_a_book(self, app):
         # Given
         user = create_user(email='test@example.com')
-        offerer = create_offerer()
+        offerer = create_offerer(idx=1)
         extra_data = {'isbn': '123456789'}
-        venue = create_venue(offerer, 'Test offerer', 'reservations@test.fr', is_virtual=True, siret=None)
+        venue = create_venue(offerer, 'Test offerer', 'reservations@test.fr', is_virtual=True, siret=None, idx=1)
+
         thing_product = create_product_with_thing_type(thing_name='Le récit de voyage', extra_data=extra_data)
-        event_offer = create_offer_with_thing_product(venue, thing_product)
+        event_offer = create_offer_with_thing_product(venue, thing_product, idx=1)
         stock = create_stock_from_offer(event_offer, price=0)
-        booking = create_booking(user, stock, venue, quantity=3)
-        booking.token ='ABC123'
+        booking = create_booking(user, stock, venue, quantity=3, token='ABC123')
         recipient = ['dev@passculture.app']
         stock.bookings = [booking]
 
@@ -1546,7 +1545,7 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
                     'nombre_resa': 1,
                     'contremarque': 'ABC123',
                     'env': '-development',
-                    'lien_offre_pcpro': 'http://localhost:3001/offres/BE?lieu=BE&structure=BE',
+                    'lien_offre_pcpro': 'http://localhost:3001/offres/AE?lieu=AE&structure=AE',
 
                     'user_firstName': 'John',
                     'user_lastName': 'Doe',
@@ -1571,14 +1570,13 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
     def test_should_not_truncate_price(self, app):
         # Given
         user = create_user(email='test@example.com')
-        offerer = create_offerer()
+        offerer = create_offerer(idx=1)
         deposit = create_deposit(user, amount=50, source='public')
-        venue = create_venue(offerer, 'Test offerer', 'reservations@test.fr', is_virtual=True, siret=None)
-        event_offer = create_offer_with_event_product(venue, is_duo=True)
+        venue = create_venue(offerer, 'Test offerer', 'reservations@test.fr', is_virtual=True, siret=None, idx=1)
+        event_offer = create_offer_with_event_product(venue, is_duo=True, idx=1)
         beginning_datetime = datetime(2019, 11, 6, 14, 00, 0, tzinfo=timezone.utc)
         stock = create_stock_from_offer(event_offer, beginning_datetime=beginning_datetime, price=5.86, available=10)
-        booking = create_booking(user, stock, venue)
-        booking.token ='ABC123'
+        booking = create_booking(user, stock, venue, token='ABC123')
         stock.bookings = [booking]
         recipient = ['dev@passculture.app']
 
@@ -1609,7 +1607,7 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
                     'nombre_resa': 1,
                     'contremarque': 'ABC123',
                     'env': '-development',
-                    'lien_offre_pcpro': 'http://localhost:3001/offres/B9?lieu=B9&structure=B9',
+                    'lien_offre_pcpro': 'http://localhost:3001/offres/AE?lieu=AE&structure=AE',
                     'users': [{"firstName": "John",
                                "lastName": "Doe",
                                "email": "test@example.com",
@@ -1624,13 +1622,12 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
     def test_returns_empty_ISBN_when_no_extra_data(self, app):
         # Given
         user = create_user(email='test@example.com')
-        offerer = create_offerer()
-        venue = create_venue(offerer, 'Test offerer', 'reservations@test.fr', is_virtual=True, siret=None)
-        thing_offer = create_offer_with_thing_product(venue, thing_type=ThingType.LIVRE_EDITION)
+        offerer = create_offerer(idx=1)
+        venue = create_venue(offerer, 'Test offerer', 'reservations@test.fr', is_virtual=True, siret=None, idx=1)
+        thing_offer = create_offer_with_thing_product(venue, thing_type=ThingType.LIVRE_EDITION, idx=1)
         beginning_datetime = datetime(2019, 11, 6, 14, 00, 0, tzinfo=timezone.utc)
         stock = create_stock_from_offer(thing_offer, beginning_datetime=beginning_datetime, price=0, available=10)
-        booking = create_booking(user, stock, venue)
-        booking.token = 'ABC123'
+        booking = create_booking(user, stock, venue, token='ABC123')
         recipient = ['dev@passculture.app']
         stock.bookings = [booking]
 
@@ -1664,7 +1661,7 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
                     'nombre_resa': 1,
                     'contremarque': 'ABC123',
                     'env': '-development',
-                    'lien_offre_pcpro': 'http://localhost:3001/offres/BM?lieu=BM&structure=BM',
+                    'lien_offre_pcpro': 'http://localhost:3001/offres/AE?lieu=AE&structure=AE',
                     'users': [{"firstName": "John",
                                "lastName": "Doe",
                                "email": "test@example.com",
@@ -1676,13 +1673,12 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
     def test_returns_empty_ISBN_when_extra_data_has_no_key_isbn(app):
         # Given
         user = create_user(email="test@example.com")
-        offerer = create_offerer()
-        venue = create_venue(offerer, 'Test offerer', 'reservations@test.fr', is_virtual=True, siret=None)
-        thing_offer = create_offer_with_thing_product(venue, thing_type=ThingType.LIVRE_EDITION)
+        offerer = create_offerer(idx=1)
+        venue = create_venue(offerer, 'Test offerer', 'reservations@test.fr', is_virtual=True, siret=None, idx=1)
+        thing_offer = create_offer_with_thing_product(venue, thing_type=ThingType.LIVRE_EDITION, idx=1)
         beginning_datetime = datetime(2019, 11, 6, 14, 00, 0, tzinfo=timezone.utc)
         stock = create_stock_from_offer(thing_offer, beginning_datetime=beginning_datetime, price=0, available=10)
-        booking = create_booking(user, stock, venue)
-        booking.token = 'ABC123'
+        booking = create_booking(user, stock, venue, token='ABC123')
         stock.bookings = [booking]
         recipient = ['dev@passculture.app']
 
@@ -1713,7 +1709,7 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
                     'ISBN': '',
                     'departement': '93',
                     'offer_type': 'book',
-                    'lien_offre_pcpro': 'http://localhost:3001/offres/BQ?lieu=BQ&structure=BQ',
+                    'lien_offre_pcpro': 'http://localhost:3001/offres/AE?lieu=AE&structure=AE',
                     'nombre_resa': 1,
                     'env': '-development',
                     'contremarque': 'ABC123',
@@ -1728,14 +1724,13 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
     def test_returns_multiple_offer_email_when_production_environment(self, app):
         # Given
         user = create_user(email='test@example.com')
-        offerer = create_offerer()
-        venue = create_venue(offerer, 'Test offerer', 'reservations@test.fr', is_virtual=True, siret=None)
+        offerer = create_offerer(idx=1)
+        venue = create_venue(offerer, 'Test offerer', 'reservations@test.fr', is_virtual=True, siret=None, idx=1)
         thing_offer = create_offer_with_thing_product(venue, thing_type=ThingType.LIVRE_EDITION,
-                                                      booking_email='dev@passculture.app')
+                                                      booking_email='dev@passculture.app', idx=1)
         beginning_datetime = datetime(2019, 11, 6, 14, 00, 0, tzinfo=timezone.utc)
         stock = create_stock_from_offer(thing_offer, beginning_datetime=beginning_datetime, price=0, available=10)
-        booking = create_booking(user, stock, venue)
-        booking.token ='ABC123'
+        booking = create_booking(user, stock, venue, token='ABC123')
         stock.bookings = [booking]
         recipient = ['dev@passculture.app', ADMINISTRATION_EMAIL_ADDRESS]
 
@@ -1770,7 +1765,7 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
                     'nombre_resa': 1,
                     'contremarque': 'ABC123',
                     'env': '-development',
-                    'lien_offre_pcpro':'http://localhost:3001/offres/BU?lieu=BU&structure=BU',
+                    'lien_offre_pcpro': 'http://localhost:3001/offres/AE?lieu=AE&structure=AE',
                     'users': [{"firstName": "John",
                                "lastName": "Doe",
                                "email": "test@example.com",
@@ -1787,19 +1782,18 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
         user_2 = create_user('Test', first_name='Jaja', last_name='Dudu', departement_code='93',
                              email='mail@example.com',
                              can_book_free_offers=True)
-        offerer = create_offerer()
-        venue = create_venue(offerer, 'Test offerer', 'reservations@test.fr', is_virtual=True, siret=None)
+        offerer = create_offerer(idx=1)
+        venue = create_venue(offerer, 'Test offerer', 'reservations@test.fr', is_virtual=True, siret=None, idx=1)
         thing_offer = create_offer_with_thing_product(venue, thing_type=ThingType.LIVRE_EDITION,
-                                                      booking_email='dev@passculture.app')
+                                                      booking_email='dev@passculture.app', idx=1)
         beginning_datetime = datetime(2019, 11, 6, 14, 00, 0, tzinfo=timezone.utc)
         stock = create_stock_from_offer(thing_offer, beginning_datetime=beginning_datetime, price=0, available=10)
-        booking_1 = create_booking(user_1, stock, venue)
-        booking_2 = create_booking(user_2, stock, venue)
-        booking_2.token = 'TESTES'
-        booking_1.token = 'ACVSDC'
+        booking_1 = create_booking(user_1, stock, venue, token='ACVSDC')
+        booking_2 = create_booking(user_2, stock, venue, token='TESTES')
         stock.bookings = [booking_1, booking_2]
-        PcObject.save(booking_1, booking_2, stock)
         recipient = ['dev@passculture.app', ADMINISTRATION_EMAIL_ADDRESS]
+
+        PcObject.save(booking_1, booking_2, stock)
 
         # When
         thing_offer.extraData = None
@@ -1828,7 +1822,7 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
                     'is_event': 0,
                     'ISBN': '',
                     'offer_type': 'book',
-                    'lien_offre_pcpro':'http://localhost:3001/offres/BY?lieu=BY&structure=BY',
+                    'lien_offre_pcpro': 'http://localhost:3001/offres/AE?lieu=AE&structure=AE',
                     'departement': '93',
                     'nombre_resa': 2,
                     'env': '-development',
@@ -1852,14 +1846,13 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
                            email='test@example.com',
                            can_book_free_offers=True)
 
-        offerer = create_offerer()
-        venue = create_venue(offerer, 'Test offerer', 'reservations@test.fr', is_virtual=True, siret=None)
+        offerer = create_offerer(idx=1)
+        venue = create_venue(offerer, 'Test offerer', 'reservations@test.fr', is_virtual=True, siret=None, idx=2)
         thing_offer = create_offer_with_thing_product(venue, thing_type=ThingType.LIVRE_EDITION,
-                                                      booking_email='dev@passculture.app')
+                                                      booking_email='dev@passculture.app', idx=3)
         beginning_datetime = datetime(2019, 11, 6, 14, 00, 0, tzinfo=timezone.utc)
         stock = create_stock_from_offer(thing_offer, beginning_datetime=beginning_datetime, price=0, available=10)
-        booking = create_booking(user, stock, venue)
-        booking.token = 'ACVSDC'
+        booking = create_booking(user, stock, venue, token='ACVSDC')
         stock.bookings = [booking]
         recipient = ['dev@passculture.app', ADMINISTRATION_EMAIL_ADDRESS]
 
@@ -1891,7 +1884,7 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
                     'is_event': 0,
                     'ISBN': '',
                     'offer_type': 'book',
-                    'lien_offre_pcpro':  'http://localhost:3001/offres/B4?lieu=B4&structure=B4',
+                    'lien_offre_pcpro': 'http://localhost:3001/offres/AM?lieu=A9&structure=AE',
                     'departement': '93',
                     'nombre_resa': 1,
                     'env': '',
@@ -1902,6 +1895,7 @@ class MakeOffererBookingRecapEmailWithMailjetTemplateTest:
                                "contremarque": "ACVSDC"}]
                 }
         }
+
 
 class MakeOfferCreationNotificationEmailTest:
     @classmethod
@@ -1955,6 +1949,7 @@ class MakeOfferCreationNotificationEmailTest:
         assert email["FromName"] == "pass Culture"
         assert email["Subject"] == "[Création d’offre - numérique] Les lapins crétins"
 
+
 class ComputeEmailHtmlPartAndRecipientsTest:
     def test_accepts_string_as_to(self, app):
         # when
@@ -1973,6 +1968,7 @@ class ComputeEmailHtmlPartAndRecipientsTest:
         # then
         assert html == "my_html"
         assert to == "plop@plop.com, plip@plip.com"
+
 
 @freeze_time('2018-10-15 09:21:34')
 class MakePaymentsReportEmailTest:
