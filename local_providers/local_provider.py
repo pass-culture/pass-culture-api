@@ -84,7 +84,7 @@ class LocalProvider(Iterator):
         logger.debug("Creating thumb #" + str(new_thumb_index) + " for " + str(pc_object))
         self.createdThumbs += new_thumb_index
 
-    def create_object(self, providable_info: ProvidableInfo) -> Model:
+    def _create_object(self, providable_info: ProvidableInfo) -> Model:
         pc_object = providable_info.type()
         pc_object.idAtProviders = providable_info.id_at_providers
         pc_object.lastProviderId = self.provider.id
@@ -101,7 +101,7 @@ class LocalProvider(Iterator):
         self.createdObjects += 1
         return pc_object
 
-    def handle_update(self, pc_object, providable_info):
+    def _handle_update(self, pc_object, providable_info):
         self.fill_object_attributes(pc_object)
 
         pc_object.lastProviderId = self.provider.id
@@ -170,7 +170,7 @@ class LocalProvider(Iterator):
                         continue
 
                     try:
-                        pc_object = self.create_object(providable_info)
+                        pc_object = self._create_object(providable_info)
                         chunk_to_insert[chunk_key] = pc_object
                     except ApiErrors:
                         continue
@@ -181,7 +181,7 @@ class LocalProvider(Iterator):
 
                     if object_need_update:
                         try:
-                            self.handle_update(pc_object, providable_info)
+                            self._handle_update(pc_object, providable_info)
                             if chunk_key in chunk_to_insert:
                                 chunk_to_insert[chunk_key] = pc_object
                             else:

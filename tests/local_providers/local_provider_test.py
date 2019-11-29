@@ -266,7 +266,7 @@ class LocalProviderTest:
             provider = TestLocalProvider()
 
             # When
-            product = provider.create_object(providable_info)
+            product = provider._create_object(providable_info)
 
             # Then
             assert isinstance(product, Product)
@@ -286,7 +286,7 @@ class LocalProviderTest:
 
             # When
             with pytest.raises(ApiErrors) as api_errors:
-                provider.create_object(providable_info)
+                provider._create_object(providable_info)
 
             # Then
             assert api_errors.value.errors[
@@ -313,7 +313,7 @@ class LocalProviderTest:
                                                               date_modified_at_last_provider=datetime(2000, 1, 1))
 
             # When
-            provider.handle_update(existing_product, providable_info)
+            provider._handle_update(existing_product, providable_info)
 
             # Then
             assert existing_product.name == 'New Product'
@@ -337,7 +337,7 @@ class LocalProviderTest:
 
             # When
             with pytest.raises(ApiErrors) as api_errors:
-                provider.handle_update(existing_product, providable_info)
+                provider._handle_update(existing_product, providable_info)
 
             # Then
             assert api_errors.value.errors[
