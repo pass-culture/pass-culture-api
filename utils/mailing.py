@@ -100,7 +100,7 @@ def make_final_recap_email_for_stock_with_event(stock: Stock) -> Dict:
                                  stock_bookings=stock_bookings)
 
     return {
-        'FromName': 'Pass Culture',
+        'FromName': 'pass Culture',
         'FromEmail': SUPPORT_EMAIL_ADDRESS,
         'Subject': email_subject,
         'Html-part': email_html,
@@ -225,7 +225,7 @@ def make_offerer_booking_recap_email_after_user_action(booking: Booking, is_canc
                                  human_offer_id=human_offer_id)
 
     return {
-        'FromName': 'Pass Culture',
+        'FromName': 'pass Culture',
         'FromEmail': SUPPORT_EMAIL_ADDRESS,
         'Subject': email_subject,
         'Html-part': email_html,
@@ -249,7 +249,7 @@ def write_object_validation_email(offerer: Offerer, user_offerer: UserOfferer,
                                  api_url=API_URL)
 
     return {
-        'FromName': 'Pass Culture',
+        'FromName': 'pass Culture',
         'FromEmail': SUPPORT_EMAIL_ADDRESS,
         'Subject': "%s - inscription / rattachement PRO à valider : %s" % (
             user_offerer.user.departementCode, offerer.name),
@@ -281,7 +281,7 @@ def make_offerer_driven_cancellation_email_for_user(booking: Booking) -> Dict:
                                                                                            offer_name, offerer_name)
 
     return {
-        'FromName': 'Pass Culture',
+        'FromName': 'pass Culture',
         'FromEmail': SUPPORT_EMAIL_ADDRESS if feature_send_mail_to_users_enabled() else DEV_EMAIL_ADDRESS,
         'Subject': email_subject,
         'Html-part': email_html,
@@ -314,7 +314,7 @@ def make_offerer_driven_cancellation_email_for_offerer(booking: Booking) -> Dict
                                  venue=venue,
                                  )
     return {
-        'FromName': 'Pass Culture',
+        'FromName': 'pass Culture',
         'FromEmail': SUPPORT_EMAIL_ADDRESS if feature_send_mail_to_users_enabled() else DEV_EMAIL_ADDRESS,
         'Subject': email_subject,
         'Html-part': email_html,
@@ -367,7 +367,7 @@ def make_reset_password_email(user, app_origin_url):
     )
 
     return {
-        'FromName': 'Pass Culture',
+        'FromName': 'pass Culture',
         'FromEmail': SUPPORT_EMAIL_ADDRESS,
         'Subject': 'Réinitialisation de votre mot de passe',
         'Html-part': email_html
