@@ -1,7 +1,9 @@
 # Package `local_providers`
 
 Un provider est un fournisseur de données extérieur au Pass Culture.
-Il peut être appelé via une interface local_provider pour ajouter des stocks, des products, des offers ou autre à la base de données, liées à une venue via le venue_provider.
+Il peut être appelé via une interface local_provider pour
+ - ajouter des stocks, des products, des offers ou autre à la base de données
+Un provider est lié à une venue via le venue_provider.
 
 Qu'est ce qu'un local_provider ?
 C'est un composant intermédiaire permettant de faire la liaison entre une venue et un provider.
@@ -17,7 +19,7 @@ méta données
 - date de mofification
 - type
 
-Est-ce que je connais cet objet ? Est-ce que j'ai besoin de le mettre à jour
+
 
 ## Deux attributs 
 
@@ -64,6 +66,9 @@ Les étapes
 2. Lister les objet chez le provider (iterator __next__)
 
 3. Savoir si on connaît cet objet
+Est-ce que je connais cet objet ?
+Est-ce que j'ai besoin de le mettre à jour
+
     a. non -> on instancie un nouvel objet -> UPDATE
     b. oui -> cet objet est-il à jour ?
         i. Oui -> il ne se passe rien
@@ -72,13 +77,13 @@ Les étapes
 
 
 
-
-
 ### Iteration
 
 Une fois ces données récupérées, on itère dessus via le `__next__`
 
-On créé un un providable_info via la méthode `create_providable_info()`, c'est un objet transitoire qui ne persiste pas.
+On créé un un providable_info via la méthode `create_providable_info()` 
+Un providable_info est un objet transitoire qui ne persiste pas.
+
 
 `def __next__(self) -> List[ProvidableInfo]:
 
