@@ -215,7 +215,7 @@ class Get:
 
             # Then
             assert response.status_code == 404
-            assert response.json['global'] == ["Cette contremarque n'a pas été trouvée"]
+            assert response.json['bookingNotFound'] == ["Cette contremarque n'a pas été trouvée"]
 
         @clean_database
         def when_user_not_logged_in_and_wrong_email(self, app):
@@ -238,7 +238,7 @@ class Get:
 
             # Then
             assert response.status_code == 404
-            assert response.json['global'] == ["Cette contremarque n'a pas été trouvée"]
+            assert response.json['bookingNotFound'] == ["Cette contremarque n'a pas été trouvée"]
 
         @clean_database
         def when_user_not_logged_in_right_email_and_wrong_offer(self, app):
@@ -258,7 +258,7 @@ class Get:
 
             # Then
             assert response.status_code == 404
-            assert response.json['global'] == ["Cette contremarque n'a pas été trouvée"]
+            assert response.json['bookingNotFound'] == ["Cette contremarque n'a pas été trouvée"]
 
         @clean_database
         def when_user_has_rights_and_email_with_special_characters_not_url_encoded(self, app):
@@ -374,7 +374,7 @@ class Get:
 
             # Then
             assert response.status_code == 410
-            assert response.json['booking'] == ['Cette réservation a déjà été validée']
+            assert response.json['bookingValidated'] == ['Cette réservation a déjà été validée']
 
         @clean_database
         def when_booking_is_cancelled(self, app):
@@ -394,4 +394,4 @@ class Get:
 
             # Then
             assert response.status_code == 410
-            assert response.json['booking'] == ['Cette réservation a été annulée']
+            assert response.json['bookingCancelled'] == ['Cette réservation a été annulée']
