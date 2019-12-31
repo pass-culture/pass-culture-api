@@ -294,7 +294,7 @@ class Patch:
 
                 # Then
                 assert response.status_code == 404
-                assert response.json['global'] == ["Cette contremarque n'a pas été trouvée"]
+                assert response.json['bookingNotFound'] == ["Cette contremarque n'a pas été trouvée"]
 
         class WhenUserIsLoggedIn:
             @clean_database
@@ -409,7 +409,7 @@ class Patch:
 
                 # Then
                 assert response.status_code == 410
-                assert response.json['booking'] == ['Cette réservation a été annulée']
+                assert response.json['bookingCancelled'] == ['Cette réservation a été annulée']
                 assert Booking.query.get(booking_id).isUsed is False
 
             @clean_database
@@ -432,5 +432,5 @@ class Patch:
 
                 # Then
                 assert response.status_code == 410
-                assert response.json['booking'] == ['Cette réservation a déjà été validée']
+                assert response.json['bookingValidated'] == ['Cette réservation a déjà été validée']
                 assert Booking.query.get(booking_id).isUsed is True

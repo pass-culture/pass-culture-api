@@ -45,6 +45,7 @@ class Patch:
                 assert response.status_code == 204
                 assert Booking.query.get(booking_id).isUsed is True
 
+
             @clean_database
             def expect_booking_to_be_used_with_non_standard_origin_header(self, app):
                 # Given
@@ -362,7 +363,7 @@ class Patch:
 
                 # Then
                 assert response.status_code == 404
-                assert response.json['global'] == ["Cette contremarque n'a pas été trouvée"]
+                assert response.json['bookingNotFound'] == ["Cette contremarque n'a pas été trouvée"]
 
         class WithBasicAuthTest:
             @clean_database
@@ -383,7 +384,7 @@ class Patch:
 
                 # Then
                 assert response.status_code == 404
-                assert response.json['global'] == ["Cette contremarque n'a pas été trouvée"]
+                assert response.json['bookingNotFound'] == ["Cette contremarque n'a pas été trouvée"]
 
     class Returns405:
         class WhenLoggedUserIsAdmin:
@@ -440,7 +441,7 @@ class Patch:
 
                 # Then
                 assert response.status_code == 410
-                assert response.json['booking'] == ['Cette réservation a été annulée']
+                assert response.json['bookingCancelled'] == ['Cette réservation a été annulée']
                 assert Booking.query.get(booking_id).isUsed is False
 
             @clean_database
@@ -463,7 +464,7 @@ class Patch:
 
                 # Then
                 assert response.status_code == 410
-                assert response.json['booking'] == ['Cette réservation a déjà été validée']
+                assert response.json['bookingValidated'] == ['Cette réservation a déjà été validée']
                 assert Booking.query.get(booking_id).isUsed is True
 
         class WithApiKeyAuthTest:
@@ -487,7 +488,7 @@ class Patch:
 
                 # Then
                 assert response.status_code == 410
-                assert response.json['booking'] == ['Cette réservation a été annulée']
+                assert response.json['bookingCancelled'] == ['Cette réservation a été annulée']
                 assert Booking.query.get(booking_id).isUsed is False
 
             @clean_database
@@ -510,5 +511,5 @@ class Patch:
 
                 # Then
                 assert response.status_code == 410
-                assert response.json['booking'] == ['Cette réservation a déjà été validée']
+                assert response.json['bookingValidated'] == ['Cette réservation a déjà été validée']
                 assert Booking.query.get(booking_id).isUsed is True
