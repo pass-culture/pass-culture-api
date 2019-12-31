@@ -249,16 +249,55 @@
             }
           },
           "401": {
-            "description": "Authentification nécessaire"
+            "description": "Authentification nécessaire",
+            "schema": {
+              "type": "object",
+              "example": "Vous n'êtes pas authentifié·e"
+            }
           },
           "403": {
-            "description": "Vous n'avez pas les droits nécessaires pour voir cette contremarque ou l'offre a lieu dans plus de 72 heures (voir CGU)"
+            "description": "Vous n'avez pas les droits nécessaires pour voir cette contremarque ou l'offre a lieu dans plus de 72 heures (voir CGU)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "user": {
+                  "type": "array",
+                  "example": ["Vous n'avez pas les droits suffisants pour valider cette contremarque."]
+                },
+                "beginningDatetime": {
+                  "type": "array",
+                  "example": ["Vous ne pouvez pas valider cette contremarque plus de 72h avant le début de l'évènement"]
+                }
+              }
+            }
           },
           "404": {
-            "description": "La contremarque n’existe pas"
+            "description": "La contremarque n’existe pas",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "bookings": {
+                  "type": "array",
+                  "example": ["Cette contremarque n'a pas été trouvée"]
+                }
+              }
+            }
           },
           "410": {
-            "description": "La contremarque n’est plus valide car elle a déjà été validée ou a été annulée"
+            "description": "La contremarque n’est plus valide car elle a déjà été validée ou a été annulée",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "bookingValidated": {
+                  "type": "array",
+                  "example": ["Cette réservation a déjà été validée"]
+                },
+                "bookingCancelled": {
+                  "type": "array",
+                  "example": ["Cette réservation a été annulée"]
+                }
+              }
+            }
           }
         },
         "security": [

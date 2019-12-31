@@ -703,7 +703,7 @@ class FindByTest:
                 booking_queries.find_by('UNKNOWN')
 
             # then
-            assert e.value.errors['global'] == [
+            assert e.value.errors['bookingNotFound'] == [
                 "Cette contremarque n'a pas été trouvée"]
 
     class ByTokenAndEmailTest:
@@ -770,7 +770,7 @@ class FindByTest:
                 booking_queries.find_by(booking.token, email='other.user@example.com')
 
             # then
-            assert e.value.errors['global'] == [
+            assert e.value.errors['bookingNotFound'] == [
                 "Cette contremarque n'a pas été trouvée"]
 
     class ByTokenAndEmailAndOfferIdTest:
@@ -824,7 +824,7 @@ class FindByTest:
                     booking.token, email='user@example.com', offer_id=1234)
 
             # then
-            assert e.value.errors['global'] == [
+            assert e.value.errors['bookingNotFound'] == [
                 "Cette contremarque n'a pas été trouvée"]
 
 

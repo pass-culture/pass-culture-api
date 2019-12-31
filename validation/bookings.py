@@ -118,10 +118,10 @@ def check_expenses_limits(expenses: dict, booking: Booking, find_stock=find_stoc
 def check_booking_token_is_usable(booking: Booking):
     resource_gone_error = ResourceGoneError()
     if booking.isUsed:
-        resource_gone_error.add_error('booking', 'Cette réservation a déjà été validée')
+        resource_gone_error.add_error('bookingValidated', 'Cette réservation a déjà été validée')
         raise resource_gone_error
     if booking.isCancelled:
-        resource_gone_error.add_error('booking', 'Cette réservation a été annulée')
+        resource_gone_error.add_error('bookingCancelled', 'Cette réservation a été annulée')
         raise resource_gone_error
     event_starts_in_more_than_72_hours = booking.stock.beginningDatetime and (
             booking.stock.beginningDatetime > (datetime.utcnow() + BOOKING_CANCELLATION_DELAY))
@@ -210,7 +210,7 @@ def check_booking_is_not_already_cancelled(booking: Booking):
     if booking.isCancelled:
         api_errors = ResourceGoneError()
         api_errors.add_error(
-            'global',
+            'booking',
             "Cette contremarque a déjà été annulée"
         )
         raise api_errors
@@ -220,7 +220,7 @@ def check_booking_is_not_used(booking: Booking):
     if booking.isUsed:
         api_errors = ForbiddenError()
         api_errors.add_error(
-            'global',
+            'booking',
             "Impossible d\'annuler une réservation consommée"
         )
         raise api_errors

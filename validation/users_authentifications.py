@@ -33,7 +33,7 @@ def login_or_api_key_required_v2(function):
             is_valid_api_key = bool(find_api_key_by_value(app_authorization_credentials))
 
         if not is_valid_api_key and not current_user.is_authenticated:
-            return 'API key or login required', 401
+            return "Vous n'êtes pas authentifié·e", 401
         return function(*args, **kwds)
 
     return wrapper

@@ -257,7 +257,7 @@ class Patch:
 
             # Then
             assert response.status_code == 404
-            assert response.json['global'] == ["Cette contremarque n'a pas été trouvée"]
+            assert response.json['bookingNotFound'] == ["Cette contremarque n'a pas été trouvée"]
 
     class Returns410:
         @clean_database
