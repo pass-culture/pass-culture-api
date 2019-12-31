@@ -58,7 +58,7 @@ def test_check_valid_signup_raises_api_error_if_not_contact_ok():
 Utiliser le try/except pour les cas passants :
 
 Par exemple :
-``python
+```python
 def test_does_not_raise_error_when_user_is_authenticated(self, app):
     # given
     user = User()
