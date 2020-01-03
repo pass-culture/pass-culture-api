@@ -34,6 +34,7 @@ from tests.test_utils import create_booking, \
 REFERENCE_DATE = '2017-10-15 09:21:34'
 
 
+
 class DepartmentOrNationalOffersTest:
     @clean_database
     def test_returns_national_thing_with_different_department(self, app):
