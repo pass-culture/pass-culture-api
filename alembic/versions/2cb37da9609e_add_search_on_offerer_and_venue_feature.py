@@ -12,7 +12,7 @@ from alembic import op
 from models.feature import FeatureToggle
 
 revision = '2cb37da9609e'
-down_revision = '75f2ccf2be82'
+down_revision = '21ef2b9af5e6'
 branch_labels = None
 depends_on = None
 
