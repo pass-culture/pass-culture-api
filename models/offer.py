@@ -236,6 +236,9 @@ class Offer(PcObject,
     def thumb_url(self) -> str:
         return self.activeMediation.thumbUrl if self.hasActiveMediation else self.product.thumbUrl
 
+    def has_enough_stock_to_be_booked(self) -> bool:
+        return any([stock.can_be_booked() for stock in self.stocks])
+
     def _has_unlimited_stock(self):
         return any(map(lambda s: s.available is None, self.stocks))
 

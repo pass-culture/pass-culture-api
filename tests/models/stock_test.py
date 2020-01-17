@@ -8,9 +8,13 @@ from models import ApiErrors, PcObject
 from models.pc_object import DeletedRecordException
 from models.stock import Stock
 from tests.conftest import clean_database
-from tests.model_creators.generic_creators import create_booking, create_user, create_stock, create_offerer, create_venue
+from tests.model_creators.generic_creators import create_booking, create_user, create_stock, create_offerer, \
+    create_venue, create_deposit
 from tests.model_creators.specific_creators import create_stock_with_event_offer, create_stock_from_offer, \
     create_offer_with_thing_product, create_offer_with_event_product
+
+YESTERDAY = datetime.now() - timedelta(days=1)
+TOMORROW = datetime.now() + timedelta(days=1)
 
 
 @clean_database
@@ -253,7 +257,8 @@ class StockRemainingQuantityTest:
         stock = create_stock_from_offer(offer, available=2, price=0)
         PcObject.save(stock)
         user = create_user()
-        booking1 = create_booking(user=user, stock=stock, date_used=datetime.utcnow() - timedelta(days=1), is_cancelled=False,
+        booking1 = create_booking(user=user, stock=stock, date_used=datetime.utcnow() - timedelta(days=1),
+                                  is_cancelled=False,
                                   is_used=True, quantity=1)
         booking2 = create_booking(user=user, stock=stock, is_cancelled=False, is_used=False, quantity=1)
 
@@ -293,3 +298,80 @@ class IsBookableTest:
 
         # Then
         assert stock.isBookable is True
+
+
+class CanBeBookedTest:
+    def test_should_return_true_when_stock_has_no_booking_limit_date_and_has_unlimited_quantities_and_is_not_deleted(
+            self):
+        # Given
+        stock = create_stock(booking_limit_datetime=None, available=None, is_soft_deleted=False)
+
+        # When
+        can_be_booked = stock.can_be_booked()
+
+        # Then
+        assert can_be_booked is True
+
+    def test_should_return_true_when_booking_limit_date_is_future_and_has_unlimited_quantities_and_is_not_deleted(self):
+        # Given
+        stock = create_stock(booking_limit_datetime=TOMORROW, available=None, is_soft_deleted=False)
+
+        # When
+        can_be_booked = stock.can_be_booked()
+
+        # Then
+        assert can_be_booked is True
+
+    @clean_database
+    def test_should_return_true_when_stock_has_no_booking_limit_date_and_has_enough_quantities_and_is_not_deleted(self,
+                                                                                                                  app):
+        # Given
+        offerer = create_offerer()
+        venue = create_venue(offerer=offerer)
+        offer = create_offer_with_thing_product(venue=venue)
+        stock = create_stock(booking_limit_datetime=None, available=1, is_soft_deleted=False, offer=offer)
+        PcObject.save(stock)
+
+        # When
+        can_be_booked = stock.can_be_booked()
+
+        # Then
+        assert can_be_booked is True
+
+    def test_should_return_false_when_stock_has_expired_booking_limit_datetime(self):
+        # Given
+        stock = create_stock(booking_limit_datetime=YESTERDAY, available=None, is_soft_deleted=False)
+
+        # When
+        can_be_booked = stock.can_be_booked()
+
+        # Then
+        assert can_be_booked is False
+
+    @clean_database
+    def test_should_return_false_when_stock_has_no_remaining_quantity(self):
+        # Given
+        user = create_user()
+        create_deposit(user=user)
+        offerer = create_offerer()
+        venue = create_venue(offerer=offerer)
+        offer = create_offer_with_thing_product(venue=venue)
+        stock = create_stock(booking_limit_datetime=None, available=1, is_soft_deleted=False, offer=offer)
+        booking = create_booking(user=user, stock=stock, quantity=1)
+        PcObject.save(booking)
+
+        # When
+        can_be_booked = stock.can_be_booked()
+
+        # Then
+        assert can_be_booked is False
+
+    def test_should_return_false_when_stock_is_soft_deleted(self):
+        # Given
+        stock = create_stock(booking_limit_datetime=None, available=None, is_soft_deleted=True)
+
+        # When
+        can_be_booked = stock.can_be_booked()
+
+        # Then
+        assert can_be_booked is False

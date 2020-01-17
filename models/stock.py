@@ -115,6 +115,13 @@ class Stock(PcObject,
     def resolvedOffer(self):
         return self.offer or self.eventOccurrence.offer
 
+    def can_be_booked(self) -> bool:
+        has_valid_date = self.bookingLimitDatetime is None or self.bookingLimitDatetime >= datetime.utcnow()
+        has_remaining_quantity = self.available is None or self.remainingQuantity > 0
+        is_not_deleted = not self.isSoftDeleted
+
+        return is_not_deleted and has_valid_date and has_remaining_quantity
+
     @classmethod
     def queryNotSoftDeleted(cls):
         return Stock.query.filter_by(isSoftDeleted=False)

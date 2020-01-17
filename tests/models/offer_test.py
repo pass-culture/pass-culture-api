@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from unittest.mock import Mock
 
 import pytest
 
@@ -1081,3 +1082,38 @@ class ThumbUrlTest:
 
         # then
         assert offer.thumb_url == 'http://localhost/storage/thumbs/products/AE'
+
+
+class HasEnoughStockToBeBookedTest:
+    def test_should_return_false_if_there_is_no_stock_that_can_be_booked(self):
+        # given
+        offer = create_offer_with_event_product()
+        stock = create_stock()
+        stock.can_be_booked = Mock()
+        stock.can_be_booked.return_value = False
+
+        offer.stocks = [stock]
+
+        # when
+        has_enough_stock = offer.has_enough_stock_to_be_booked()
+
+        # then
+        assert has_enough_stock is False
+
+    def test_should_return_true_if_there_is_at_least_one_stock_that_can_be_booked(self):
+        # given
+        offer = create_offer_with_event_product()
+        unbookable_stock = create_stock()
+        unbookable_stock.can_be_booked = Mock()
+        unbookable_stock.can_be_booked.return_value = False
+        bookable_stock = create_stock()
+        bookable_stock.can_be_booked = Mock()
+        bookable_stock.can_be_booked.return_value = True
+
+        offer.stocks = [unbookable_stock, bookable_stock]
+
+        # when
+        has_enough_stock = offer.has_enough_stock_to_be_booked()
+
+        # then
+        assert has_enough_stock is True

@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
+from unittest.mock import Mock
 
 from algolia.rules_engine import is_eligible_for_indexing
 from models import PcObject
 from tests.conftest import clean_database
-from tests.model_creators.generic_creators import create_offerer, create_stock, create_venue, create_booking, \
-    create_user, create_deposit
+from tests.model_creators.generic_creators import create_offerer, create_stock, create_venue
 from tests.model_creators.specific_creators import create_offer_with_thing_product
 
 YESTERDAY = datetime.now() - timedelta(days=1)
@@ -73,47 +73,14 @@ class IsEligibleForIndexingTest:
         assert is_eligible is False
 
     @clean_database
-    def test_should_return_false_when_offer_has_no_remaining_quantity(self, app):
-        # Given
-        beneficiary = create_user()
-        create_deposit(user=beneficiary)
-        offerer = create_offerer(is_active=True, validation_token=None)
-        venue = create_venue(offerer=offerer, validation_token=None)
-        offer = create_offer_with_thing_product(venue=venue, is_active=True)
-        stock1 = create_stock(offer=offer, booking_limit_datetime=TOMORROW, available=1, is_soft_deleted=False)
-        stock2 = create_stock(offer=offer, booking_limit_datetime=TOMORROW, available=1, is_soft_deleted=False)
-        booking1 = create_booking(user=beneficiary, stock=stock1)
-        booking2 = create_booking(user=beneficiary, stock=stock2)
-        PcObject.save(booking1, booking2)
-
-        # When
-        is_eligible = is_eligible_for_indexing(offer)
-
-        # Then
-        assert is_eligible is False
-
-    @clean_database
-    def test_should_return_false_when_booking_limit_datetime_is_outdated(self, app):
+    def test_should_return_false_when_offer_has_not_enough_stock(self, app):
         # Given
         offerer = create_offerer(is_active=True, validation_token=None)
         venue = create_venue(offerer=offerer, validation_token=None)
         offer = create_offer_with_thing_product(venue=venue, is_active=True)
-        stock = create_stock(offer=offer, booking_limit_datetime=YESTERDAY, available=None, is_soft_deleted=False)
-        PcObject.save(stock)
-
-        # When
-        is_eligible = is_eligible_for_indexing(offer)
-
-        # Then
-        assert is_eligible is False
-
-    @clean_database
-    def test_should_return_false_when_all_stocks_are_soft_deleted(self, app):
-        # Given
-        offerer = create_offerer(is_active=True, validation_token=None)
-        venue = create_venue(offerer=offerer, validation_token=None)
-        offer = create_offer_with_thing_product(venue=venue, is_active=True)
-        stock = create_stock(offer=offer, booking_limit_datetime=TOMORROW, available=None, is_soft_deleted=True)
+        offer.has_enough_stock_to_be_booked = Mock()
+        offer.has_enough_stock_to_be_booked.return_value = False
+        stock = create_stock(offer=offer, booking_limit_datetime=TOMORROW, available=1, is_soft_deleted=False)
         PcObject.save(stock)
 
         # When
@@ -144,21 +111,6 @@ class IsEligibleForIndexingTest:
         venue = create_venue(offerer=offerer, validation_token=None)
         offer = create_offer_with_thing_product(venue=venue, is_active=True)
         stock = create_stock(offer=offer, booking_limit_datetime=TOMORROW, available=1, is_soft_deleted=False)
-        PcObject.save(stock)
-
-        # When
-        is_eligible = is_eligible_for_indexing(offer)
-
-        # Then
-        assert is_eligible is True
-
-    @clean_database
-    def test_should_return_true_when_offer_is_eligible_with_unlimited_stock(self, app):
-        # Given
-        offerer = create_offerer(is_active=True, validation_token=None)
-        venue = create_venue(offerer=offerer, validation_token=None)
-        offer = create_offer_with_thing_product(venue=venue, is_active=True)
-        stock = create_stock(offer=offer, booking_limit_datetime=TOMORROW, available=None, is_soft_deleted=False)
         PcObject.save(stock)
 
         # When
