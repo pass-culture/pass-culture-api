@@ -9,6 +9,9 @@
   "env": {
     "SCALINGO_POSTGRESQL_URL": {
       "value": "to be overriden"
+    },
+    "CANONICAL_HOST_URL": {
+      "generator": "url"
     }
   },
   "formation": {
