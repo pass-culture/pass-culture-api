@@ -1,6 +1,7 @@
 from flask import current_app as app
 
-from local_providers.provider_manager import do_update, get_local_provider_class_by_name
+from local_providers.provider_manager import do_update, get_local_provider_class_by_name, \
+    synchronize_venue_providers_for_provider
 from models import VenueProvider
 
 
@@ -19,14 +20,14 @@ def update_providables(provider_name: str, venue_provider_id: str, limit: int):
         raise ValueError('Call either with provider-name or venue-provider-id')
 
     if provider_name:
-        ProviderClass = get_local_provider_class_by_name(provider_name)
-        provider = ProviderClass()
+        provider_class = get_local_provider_class_by_name(provider_name)
+        provider = provider_class()
         return do_update(provider, limit)
 
     if venue_provider_id:
         venue_provider = VenueProvider.query.get(venue_provider_id)
-        ProviderClass = get_local_provider_class_by_name(venue_provider.provider.localClass)
-        provider = ProviderClass(venue_provider)
+        provider_class = get_local_provider_class_by_name(venue_provider.provider.localClass)
+        provider = provider_class(venue_provider)
         return do_update(provider, limit)
 
 
@@ -38,10 +39,4 @@ def update_providables(provider_name: str, venue_provider_id: str, limit: int):
                     help='Limit update to n items per venue provider'
                          + ' (for test purposes)', type=int)
 def update_providables_by_provider_id(provider_id: str, limit: int):
-    provider_id = int(provider_id)
-    venue_providers = VenueProvider.query.filter(VenueProvider.providerId == provider_id).all()
-    for venue_provider in venue_providers:
-        ProviderClass = get_local_provider_class_by_name(venue_provider.provider.localClass)
-        provider = ProviderClass(venue_provider)
-        do_update(provider, limit)
-    pass
+    synchronize_venue_providers_for_provider(limit, int(provider_id))
