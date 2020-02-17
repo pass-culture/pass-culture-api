@@ -14,7 +14,10 @@ class FeatureToggle(enum.Enum):
     FULL_OFFERS_SEARCH_WITH_OFFERER_AND_VENUE = 'Permet la recherche de mots-clés dans les tables structures' \
                                                 ' et lieux en plus de celles des offres'
     SEARCH_ALGOLIA = 'Permettre la recherche via Algolia'
-    SEARCH_LEGACY = "Permettre la recherche classique"
+    SEARCH_LEGACY = 'Permettre la recherche classique'
+
+    SYNCRONIZE_LIBRAIRIES = 'Permettre la synchronisation journalière avec Librairies.fr'
+
 
 class Feature(PcObject, Model, DeactivableMixin):
     name = Column(Enum(FeatureToggle), index=True, unique=True, nullable=False)
