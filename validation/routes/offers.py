@@ -1,3 +1,5 @@
+from typing import Dict
+
 from domain.allocine import get_editable_fields_for_allocine_offers
 from models import RightsType, Offer
 from models.api_errors import ResourceNotFoundError, ApiErrors
@@ -76,7 +78,7 @@ def check_offer_is_editable(offer: Offer):
         raise error
 
 
-def check_edition_for_allocine_offer_is_valid(payload: dict):
+def check_edition_for_allocine_offer_is_valid(payload: Dict):
     editable_fields_for_offer = get_editable_fields_for_allocine_offers()
 
     all_payload_fields_are_editable = set(payload).issubset(editable_fields_for_offer)
