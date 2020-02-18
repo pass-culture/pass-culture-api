@@ -11,6 +11,12 @@ from scripts.cron_logger.cron_status import CronStatus
 from utils.logger import logger
 
 
+def synchronize_data_for_provider(provider_name: str, limit: Optional[int] = None) -> None:
+    provider_class = get_local_provider_class_by_name(provider_name)
+    provider = provider_class()
+    do_update(provider, limit)
+
+
 def synchronize_venue_providers_for_provider(provider_id: int, limit: Optional[int] = None) -> None:
     venue_providers = get_actives_venue_providers_for_specific_provider(provider_id)
     provider = get_provider_by_id(provider_id)
