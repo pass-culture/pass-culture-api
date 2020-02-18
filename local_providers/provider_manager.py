@@ -14,7 +14,7 @@ from utils.logger import logger
 def synchronize_data_for_provider(provider_name: str, limit: Optional[int] = None) -> None:
     provider_class = get_local_provider_class_by_name(provider_name)
     provider = provider_class()
-    do_update(provider, limit)
+    do_synchronize(provider, limit)
 
 
 def synchronize_venue_providers_for_provider(provider_id: int, limit: Optional[int] = None) -> None:
@@ -23,17 +23,17 @@ def synchronize_venue_providers_for_provider(provider_id: int, limit: Optional[i
     provider_class = get_local_provider_class_by_name(provider.localClass)
     for venue_provider in venue_providers:
         provider = provider_class(venue_provider)
-        do_update(provider, limit)
+        do_synchronize(provider, limit)
 
 
-def do_update(provider: LocalProvider, limit: Optional[int] = None) -> None:
+def do_synchronize(provider: LocalProvider, limit: Optional[int] = None) -> None:
     try:
         provider.updateObjects(limit)
     except Exception:
         _remove_worker_id_after_venue_provider_sync_error(provider)
         formatted_traceback = traceback.format_exc()
         logger.error(build_cron_log_message(name=provider.__class__.__name__,
-                                            status=CronStatus.STARTED,
+                                            status=CronStatus.FAILED,
                                             traceback=formatted_traceback))
 
 

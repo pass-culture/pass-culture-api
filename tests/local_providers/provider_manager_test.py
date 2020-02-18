@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch, ANY
 
-from local_providers.provider_manager import do_update, _remove_worker_id_after_venue_provider_sync_error, \
+from local_providers.provider_manager import do_synchronize, _remove_worker_id_after_venue_provider_sync_error, \
     synchronize_venue_providers_for_provider, synchronize_data_for_provider
 from models import VenueProvider
 from repository import repository
@@ -21,7 +21,7 @@ class DoUpdateTest:
         provider_mock.updateObjects = MagicMock()
 
         # When
-        do_update(provider_mock, 10)
+        do_synchronize(provider_mock, 10)
 
         # Then
         provider_mock.updateObjects.assert_called_once_with(10)
@@ -37,7 +37,7 @@ class DoUpdateTest:
         provider_mock.updateObjects = mock_update_objects
 
         # When
-        do_update(provider_mock, 10)
+        do_synchronize(provider_mock, 10)
 
         # Then
         mock_remove_worker_id.assert_called_once_with(provider_mock)
@@ -78,10 +78,10 @@ class RemoveWorkerIdAfterVenueProviderSyncErrorTest:
 
 
 class SynchronizeVenueProvidersForProviderTest:
-    @patch('local_providers.provider_manager.do_update')
+    @patch('local_providers.provider_manager.do_synchronize')
     @patch('local_providers.provider_manager.get_local_provider_class_by_name')
     @clean_database
-    def test_should_entirely_synchronize_venue_provider(self, mock_get_provider_class, mock_do_update, app):
+    def test_should_entirely_synchronize_venue_provider(self, mock_get_provider_class, mock_do_synchronize, app):
         # Given
         provider_test = create_provider(local_class='TestLocalProvider')
         offerer = create_offerer()
@@ -95,12 +95,12 @@ class SynchronizeVenueProvidersForProviderTest:
 
         # Then
         mock_get_provider_class.assert_called_once()
-        mock_do_update.assert_called_once_with(fake(TestLocalProvider), None)
+        mock_do_synchronize.assert_called_once_with(fake(TestLocalProvider), None)
 
-    @patch('local_providers.provider_manager.do_update')
+    @patch('local_providers.provider_manager.do_synchronize')
     @patch('local_providers.provider_manager.get_local_provider_class_by_name')
     @clean_database
-    def test_should_synchronize_venue_provider_with_defined_limit(self, mock_get_provider_class, mock_do_update, app):
+    def test_should_synchronize_venue_provider_with_defined_limit(self, mock_get_provider_class, mock_do_synchronize, app):
         # Given
         provider_test = create_provider(local_class='TestLocalProvider')
         offerer = create_offerer()
@@ -114,14 +114,14 @@ class SynchronizeVenueProvidersForProviderTest:
 
         # Then
         mock_get_provider_class.assert_called_once()
-        mock_do_update.assert_called_once_with(fake(TestLocalProvider), 10)
+        mock_do_synchronize.assert_called_once_with(fake(TestLocalProvider), 10)
 
 
 class SynchronizeDataForProviderTest:
-    @patch('local_providers.provider_manager.do_update')
+    @patch('local_providers.provider_manager.do_synchronize')
     @patch('local_providers.provider_manager.get_local_provider_class_by_name')
     @clean_database
-    def test_should_call_do_update_for_specified_provider(self, mock_get_provider_class, mock_do_update, app):
+    def test_should_call_do_synchronize_for_specified_provider(self, mock_get_provider_class, mock_do_synchronize, app):
         # Given
         provider_test = create_provider(local_class='TestLocalProvider')
         repository.save(provider_test)
@@ -132,4 +132,4 @@ class SynchronizeDataForProviderTest:
 
         # Then
         mock_get_provider_class.assert_called_once()
-        mock_do_update.assert_called_once_with(fake(TestLocalProvider), None)
+        mock_do_synchronize.assert_called_once_with(fake(TestLocalProvider), None)
