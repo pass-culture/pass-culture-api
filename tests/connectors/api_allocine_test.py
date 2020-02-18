@@ -1,6 +1,7 @@
 from unittest.mock import patch, MagicMock
 
 import pytest
+import requests
 
 from connectors.api_allocine import get_movies_showtimes_from_allocine, AllocineException, \
     get_movie_poster_from_allocine
@@ -41,7 +42,7 @@ class GetMovieShowtimeListTest:
         # Then
         assert str(exception.value) == "Error getting API Allocine DATA for theater test_id"
 
-    @patch('connectors.api_allocine.requests.get', side_effect=Exception)
+    @patch('connectors.api_allocine.requests.get', side_effect=requests.exceptions.ConnectionError)
     def test_should_raise_exception_when_api_call_fails_with_connection_error(self, mocked_requests_get):
         # Given
         token = 'test'

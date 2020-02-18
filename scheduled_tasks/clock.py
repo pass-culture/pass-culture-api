@@ -1,17 +1,10 @@
 import os
-import subprocess
-from io import StringIO
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 from flask import Flask
-from mailjet_rest import Client
-from scheduled_tasks.utils import cron_require_feature, log_cron
 from sqlalchemy import orm
 
-from local_providers.provider_manager import synchronize_venue_providers_for_provider
-from models import DiscoveryView
 from models.db import db
-from models.feature import FeatureToggle
 from repository.feature_queries import feature_cron_send_final_booking_recaps_enabled, \
     feature_cron_generate_and_send_payments, \
     feature_cron_retrieve_offerers_bank_information, \
@@ -24,136 +17,18 @@ from repository.feature_queries import feature_cron_send_final_booking_recaps_en
     feature_import_beneficiaries_enabled, \
     feature_cron_synchronize_allocine_stocks, \
     feature_update_recommendations_view
-from repository.provider_queries import get_provider_by_local_class
-from repository.recommendation_queries import delete_useless_recommendations
-from repository.user_queries import find_most_recent_beneficiary_creation_date
-from scripts.beneficiary import remote_import
-from scripts.dashboard.write_dashboard import write_dashboard
-from utils.config import API_ROOT_PATH
-from utils.logger import logger
-from utils.mailing import MAILJET_API_KEY, MAILJET_API_SECRET, parse_email_addresses
+from scheduled_tasks.product_functions import pc_send_final_booking_recaps, pc_generate_and_send_payments, \
+    pc_update_booking_used, pc_send_wallet_balances, pc_send_remedial_emails, pc_write_dashboard, \
+    pc_delete_useless_recommendations, pc_update_recommendations_view, RECO_VIEW_REFRESH_FREQUENCY
+from scheduled_tasks.provider_functions import pc_retrieve_offerers_bank_information, pc_remote_import_beneficiaries
+from scheduled_tasks.venue_provider_functions import pc_synchronize_allocine_stocks, synchronize_libraire_stocks, \
+    pc_retrieve_bank_information_for_venue_without_siret
 
 app = Flask(__name__, template_folder='../templates')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['DEBUG'] = True
 db.init_app(app)
-
-ALLOCINE_STOCKS_PROVIDER_NAME = "AllocineStocks"
-
-RECO_VIEW_REFRESH_FREQUENCY = os.environ.get('RECO_VIEW_REFRESH_FREQUENCY', '*')
-
-
-@log_cron
-def pc_send_final_booking_recaps():
-    with app.app_context():
-        from scripts.send_final_booking_recaps import send_final_booking_recaps
-        app.mailjet_client = Client(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3')
-        send_final_booking_recaps()
-
-
-@log_cron
-def pc_generate_and_send_payments(payment_message_id: str = None):
-    with app.app_context():
-        from scripts.payment.batch import generate_and_send_payments
-        app.mailjet_client = Client(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3')
-        generate_and_send_payments(payment_message_id)
-
-
-@log_cron
-def pc_update_booking_used():
-    with app.app_context():
-        from scripts.update_booking_used import update_booking_used_after_stock_occurrence
-        update_booking_used_after_stock_occurrence()
-
-
-@log_cron
-def pc_send_wallet_balances():
-    with app.app_context():
-        from scripts.payment.batch import send_wallet_balances
-        app.mailjet_client = Client(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3')
-        recipients = parse_email_addresses(os.environ.get('WALLET_BALANCES_RECIPIENTS', None))
-        send_wallet_balances(recipients)
-
-
-@log_cron
-def pc_synchronize_allocine_stocks():
-    with app.app_context():
-        allocine_stocks_provider_id = get_provider_by_local_class(ALLOCINE_STOCKS_PROVIDER_NAME).id
-        process = subprocess.Popen(
-            'PYTHONPATH="." python scripts/pc.py update_providables_by_provider_id --provider-id '
-            + str(allocine_stocks_provider_id),
-            shell=True,
-            cwd=API_ROOT_PATH)
-        output, error = process.communicate()
-        logger.info(StringIO(output))
-        logger.info(StringIO(error))
-
-
-@log_cron
-@cron_require_feature(FeatureToggle.SYNCRONIZE_LIBRAIRIES)
-def synchronize_libraire_stocks():
-    with app.app_context():
-        allocine_stocks_provider_id = get_provider_by_local_class(ALLOCINE_STOCKS_PROVIDER_NAME).id
-        synchronize_venue_providers_for_provider(allocine_stocks_provider_id, None)
-
-
-@log_cron
-def pc_retrieve_offerers_bank_information():
-    with app.app_context():
-        process = subprocess.Popen('PYTHONPATH="." python scripts/pc.py update_providables'
-                                   + ' --provider BankInformationProvider',
-                                   shell=True,
-                                   cwd=API_ROOT_PATH)
-        output, error = process.communicate()
-        logger.info(StringIO(output))
-        logger.info(StringIO(error))
-
-
-@log_cron
-def pc_retrieve_bank_information_for_venue_without_siret():
-    with app.app_context():
-        process = subprocess.Popen('PYTHONPATH="." python scripts/pc.py update_providables'
-                                   + ' --provider VenueWithoutSIRETBankInformationProvider',
-                                   shell=True,
-                                   cwd=API_ROOT_PATH)
-        output, error = process.communicate()
-        logger.info(StringIO(output))
-
-
-@log_cron
-def pc_send_remedial_emails():
-    with app.app_context():
-        from scripts.send_remedial_emails import send_remedial_emails
-        app.mailjet_client = Client(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3')
-        send_remedial_emails()
-
-
-@log_cron
-def pc_remote_import_beneficiaries():
-    with app.app_context():
-        app.mailjet_client = Client(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3')
-        import_from_date = find_most_recent_beneficiary_creation_date()
-        remote_import.run(import_from_date)
-
-
-@log_cron
-def pc_write_dashboard():
-    with app.app_context():
-        write_dashboard()
-
-
-@log_cron
-def pc_delete_useless_recommendations():
-    with app.app_context():
-        delete_useless_recommendations()
-
-
-@log_cron
-def pc_update_recommendations_view():
-    with app.app_context():
-        DiscoveryView.refresh()
-
 
 if __name__ == '__main__':
     orm.configure_mappers()
