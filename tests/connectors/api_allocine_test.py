@@ -42,7 +42,7 @@ class GetMovieShowtimeListTest:
         # Then
         assert str(exception.value) == "Error getting API Allocine DATA for theater test_id"
 
-    @patch('connectors.api_allocine.requests.get', side_effect=requests.exceptions.ConnectionError)
+    @patch('connectors.api_allocine.requests.get', side_effect=requests.exceptions.RequestException)
     def test_should_raise_exception_when_api_call_fails_with_connection_error(self, mocked_requests_get):
         # Given
         token = 'test'

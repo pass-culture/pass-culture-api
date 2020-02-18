@@ -1,6 +1,6 @@
 from flask import current_app as app
 
-from local_providers.provider_manager import do_update, get_local_provider_class_by_name, \
+from local_providers.provider_manager import do_synchronize, get_local_provider_class_by_name, \
     synchronize_venue_providers_for_provider, synchronize_data_for_provider
 from models import VenueProvider
 
@@ -26,7 +26,7 @@ def update_providables(provider_name: str, venue_provider_id: str, limit: int):
         venue_provider = VenueProvider.query.get(venue_provider_id)
         provider_class = get_local_provider_class_by_name(venue_provider.provider.localClass)
         provider = provider_class(venue_provider)
-        return do_update(provider, limit)
+        return do_synchronize(provider, limit)
 
 
 @app.manager.option('-p',
