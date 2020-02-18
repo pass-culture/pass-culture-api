@@ -1,8 +1,6 @@
 import subprocess
 from io import StringIO
 
-from mailjet_rest import Client
-
 from repository.user_queries import find_most_recent_beneficiary_creation_date
 from scheduled_tasks.clock import app
 from scheduled_tasks.decorators import log_cron
@@ -10,7 +8,6 @@ from scheduled_tasks.titelive_clock import app
 from scripts.beneficiary import remote_import
 from utils.config import API_ROOT_PATH
 from utils.logger import logger
-from utils.mailing import MAILJET_API_KEY, MAILJET_API_SECRET
 
 
 @log_cron
@@ -28,7 +25,6 @@ def pc_retrieve_offerers_bank_information():
 @log_cron
 def pc_remote_import_beneficiaries():
     with app.app_context():
-        app.mailjet_client = Client(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version='v3')
         import_from_date = find_most_recent_beneficiary_creation_date()
         remote_import.run(import_from_date)
 
