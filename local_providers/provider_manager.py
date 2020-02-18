@@ -1,5 +1,5 @@
 import traceback
-from typing import Callable
+from typing import Callable, Optional
 
 import local_providers
 from local_providers.local_provider import LocalProvider
@@ -11,7 +11,7 @@ from scripts.cron_logger.cron_status import CronStatus
 from utils.logger import logger
 
 
-def synchronize_venue_providers_for_provider(provider_id: int, limit: int) -> None:
+def synchronize_venue_providers_for_provider(provider_id: int, limit: Optional[int] = None) -> None:
     venue_providers = get_actives_venue_providers_for_specific_provider(provider_id)
     provider = get_provider_by_id(provider_id)
     provider_class = get_local_provider_class_by_name(provider.localClass)
@@ -20,7 +20,7 @@ def synchronize_venue_providers_for_provider(provider_id: int, limit: int) -> No
         do_update(provider, limit)
 
 
-def do_update(provider: LocalProvider, limit: int) -> None:
+def do_update(provider: LocalProvider, limit: Optional[int] = None) -> None:
     try:
         provider.updateObjects(limit)
     except Exception:
