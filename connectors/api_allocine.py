@@ -1,3 +1,5 @@
+from typing import Dict
+
 import requests
 
 
@@ -5,7 +7,7 @@ class AllocineException(Exception):
     pass
 
 
-def get_movies_showtimes_from_allocine(api_key: str, theater_id: str) -> dict:
+def get_movies_showtimes_from_allocine(api_key: str, theater_id: str) -> Dict:
     api_url = f"https://graph-api-proxy.allocine.fr/api/query/movieShowtimeList?token={api_key}&theater={theater_id}"
 
     try:
