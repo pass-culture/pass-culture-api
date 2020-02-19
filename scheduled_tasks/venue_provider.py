@@ -11,7 +11,7 @@ LIBRAIRES_STOCKS_PROVIDER_NAME = "LibrairesStocks"
 
 @log_cron
 @cron_context
-def pc_synchronize_allocine_stocks(app):
+def synchronize_allocine_stocks(app):
     allocine_stocks_provider_id = get_provider_by_local_class(ALLOCINE_STOCKS_PROVIDER_NAME).id
     synchronize_venue_providers_for_provider(allocine_stocks_provider_id)
 
@@ -26,6 +26,6 @@ def synchronize_libraires_stocks(app):
 
 @log_cron
 @cron_context
-def pc_synchronize_titelive_stocks(app):
+def synchronize_titelive_stocks(app):
     titelive_stocks_provider_id = get_provider_by_local_class(TITELIVE_STOCKS_PROVIDER_NAME).id
     update_venues_for_specific_provider(titelive_stocks_provider_id)
