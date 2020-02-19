@@ -5,9 +5,6 @@ from flask import Flask
 from sqlalchemy import orm
 
 from models.db import db
-from repository.feature_queries import feature_cron_synchronize_titelive_things, \
-    feature_cron_synchronize_titelive_descriptions, \
-    feature_cron_synchronize_titelive_thumbs, feature_cron_synchronize_titelive_stocks
 from scheduled_tasks.provider import synchronize_titelive_things, synchronize_titelive_descriptions, \
     synchronize_titelive_thumbs
 from scheduled_tasks.venue_provider import synchronize_titelive_stocks
@@ -22,28 +19,24 @@ if __name__ == '__main__':
     orm.configure_mappers()
     scheduler = BlockingScheduler()
 
-    if feature_cron_synchronize_titelive_things():
-        scheduler.add_job(synchronize_titelive_things, 'cron',
-                          [app],
-                          id='synchronize_titelive_things',
-                          day='*', hour='1')
+    scheduler.add_job(synchronize_titelive_things, 'cron',
+                      [app],
+                      id='synchronize_titelive_things',
+                      day='*', hour='1')
 
-    if feature_cron_synchronize_titelive_descriptions():
-        scheduler.add_job(synchronize_titelive_descriptions, 'cron',
-                          [app],
-                          id='synchronize_titelive_descriptions',
-                          day='*', hour='2')
+    scheduler.add_job(synchronize_titelive_descriptions, 'cron',
+                      [app],
+                      id='synchronize_titelive_descriptions',
+                      day='*', hour='2')
 
-    if feature_cron_synchronize_titelive_thumbs():
-        scheduler.add_job(synchronize_titelive_thumbs, 'cron',
-                          [app],
-                          id='synchronize_titelive_thumbs',
-                          day='*', hour='3')
+    scheduler.add_job(synchronize_titelive_thumbs, 'cron',
+                      [app],
+                      id='synchronize_titelive_thumbs',
+                      day='*', hour='3')
 
-    if feature_cron_synchronize_titelive_stocks():
-        scheduler.add_job(synchronize_titelive_stocks, 'cron',
-                          [app],
-                          id='synchronize_titelive_stocks',
-                          day='*', hour='6')
+    scheduler.add_job(synchronize_titelive_stocks, 'cron',
+                      [app],
+                      id='synchronize_titelive_stocks',
+                      day='*', hour='6')
 
     scheduler.start()
