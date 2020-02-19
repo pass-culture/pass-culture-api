@@ -8,13 +8,24 @@ from scripts.cron_logger.cron_status import CronStatus
 from utils.logger import logger
 
 
+def cron_context(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        clock_application = args[0]
+        with clock_application.app_context():
+            return func(*args, **kwargs)
+
+    return wrapper
+
+
 def cron_require_feature(feature_toggle: FeatureToggle):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
+            print("cron_feature require feature")
             if feature_queries.is_active(feature_toggle):
                 return func(*args, **kwargs)
-            logger.info(f"{func.__name__ } is not active")
+            logger.info(f"{feature_toggle} is not active")
 
         return wrapper
 

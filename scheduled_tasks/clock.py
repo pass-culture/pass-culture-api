@@ -5,24 +5,16 @@ from flask import Flask
 from sqlalchemy import orm
 
 from models.db import db
-from repository.feature_queries import feature_cron_send_final_booking_recaps_enabled, \
-    feature_cron_generate_and_send_payments, \
-    feature_cron_retrieve_offerers_bank_information, \
-    feature_cron_send_remedial_emails, \
-    feature_write_dashboard_enabled, \
-    feature_update_booking_used, \
-    feature_delete_all_unread_recommendations_older_than_one_week_enabled, \
-    feature_cron_retrieve_bank_information_for_venue_without_siret, \
-    feature_cron_send_wallet_balances, \
-    feature_import_beneficiaries_enabled, \
-    feature_cron_synchronize_allocine_stocks, \
+from repository.feature_queries import feature_cron_synchronize_allocine_stocks, \
+    feature_cron_retrieve_offerers_bank_information, feature_cron_send_remedial_emails, \
+    feature_import_beneficiaries_enabled, feature_write_dashboard_enabled, feature_update_booking_used, \
     feature_update_recommendations_view
-from scheduled_tasks.product_functions import pc_send_final_booking_recaps, pc_generate_and_send_payments, \
-    pc_update_booking_used, pc_send_wallet_balances, pc_send_remedial_emails, pc_write_dashboard, \
-    pc_delete_useless_recommendations, pc_update_recommendations_view, RECO_VIEW_REFRESH_FREQUENCY
-from scheduled_tasks.provider_functions import pc_retrieve_offerers_bank_information, pc_remote_import_beneficiaries
-from scheduled_tasks.venue_provider_functions import pc_synchronize_allocine_stocks, synchronize_libraire_stocks, \
-    pc_retrieve_bank_information_for_venue_without_siret
+from scheduled_tasks.booking import pc_update_booking_used
+from scheduled_tasks.emails import pc_send_remedial_emails
+from scheduled_tasks.provider import pc_retrieve_offerers_bank_information, pc_remote_import_beneficiaries
+from scheduled_tasks.recommendation import pc_update_recommendations_view, RECO_VIEW_REFRESH_FREQUENCY
+from scheduled_tasks.statistics import pc_write_dashboard
+from scheduled_tasks.venue_provider import synchronize_libraires_stocks, pc_synchronize_allocine_stocks
 
 app = Flask(__name__, template_folder='../templates')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
@@ -34,24 +26,11 @@ if __name__ == '__main__':
     orm.configure_mappers()
     scheduler = BlockingScheduler()
 
-    scheduler.add_job(synchronize_libraire_stocks, 'cron', id='synchronize_libraire_stocks', day='*', hour='21')
-
-    if feature_cron_send_final_booking_recaps_enabled():
-        scheduler.add_job(pc_send_final_booking_recaps, 'cron', id='send_final_booking_recaps', day='*')
-
-    if feature_cron_generate_and_send_payments():
-        scheduler.add_job(pc_generate_and_send_payments, 'cron', id='generate_and_send_payments', day='1,15')
-
-    if feature_cron_send_wallet_balances():
-        scheduler.add_job(pc_send_wallet_balances, 'cron', id='send_wallet_balances', day='1-5')
+    scheduler.add_job(synchronize_libraires_stocks, 'cron', [app], id='synchronize_libraires_stocks', day='*',
+                      hour='22')
 
     if feature_cron_retrieve_offerers_bank_information():
         scheduler.add_job(pc_retrieve_offerers_bank_information, 'cron', id='retrieve_offerers_bank_information',
-                          day='*')
-
-    if feature_cron_retrieve_bank_information_for_venue_without_siret():
-        scheduler.add_job(pc_retrieve_bank_information_for_venue_without_siret, 'cron',
-                          id='retrieve_bank_information_venue_without_siret',
                           day='*')
 
     if feature_cron_synchronize_allocine_stocks():
@@ -69,12 +48,6 @@ if __name__ == '__main__':
 
     if feature_update_booking_used():
         scheduler.add_job(pc_update_booking_used, 'cron', id='pc_update_booking_used', day='*', hour='0')
-
-    if feature_delete_all_unread_recommendations_older_than_one_week_enabled():
-        scheduler.add_job(pc_delete_useless_recommendations,
-                          'cron',
-                          id='pc_delete_useless_recommendations',
-                          day_of_week='mon', hour='23')
 
     if feature_update_recommendations_view():
         scheduler.add_job(pc_update_recommendations_view, 'cron', id='pc_update_recommendations_view',

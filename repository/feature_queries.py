@@ -27,18 +27,6 @@ def feature_send_mail_to_users_enabled() -> bool:
     return IS_PROD or IS_INTEGRATION
 
 
-def feature_cron_send_final_booking_recaps_enabled() -> bool:
-    return os.environ.get('CRON_SEND_FINAL_BOOKING', False)
-
-
-def feature_cron_generate_and_send_payments() -> bool:
-    return os.environ.get('CRON_GENERATE_AND_SEND_PAYMENTS', False)
-
-
-def feature_cron_send_wallet_balances() -> bool:
-    return os.environ.get('CRON_SEND_WALLET_BALANCES', False)
-
-
 def feature_cron_retrieve_offerers_bank_information() -> bool:
     return os.environ.get('CRON_RETRIEVE_OFFERERS_BANK_INFORMATION', False)
 

@@ -16,7 +16,7 @@ class FeatureToggle(enum.Enum):
     SEARCH_ALGOLIA = 'Permettre la recherche via Algolia'
     SEARCH_LEGACY = 'Permettre la recherche classique'
 
-    SYNCRONIZE_LIBRAIRIES = 'Permettre la synchronisation journalière avec Librairies.fr'
+    SYNCHRONIZE_LIBRAIRES = 'Permettre la synchronisation journalière avec Librairies.fr'
 
 
 class Feature(PcObject, Model, DeactivableMixin):

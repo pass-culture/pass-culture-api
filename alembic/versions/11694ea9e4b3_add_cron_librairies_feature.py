@@ -18,7 +18,8 @@ depends_on = None
 
 
 class FeatureToggle(Enum):
-    SYNCRONIZE_LIBRAIRIES = 'Permettre la synchronisation journalière avec Librairies.fr'
+    # TODO
+    SYNCHRONIZE_LIBRAIRES = 'Permettre la synchronisation journalière avec LesLibraires.fr'
 
 
 def upgrade():
@@ -43,7 +44,7 @@ def upgrade():
     op.execute("""
                 INSERT INTO feature (name, description, "isActive")
                 VALUES ('%s', '%s', FALSE);
-                """ % (FeatureToggle.SYNCRONIZE_LIBRAIRIES.name, FeatureToggle.SYNCRONIZE_LIBRAIRIES.value))
+                """ % (FeatureToggle.SYNCHRONIZE_LIBRAIRES.name, FeatureToggle.SYNCHRONIZE_LIBRAIRES.value))
     temporary_enum.drop(op.get_bind(), checkfirst=False)
 
 

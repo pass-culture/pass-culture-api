@@ -8,9 +8,9 @@ from models.db import db
 from repository.feature_queries import feature_cron_synchronize_titelive_things, \
     feature_cron_synchronize_titelive_descriptions, \
     feature_cron_synchronize_titelive_thumbs, feature_cron_synchronize_titelive_stocks
-from scheduled_tasks.provider_functions import pc_synchronize_titelive_things, pc_synchronize_titelive_descriptions, \
+from scheduled_tasks.provider import pc_synchronize_titelive_things, pc_synchronize_titelive_descriptions, \
     pc_synchronize_titelive_thumbs
-from scheduled_tasks.venue_provider_functions import pc_synchronize_titelive_stocks
+from scheduled_tasks.venue_provider import pc_synchronize_titelive_stocks
 
 app = Flask(__name__, template_folder='../templates')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')

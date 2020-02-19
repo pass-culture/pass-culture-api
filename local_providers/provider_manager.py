@@ -13,8 +13,14 @@ from utils.logger import logger
 
 def synchronize_data_for_provider(provider_name: str, limit: Optional[int] = None) -> None:
     provider_class = get_local_provider_class_by_name(provider_name)
-    provider = provider_class()
-    do_synchronize(provider, limit)
+    try:
+        provider = provider_class()
+        do_synchronize(provider, limit)
+    except Exception:
+        formatted_traceback = traceback.format_exc()
+        logger.error(build_cron_log_message(name=provider_name,
+                                            status=CronStatus.FAILED,
+                                            traceback=formatted_traceback))
 
 
 def synchronize_venue_providers_for_provider(provider_id: int, limit: Optional[int] = None) -> None:
