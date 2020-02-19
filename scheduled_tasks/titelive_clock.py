@@ -23,19 +23,27 @@ if __name__ == '__main__':
     scheduler = BlockingScheduler()
 
     if feature_cron_synchronize_titelive_things():
-        scheduler.add_job(pc_synchronize_titelive_things, 'cron', id='synchronize_titelive_things',
+        scheduler.add_job(pc_synchronize_titelive_things, 'cron',
+                          [app],
+                          id='synchronize_titelive_things',
                           day='*', hour='1')
 
     if feature_cron_synchronize_titelive_descriptions():
-        scheduler.add_job(pc_synchronize_titelive_descriptions, 'cron', id='synchronize_titelive_descriptions',
+        scheduler.add_job(pc_synchronize_titelive_descriptions, 'cron',
+                          [app],
+                          id='synchronize_titelive_descriptions',
                           day='*', hour='2')
 
     if feature_cron_synchronize_titelive_thumbs():
-        scheduler.add_job(pc_synchronize_titelive_thumbs, 'cron', id='synchronize_titelive_thumbs',
+        scheduler.add_job(pc_synchronize_titelive_thumbs, 'cron',
+                          [app],
+                          id='synchronize_titelive_thumbs',
                           day='*', hour='3')
 
     if feature_cron_synchronize_titelive_stocks():
-        scheduler.add_job(pc_synchronize_titelive_stocks, 'cron', id='synchronize_titelive_stocks',
+        scheduler.add_job(pc_synchronize_titelive_stocks, 'cron',
+                          [app],
+                          id='synchronize_titelive_stocks',
                           day='*', hour='6')
 
     scheduler.start()

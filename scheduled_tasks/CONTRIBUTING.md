@@ -7,6 +7,17 @@ Ces fonctions doivent être regroupées par domaine fonctionel : `booking`, `alg
 Chacune de ces fonctions seront appelées dans le fichier `clock` correspondant.
 Ces fichiers `clock` offrent un découpage technique pour ses crons. Chaque fichier clock possède son propre espace et contexte d'exécution.
 
+Lors de l'ajout de ses tâches via le scheduler, vous devez ajouter en paramètre `app` afin de fournir le contexte en paramètre à la fonction.
+
+Exemple:
+```python
+scheduler.add_job(synchronize_titelive_stocks, 'cron',
+                          [app],
+                          id='synchronize_titelive_stocks',
+                          day='*', hour='6')
+```
+
+
 Afin que ces fonctions soit exécutées, un décorateur doit être ajouté `@cron_context`. Celui-ci permet de fournir
 le contexte de l'application lors de l'exécution.
 
