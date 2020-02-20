@@ -42,6 +42,56 @@ EVENT_INCLUDES = [
     "thumbUrl"
 ]
 
+GET_OFFER_INCLUDES = [
+    "isDigital",
+    "isDuo",
+    "isEditable",
+    "isEvent",
+    'isFullyBooked',
+    'isNotBookable',
+    "isThing",
+    "lastProvider",
+    "offerType",
+    "stockAlertMessage",
+    {
+        "key": "activeMediation",
+        "includes": ["thumbUrl"]
+    },
+    {
+        "key": "mediations",
+        "includes": ["thumbUrl"]
+    },
+    {
+        "key": "product",
+        "includes": [
+            'thumbUrl',
+            '-type'
+        ]
+    },
+    {
+        "key": "stocks",
+        "includes": ['isBookable']
+    },
+    {
+        "key": "venue",
+        "includes": [
+            {
+                "key": "managingOfferer",
+                "includes": [
+                    "-validationToken",
+                    "isValidated",
+                    "bic",
+                    "iban"
+                ]
+            },
+            '-validationToken',
+            "isValidated",
+            "bic",
+            "iban"
+        ]
+    }
+]
+
 OFFER_INCLUDES = [
     "isDigital",
     "isDuo",
