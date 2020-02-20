@@ -12,7 +12,7 @@ from routes.serialization import as_dict
 from use_cases.update_an_offer import update_an_offer
 from utils.config import PRO_URL
 from utils.human_ids import dehumanize
-from utils.includes import OFFER_INCLUDES
+from utils.includes import OFFER_INCLUDES, GET_OFFER_INCLUDES
 from utils.mailing import send_raw_email
 from utils.rest import ensure_current_user_has_rights, expect_json_data, \
     handle_rest_get_list, load_or_404, load_or_raise_error, \
@@ -53,7 +53,7 @@ def list_offers() -> (str, int):
 @login_required
 def get_offer(offer_id: int) -> (str, int):
     offer = load_or_404(Offer, offer_id)
-    return jsonify(as_dict(offer, includes=OFFER_INCLUDES)), 200
+    return jsonify(as_dict(offer, includes=GET_OFFER_INCLUDES)), 200
 
 
 @app.route('/offers/activation', methods=['GET'])
