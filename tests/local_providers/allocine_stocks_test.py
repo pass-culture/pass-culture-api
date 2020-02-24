@@ -11,7 +11,7 @@ from repository import repository
 from repository.provider_queries import get_provider_by_local_class
 from tests.conftest import clean_database
 from tests.model_creators.generic_creators import create_offerer, create_venue, create_venue_provider, \
-    create_venue_provider_price_rule
+    create_allocine_venue_provider_price_rule
 from tests.model_creators.provider_creators import activate_provider
 from tests.model_creators.specific_creators import create_product_with_event_type, create_offer_with_event_product
 from utils.human_ids import humanize
@@ -258,7 +258,7 @@ class UpdateObjectsTest:
 
         allocine_provider = activate_provider('AllocineStocks')
         venue_provider = create_venue_provider(venue, allocine_provider, venue_id_at_offer_provider=theater_token)
-        venue_provider_price_rule = create_venue_provider_price_rule(venue_provider)
+        venue_provider_price_rule = create_allocine_venue_provider_price_rule(venue_provider)
         repository.save(venue, venue_provider, venue_provider_price_rule)
 
         allocine_stocks_provider = AllocineStocks(venue_provider)
@@ -410,7 +410,7 @@ class UpdateObjectsTest:
         allocine_provider.isActive = True
         venue_provider = create_venue_provider(venue, allocine_provider,
                                                venue_id_at_offer_provider=theater_token)
-        venue_provider_price_rule = create_venue_provider_price_rule(venue_provider)
+        venue_provider_price_rule = create_allocine_venue_provider_price_rule(venue_provider)
         repository.save(venue, venue_provider, venue_provider_price_rule)
 
         allocine_stocks_provider = AllocineStocks(venue_provider)
@@ -555,7 +555,7 @@ class UpdateObjectsTest:
         allocine_provider.isActive = True
         venue_provider = create_venue_provider(venue, allocine_provider,
                                                venue_id_at_offer_provider=theater_token)
-        venue_provider_price_rule = create_venue_provider_price_rule(venue_provider)
+        venue_provider_price_rule = create_allocine_venue_provider_price_rule(venue_provider)
         repository.save(venue, venue_provider, venue_provider_price_rule)
 
         allocine_stocks_provider = AllocineStocks(venue_provider)
@@ -691,7 +691,7 @@ class UpdateObjectsTest:
         allocine_provider = get_provider_by_local_class('AllocineStocks')
         allocine_provider.isActive = True
         venue_provider = create_venue_provider(venue, allocine_provider, venue_id_at_offer_provider=theater_token)
-        venue_provider_price_rule = create_venue_provider_price_rule(venue_provider)
+        venue_provider_price_rule = create_allocine_venue_provider_price_rule(venue_provider)
         repository.save(venue, product, offer_vo, offer_vf, venue_provider, venue_provider_price_rule)
 
         allocine_stocks_provider = AllocineStocks(venue_provider)
@@ -812,7 +812,7 @@ class UpdateObjectsTest:
         allocine_provider = get_provider_by_local_class('AllocineStocks')
         allocine_provider.isActive = True
         venue_provider = create_venue_provider(venue, allocine_provider, venue_id_at_offer_provider=theater_token)
-        venue_provider_price_rule = create_venue_provider_price_rule(venue_provider)
+        venue_provider_price_rule = create_allocine_venue_provider_price_rule(venue_provider)
         repository.save(venue, product, venue_provider, venue_provider_price_rule)
 
         allocine_stocks_provider = AllocineStocks(venue_provider)
@@ -911,7 +911,7 @@ class UpdateObjectsTest:
         allocine_provider = get_provider_by_local_class('AllocineStocks')
         allocine_provider.isActive = True
         venue_provider = create_venue_provider(venue, allocine_provider, venue_id_at_offer_provider=theater_token)
-        venue_provider_price_rule = create_venue_provider_price_rule(venue_provider)
+        venue_provider_price_rule = create_allocine_venue_provider_price_rule(venue_provider)
         repository.save(venue, venue_provider, venue_provider_price_rule)
 
         allocine_stocks_provider = AllocineStocks(venue_provider)
@@ -1025,7 +1025,7 @@ class UpdateObjectsTest:
         allocine_provider = get_provider_by_local_class('AllocineStocks')
         allocine_provider.isActive = True
         venue_provider = create_venue_provider(venue, allocine_provider, venue_id_at_offer_provider=theater_token)
-        venue_provider_price_rule = create_venue_provider_price_rule(venue_provider)
+        venue_provider_price_rule = create_allocine_venue_provider_price_rule(venue_provider)
         repository.save(venue, product, venue_provider, venue_provider_price_rule)
 
         allocine_stocks_provider = AllocineStocks(venue_provider)
@@ -1149,7 +1149,7 @@ class UpdateObjectsTest:
         allocine_provider = get_provider_by_local_class('AllocineStocks')
         allocine_provider.isActive = True
         venue_provider = create_venue_provider(venue, allocine_provider, venue_id_at_offer_provider=theater_token)
-        venue_provider_price_rule = create_venue_provider_price_rule(venue_provider)
+        venue_provider_price_rule = create_allocine_venue_provider_price_rule(venue_provider)
         repository.save(venue, product, venue_provider, venue_provider_price_rule)
 
         allocine_stocks_provider = AllocineStocks(venue_provider)
@@ -1276,7 +1276,7 @@ class UpdateObjectsTest:
         allocine_provider = get_provider_by_local_class('AllocineStocks')
         allocine_provider.isActive = True
         venue_provider = create_venue_provider(venue, allocine_provider, venue_id_at_offer_provider=theater_token)
-        venue_provider_price_rule = create_venue_provider_price_rule(venue_provider)
+        venue_provider_price_rule = create_allocine_venue_provider_price_rule(venue_provider)
         repository.save(venue_provider, venue_provider_price_rule)
 
         allocine_stocks_provider = AllocineStocks(venue_provider)
@@ -1444,7 +1444,7 @@ class UpdateObjectsTest:
         allocine_provider = get_provider_by_local_class('AllocineStocks')
         allocine_provider.isActive = True
         venue_provider = create_venue_provider(venue, allocine_provider, venue_id_at_offer_provider=theater_token)
-        venue_provider_price_rule = create_venue_provider_price_rule(venue_provider)
+        venue_provider_price_rule = create_allocine_venue_provider_price_rule(venue_provider)
         repository.save(venue_provider, venue_provider_price_rule)
 
         allocine_stocks_provider = AllocineStocks(venue_provider)
@@ -1679,7 +1679,7 @@ class UpdateObjectsTest:
             allocine_provider = get_provider_by_local_class('AllocineStocks')
             allocine_provider.isActive = True
             venue_provider = create_venue_provider(venue, allocine_provider, venue_id_at_offer_provider=theater_token)
-            venue_provider_price_rule = create_venue_provider_price_rule(venue_provider)
+            venue_provider_price_rule = create_allocine_venue_provider_price_rule(venue_provider)
             repository.save(venue_provider, venue_provider_price_rule)
 
             # When
@@ -1796,12 +1796,11 @@ class UpdateObjectsTest:
 
             allocine_provider = get_provider_by_local_class('AllocineStocks')
             allocine_provider.isActive = True
-            venue_provider1 = create_venue_provider(venue1, allocine_provider,
-                                                    venue_id_at_offer_provider=theater_token1)
-            venue_provider_price_rule1 = create_venue_provider_price_rule(venue_provider1)
-            venue_provider2 = create_venue_provider(venue2, allocine_provider,
-                                                    venue_id_at_offer_provider=theater_token2)
-            venue_provider_price_rule2 = create_venue_provider_price_rule(venue_provider2)
+
+            venue_provider1 = create_venue_provider(venue1, allocine_provider, venue_id_at_offer_provider=theater_token1)
+            venue_provider_price_rule1 = create_allocine_venue_provider_price_rule(venue_provider1)
+            venue_provider2 = create_venue_provider(venue2, allocine_provider, venue_id_at_offer_provider=theater_token2)
+            venue_provider_price_rule2 = create_allocine_venue_provider_price_rule(venue_provider2)
             repository.save(venue_provider1, venue_provider2, venue_provider_price_rule1, venue_provider_price_rule2)
 
             allocine_stocks_provider1 = AllocineStocks(venue_provider1)
@@ -2237,7 +2236,7 @@ class UpdateObjectsTest:
 
             allocine_provider = activate_provider('AllocineStocks')
             venue_provider = create_venue_provider(venue, allocine_provider, venue_id_at_offer_provider=theater_token)
-            venue_provider_price_rule = create_venue_provider_price_rule(venue_provider)
+            venue_provider_price_rule = create_allocine_venue_provider_price_rule(venue_provider)
             repository.save(venue_provider, venue_provider_price_rule)
 
             allocine_stocks_provider = AllocineStocks(venue_provider)
@@ -2427,7 +2426,7 @@ class UpdateObjectsTest:
 
             allocine_provider = activate_provider('AllocineStocks')
             venue_provider = create_venue_provider(venue, allocine_provider, venue_id_at_offer_provider=theater_token)
-            venue_provider_price_rule = create_venue_provider_price_rule(venue_provider)
+            venue_provider_price_rule = create_allocine_venue_provider_price_rule(venue_provider)
             repository.save(venue_provider, venue_provider_price_rule)
 
             allocine_stocks_provider = AllocineStocks(venue_provider)
