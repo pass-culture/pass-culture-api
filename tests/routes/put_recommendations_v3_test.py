@@ -86,10 +86,12 @@ class Put:
             stocks = recommendations[0]['offer']['stocks']
             assert all('isBookable' in stock for stock in stocks)
 
+        @patch('routes.recommendations.get_iris_containing_user_postal_code_when_user_is_not_geolocated', return_value=1)
         @clean_database
-        def when_user_is_not_located(self, app):
+        def when_user_is_not_located(self, mock_get_iris_containing_user_postal_code_when_user_is_not_geolocated,
+                                     app):
             # given
-            user = create_user()
+            user = create_user(postal_code='92220')
             offerer = create_offerer()
             venue = create_venue(offerer)
             offer1 = create_offer_with_thing_product(venue)
@@ -110,6 +112,8 @@ class Put:
             assert response.status_code == 200
             response_json = response.json
             assert len(response_json) == 0
+            mock_get_iris_containing_user_postal_code_when_user_is_not_geolocated.\
+                assert_called_once_with(user.postalCode)
 
         @clean_database
         def when_a_recommendation_is_requested(self, app):
@@ -429,7 +433,7 @@ class Put:
         @clean_database
         def when_given_mediation_does_not_match_given_offer(self, app):
             # given
-            user = create_user()
+            user = create_user(postal_code='75013')
             offerer = create_offerer()
             venue = create_venue(offerer)
             offer_thing_1 = create_offer_with_thing_product(venue, thumb_count=1)
@@ -453,7 +457,7 @@ class Put:
         @clean_database
         def when_offer_is_unknown_and_mediation_is_known(self, app):
             # given
-            user = create_user()
+            user = create_user(postal_code='75012')
             offerer = create_offerer()
             venue = create_venue(offerer)
             offer_with_thing = create_offer_with_thing_product(venue, thumb_count=1)
@@ -474,7 +478,7 @@ class Put:
         @clean_database
         def when_mediation_is_unknown(self, app):
             # given
-            user = create_user()
+            user = create_user(postal_code='75011')
             repository.save(user)
             auth_request = TestClient(app.test_client()).with_auth(user.email)
 
@@ -489,7 +493,7 @@ class Put:
         @clean_database
         def when_offer_is_known_and_mediation_is_unknown(self, app):
             # given
-            user = create_user()
+            user = create_user(postal_code='75010')
             offerer = create_offerer()
             venue = create_venue(offerer)
             offer_thing = create_offer_with_thing_product(venue, thumb_count=1)
@@ -510,7 +514,7 @@ class Put:
         @clean_database
         def when_offer_is_unknown_and_mediation_is_unknown(self, app):
             # given
-            user = create_user()
+            user = create_user(postal_code='75009')
             repository.save(user)
             auth_request = TestClient(app.test_client()).with_auth(user.email)
 
@@ -526,7 +530,7 @@ class Put:
         @clean_database
         def when_venue_of_given_offer_is_not_validated(self, app):
             # given
-            user = create_user()
+            user = create_user(postal_code='75006')
             offerer = create_offerer()
             venue = create_venue(offerer)
             venue.generate_validation_token()

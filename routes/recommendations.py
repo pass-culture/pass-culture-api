@@ -14,7 +14,8 @@ from recommendations_engine import create_recommendations_for_discovery, \
     give_requested_recommendation_to_user
 from recommendations_engine.recommendations import create_recommendations_for_discovery_v3
 from repository import repository
-from repository.iris_venues_queries import get_iris_containing_user_location
+from repository.iris_venues_queries import get_iris_containing_user_location, \
+    get_iris_containing_user_postal_code_when_user_is_not_geolocated
 from repository.recommendation_queries import update_read_recommendations
 from routes.serialization.recommendation_serialize import serialize_recommendations, serialize_recommendation
 from utils.config import BLOB_SIZE
@@ -168,7 +169,9 @@ def put_recommendations_v3():
     json_keys = request.json.keys()
     latitude = request.args.get('latitude')
     longitude = request.args.get('longitude')
-    user_iris_id = get_iris_containing_user_location(latitude, longitude) if latitude and longitude else None
+
+    user_iris_id = get_iris_containing_user_location(latitude, longitude) if latitude and longitude \
+        else get_iris_containing_user_postal_code_when_user_is_not_geolocated(current_user.postalCode)
 
     if 'readRecommendations' in json_keys:
         update_read_recommendations(request.json['readRecommendations'])

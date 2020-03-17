@@ -29,7 +29,7 @@ def insert_venue_in_iris_venue(venue_id: int, iris_ids_near_venue: List[int]) ->
     repository.save(*irises_venues)
 
 
-def delete_venue_from_iris_venues(venue_id: int) -> None:
+def delete_venue_from_iris_venues(venue_id: Optional[int]) -> None:
     iris_venues_to_delete = IrisVenues.query \
         .filter_by(venueId=venue_id) \
         .all()
@@ -44,6 +44,14 @@ def get_iris_containing_user_location(latitude: float, longitude: float) -> int:
     return db.session.execute(query).scalar()
 
 
-def find_venues_located_near_iris(iris_id: int) -> List[int]:
+def get_iris_containing_user_postal_code_when_user_is_not_geolocated(user_postal_code: str) -> int:
+    postal_code_length = 5
+    query = f'''SELECT id FROM iris_france 
+    WHERE SUBSTRING("irisCode", 1, {postal_code_length}) = {user_postal_code}::varchar'''
+
+    return db.session.execute(query).scalar()
+
+
+def find_venues_located_near_iris(iris_id: Optional[int]) -> List[int]:
     iris_venues = IrisVenues.query.filter_by(irisId=iris_id).all()
     return [iris_venue.venueId for iris_venue in iris_venues]
