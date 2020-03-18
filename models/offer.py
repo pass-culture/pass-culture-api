@@ -8,13 +8,13 @@ from sqlalchemy.sql import select, func
 
 from domain.bookings import filter_bookings_to_compute_remaining_stock
 from domain.keywords import create_ts_vector_and_table_args
-from models.mediation import Mediation
 from models.criterion import Criterion
 from models.db import db, Model
 from models.deactivable_mixin import DeactivableMixin
 from models.extra_data_mixin import ExtraDataMixin
+from models.mediation import Mediation
 from models.offer_criterion import OfferCriterion
-from models.offer_type import ThingType, EventType, ProductType
+from models.offer_type import ThingType, EventType, ProductType, Category
 from models.pc_object import PcObject
 from models.providable_mixin import ProvidableMixin
 from models.stock import Stock
@@ -195,6 +195,12 @@ class Offer(PcObject,
                 return possible_type.as_dict()
 
     @property
+    def offer_category(self) -> str:
+        for category in Category:
+            if self.offerType['appLabel'] in category.value:
+                return category.name
+
+    @property
     def stockAlertMessage(self) -> str:
         non_deleted_stocks = [stock for stock in self.stocks if not stock.isSoftDeleted]
         total_number_stocks = len(non_deleted_stocks)
@@ -202,7 +208,6 @@ class Offer(PcObject,
             list(filter(lambda s: s.available == 0 or s.remainingQuantity == 0, non_deleted_stocks)))
         remaining_for_all_stocks = sum(
             map(lambda s: s.remainingQuantity, filter(lambda s: s.available, non_deleted_stocks)))
-
         if total_number_stocks == 0:
             return 'pas encore de stock' if self.isThing else 'pas encore de places'
 
