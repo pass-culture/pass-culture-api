@@ -28,6 +28,8 @@ class FeatureToggle(enum.Enum):
     UPDATE_BOOKING_USED = 'Permettre la validation automatique des contremarques 48h après la fin de l''évènement'
     WEBAPP_SIGNUP = 'Permettre aux bénéficiaires de créer un compte'
     RECOMMENDATIONS_WITH_DISCOVERY_VIEW = 'Permettre aux utilisateurs d''avoir des recommandations de manière plus rapide'
+    RECOMMENDATIONS_WITH_DIGITAL_FIRST = 'Permettre aux bénéficiaiers d''avoir des recommendations' \
+                                         ' concernant des offres numériques en priorité'
 
 
 class Feature(PcObject, Model, DeactivableMixin):
