@@ -44,7 +44,7 @@ def get_iris_containing_user_location(latitude: float, longitude: float) -> int:
     return db.session.execute(query).scalar()
 
 
-def get_iris_containing_user_postal_code_when_user_is_not_geolocated(user_postal_code: str) -> int:
+def get_iris_containing_user_postal_code(user_postal_code: str) -> int:
     postal_code_length = 5
     query = f'''SELECT id FROM iris_france 
     WHERE SUBSTRING("irisCode", 1, {postal_code_length}) = {user_postal_code}::varchar'''

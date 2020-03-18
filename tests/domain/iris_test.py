@@ -2,7 +2,7 @@ from unittest.mock import patch, MagicMock
 
 from shapely.geometry import Polygon
 
-from domain.iris import _link_venue_to_irises, link_valid_venue_to_irises
+from domain.iris import _link_venue_to_irises, link_valid_venue_to_irises, get_iris_according_to_user_geolocation
 from models import IrisVenues
 from repository import repository
 from tests.conftest import clean_database
@@ -87,3 +87,36 @@ class LinkVenueToIrisIfValidTest:
 
         # Then
         mock_link_to_irises.assert_not_called()
+
+
+class GetIrisAccordingToUserGeoLocationTest:
+    @patch('domain.iris.get_iris_containing_user_postal_code')
+    @clean_database
+    def test_should_link_user_to_iris_containing_postal_code_when_user_is_not_geolocated(self, mock_get_iris_containing_user_postal_code,
+                                                                                               app):
+        # given
+        latitude = None
+        longitude = None
+        user_postal_code = '92220'
+
+        # when
+        get_iris_according_to_user_geolocation(latitude, longitude, user_postal_code)
+
+        # then
+        mock_get_iris_containing_user_postal_code.assert_called_once_with(user_postal_code)
+
+    @patch('domain.iris.get_iris_containing_user_location')
+    @clean_database
+    def test_should_link_user_to_iris_containing_user_location_when_user_is_geolocated(self, mock_get_iris_containing_user_location,
+                                                                                         app):
+        # given
+        latitude = 2.85
+        longitude = 48.75
+        user_postal_code = '92220'
+
+        # when
+        get_iris_according_to_user_geolocation(latitude, longitude, user_postal_code)
+
+        # then
+        mock_get_iris_containing_user_location.assert_called_once_with(latitude, longitude)
+

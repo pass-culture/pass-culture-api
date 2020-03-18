@@ -86,9 +86,9 @@ class Put:
             stocks = recommendations[0]['offer']['stocks']
             assert all('isBookable' in stock for stock in stocks)
 
-        @patch('routes.recommendations.get_iris_containing_user_postal_code_when_user_is_not_geolocated', return_value=1)
+        @patch('routes.recommendations.get_iris_according_to_user_geolocation', return_value=1)
         @clean_database
-        def when_user_is_not_located(self, mock_get_iris_containing_user_postal_code_when_user_is_not_geolocated,
+        def when_user_is_not_located(self, mock_get_iris_matching_user_location,
                                      app):
             # given
             user = create_user(postal_code='92220')
@@ -112,8 +112,7 @@ class Put:
             assert response.status_code == 200
             response_json = response.json
             assert len(response_json) == 0
-            mock_get_iris_containing_user_postal_code_when_user_is_not_geolocated.\
-                assert_called_once_with(user.postalCode)
+            mock_get_iris_matching_user_location.assert_called_once_with(None, None, user.postalCode)
 
         @clean_database
         def when_a_recommendation_is_requested(self, app):

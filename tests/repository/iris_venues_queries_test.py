@@ -4,7 +4,7 @@ from models import IrisVenues
 from repository import repository
 from repository.iris_venues_queries import find_ids_of_irises_located_near_venue, insert_venue_in_iris_venue, \
     delete_venue_from_iris_venues, get_iris_containing_user_location, find_venues_located_near_iris, \
-    get_iris_containing_user_postal_code_when_user_is_not_geolocated
+    get_iris_containing_user_postal_code
 
 from tests.conftest import clean_database
 from tests.model_creators.generic_creators import create_venue, create_offerer, create_iris, create_iris_venue
@@ -181,7 +181,7 @@ class GetIrisContainingUserLocationTest:
         assert iris_id is None
 
 
-class GetIrisContainingUserPostalCodeWhenUserIsNotGeolocatedTest:
+class GetIrisContainingUserPostalCodeTest:
     @clean_database
     def test_should_link_user_to_first_iris_containing_postal_code_when_user_is_not_geolocated(self,app):
         # given
@@ -192,7 +192,7 @@ class GetIrisContainingUserPostalCodeWhenUserIsNotGeolocatedTest:
         repository.save(iris_1, iris_2)
 
         # when
-        user_default_iris = get_iris_containing_user_postal_code_when_user_is_not_geolocated(user_postal_code)
+        user_default_iris = get_iris_containing_user_postal_code(user_postal_code)
 
         # then
         assert user_default_iris == iris_1.id
