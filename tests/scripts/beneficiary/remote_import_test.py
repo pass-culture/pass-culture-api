@@ -310,7 +310,7 @@ class ProcessBeneficiaryApplicationTest:
         # then
         beneficiary_import = BeneficiaryImport.query.first()
         assert beneficiary_import.beneficiary.email == 'jane.doe@example.com'
-        assert beneficiary_import.currentStatus == ImportStatus.CREATED
+        assert beneficiary_import.currentStatus == ImportStatus.PENDING
         assert beneficiary_import.demarcheSimplifieeApplicationId == 123
 
     @patch('scripts.beneficiary.remote_import.create_beneficiary_from_application')
@@ -437,7 +437,7 @@ class ProcessBeneficiaryApplicationTest:
         # then
         send_activation_email.assert_called()
         beneficiary_import = BeneficiaryImport.query.filter_by(demarcheSimplifieeApplicationId=123).first()
-        assert beneficiary_import.currentStatus == ImportStatus.CREATED
+        assert beneficiary_import.currentStatus == ImportStatus.PENDING
 
     @clean_database
     def test_an_import_status_is_saved_if_beneficiary_is_a_duplicate(self, app):

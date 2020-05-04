@@ -114,6 +114,23 @@ class IsAlreadyImportedTest:
         # then
         assert result is False
 
+    @clean_database
+    def test_returns_true_when_a_beneficiary_import_exist_with_status_pending(self, app):
+        # given
+        now = datetime.utcnow()
+        beneficiary = create_user(date_created=now)
+        beneficiary_import = create_beneficiary_import(user=beneficiary, status=ImportStatus.PENDING,
+                                                       demarche_simplifiee_application_id=123)
+
+        repository.save(beneficiary_import)
+
+        # when
+        result = is_already_imported(123)
+
+        # then
+        assert result is True
+
+
 
 class SaveBeneficiaryImportWithStatusTest:
     @clean_database

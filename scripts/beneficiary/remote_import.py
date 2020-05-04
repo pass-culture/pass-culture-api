@@ -136,7 +136,7 @@ def _process_creation(error_messages: List[str], information: Dict, new_benefici
         logger.info(f"[BATCH][REMOTE IMPORT BENEFICIARIES] Successfully created user for application "
                     f"{information['application_id']} - Procedure {procedure_id}")
         save_beneficiary_import_with_status(
-            ImportStatus.CREATED,
+            ImportStatus.PENDING,
             information['application_id'],
             demarche_simplifiee_procedure_id=procedure_id,
             user=new_beneficiary)
