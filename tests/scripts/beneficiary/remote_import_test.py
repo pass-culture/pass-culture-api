@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta
 from unittest.mock import ANY, Mock, patch
 
+import pytest
 from mailjet_rest import Client
 
 from models import ApiErrors, BeneficiaryImport, ImportStatus, User
 from repository import repository
 from scripts.beneficiary import remote_import
-from scripts.beneficiary.remote_import import parse_beneficiary_information
+from scripts.beneficiary.remote_import import parse_beneficiary_information, _get_beneficiary_status_from_departement
 from tests.conftest import clean_database
 from tests.model_creators.generic_creators import create_user
 from tests.scripts.beneficiary.fixture import \
@@ -285,62 +286,122 @@ class ProcessBeneficiaryApplicationTest:
         assert first.civility == 'Mme'
         assert first.activity == 'Étudiant'
 
-    @clean_database
-    def test_an_import_status_is_saved_if_beneficiary_is_created(self, app):
-        # given
-        app.mailjet_client = Mock(spec=Client)
-        app.mailjet_client.send = Mock()
-        information = {
-            'department': '93',
-            'last_name': 'Doe',
-            'first_name': 'Jane',
-            'birth_date': datetime(2000, 5, 1),
-            'email': 'jane.doe@example.com',
-            'phone': '0612345678',
-            'postal_code': '93130',
-            'application_id': 123,
-            'civility': 'Mme',
-            'activity': 'Étudiant'
-        }
+    class WhenImportedForWaitingDepartement:
+        @clean_database
+        def test_an_import_status_is_saved_if_beneficiary_is_created(self, app):
+            # given
+            app.mailjet_client = Mock(spec=Client)
+            app.mailjet_client.send = Mock()
+            information = {
+                'department': '09',
+                'last_name': 'Doe',
+                'first_name': 'Jane',
+                'birth_date': datetime(2000, 5, 1),
+                'email': 'jane.doe@example.com',
+                'phone': '0612345678',
+                'postal_code': '93130',
+                'application_id': 123,
+                'civility': 'Mme',
+                'activity': 'Étudiant'
+            }
 
-        # when
-        remote_import.process_beneficiary_application(information, error_messages=[], new_beneficiaries=[],
-                                                      retry_ids=[], procedure_id=123456)
+            # when
+            remote_import.process_beneficiary_application(information, error_messages=[], new_beneficiaries=[],
+                                                          retry_ids=[], procedure_id=123456)
 
-        # then
-        beneficiary_import = BeneficiaryImport.query.first()
-        assert beneficiary_import.beneficiary.email == 'jane.doe@example.com'
-        assert beneficiary_import.currentStatus == ImportStatus.PENDING
-        assert beneficiary_import.demarcheSimplifieeApplicationId == 123
+            # then
+            beneficiary_import = BeneficiaryImport.query.first()
+            assert beneficiary_import.beneficiary.email == 'jane.doe@example.com'
+            assert beneficiary_import.currentStatus == ImportStatus.PENDING
+            assert beneficiary_import.demarcheSimplifieeApplicationId == 123
 
-    @patch('scripts.beneficiary.remote_import.create_beneficiary_from_application')
-    @patch('scripts.beneficiary.remote_import.repository')
-    @patch('scripts.beneficiary.remote_import.send_activation_email')
-    @clean_database
-    def test_account_activation_email_is_sent(self, send_activation_email, mock_repository,
-                                              create_beneficiary_from_application, app):
-        # given
-        information = {
-            'department': '93',
-            'last_name': 'Doe',
-            'first_name': 'Jane',
-            'birth_date': datetime(2000, 5, 1),
-            'email': 'jane.doe@example.com',
-            'phone': '0612345678',
-            'postal_code': '93130',
-            'application_id': 123,
-            'civility': 'Mme',
-            'activity': 'Étudiant'
-        }
+        @patch('scripts.beneficiary.remote_import.create_beneficiary_from_application')
+        @patch('scripts.beneficiary.remote_import.repository')
+        @patch('scripts.beneficiary.remote_import.send_activation_email')
+        @clean_database
+        def test_does_not_send_account_activation_email(self, send_activation_email, mock_repository,
+                                                  create_beneficiary_from_application, app):
+            # given
+            information = {
+                'department': '10',
+                'last_name': 'Doe',
+                'first_name': 'Jane',
+                'birth_date': datetime(2000, 5, 1),
+                'email': 'jane.doe@example.com',
+                'phone': '0612345678',
+                'postal_code': '93130',
+                'application_id': 123,
+                'civility': 'Mme',
+                'activity': 'Étudiant'
+            }
 
-        create_beneficiary_from_application.return_value = create_user()
+            create_beneficiary_from_application.return_value = create_user(departement_code='10')
 
-        # when
-        remote_import.process_beneficiary_application(information, error_messages=[], new_beneficiaries=[],
-                                                      retry_ids=[], procedure_id=123456)
+            # when
+            remote_import.process_beneficiary_application(information, error_messages=[], new_beneficiaries=[],
+                                                          retry_ids=[], procedure_id=123456)
 
-        # then
-        send_activation_email.assert_called()
+            # then
+            send_activation_email.assert_not_called()
+
+    class WhenImportedForOpenDepartement:
+        @clean_database
+        def test_an_import_status_is_saved_if_beneficiary_is_created(self, app):
+            # given
+            app.mailjet_client = Mock(spec=Client)
+            app.mailjet_client.send = Mock()
+            information = {
+                'department': '93',
+                'last_name': 'Doe',
+                'first_name': 'Jane',
+                'birth_date': datetime(2000, 5, 1),
+                'email': 'jane.doe@example.com',
+                'phone': '0612345678',
+                'postal_code': '93130',
+                'application_id': 123,
+                'civility': 'Mme',
+                'activity': 'Étudiant'
+            }
+
+            # when
+            remote_import.process_beneficiary_application(information, error_messages=[], new_beneficiaries=[],
+                                                          retry_ids=[], procedure_id=123456)
+
+            # then
+            beneficiary_import = BeneficiaryImport.query.first()
+            assert beneficiary_import.beneficiary.email == 'jane.doe@example.com'
+            assert beneficiary_import.currentStatus == ImportStatus.CREATED
+            assert beneficiary_import.demarcheSimplifieeApplicationId == 123
+
+        @patch('scripts.beneficiary.remote_import.create_beneficiary_from_application')
+        @patch('scripts.beneficiary.remote_import.repository')
+        @patch('scripts.beneficiary.remote_import.send_activation_email')
+        @clean_database
+        def test_account_activation_email_is_sent(self, send_activation_email, mock_repository,
+                                                  create_beneficiary_from_application, app):
+            # given
+            information = {
+                'department': '93',
+                'last_name': 'Doe',
+                'first_name': 'Jane',
+                'birth_date': datetime(2000, 5, 1),
+                'email': 'jane.doe@example.com',
+                'phone': '0612345678',
+                'postal_code': '93130',
+                'application_id': 123,
+                'civility': 'Mme',
+                'activity': 'Étudiant'
+            }
+
+            create_beneficiary_from_application.return_value = create_user()
+
+            # when
+            remote_import.process_beneficiary_application(information, error_messages=[], new_beneficiaries=[],
+                                                          retry_ids=[], procedure_id=123456)
+
+            # then
+            send_activation_email.assert_called()
+
 
     @patch('scripts.beneficiary.remote_import.create_beneficiary_from_application')
     @patch('scripts.beneficiary.remote_import.repository')
@@ -437,7 +498,7 @@ class ProcessBeneficiaryApplicationTest:
         # then
         send_activation_email.assert_called()
         beneficiary_import = BeneficiaryImport.query.filter_by(demarcheSimplifieeApplicationId=123).first()
-        assert beneficiary_import.currentStatus == ImportStatus.PENDING
+        assert beneficiary_import.currentStatus == ImportStatus.CREATED
 
     @clean_database
     def test_an_import_status_is_saved_if_beneficiary_is_a_duplicate(self, app):
@@ -596,3 +657,18 @@ class ParseBeneficiaryInformationTest:
 
         # then
         assert information['activity'] is None
+
+
+class BeneficiaryImportStatusTest:
+
+    @pytest.mark.parametrize("departement_code",
+                             [('75'), ('77'), ('78'), ('91'), ('92'), ('95'), ('04'), ('05'), ('06'), ('13'), ('83'),
+                              ('09'), ('11'), ('12'), ('30'), ('31'), ('32'), ('46'), ('48'), ('65'), ('66'), ('81'),
+                              ('82'), ('21'), ('39'), ('70'), ('89'), ('90'), ('10'), ('51'), ('52'), ('54'), ('55'),
+                              ('57'), ('68'), ('88'), ('974')])
+    def test_should_return_PENDING_when_in_a_new_departement(self, departement_code):
+        assert _get_beneficiary_status_from_departement(departement_code) == ImportStatus.PENDING
+
+    @pytest.mark.parametrize("departement_code", ['973', '93'])
+    def test_should_return_CREATED_when_in_an_already_opened_departement(self, departement_code):
+        assert _get_beneficiary_status_from_departement(departement_code) == ImportStatus.CREATED

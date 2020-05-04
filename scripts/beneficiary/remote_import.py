@@ -29,8 +29,7 @@ def run(
         already_imported: Callable[..., bool] = is_already_imported,
         already_existing_user: Callable[..., User] = find_user_by_email
 ) -> None:
-    procedure_id = int(os.environ.get(
-        'DEMARCHES_SIMPLIFIEES_ENROLLMENT_PROCEDURE_ID_v2', None))
+    procedure_id = int(os.environ.get('DEMARCHES_SIMPLIFIEES_ENROLLMENT_PROCEDURE_ID_v2', None))
     logger.info(
         f'[BATCH][REMOTE IMPORT BENEFICIARIES] Start import from Démarches Simplifiées for procedure = {procedure_id} - Procedure {procedure_id}')
     error_messages = []
@@ -124,7 +123,8 @@ def parse_beneficiary_information(application_detail: Dict) -> Dict:
     return information
 
 
-def _process_creation(error_messages: List[str], information: Dict, new_beneficiaries: List[User], procedure_id: int) -> None:
+def _process_creation(error_messages: List[str], information: Dict, new_beneficiaries: List[User],
+                      procedure_id: int) -> None:
     new_beneficiary = create_beneficiary_from_application(information)
     try:
         repository.save(new_beneficiary)
@@ -135,20 +135,24 @@ def _process_creation(error_messages: List[str], information: Dict, new_benefici
     else:
         logger.info(f"[BATCH][REMOTE IMPORT BENEFICIARIES] Successfully created user for application "
                     f"{information['application_id']} - Procedure {procedure_id}")
+        beneficiary_import_status = _get_beneficiary_status_from_departement(new_beneficiary.departementCode)
         save_beneficiary_import_with_status(
-            ImportStatus.PENDING,
+            beneficiary_import_status,
             information['application_id'],
             demarche_simplifiee_procedure_id=procedure_id,
             user=new_beneficiary)
         new_beneficiaries.append(new_beneficiary)
-        try:
-            send_activation_email(new_beneficiary, send_raw_email)
-        except MailServiceException as mail_service_exception:
-            logger.error(
-                f"Email send_activation_email failure for application {information['application_id']} - Procedure {procedure_id}", mail_service_exception)
+        if beneficiary_import_status == ImportStatus.CREATED:
+            try:
+                send_activation_email(new_beneficiary, send_raw_email)
+            except MailServiceException as mail_service_exception:
+                logger.error(
+                    f"Email send_activation_email failure for application {information['application_id']} - Procedure {procedure_id}",
+                    mail_service_exception)
 
 
-def _process_duplication(duplicate_users: List[User], error_messages: List[str], information: Dict, procedure_id: int) -> None:
+def _process_duplication(duplicate_users: List[User], error_messages: List[str], information: Dict,
+                         procedure_id: int) -> None:
     number_of_beneficiaries = len(duplicate_users)
     duplicate_ids = ", ".join([str(u.id) for u in duplicate_users])
     message = f"{number_of_beneficiaries} utilisateur(s) en doublon {duplicate_ids} pour le dossier {information['application_id']} - Procedure {procedure_id}"
@@ -186,3 +190,10 @@ def _find_application_ids_to_process(applications: Dict, process_applications_up
 
 def _parse_application_date(application: Dict) -> datetime:
     return datetime.strptime(application['updated_at'], '%Y-%m-%dT%H:%M:%S.%fZ')
+
+
+def _get_beneficiary_status_from_departement(departement: str) -> ImportStatus:
+    return ImportStatus.PENDING if departement in ['75', '77', '78', '91', '92', '95', '04', '05', '06', '13', '83',
+                                                   '09', '11', '12', '30', '31', '32', '46', '48', '65', '66', '81',
+                                                   '82', '21', '39', '70', '89', '90', '10', '51', '52', '54', '55',
+                                                   '57', '68', '88', '974'] else ImportStatus.CREATED
