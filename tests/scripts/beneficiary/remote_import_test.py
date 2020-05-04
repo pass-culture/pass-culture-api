@@ -320,7 +320,7 @@ class ProcessBeneficiaryApplicationTest:
         @patch('scripts.beneficiary.remote_import.send_activation_email')
         @clean_database
         def test_does_not_send_account_activation_email(self, send_activation_email, mock_repository,
-                                                  create_beneficiary_from_application, app):
+                                                        create_beneficiary_from_application, app):
             # given
             information = {
                 'department': '10',
@@ -401,7 +401,6 @@ class ProcessBeneficiaryApplicationTest:
 
             # then
             send_activation_email.assert_called()
-
 
     @patch('scripts.beneficiary.remote_import.create_beneficiary_from_application')
     @patch('scripts.beneficiary.remote_import.repository')
@@ -669,6 +668,8 @@ class BeneficiaryImportStatusTest:
     def test_should_return_PENDING_when_in_a_new_departement(self, departement_code):
         assert _get_beneficiary_status_from_departement(departement_code) == ImportStatus.PENDING
 
-    @pytest.mark.parametrize("departement_code", ['973', '93'])
+    @pytest.mark.parametrize("departement_code",
+                             ['973', '93', '08', '67', '25', '973', '34', '58', '71', '93', '94', '84', '22', '29',
+                              '35', '56'])
     def test_should_return_CREATED_when_in_an_already_opened_departement(self, departement_code):
         assert _get_beneficiary_status_from_departement(departement_code) == ImportStatus.CREATED
