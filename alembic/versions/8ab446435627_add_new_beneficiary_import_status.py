@@ -1,7 +1,7 @@
 """add_new_beneficiary_import_status
 
 Revision ID: 8ab446435627
-Revises: 5b12b14f1b17
+Revises: 04928427ce14
 Create Date: 2020-05-04 13:27:14.285474
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '8ab446435627'
-down_revision = '5b12b14f1b17'
+down_revision = '04928427ce14'
 branch_labels = None
 depends_on = None
 
