@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Dict
 
 from models import Offer
+from utils.date import get_time_in_seconds_from_datetime
 from utils.human_ids import humanize
 
 
@@ -27,8 +28,10 @@ def build_object(offer: Offer) -> Dict:
     price_min = prices_sorted[0]
     price_max = prices_sorted[-1]
     dates = []
+    times = []
     if offer.isEvent:
         dates = [datetime.timestamp(stock.beginningDatetime) for stock in active_and_bookable_stocks]
+        times = [get_time_in_seconds_from_datetime(stock.beginningDatetime) for stock in active_and_bookable_stocks]
     date_created = datetime.timestamp(offer.dateCreated)
 
     object_to_index = {
@@ -58,6 +61,7 @@ def build_object(offer: Offer) -> Dict:
             'speaker': speaker,
             'stageDirector': stage_director,
             'thumbUrl': offer.thumb_url,
+            'times': list(set(times)),
             'type': offer.offerType['sublabel'],
             'visa': visa,
         },
