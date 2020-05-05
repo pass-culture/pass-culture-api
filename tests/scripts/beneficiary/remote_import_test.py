@@ -316,10 +316,9 @@ class ProcessBeneficiaryApplicationTest:
             assert beneficiary_import.demarcheSimplifieeApplicationId == 123
 
         @patch('scripts.beneficiary.remote_import.create_beneficiary_from_application')
-        @patch('scripts.beneficiary.remote_import.repository')
         @patch('scripts.beneficiary.remote_import.send_activation_email')
         @clean_database
-        def test_does_not_send_account_activation_email(self, send_activation_email, mock_repository,
+        def test_does_not_send_account_activation_email(self, send_activation_email,
                                                         create_beneficiary_from_application, app):
             # given
             information = {
@@ -374,11 +373,9 @@ class ProcessBeneficiaryApplicationTest:
             assert beneficiary_import.demarcheSimplifieeApplicationId == 123
 
         @patch('scripts.beneficiary.remote_import.create_beneficiary_from_application')
-        @patch('scripts.beneficiary.remote_import.repository')
         @patch('scripts.beneficiary.remote_import.send_activation_email')
         @clean_database
-        def test_account_activation_email_is_sent(self, send_activation_email, mock_repository,
-                                                  create_beneficiary_from_application, app):
+        def test_account_activation_email_is_sent(self, send_activation_email, create_beneficiary_from_application, app):
             # given
             information = {
                 'department': '93',
