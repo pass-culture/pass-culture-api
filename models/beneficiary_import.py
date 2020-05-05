@@ -21,11 +21,9 @@ class BeneficiaryImport(PcObject, Model):
                            index=True,
                            nullable=True)
 
-    demarcheSimplifieeProcedureId = Column(Integer, nullable=True)
+    beneficiary = relationship('User', back_populates='beneficiaryImport')
 
-    beneficiary = relationship('User',
-                               foreign_keys=[beneficiaryId],
-                               backref='beneficiaryImports')
+    demarcheSimplifieeProcedureId = Column(Integer, nullable=True)
 
     def setStatus(self, status: ImportStatus, detail: str = None, author: User = None):
         new_status = BeneficiaryImportStatus()

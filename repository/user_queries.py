@@ -14,9 +14,16 @@ from models.user import WalletBalance
 
 
 def count_all_activated_users() -> int:
-    return User.query \
+    not_imported_beneficiaries = User.query\
         .filter_by(canBookFreeOffers=True) \
-        .count()
+        .filter_by(beneficiaryImport=None)
+
+    imported_beneficiaries = User.query \
+        .filter_by(canBookFreeOffers=True) \
+        .join(BeneficiaryImport) \
+        .filter(BeneficiaryImport.currentStatus == ImportStatus.CREATED)
+
+    return not_imported_beneficiaries.count() + imported_beneficiaries.count()
 
 
 def count_all_activated_users_by_departement(department_code: str) -> int:
@@ -59,7 +66,7 @@ def find_user_by_email(email: str) -> User:
 
 def find_by_civility(first_name: str, last_name: str, birth_date: datetime) -> List[User]:
     civility_predicate = (_matching(User.firstName, first_name)) & (_matching(User.lastName, last_name)) & (
-        User.dateOfBirth == birth_date)
+            User.dateOfBirth == birth_date)
 
     return User.query \
         .filter(civility_predicate) \
@@ -80,7 +87,7 @@ def find_user_by_reset_password_token(token: str) -> User:
 
 def find_all_emails_of_user_offerers_admins(offerer_id: int) -> List[str]:
     filter_validated_user_offerers_with_admin_rights = (UserOfferer.rights == RightsType.admin) & (
-        UserOfferer.validationToken == None)
+            UserOfferer.validationToken == None)
     admins = User.query \
         .join(UserOfferer) \
         .filter(filter_validated_user_offerers_with_admin_rights) \
@@ -110,9 +117,9 @@ def filter_users_with_at_least_one_validated_offerer_validated_user_offerer(quer
         .join(UserOfferer) \
         .join(Offerer) \
         .filter(
-            (Offerer.validationToken == None) & \
-            (UserOfferer.validationToken == None)
-        )
+        (Offerer.validationToken == None) & \
+        (UserOfferer.validationToken == None)
+    )
 
 
 def filter_users_with_at_least_one_validated_offerer_not_validated_user_offerer(query: Query) -> Query:
@@ -120,9 +127,9 @@ def filter_users_with_at_least_one_validated_offerer_not_validated_user_offerer(
         .join(UserOfferer) \
         .join(Offerer) \
         .filter(
-            (Offerer.validationToken == None) & \
-            (UserOfferer.validationToken != None)
-        )
+        (Offerer.validationToken == None) & \
+        (UserOfferer.validationToken != None)
+    )
 
 
 def filter_users_with_at_least_one_not_validated_offerer_validated_user_offerer(query: Query) -> Query:
@@ -130,9 +137,9 @@ def filter_users_with_at_least_one_not_validated_offerer_validated_user_offerer(
         .join(UserOfferer) \
         .join(Offerer) \
         .filter(
-            (Offerer.validationToken != None) & \
-            (UserOfferer.validationToken == None)
-        )
+        (Offerer.validationToken != None) & \
+        (UserOfferer.validationToken == None)
+    )
 
 
 def keep_only_webapp_users(query: Query) -> Query:

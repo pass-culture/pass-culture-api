@@ -87,6 +87,8 @@ class User(PcObject,
 
     hasSeenTutorials = Column(Boolean, nullable=True)
 
+    beneficiaryImport = relationship("BeneficiaryImport", uselist=False, back_populates="beneficiary")
+
     def checkPassword(self, passwordToCheck):
         return bcrypt.hashpw(passwordToCheck.encode('utf-8'), self.password) == self.password
 

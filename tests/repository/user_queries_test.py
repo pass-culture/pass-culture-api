@@ -281,7 +281,7 @@ class CountAllActivatedUsersTest:
         assert number_of_active_users == 1
 
     @clean_database
-    def test_returns_0_when_no_active_user(self, app):
+    def test_returns_0_when_no_user_can_book_free_offers(self, app):
         # Given
         user_activated = create_user(can_book_free_offers=False)
         user_not_activated = create_user(can_book_free_offers=False, email='email2@example.com')
@@ -292,6 +292,44 @@ class CountAllActivatedUsersTest:
 
         # Then
         assert number_of_active_users == 0
+
+    @clean_database
+    def test_does_not_count_user_with_status_pending(self, app):
+        # Given
+        user_activated = create_user(can_book_free_offers=True)
+        user_not_activated = create_user(can_book_free_offers=True, email='email2@example.com')
+        beneficiary_import = create_beneficiary_import(user=user_not_activated, status=ImportStatus.PENDING,
+                                                       demarche_simplifiee_application_id=123)
+
+        repository.save(
+            user_activated,
+            beneficiary_import
+        )
+
+        # When
+        number_of_active_users = count_all_activated_users()
+
+        # Then
+        assert number_of_active_users == 1
+
+    @clean_database
+    def test_does_count_imported_beneficiary_with_status_created(self, app):
+        # Given
+        user_activated = create_user(can_book_free_offers=True)
+        user_not_activated = create_user(can_book_free_offers=True, email='email2@example.com')
+        beneficiary_import = create_beneficiary_import(user=user_not_activated, status=ImportStatus.CREATED,
+                                                       demarche_simplifiee_application_id=123)
+
+        repository.save(
+            user_activated,
+            beneficiary_import
+        )
+
+        # When
+        number_of_active_users = count_all_activated_users()
+
+        # Then
+        assert number_of_active_users == 2
 
 
 class CountActivatedUsersByDepartementTest:
