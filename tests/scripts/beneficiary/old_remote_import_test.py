@@ -7,7 +7,8 @@ from models import ApiErrors, BeneficiaryImport, ImportStatus, User
 from repository import repository
 from scripts.beneficiary import old_remote_import
 from scripts.beneficiary.old_remote_import import parse_beneficiary_information
-from tests.conftest import clean_database
+from tests.conftest import clean_database, \
+    mocked_mail
 from tests.model_creators.generic_creators import create_user
 from tests.scripts.beneficiary.old_remote_fixture import \
     APPLICATION_DETAIL_STANDARD_RESPONSE, make_old_application_detail
@@ -227,8 +228,6 @@ class ProcessBeneficiaryApplicationTest:
     @clean_database
     def test_new_beneficiaries_are_recorded_with_deposit(self, app):
         # given
-        app.mailjet_client = Mock(spec=Client)
-        app.mailjet_client.send = Mock()
         information = {
             'department': '67',
             'last_name': 'Doe',

@@ -270,9 +270,9 @@ class CountAllActivatedUsersTest:
     @clean_database
     def test_returns_1_when_only_one_active_user(self, app):
         # Given
-        user_activated = create_user(can_book_free_offers=True)
+        beneficiary_activated = create_user(can_book_free_offers=True)
         user_not_activated = create_user(can_book_free_offers=False, email='email2@example.com')
-        repository.save(user_activated, user_not_activated)
+        repository.save(beneficiary_activated, user_not_activated)
 
         # When
         number_of_active_users = count_all_activated_users()
@@ -283,9 +283,9 @@ class CountAllActivatedUsersTest:
     @clean_database
     def test_returns_0_when_no_user_can_book_free_offers(self, app):
         # Given
-        user_activated = create_user(can_book_free_offers=False)
+        beneficiary_activated = create_user(can_book_free_offers=False)
         user_not_activated = create_user(can_book_free_offers=False, email='email2@example.com')
-        repository.save(user_activated, user_not_activated)
+        repository.save(beneficiary_activated, user_not_activated)
 
         # When
         number_of_active_users = count_all_activated_users()
@@ -294,15 +294,15 @@ class CountAllActivatedUsersTest:
         assert number_of_active_users == 0
 
     @clean_database
-    def test_does_not_count_user_with_status_pending(self, app):
+    def test_does_not_count_imported_beneficiary_with_status_pending(self, app):
         # Given
-        user_activated = create_user(can_book_free_offers=True)
+        beneficiary_activated = create_user(can_book_free_offers=True)
         user_not_activated = create_user(can_book_free_offers=True, email='email2@example.com')
         beneficiary_import = create_beneficiary_import(user=user_not_activated, status=ImportStatus.PENDING,
                                                        demarche_simplifiee_application_id=123)
 
         repository.save(
-            user_activated,
+            beneficiary_activated,
             beneficiary_import
         )
 
@@ -315,13 +315,13 @@ class CountAllActivatedUsersTest:
     @clean_database
     def test_does_count_imported_beneficiary_with_status_created(self, app):
         # Given
-        user_activated = create_user(can_book_free_offers=True)
+        beneficiary_activated = create_user(can_book_free_offers=True)
         user_not_activated = create_user(can_book_free_offers=True, email='email2@example.com')
         beneficiary_import = create_beneficiary_import(user=user_not_activated, status=ImportStatus.CREATED,
                                                        demarche_simplifiee_application_id=123)
 
         repository.save(
-            user_activated,
+            beneficiary_activated,
             beneficiary_import
         )
 
@@ -336,9 +336,9 @@ class CountActivatedUsersByDepartementTest:
     @clean_database
     def test_returns_1_when_only_one_active_user_in_departement(self, app):
         # Given
-        user_activated = create_user(can_book_free_offers=True, departement_code='74')
+        beneficiary_activated = create_user(can_book_free_offers=True, departement_code='74')
         user_not_activated = create_user(can_book_free_offers=False, email='email2@example.com')
-        repository.save(user_activated, user_not_activated)
+        repository.save(beneficiary_activated, user_not_activated)
 
         # When
         number_of_active_users = count_all_activated_users_by_departement('74')
@@ -349,9 +349,9 @@ class CountActivatedUsersByDepartementTest:
     @clean_database
     def test_returns_0_when_no_active_user_in_departement_74(self, app):
         # Given
-        user_activated = create_user(can_book_free_offers=False, departement_code='74')
+        beneficiary_activated = create_user(can_book_free_offers=False, departement_code='74')
         user_not_activated = create_user(can_book_free_offers=False, email='email2@example.com')
-        repository.save(user_activated, user_not_activated)
+        repository.save(beneficiary_activated, user_not_activated)
 
         # When
         number_of_active_users = count_all_activated_users_by_departement('74')
@@ -362,9 +362,9 @@ class CountActivatedUsersByDepartementTest:
     @clean_database
     def test_returns_0_when_no_active_user_in_departement_76(self, app):
         # Given
-        user_activated = create_user(can_book_free_offers=True, departement_code='76')
+        beneficiary_activated = create_user(can_book_free_offers=True, departement_code='76')
         user_not_activated = create_user(can_book_free_offers=False, email='email2@example.com')
-        repository.save(user_activated, user_not_activated)
+        repository.save(beneficiary_activated, user_not_activated)
 
         # When
         number_of_active_users = count_all_activated_users_by_departement('74')

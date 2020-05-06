@@ -1,20 +1,31 @@
-from datetime import MINYEAR, datetime
+from datetime import MINYEAR, \
+    datetime
 from typing import List
 
-from sqlalchemy import Column, func
+from sqlalchemy import Column, \
+    func
 from sqlalchemy.orm import Query
 from sqlalchemy.sql.elements import BinaryExpression
 from sqlalchemy.sql.functions import Function
 
-from models import BeneficiaryImport, BeneficiaryImportStatus, Booking, \
-    EventType, ImportStatus, Offer, Offerer, RightsType, Stock, \
-    ThingType, User, UserOfferer
+from models import BeneficiaryImport, \
+    BeneficiaryImportStatus, \
+    Booking, \
+    EventType, \
+    ImportStatus, \
+    Offer, \
+    Offerer, \
+    RightsType, \
+    Stock, \
+    ThingType, \
+    User, \
+    UserOfferer
 from models.db import db
 from models.user import WalletBalance
 
 
 def count_all_activated_users() -> int:
-    not_imported_beneficiaries = User.query\
+    not_imported_beneficiaries = User.query \
         .filter_by(canBookFreeOffers=True) \
         .filter_by(beneficiaryImport=None)
 
@@ -117,9 +128,9 @@ def filter_users_with_at_least_one_validated_offerer_validated_user_offerer(quer
         .join(UserOfferer) \
         .join(Offerer) \
         .filter(
-        (Offerer.validationToken == None) & \
-        (UserOfferer.validationToken == None)
-    )
+            (Offerer.validationToken == None) & \
+            (UserOfferer.validationToken == None)
+        )
 
 
 def filter_users_with_at_least_one_validated_offerer_not_validated_user_offerer(query: Query) -> Query:
@@ -127,9 +138,9 @@ def filter_users_with_at_least_one_validated_offerer_not_validated_user_offerer(
         .join(UserOfferer) \
         .join(Offerer) \
         .filter(
-        (Offerer.validationToken == None) & \
-        (UserOfferer.validationToken != None)
-    )
+            (Offerer.validationToken == None) & \
+            (UserOfferer.validationToken != None)
+        )
 
 
 def filter_users_with_at_least_one_not_validated_offerer_validated_user_offerer(query: Query) -> Query:
@@ -137,9 +148,9 @@ def filter_users_with_at_least_one_not_validated_offerer_validated_user_offerer(
         .join(UserOfferer) \
         .join(Offerer) \
         .filter(
-        (Offerer.validationToken != None) & \
-        (UserOfferer.validationToken == None)
-    )
+            (Offerer.validationToken != None) & \
+            (UserOfferer.validationToken == None)
+        )
 
 
 def keep_only_webapp_users(query: Query) -> Query:

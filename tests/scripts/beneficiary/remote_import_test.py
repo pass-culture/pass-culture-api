@@ -286,12 +286,10 @@ class ProcessBeneficiaryApplicationTest:
         assert first.civility == 'Mme'
         assert first.activity == 'Étudiant'
 
-    class WhenImportedForWaitingDepartement:
+    class WhenImportedForWaitingDepartementTest:
         @clean_database
         def test_an_import_status_is_saved_if_beneficiary_is_created(self, app):
             # given
-            app.mailjet_client = Mock(spec=Client)
-            app.mailjet_client.send = Mock()
             information = {
                 'department': '09',
                 'last_name': 'Doe',
@@ -653,20 +651,3 @@ class ParseBeneficiaryInformationTest:
 
         # then
         assert information['activity'] is None
-
-
-class BeneficiaryImportStatusTest:
-
-    @pytest.mark.parametrize("departement_code",
-                             [('75'), ('77'), ('78'), ('91'), ('92'), ('95'), ('04'), ('05'), ('06'), ('13'), ('83'),
-                              ('09'), ('11'), ('12'), ('30'), ('31'), ('32'), ('46'), ('48'), ('65'), ('66'), ('81'),
-                              ('82'), ('21'), ('39'), ('70'), ('89'), ('90'), ('10'), ('51'), ('52'), ('54'), ('55'),
-                              ('57'), ('68'), ('88'), ('974')])
-    def test_should_return_PENDING_when_in_a_new_departement(self, departement_code):
-        assert _get_beneficiary_status_from_departement(departement_code) == ImportStatus.PENDING
-
-    @pytest.mark.parametrize("departement_code",
-                             ['973', '93', '08', '67', '25', '973', '34', '58', '71', '93', '94', '84', '22', '29',
-                              '35', '56'])
-    def test_should_return_CREATED_when_in_an_already_opened_departement(self, departement_code):
-        assert _get_beneficiary_status_from_departement(departement_code) == ImportStatus.CREATED
