@@ -334,6 +334,7 @@ VENUE_INCLUDES = [
     'isValidated',
     'bic',
     'iban',
+    'demarchesSimplifieesApplicationId',
     "-validationToken",
     {
         "key": "managingOfferer",

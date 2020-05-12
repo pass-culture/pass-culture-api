@@ -7,6 +7,7 @@ from sqlalchemy.orm import relationship
 from domain.departments import OVERSEAS_DEPT_CODES
 from domain.keywords import create_ts_vector_and_table_args
 from domain.postal_code.postal_code import PostalCode
+from models.bank_information import BankInformationStatus
 from models.db import Model
 from models.has_address_mixin import HasAddressMixin
 from models.has_thumb_mixin import HasThumbMixin
@@ -117,6 +118,17 @@ class Venue(PcObject,
     @property
     def iban(self):
         return self.bankInformation.iban if self.bankInformation else None
+
+    @property
+    def demarchesSimplifieesApplicationId(self):
+        if not self.bankInformation:
+            return None
+
+        can_show_application_id = self.bankInformation.status == BankInformationStatus.DRAFT or self.bankInformation.status == BankInformationStatus.ACCEPTED
+        if not can_show_application_id:
+            return None
+
+        return self.bankInformation.applicationId
 
     @property
     def nOffers(self):
