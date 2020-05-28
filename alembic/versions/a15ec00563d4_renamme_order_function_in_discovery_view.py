@@ -90,6 +90,11 @@ def upgrade():
             ORDER BY recommendable_offers.partitioned_offers;
     """)
 
+    op.execute(f"""
+        CREATE UNIQUE INDEX IF NOT EXISTS "discovery_view_offerDiscoveryOrder_idx"
+        ON discovery_view ("offerDiscoveryOrder");
+    """)
+
 
 def downgrade():
     op.execute("DROP MATERIALIZED VIEW IF EXISTS discovery_view;")
