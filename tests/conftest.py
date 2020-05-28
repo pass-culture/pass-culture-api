@@ -17,7 +17,7 @@ from requests.auth import _basic_auth_str
 from install_database_extensions import install_database_extensions
 from local_providers.install import install_local_providers
 from models.db import db
-from models.install import install_activity, install_materialized_views
+from models.install import install_activity, install_discovery_view_v3
 from repository.clean_database import clean_all_database
 from repository.user_queries import find_user_by_email
 from routes import install_routes
@@ -58,7 +58,7 @@ def app():
     run_migrations()
 
     install_activity()
-    install_materialized_views()
+    install_discovery_view_v3()
     install_routes()
     install_local_providers()
     app.mailjet_client = Mock()
