@@ -1,0 +1,5 @@
+.circleci
+documentation
+tests
+Dockerfile
+start-api-when-database-is-ready.sh
