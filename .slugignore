@@ -1,5 +1,5 @@
 .circleci
-documentation
 tests
+!tests/model_creators
 Dockerfile
 start-api-when-database-is-ready.sh
