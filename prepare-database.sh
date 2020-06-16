@@ -1,5 +1,5 @@
 #!/bin/sh
-# start-api-when-database-is-ready.sh
+# prepare-database.sh
 
 set -e
 set -x;
@@ -21,5 +21,4 @@ python install_database_extensions.py
 >&2 echo "\n\e[32mPostgres is up - Running migration\n"
 PYTHONPATH=. alembic upgrade head
 
->&2 echo "\n\e[32mMigrations has ran - Starting the application\n"
-while true; do python app.py; done;
+>&2 echo "\n\e[32mMigrations has ran - Database is ready\n"
