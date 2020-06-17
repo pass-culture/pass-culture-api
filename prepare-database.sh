@@ -4,8 +4,6 @@
 set -e
 set -x;
 
-sudo apt-get install -y postgresql-client
-
 >&2 echo "\n\e[32mInstalling requirements\n"
 pip install -r ./requirements.txt;
 python -m nltk.downloader punkt stopwords;
