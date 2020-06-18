@@ -1,7 +1,11 @@
 from datetime import datetime
+from typing import List, Optional
 
 from domain.beneficiary.beneficiary import Beneficiary
-from domain.booking_recap.booking_recap import BookingRecap, ThingBookingRecap, EventBookingRecap, BookBookingRecap
+from domain.booking.booking import Booking
+from domain.booking_recap.booking_recap import ThingBookingRecap, EventBookingRecap, BookBookingRecap
+from domain.stock.stock import Stock
+from models import Offer
 
 
 def create_domain_beneficiary(identifier: int = None,
@@ -89,4 +93,24 @@ def create_domain_event_booking_recap(offer_name: str = "Le cirque du Soleil",
         booking_is_reimbursed=booking_is_reimbursed,
         event_beginning_datetime=event_beginning_datetime,
         venue_identifier=venue_identifier,
+    )
+
+
+def create_domain_stock(identifier: int,
+                        quantity: Optional[int],
+                        offer: Offer,
+                        price: float,
+                        beginning_datetime: Optional[datetime],
+                        booking_limit_datetime: Optional[datetime],
+                        is_soft_deleted: bool,
+                        bookings: List[Booking] = []):
+    return Stock(
+        identifier=identifier,
+        quantity=quantity,
+        offer=offer,
+        price=price,
+        beginning_datetime=beginning_datetime,
+        booking_limit_datetime=booking_limit_datetime,
+        is_soft_deleted=is_soft_deleted,
+        bookings=bookings,
     )

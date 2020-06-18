@@ -1,4 +1,3 @@
-""" error handlers """
 import traceback
 
 import simplejson as json
@@ -47,7 +46,7 @@ def restize_booking_not_found_error(e):
 def restize_invalid_header_exception(e):
     e = ApiErrors()
     e.add_error('global',
-               'Header non autorisé')
+                'Header non autorisé')
     return jsonify(e.errors), 400
 
 
@@ -59,7 +58,7 @@ def internal_error(error):
                      request.method, request.url, tb)
     e = ApiErrors()
     e.add_error('global',
-               "Il semble que nous ayons des problèmes techniques :("
+                "Il semble que nous ayons des problèmes techniques :("
                 + " On répare ça au plus vite.")
     return jsonify(e.errors), 500
 
