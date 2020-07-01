@@ -30,6 +30,7 @@ class FeatureToggle(enum.Enum):
     SAVE_SEEN_OFFERS = 'Enregistrer en base les offres déjà vues par les utilisateurs'
     BOOKINGS_V2 = 'Permettre d''afficher la nouvelle visualisation des réservations d''un offreur'
     API_SIRENE_AVAILABLE = 'Active les fonctionnalitées liées à l\'API Sirene'
+    CLEAN_DISCOVERY_VIEW = 'Nettoyer les données en base de données liées à la mise à jour régulière'
 
 
 class Feature(PcObject, Model, DeactivableMixin):
