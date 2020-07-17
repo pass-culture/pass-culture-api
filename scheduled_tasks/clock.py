@@ -1,9 +1,11 @@
 # Loading variables should always be the first thing, before any other load
 from load_environment_variables import load_environment_variables
+
 load_environment_variables()
 
 import os
 
+from connectors.api_matomo import run_matomo_archiving
 from apscheduler.schedulers.blocking import BlockingScheduler
 from flask import Flask
 from mailjet_rest import Client
@@ -31,7 +33,6 @@ DEMARCHES_SIMPLIFIEES_OLD_ENROLLMENT_PROCEDURE_ID = os.environ.get('DEMARCHES_SI
                                                                    None)
 DEMARCHES_SIMPLIFIEES_NEW_ENROLLMENT_PROCEDURE_ID = os.environ.get('DEMARCHES_SIMPLIFIEES_ENROLLMENT_PROCEDURE_ID_v2',
                                                                    None)
-
 
 @log_cron
 @cron_context
@@ -114,6 +115,16 @@ def pc_clean_discovery_views(app) -> None:
         discovery_view_queries.clean(app)
 
 
+@log_cron
+@cron_context
+def archive_tracking_data(app) -> None:
+    matomo_authentification_token = os.environ.get('MATOMO_AUTH_TOKEN', '')
+    matomo_server_url = os.environ.get('MATOMO_SERVER_URL', '')
+
+    if matomo_authentification_token != '' and matomo_server_url != '':
+        run_matomo_archiving(matomo_server_url, matomo_authentification_token)
+
+
 if __name__ == '__main__':
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
@@ -169,5 +180,7 @@ if __name__ == '__main__':
     scheduler.add_job(pc_clean_discovery_views, 'cron',
                       [app],
                       hour=clean_discovery_frequency)
+
+    scheduler.add_job(archive_tracking_data, 'cron', [app], minute='*/30')
 
     scheduler.start()

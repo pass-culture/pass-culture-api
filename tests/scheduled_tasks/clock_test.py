@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from scheduled_tasks.clock import pc_update_recommendations_view, pc_clean_discovery_views
+from scheduled_tasks.clock import pc_update_recommendations_view, pc_clean_discovery_views, archive_tracking_data
 
 
 class PcUpdateRecommendationsViewTest:
@@ -81,3 +81,27 @@ class PcCleanDiscoveryViewsTest:
         # Then
         mock_discovery_clean.assert_called_once_with(app)
         mock_discovery_v3_clean.assert_not_called()
+
+
+class PcArchiveTrackingDataTest:
+    @patch.dict('os.environ', {})
+    @patch('scheduled_tasks.clock.run_matomo_archiving')
+    def test_do_not_archive_tracking_data_when_server_and_token_are_not_defined(self,
+                                                                                mock_run_matomo_archiving,
+                                                                                app):
+        # When
+        archive_tracking_data(app)
+
+        # Then
+        mock_run_matomo_archiving.assert_not_called()
+
+    @patch.dict('os.environ', {'MATOMO_AUTH_TOKEN': 'XYZ', 'MATOMO_SERVER_URL': 'server_url'})
+    @patch('scheduled_tasks.clock.run_matomo_archiving')
+    def test_archive_tracking_data_when_server_and_token_are_defined(self,
+                                                                     mock_run_matomo_archiving,
+                                                                     app):
+        # When
+        archive_tracking_data(app)
+
+        # Then
+        mock_run_matomo_archiving.assert_called_once_with('server_url', 'XYZ')
