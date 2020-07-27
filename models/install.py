@@ -18,11 +18,6 @@ def install_activity():
     db.session.commit()
 
 
-def install_materialized_views():
-    discovery_view_queries.create(db.session, discovery_view_queries.order_by_digital_offers)
-    discovery_view_v3_queries.create(db.session, discovery_view_v3_queries.order_by_digital_offers_v3)
-
-
 def install_features():
     Feature.query.delete()
     features = []

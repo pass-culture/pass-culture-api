@@ -11,7 +11,7 @@ from documentation import install_documentation
 from flask_app import app, db, admin
 from local_providers.install import install_local_providers
 from load_environment_variables import load_environment_variables
-from models.install import install_activity, install_features, install_materialized_views
+from models.install import install_activity
 from repository.feature_queries import feature_request_profiling_enabled
 from routes import install_routes
 from utils.config import IS_DEV, ENV
@@ -43,9 +43,7 @@ with app.app_context():
 
     if IS_DEV:
         install_activity()
-        install_materialized_views()
         install_local_providers()
-        install_features()
 
     install_login_manager()
     install_routes()

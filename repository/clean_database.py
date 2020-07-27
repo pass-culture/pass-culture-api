@@ -32,7 +32,7 @@ from models.activity import load_activity
 from models.allocine_venue_provider import AllocineVenueProvider
 from models.db import db
 from models.email import Email
-from models.install import install_features, install_materialized_views
+from models.install import install_features
 from models.venue_label_sql_entity import VenueLabelSQLEntity
 
 
@@ -76,6 +76,5 @@ def clean_all_database(*args, **kwargs):
     VenueType.query.delete()
     VenueLabelSQLEntity.query.delete()
     db.session.commit()
-    install_materialized_views()
     install_features()
     install_local_providers()
