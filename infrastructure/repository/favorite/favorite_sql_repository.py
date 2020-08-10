@@ -1,6 +1,6 @@
 from typing import List, Dict
 
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from domain.favorite.favorite import Favorite
 from domain.favorite.favorite_repository import FavoriteRepository
@@ -13,23 +13,23 @@ class FavoriteSQLRepository(FavoriteRepository):
         favorite_sql_entities = FavoriteSQLEntity.query \
             .filter(FavoriteSQLEntity.userId == beneficiary_identifier) \
             .options(
-                joinedload(FavoriteSQLEntity.offer)
+                selectinload(FavoriteSQLEntity.offer)
                     .joinedload(OfferSQLEntity.venue)
                     .joinedload(VenueSQLEntity.managingOfferer)
              ) \
             .options(
-                joinedload(FavoriteSQLEntity.mediation)
+                selectinload(FavoriteSQLEntity.mediation)
             ) \
             .options(
-                joinedload(FavoriteSQLEntity.offer)
+                selectinload(FavoriteSQLEntity.offer)
                     .joinedload(OfferSQLEntity.stocks)
             ) \
             .options(
-                joinedload(FavoriteSQLEntity.offer)
+                selectinload(FavoriteSQLEntity.offer)
                     .joinedload(OfferSQLEntity.product)
             ) \
             .options(
-                joinedload(FavoriteSQLEntity.offer)
+                selectinload(FavoriteSQLEntity.offer)
                     .joinedload(OfferSQLEntity.mediations)
             ) \
             .all()
