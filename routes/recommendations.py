@@ -73,7 +73,12 @@ def put_recommendations_old_v3():
 @expect_json_data
 def put_recommendations():
     if feature_queries.is_active(FeatureToggle.RECOMMENDATIONS_WITH_GEOLOCATION):
-        return _put_geolocated_recommendations(request)
+        print("===========================================================")
+        print("BEGIN Reco with geo")
+        recommendations = _put_geolocated_recommendations(request)
+        print("END Reco with geo")
+        print("===========================================================")
+        return recommendations
     else:
         return _put_non_geolocated_recommendations(request)
 
@@ -87,13 +92,14 @@ def _put_geolocated_recommendations(request: LocalProxy) -> (Dict, int):
     update_read_recommendations(request.json.get('readRecommendations'))
     sent_offers_ids = dehumanize_ids_list(request.json.get('offersSentInLastCall'))
 
+    user_id = current_user.id
     recommendations = create_recommendations_for_discovery_v3(user=current_user,
                                                               user_iris_id=user_iris_id,
                                                               user_is_geolocated=user_is_geolocated,
                                                               sent_offers_ids=sent_offers_ids,
                                                               limit=BLOB_SIZE)
 
-    return jsonify(serialize_recommendations(recommendations, current_user)), 200
+    return jsonify(serialize_recommendations(recommendations, user_id)), 200
 
 
 def _put_non_geolocated_recommendations(request: LocalProxy) -> (Dict, int):

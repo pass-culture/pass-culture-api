@@ -3,6 +3,7 @@ from typing import List
 from models import IrisVenues
 from models.db import db
 from repository import repository
+from scripts.performance_toolkit import bulk_insert_pc_objects
 
 
 def find_ids_of_irises_located_near_venue(venue_id: int, search_radius: int) -> List[int]:
@@ -23,7 +24,8 @@ def insert_venue_in_iris_venue(venue_id: int, iris_ids_near_venue: List[int]) ->
         iris_venue.irisId = iris_id
         irises_venues.append(iris_venue)
 
-    repository.save(*irises_venues)
+    bulk_insert_pc_objects(irises_venues, IrisVenues)
+    # repository.save(*irises_venues)
 
 
 def delete_venue_from_iris_venues(venue_id: int) -> None:

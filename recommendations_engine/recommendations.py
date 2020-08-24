@@ -1,13 +1,16 @@
 import random
 from typing import List, Optional
 
-from models import DiscoveryView, MediationSQLEntity, OfferSQLEntity, Recommendation, UserSQLEntity
+from sqlalchemy.orm import selectinload, joinedload
+
+from models import DiscoveryView, MediationSQLEntity, OfferSQLEntity, Recommendation, UserSQLEntity, VenueSQLEntity
 from models.db import db
 from recommendations_engine import get_offers_for_recommendations_discovery
 from repository import mediation_queries, repository
 from repository.offer_queries import find_searchable_offer, \
     get_offers_for_recommendation_v3
 from repository.recommendation_queries import find_recommendation_already_created_on_discovery
+from scripts.performance_toolkit import bulk_insert_pc_objects
 from utils.logger import logger
 
 MAX_OF_MAX_DISTANCE = "20000"
@@ -55,10 +58,28 @@ def create_recommendations_for_discovery_v3(user: UserSQLEntity, user_iris_id: O
                                               user_is_geolocated=user_is_geolocated, limit=limit,
                                               sent_offers_ids=sent_offers_ids)
 
+    print("Before save reco")
     for (index, offer) in enumerate(offers):
-        recommendations.append(_create_recommendation_from_offers(user, offer))
-    repository.save(*recommendations)
-    return recommendations
+        new_reco = _create_recommendation_from_offers(user, offer)
+        recommendations.append(new_reco)
+        db.session.add(new_reco)
+
+    db.session.flush()
+
+    reco_ids = [reco.id for reco in recommendations]
+    print("After recos IDS")
+    new_recommendations = Recommendation.query.filter(
+        Recommendation.id.in_(reco_ids)
+    ).options(
+        joinedload(Recommendation.offer).joinedload(OfferSQLEntity.venue).joinedload(VenueSQLEntity.managingOfferer)
+    ).options(
+        joinedload(Recommendation.offer).joinedload(OfferSQLEntity.stocks)
+    ).options(
+        joinedload(Recommendation.offer).joinedload(OfferSQLEntity.mediations)
+    ).all()
+
+    print("After save reco")
+    return new_recommendations
 
 
 def _create_recommendation_from_ids(user, offer_id, mediation_id=None):
@@ -93,7 +114,7 @@ def _create_recommendation(user: UserSQLEntity, offer: OfferSQLEntity, mediation
 def _create_recommendation_from_offers(user: UserSQLEntity, reco_view: DiscoveryView,
                                        mediation: MediationSQLEntity = None) -> Recommendation:
     recommendation = Recommendation()
-    recommendation.user = user
+    recommendation.userId = user.id
 
     recommendation.offerId = reco_view.id
 

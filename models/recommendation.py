@@ -68,13 +68,6 @@ class Recommendation(PcObject, Model):
     search = Column(String,
                     nullable=True)
 
-    isFavorite = column_property(
-        exists(select([FavoriteSQLEntity.id]).
-               where(and_(userId == FavoriteSQLEntity.userId,
-                          (offerId == FavoriteSQLEntity.offerId))
-                     )
-               ))
-
     @property
     def thumbUrl(self) -> str:
         if self.mediationId:

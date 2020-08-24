@@ -5,7 +5,7 @@ from typing import List, Set, Union, Optional
 
 from dateutil import tz
 from sqlalchemy import func, desc, text
-from sqlalchemy.orm import Query
+from sqlalchemy.orm import Query, selectinload
 
 from domain.booking_recap.booking_recap import BookingRecap, EventBookingRecap, ThingBookingRecap, BookBookingRecap
 from domain.booking_recap.bookings_recap_paginated import BookingsRecapPaginated
@@ -446,6 +446,9 @@ def find_for_my_bookings_page(user_id: int) -> List[BookingSQLEntity]:
         .distinct(BookingSQLEntity.stockId) \
         .filter(BookingSQLEntity.userId == user_id) \
         .order_by(BookingSQLEntity.stockId, BookingSQLEntity.isCancelled, BookingSQLEntity.dateCreated.desc()) \
+        .options(
+            selectinload(BookingSQLEntity.stock)
+        ) \
         .all()
 
 

@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from flask_sqlalchemy import BaseQuery
 from sqlalchemy import desc, func, nullsfirst, or_
-from sqlalchemy.orm import aliased, joinedload
+from sqlalchemy.orm import aliased, joinedload, selectinload
 from sqlalchemy.orm.query import Query
 from sqlalchemy.sql import selectable
 from sqlalchemy.sql.elements import BinaryExpression
