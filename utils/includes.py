@@ -92,11 +92,6 @@ OFFER_INCLUDES = [
 ]
 
 RECOMMENDATION_INCLUDES = [
-    "thumbUrl",
-    {
-        "key": "mediation",
-        "includes": ["thumbUrl"]
-    },
     {
         "key": "offer",
         "includes": [
@@ -105,11 +100,8 @@ RECOMMENDATION_INCLUDES = [
             'hasBookingLimitDatetimesPassed',
             "isThing",
             "offerType",
-            {
-                "key": "stocks",
-                "includes": [
-                ]
-            },
+            "thumbUrl",
+            "stocks",
             {
                 "key": "venue",
                 "includes": [

@@ -64,7 +64,7 @@ def create_recommendations_for_discovery_v3(user: UserSQLEntity, user_iris_id: O
         recommendations.append(new_reco)
         db.session.add(new_reco)
 
-    db.session.flush()
+    db.session.commit()
 
     reco_ids = [reco.id for reco in recommendations]
     print("After recos IDS")

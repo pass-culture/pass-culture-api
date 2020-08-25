@@ -30,7 +30,7 @@ def get_recommendation(offer_id):
         dehumanize(request.args.get('mediationId'))
     )
 
-    return jsonify(serialize_recommendation(recommendation, current_user)), 200
+    return jsonify(serialize_recommendation(recommendation, current_user.id)), 200
 
 
 @app.route('/recommendations/<recommendation_id>', methods=['PATCH'])
@@ -41,7 +41,7 @@ def patch_recommendation(recommendation_id):
     recommendation = query.first_or_404()
     recommendation.populate_from_dict(request.json)
     repository.save(recommendation)
-    return jsonify(serialize_recommendation(recommendation, current_user)), 200
+    return jsonify(serialize_recommendation(recommendation, current_user.id)), 200
 
 
 @app.route('/recommendations/read', methods=['PUT'])
@@ -55,7 +55,7 @@ def put_read_recommendations():
         Recommendation.id.in_(read_recommendation_ids)
     ).all()
 
-    return jsonify(serialize_recommendations(read_recommendations, current_user)), 200
+    return jsonify(serialize_recommendations(read_recommendations, current_user.id)), 200
 
 
 @app.route('/recommendations/v2', methods=['PUT'])
@@ -123,4 +123,4 @@ def _put_non_geolocated_recommendations(request: LocalProxy) -> (Dict, int):
         recommendations = move_requested_recommendation_first(recommendations,
                                                               requested_recommendation)
 
-    return jsonify(serialize_recommendations(recommendations, current_user)), 200
+    return jsonify(serialize_recommendations(recommendations, current_user.id)), 200

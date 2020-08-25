@@ -1,8 +1,9 @@
-from typing import List
+from typing import List, Dict
 
 from sqlalchemy.orm import selectinload
 
-from models import Recommendation, BookingSQLEntity, UserSQLEntity
+from models import Recommendation, BookingSQLEntity
+from repository import booking_queries
 from routes.serialization import as_dict
 from utils.human_ids import dehumanize
 from utils.includes import RECOMMENDATION_INCLUDES
@@ -36,23 +37,29 @@ def serialize_recommendations(recommendations: List[Recommendation], user_id: in
     return serialized_recommendations
 
 
-def serialize_recommendation(recommendation: Recommendation, user_id: UserSQLEntity, query_booking: bool = True) -> dict:
+def serialize_recommendation(recommendation: Recommendation, user_id: int, query_booking: bool = True) -> Dict:
     serialized_recommendation = as_dict(recommendation, includes=RECOMMENDATION_INCLUDES)
-    # if query_booking and recommendation.offer:
-    #     bookings = booking_queries.find_from_recommendation(recommendation, user)
-    #     serialized_recommendation['bookings'] = _serialize_bookings(bookings)
+    if query_booking and recommendation.offer:
+        bookings = booking_queries.find_from_recommendation(recommendation, user_id)
+        serialized_recommendation['bookings'] = _serialize_bookings(bookings)
+
+    serialized_recommendation['offer']['isBookable'] = True
+    for index, stock in enumerate(serialized_recommendation['offer']['stocks']):
+        serialized_recommendation['offer']['stocks'][index]['isBookable'] = True
+        serialized_recommendation['offer']['stocks'][index]['remainingQuantity'] = 'unlimited'
+
     return serialized_recommendation
 
 
-def _serialize_bookings(bookings: List[BookingSQLEntity]) -> List[dict]:
+def _serialize_bookings(bookings: List[BookingSQLEntity]) -> List[Dict]:
     return list(map(_serialize_booking, bookings))
 
 
-def _serialize_booking(booking: BookingSQLEntity) -> dict:
+def _serialize_booking(booking: BookingSQLEntity) -> Dict:
     return as_dict(booking)
 
 
-def _get_bookings_by_offer(bookings: List[BookingSQLEntity]) -> list:
+def _get_bookings_by_offer(bookings: List[BookingSQLEntity]) -> List[BookingSQLEntity]:
     bookings_by_offer = {}
 
     for booking in bookings:

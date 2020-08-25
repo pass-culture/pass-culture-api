@@ -130,11 +130,11 @@ def _select_only_needed_fields_for_bookings_info(query: Query) -> Query:
                                UserSQLEntity.email.label('user_email'))
 
 
-def find_from_recommendation(recommendation: Recommendation, user: UserSQLEntity) -> List[BookingSQLEntity]:
+def find_from_recommendation(recommendation: Recommendation, user_id: int) -> List[BookingSQLEntity]:
     return _query_keep_on_non_activation_offers() \
         .filter(OfferSQLEntity.id == recommendation.offerId) \
         .distinct(BookingSQLEntity.stockId) \
-        .filter(BookingSQLEntity.userId == user.id) \
+        .filter(BookingSQLEntity.userId == user_id) \
         .order_by(BookingSQLEntity.stockId, BookingSQLEntity.isCancelled, BookingSQLEntity.dateCreated.desc()) \
         .all()
 
