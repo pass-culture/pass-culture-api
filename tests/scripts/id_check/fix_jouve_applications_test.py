@@ -2,6 +2,7 @@ from datetime import datetime
 from unittest.mock import patch, call
 
 from models import UserSQLEntity, ImportStatus, BeneficiaryImport
+from models.db import db
 from repository import repository
 from scripts.id_check.fix_jouve_applications import fix_beneficiaries_with_wrong_date_of_birth, \
     fix_eligible_beneficiaries_who_were_refused, fix_failed_jobs
@@ -36,6 +37,7 @@ class FixBeneficiariesWithWrongDateOfBirthTest:
         beneficiary_import_jouve1 = create_beneficiary_import(user=beneficiary_jouve1,
                                                               date=beneficiary_jouve1_date_created,
                                                               source='jouve',
+                                                              status=ImportStatus.CREATED,
                                                               application_id=123)
         beneficiary_jouve2_date_created = datetime(2020, 9, 9)
         beneficiary_jouve2 = create_user(date_created=beneficiary_jouve2_date_created,
@@ -45,12 +47,24 @@ class FixBeneficiariesWithWrongDateOfBirthTest:
                                                               date=beneficiary_jouve2_date_created,
                                                               source='jouve',
                                                               application_id=789)
+        beneficiary_jouve3_date_created = datetime(2020, 9, 5)
+        beneficiary_jouve3 = create_user(date_created=beneficiary_jouve3_date_created,
+                                         date_of_birth=datetime(2002, 12, 1),
+                                         email="black.arrow@example.net")
+        beneficiary_import_jouve3 = create_beneficiary_import(user=beneficiary_jouve3,
+                                                              date=beneficiary_jouve3_date_created,
+                                                              source='jouve',
+                                                              status=ImportStatus.REJECTED,
+                                                              application_id=111)
         beneficiary_dms = create_user(date_created=datetime.utcnow(),
                                       email="captain.america@example.net")
         beneficiary_import_dms = create_beneficiary_import(user=beneficiary_dms,
                                                            source='demarches_simplifiees',
                                                            application_id=456)
-        repository.save(beneficiary_import_jouve1, beneficiary_import_jouve2, beneficiary_import_dms)
+        repository.save(beneficiary_import_jouve1,
+                        beneficiary_import_jouve2,
+                        beneficiary_import_jouve3,
+                        beneficiary_import_dms)
 
         # when
         fix_beneficiaries_with_wrong_date_of_birth(date_limit=datetime(2020, 9, 8))
@@ -80,18 +94,27 @@ class FixEligibleBeneficiariesWhoWereRefusedTest:
                                                               status=ImportStatus.REJECTED,
                                                               source='jouve',
                                                               application_id=789)
+        beneficiary_import_jouve3 = create_beneficiary_import(date=datetime(2020, 9, 5),
+                                                              status=ImportStatus.CREATED,
+                                                              source='jouve',
+                                                              application_id=111)
         beneficiary_import_dms = create_beneficiary_import(source='demarches_simplifiees',
                                                            application_id=456)
-        repository.save(beneficiary_import_jouve1, beneficiary_import_jouve2, beneficiary_import_dms)
+        repository.save(beneficiary_import_jouve1,
+                        beneficiary_import_jouve2,
+                        beneficiary_import_jouve3,
+                        beneficiary_import_dms)
 
         # when
         fix_eligible_beneficiaries_who_were_refused(date_limit=datetime(2020, 9, 8))
 
         # then
-        beneficiaries_import_from_jouve = BeneficiaryImport.query.filter(BeneficiaryImport.source == 'jouve').all()
-        assert len(beneficiaries_import_from_jouve) == 1
+        with db.session.no_autoflush:
+            beneficiaries_import_from_jouve = BeneficiaryImport.query.filter(BeneficiaryImport.source == 'jouve').all()
+        assert len(beneficiaries_import_from_jouve) == 2
         assert beneficiary_import_jouve1 not in beneficiaries_import_from_jouve
         assert beneficiary_import_jouve2 in beneficiaries_import_from_jouve
+        assert beneficiary_import_jouve3 in beneficiaries_import_from_jouve
 
     @clean_database
     @patch('scripts.id_check.fix_jouve_applications.beneficiary_job')
