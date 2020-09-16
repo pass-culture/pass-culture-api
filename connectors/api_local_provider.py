@@ -12,7 +12,9 @@ class ApiLocalProvider:
         self.api_url = api_url
         self.name = name
 
-    def get_stocks_from_local_provider_api(self, siret: str, last_processed_isbn: str = '', modified_since: str = '',
+    def get_stocks_from_local_provider_api(self, siret: str,
+                                           last_processed_isbn: str = '',
+                                           modified_since: str = '',
                                            limit: int = 1000) -> Dict:
         api_url = self._build_local_provider_url(siret)
         params = self._build_local_provider_params(last_processed_isbn, modified_since, limit)
