@@ -20,6 +20,7 @@ def create_booking_for_user_on_specific_stock(user_id: int, stock_id: int,
 
 
 def create_booking_for_user_on_specific_stock_bypassing_capping_limits(user_id: int, stock_id: int) -> None:
+    # FIXME: use new function in use_cases!
     booking_information = BookingInformation(
         stock_id=stock_id,
         user_id=user_id,

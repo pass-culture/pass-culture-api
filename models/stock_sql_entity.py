@@ -67,26 +67,6 @@ class StockSQLEntity(PcObject,
     hasBeenMigrated = Column(Boolean, nullable=True)
 
     @property
-    def isBookable(self):
-        if self.hasBookingLimitDatetimePassed:
-            return False
-        if not self.offer.venue.managingOfferer.isActive:
-            return False
-        if self.offer.venue.managingOfferer.validationToken:
-            return False
-        if self.offer.venue.validationToken:
-            return False
-        if not self.offer.isActive:
-            return False
-        if self.isSoftDeleted:
-            return False
-        if self.beginningDatetime and self.beginningDatetime < datetime.utcnow():
-            return False
-        if self.quantity is not None and self.remainingQuantity == 0:
-            return False
-        return True
-
-    @property
     def hasBookingLimitDatetimePassed(self):
         if self.bookingLimitDatetime and self.bookingLimitDatetime < datetime.utcnow():
             return True

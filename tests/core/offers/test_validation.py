@@ -3,15 +3,15 @@ from decimal import Decimal
 
 import pytest
 
-from domain.booking.booking import Booking
-from domain.booking.booking_exceptions import PhysicalExpenseLimitHasBeenReached, \
-    QuantityIsInvalid, \
-    StockIsNotBookable, OfferIsAlreadyBooked, CannotBookFreeOffers, UserHasInsufficientFunds, \
-    DigitalExpenseLimitHasBeenReached
+from core.offers import factories
+from core.offers import exceptions
+from core.offers import validation
+
+from domain.booking.booking_exceptions import QuantityIsInvalid, \
+    StockIsNotBookable, OfferIsAlreadyBooked, CannotBookFreeOffers
 from domain.booking.booking_validator import check_offer_already_booked, check_quantity_is_valid
-from domain.expenses import SUBVENTION_PHYSICAL_THINGS, SUBVENTION_DIGITAL_THINGS, SUBVENTION_TOTAL
 from domain.stock.stock import Stock
-from domain.stock.stock_validator import check_stock_is_bookable, check_expenses_limits, check_can_book_free_offer
+from domain.stock.stock_validator import check_stock_is_bookable, check_can_book_free_offer
 from models import ApiErrors, BookingSQLEntity, StockSQLEntity, OfferSQLEntity, ThingType, UserSQLEntity, EventType
 from models.api_errors import ResourceGoneError, ForbiddenError
 from repository import repository
@@ -32,90 +32,77 @@ from validation.routes.bookings import \
     check_is_not_activation_booking, check_has_stock_id
 
 
-class CheckExpenseLimitsTest:
-    def test_raises_an_error_when_physical_limit_is_reached(self):
-        # given
-        expenses = {
-            'all': {'max': SUBVENTION_TOTAL, 'actual': 200},
-            'physical': {'max': SUBVENTION_PHYSICAL_THINGS, 'actual': 190},
-            'digital': {'max': SUBVENTION_DIGITAL_THINGS, 'actual': 10}
-        }
-        offerer = create_offerer()
-        venue = create_venue(offerer)
-        offer = create_offer_with_thing_product(venue, thing_type=ThingType.LIVRE_EDITION)
+class TestCheckExpensesLimit:
 
-        user = create_domain_beneficiary(identifier=1)
-        stock = Stock(
-            identifier=1,
-            quantity=None,
-            offer=offer,
-            price=1
+    def test_physical_limit():
+        booking = factories.BookingFactory(
+            offer__thing_type=ThingType.LIVRE_EDITION,
+            amount=1,
+            quantity=11,
         )
-        booking = Booking(beneficiary=user, stock=stock, amount=1, quantity=11)
-
-        # when
-        with pytest.raises(PhysicalExpenseLimitHasBeenReached) as error:
-            check_expenses_limits(expenses, booking)
-
-        # then
-        assert error.value.errors['global'] == ['Le plafond de %s € pour les biens culturels ne vous permet pas ' \
-                                                'de réserver cette offre.' % SUBVENTION_PHYSICAL_THINGS]
-
-    def test_check_expenses_limits_raises_an_error_when_digital_limit_is_reached(self):
-        # given
         expenses = {
-            'all': {'max': SUBVENTION_TOTAL, 'actual': 200},
-            'physical': {'max': SUBVENTION_PHYSICAL_THINGS, 'actual': 10},
-            'digital': {'max': SUBVENTION_DIGITAL_THINGS, 'actual': 190}
+            'all': {'max': 500, 'actual': 200},
+            'physical': {'max': 200, 'actual': 0},
+            'digital': {'max': 300, 'actual': 0}
         }
-        offerer = create_offerer()
-        venue = create_venue(offerer)
-        offer = create_offer_with_thing_product(venue, url='http://on.line', thing_type=ThingType.JEUX_VIDEO)
 
-        user = create_domain_beneficiary(identifier=1)
-        stock = Stock(
-            identifier=1,
-            quantity=None,
-            offer=offer,
-            price=1
+        validation.check_expenses_limits(expenses, booking)  # should not raise
+
+        expenses['physical']['actual'] = 190
+
+        with pytest.raises(exceptions.PhysicalExpenseLimitHasBeenReached) as error:
+            validation.check_expenses_limits(expenses, booking)
+        assert (
+            error.value.errors['global']
+            == ['Le plafond de 200 € pour les biens culturels ne vous permet pas '
+                'de réserver cette offre.']
         )
-        booking = Booking(beneficiary=user, stock=stock, amount=1, quantity=11)
 
-        # when
-        with pytest.raises(DigitalExpenseLimitHasBeenReached) as error:
-            check_expenses_limits(expenses, booking)
-
-        # then
-        assert error.value.errors['global'] == ['Le plafond de %s € pour les offres numériques ne vous permet pas ' \
-                                                'de réserver cette offre.' % SUBVENTION_DIGITAL_THINGS]
-
-    def test_should_raise_an_error_when_new_booking_exceed_max_deposit(self):
-        # given
+    def test_digital_limit():
+        booking = factories.BookingFactory(
+            offer__thing_type=ThingType.JEUX_VIDEO,
+            amount=1,
+            quantity=11,
+        )
         expenses = {
-            'all': {'max': SUBVENTION_TOTAL, 'actual': 400}
+            'all': {'max': 500, 'actual': 200},
+            'physical': {'max': 300, 'actual': 0},
+            'digital': {'max': 200, 'actual': 0}
         }
-        offerer = create_offerer()
-        venue = create_venue(offerer)
-        offer = create_offer_with_thing_product(venue)
 
-        user = create_domain_beneficiary(identifier=1)
-        stock = Stock(
-            identifier=1,
-            quantity=None,
-            offer=offer,
-            price=1
+        validation.check_expenses_limits(expenses, booking)  # should not raise
+
+        expenses['digital']['actual'] = 190
+
+        with pytest.raises(exceptions.PhysicalExpenseLimitHasBeenReached) as error:
+            validation.check_expenses_limits(expenses, booking)
+        assert (
+            error.value.errors['global']
+            == ['Le plafond de 200 € pour les offres numériques ne vous permet pas '
+                'de réserver cette offre.']
         )
-        booking = Booking(beneficiary=user, stock=stock, amount=1, quantity=120)
 
-        # when
-        with pytest.raises(UserHasInsufficientFunds) as error:
-            check_expenses_limits(expenses, booking)
+    def test_global_limit(self):
+        expenses = {
+            'all': {'max': 500, 'actual': 0},
+            'physical': {'max': 300, 'actual': 0},
+            'digital': {'max': 200, 'actual': 0}
+        }
+        booking = factories.BookingFactory(amount=1, quantity=120)
 
-        # then
-        assert error.value.errors['insufficientFunds'] == ['Le solde de votre pass est insuffisant'
-                                                           ' pour réserver cette offre.']
+        validation.check_expenses_limits(expenses, booking)  # should not raise
+
+        expenses['all']['actual'] = 400
+
+        with pytest.raises(exceptions.UserHasInsufficientFunds) as error:
+            validation.check_expenses_limits(expenses, booking)
+        assert (
+            error.value.errors['insufficientFunds']
+            == ['Le solde de votre pass est insuffisant pour réserver cette offre.']
+        )
 
 
+# FIXME: rewrite tests below
 class CheckBookingIsCancellableTest:
     def test_raises_api_error_when_offerer_cancellation_and_used_booking(self):
         # Given

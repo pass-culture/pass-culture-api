@@ -1,12 +1,11 @@
 from typing import Dict
 
-from domain.booking.booking import Booking
-from models import BookingSQLEntity, EventType, ThingType
+from models import Booking, EventType, ThingType
 from routes.serialization import serialize
 from utils.human_ids import humanize
 
 
-def serialize_booking(booking: BookingSQLEntity) -> Dict:
+def serialize_booking(booking: Booking) -> Dict:
     booking_id = humanize(booking.id)
     user_email = booking.user.email
     is_used = booking.isUsed
@@ -56,10 +55,13 @@ def serialize_booking(booking: BookingSQLEntity) -> Dict:
     }
 
 
-def serialize_domain_booking(booking: Booking) -> Dict:
+# FIXME: this serializer is only used by the `cancel_booking()`
+# route. Consider using `serialize_booking` above instead. Or the
+# other way around.
+def serialize_booking_for_cancel(booking: Booking) -> Dict:
     return {
         'amount': booking.amount,
-        'completedUrl': booking.completed_url,
+        'completedUrl': get_completed_url(booking),
         'id': humanize(booking.identifier),
         'isCancelled': booking.isCancelled,
         'quantity': booking.quantity,
@@ -73,3 +75,14 @@ def serialize_domain_booking(booking: Booking) -> Dict:
             "wallet_balance": booking.beneficiary.wallet_balance,
         },
     }
+
+
+def get_completed_url(booking):
+    url = booking.stock.offer.url
+    if url is None:
+        return None
+    if not url.startswith('http'):
+        url = "http://" + url
+    return url.replace('{token}', booking.token) \
+        .replace('{offerId}', humanize(booking.stock.offer.id)) \
+        .replace('{email}', booking.beneficiary.email)

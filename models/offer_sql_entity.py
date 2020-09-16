@@ -163,6 +163,7 @@ class OfferSQLEntity(PcObject,
         bookable_stocks = list(filter(lambda stock: stock.isBookable, self.stocks))
         total_booked_quantity = 0
 
+        # FIXME: probably inefficient. Should be done in a single SQL query.
         for stock in bookable_stocks:
             bookings = filter_bookings_to_compute_remaining_stock(stock)
             total_booked_quantity += sum(map(lambda booking: booking.quantity, bookings))

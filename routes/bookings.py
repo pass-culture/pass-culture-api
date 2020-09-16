@@ -6,30 +6,31 @@ from flask import jsonify, request
 from flask_login import current_user, login_required
 
 from connectors import redis
+import core.offers.api as offers_api
 from domain.user_activation import create_initial_deposit, is_activation_booking
 from domain.user_emails import send_activation_email
-from infrastructure.container import book_an_offer, cancel_a_booking, get_bookings_for_beneficiary
+from infrastructure.container import get_bookings_for_beneficiary
 from models import BookingSQLEntity, EventType, RightsType, ApiKey, UserSQLEntity
 from models.feature import FeatureToggle
 from models.offer_type import ProductType
+from models.recommendation import Recommendation
+from models.stock_sql_entity import StockSQLEntity
 from repository import booking_queries, feature_queries, repository
 from repository.api_key_queries import find_api_key_by_value
 from routes.serialization import as_dict, serialize, serialize_booking
 from routes.serialization.beneficiary_bookings_serialize import serialize_beneficiary_bookings
 from routes.serialization.bookings_recap_serialize import serialize_bookings_recap_paginated
-from routes.serialization.bookings_serialize import serialize_domain_booking
-from use_cases.book_an_offer import BookingInformation
+from routes.serialization.bookings_serialize import serialize_booking_for_cancel
 from use_cases.get_all_bookings_by_pro_user import get_all_bookings_by_pro_user
 from utils.human_ids import dehumanize, humanize
 from utils.includes import WEBAPP_GET_BOOKING_INCLUDES
 from utils.mailing import send_raw_email
 from utils.rest import ensure_current_user_has_rights, expect_json_data
-from validation.routes.bookings import check_booking_is_not_already_cancelled, \
+from validation.routes.bookings import \
     check_booking_is_not_used, \
     check_booking_token_is_keepable, \
     check_booking_token_is_usable, \
     check_email_and_offer_id_for_anonymous_user, \
-    check_has_stock_id, \
     check_is_not_activation_booking, \
     check_page_format_is_number
 from validation.routes.users_authentifications import check_user_is_logged_in_or_email_is_provided, \
@@ -72,38 +73,25 @@ def get_booking(booking_id: int):
 @login_required
 @expect_json_data
 def create_booking():
-    stock_id = request.json.get('stockId')
+    stock_id = dehumanize(request.json.get('stockId'))
     recommendation_id = request.json.get('recommendationId')
     quantity = request.json.get('quantity')
-    check_has_stock_id(stock_id)
 
-    booking_information = BookingInformation(
-        dehumanize(stock_id),
-        current_user.id,
-        quantity,
-        dehumanize(recommendation_id)
-    )
+    stock = StockSQLEntity.query.filter_by(id=stock_id).first_or_404()
+    recommendation = Recommendation.query.filter_by(id=recommendation_id).first_or_404()
+    booking = offers_api.book_offer(current_user, stock, quantity, recommendation)
 
-    created_booking = book_an_offer.execute(booking_information)
-
-    if feature_queries.is_active(FeatureToggle.SYNCHRONIZE_ALGOLIA):
-        redis.add_offer_id(client=app.redis_client, offer_id=created_booking.stock.offer.id)
-
-    return jsonify(serialize_domain_booking(created_booking)), 201
+    return jsonify(serialize_booking(booking)), 201
 
 
 @app.route('/bookings/<booking_id>/cancel', methods=['PUT'])
 @login_required
 def cancel_booking(booking_id: str):
-    booking = cancel_a_booking.execute(
-        booking_id=dehumanize(booking_id),
-        beneficiary_id=current_user.id
-    )
+    booking = BookingSQLEntity.query.filter_by(id=booking_id).first_or_404()
 
-    if feature_queries.is_active(FeatureToggle.SYNCHRONIZE_ALGOLIA):
-        redis.add_offer_id(client=app.redis_client, offer_id=booking.stock.offer.id)
+    offers_api.cancel_booking(current_user, booking)
 
-    return jsonify(serialize_domain_booking(booking)), 200
+    return jsonify(serialize_booking_for_cancel(booking)), 200
 
 
 @app.route('/bookings/token/<token>', methods=['GET'])
