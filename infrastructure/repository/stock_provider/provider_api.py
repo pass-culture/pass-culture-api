@@ -8,39 +8,25 @@ class ProviderAPIException(Exception):
 
 
 class ProviderAPI:
-    def __init__(self, api_url: str, name: str, authentication_token: str = None):
+    def __init__(self, api_url, name):
         self.api_url = api_url
         self.name = name
-        self.authentication_token = authentication_token
 
-    def stocks(self, siret: str, last_processed_reference: str = '', modified_since: str = '',
-               limit: int = 1000) -> Dict:
+    def stocks(self, siret: str, last_processed_ref: str = '', modified_since: str = '', limit: int = 1000) -> Dict:
         api_url = self._build_local_provider_url(siret)
-        params = self._build_local_provider_params(last_processed_reference, modified_since, limit)
-        headers = {}
+        params = self._build_local_provider_params(last_processed_ref, modified_since, limit)
 
-        if self.authentication_token is not None:
-            headers = {'Authorization': f'Basic {self.authentication_token}'}
-
-        response = requests.get(url=api_url, params=params, headers=headers)
+        response = requests.get(api_url, params=params)
 
         if response.status_code != 200:
             raise ProviderAPIException(
                 f'Error {response.status_code} when getting {self.name} stocks for SIRET: {siret}')
 
-        try:
-            return response.json()
-        except ValueError:
-            return {}
+        return response.json()
 
     def is_siret_registered(self, siret: str) -> bool:
         api_url = self._build_local_provider_url(siret)
-        headers = {}
-
-        if self.authentication_token is not None:
-            headers = {'Authorization': f'Basic {self.authentication_token}'}
-
-        response = requests.get(url=api_url, headers=headers)
+        response = requests.get(api_url)
 
         return response.status_code == 200
 
