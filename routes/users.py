@@ -1,6 +1,6 @@
 from flask import current_app as app, jsonify, request
 from flask_login import current_user, login_required, logout_user, login_user
-
+from pydantic import BaseModel
 from repository.user_queries import find_user_by_reset_password_token, find_user_by_email
 from use_cases.update_user_informations import update_user_informations, AlterableUserInformations
 from routes.serialization import as_dict
@@ -29,29 +29,39 @@ def check_activation_token_exists(token):
     return jsonify(), 200
 
 
+class AlterableUserBodyModel(BaseModel):
+    cultural_survey_id: str
+    cultural_survey_filled_date: datetime.date
+    department_code: int
+    email: str
+    needs_to_fill_cultural_survey: bool
+    phone_number: str
+    postal_code: int
+    public_name: str
+    has_seen_tutorials: bool
+
+class UserModel(BaseModel):
+    hasPhysicalVenues: bool
+    hasOffers: bool
+
+    class Config:
+        orm_mode = True
+
+
 @app.route('/users/current', methods=['PATCH'])
 @login_or_api_key_required
 @expect_json_data
-def patch_profile():
-    data = request.json.keys()
-    check_allowed_changes_for_user(data)
+@validate()
+def patch_profile(body: AlterableUserBodyModel):
+    check_allowed_changes_for_user(body.dict().keys())
 
     user_informations = AlterableUserInformations(
         id= current_user.id,
-        cultural_survey_id=request.json.get('culturalSurveyId'),
-        cultural_survey_filled_date=request.json.get('culturalSurveyFilledDate'),
-        department_code=request.json.get('departementCode'),
-        email=request.json.get('email'),
-        needs_to_fill_cultural_survey=request.json.get('needsToFillCulturalSurvey'),
-        phone_number=request.json.get('phoneNumber'),
-        postal_code=request.json.get('postalCode'),
-        public_name=request.json.get('publicName'),
-        has_seen_tutorials=request.json.get('hasSeenTutorials')
+        **body.dict()
     )
     user = update_user_informations(user_informations)
 
-    formattedUser = as_dict(user, includes=USER_INCLUDES)
-    return jsonify(formattedUser), 200
+    return UserModel.from_orm(user)
 
 
 @app.route("/users/signin", methods=["POST"])
