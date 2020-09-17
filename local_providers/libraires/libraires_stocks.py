@@ -1,9 +1,9 @@
 from datetime import datetime
-from typing import List
+from typing import List, Callable
 
 from sqlalchemy import Sequence
 
-from domain.libraires import get_libraires_stock_information, read_last_modified_date
+from domain.libraires import get_libraires_stock_information
 from local_providers.local_provider import LocalProvider
 from local_providers.providable_info import ProvidableInfo
 from models import VenueProvider, OfferSQLEntity, StockSQLEntity
@@ -16,7 +16,7 @@ class LibrairesStocks(LocalProvider):
     name = 'Leslibraires.fr'
     can_create = True
 
-    def __init__(self, venue_provider: VenueProvider, **options):
+    def __init__(self, venue_provider: VenueProvider, read_last_modified_date: Callable, **options):
         super().__init__(venue_provider, **options)
         self.venue = venue_provider.venue
         self.siret = self.venue.siret

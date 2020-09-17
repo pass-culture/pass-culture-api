@@ -1,6 +1,6 @@
 from typing import Callable
 
-from connectors.api_libraires import ApiHttpLibrairesStocks
+from infrastructure.repository.stock_provider.provider_api import ProviderAPI
 
 LIBRAIRES_STOCK_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
@@ -12,5 +12,5 @@ def get_libraires_stock_information(siret: str, last_processed_isbn: str = '', m
 
 
 def can_be_synchronized_with_libraires(siret: str) -> bool:
-    api = ApiHttpLibrairesStocks(api_url=API_URL, name='Libraires')
+    api = ProviderAPI(api_url=API_URL, name='Libraires')
     return api.is_siret_registered(siret)

@@ -36,8 +36,8 @@ venue_with_offerer_informations_repository = VenueWithOffererNameSQLRepository()
 paginated_offerers_repository = PaginatedOfferersSQLRepository()
 
 # Repositories => data depuis API externe
-api_libraires_stocks = ApiLibrairesStocks()
-api_fnac_stocks =
+# api_libraires_stocks = ApiLibrairesStocks()
+# api_fnac_stocks =
 
 # Usecases
 book_an_offer = BookAnOffer(booking_repository=booking_repository,
