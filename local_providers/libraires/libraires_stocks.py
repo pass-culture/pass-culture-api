@@ -3,7 +3,7 @@ from typing import List, Callable
 
 from sqlalchemy import Sequence
 
-from domain.libraires import get_libraires_stock_information
+from infrastructure.container import api_libraires_stocks
 from local_providers.local_provider import LocalProvider
 from local_providers.providable_info import ProvidableInfo
 from models import VenueProvider, OfferSQLEntity, StockSQLEntity
@@ -31,7 +31,7 @@ class LibrairesStocks(LocalProvider):
             self.libraires_stock = next(self.libraires_stock_data)
 
         except StopIteration:
-            self.libraires_stock_data = get_libraires_stock_information(self.siret,
+            self.libraires_stock_data = api_libraires_stocks.stocks_information(self.siret,
                                                                         self.last_processed_isbn,
                                                                         self.modified_since)
             self.libraires_stock = next(self.libraires_stock_data)

@@ -4,6 +4,8 @@ from flask import current_app as app, jsonify, request
 from flask_login import login_required
 
 import local_providers
+from domain.stock_provider.stock_provider_repository import StockProviderRepository
+from infrastructure.container import api_libraires_stocks
 from models.api_errors import ApiErrors
 from models.venue_provider import VenueProvider
 from repository.provider_queries import get_provider_enabled_for_pro_by_id
@@ -53,12 +55,15 @@ def create_venue_provider():
     check_existing_provider(provider)
 
     provider_class = getattr(local_providers, provider.localClass)
-    new_venue_provider = connect_provider_to_venue(provider_class, venue_provider_payload)
+    api_stock_provider = _get_provider_repository()
+    new_venue_provider = connect_provider_to_venue(provider_class, api_stock_provider, venue_provider_payload)
 
     _run_first_synchronization(new_venue_provider)
 
     return jsonify(as_dict(new_venue_provider, includes=VENUE_PROVIDER_INCLUDES)), 201
 
+def _get_provider_repository() -> StockProviderRepository:
+    return api_libraires_stocks
 
 def _run_first_synchronization(new_venue_provider: VenueProvider):
     subprocess.Popen('PYTHONPATH="." python scripts/pc.py update_providables'
