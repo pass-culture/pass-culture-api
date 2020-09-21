@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Callable, Dict, Optional
+from typing import Dict, Optional
 
 from domain.price_rule import PriceRule
 from domain.stock_provider.stock_provider_repository import StockProviderRepository
@@ -95,7 +95,7 @@ def _check_venue_can_be_synchronized_with_provider(siret: str,
         raise api_errors
 def check_venue_can_be_synchronized_with_provider(venue: VenueSQLEntity,
                                                   stock_repository: StockProviderRepository,
-                                                  name: str ) -> None:
+                                                  name: str) -> None:
     if not venue.siret or not stock_repository.can_be_synchronized(venue.siret):
         errors = ApiErrors()
         errors.status_code = ERROR_CODE_SIRET_NOT_SUPPORTED
