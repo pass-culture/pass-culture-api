@@ -12,9 +12,9 @@ class ProviderAPI:
         self.api_url = api_url
         self.name = name
 
-    def stocks(self, siret: str, last_processed_ref: str = '', modified_since: str = '', limit: int = 1000) -> Dict:
+    def stocks(self, siret: str, last_processed_reference: str = '', modified_since: str = '', limit: int = 1000) -> Dict:
         api_url = self._build_local_provider_url(siret)
-        params = self._build_local_provider_params(last_processed_ref, modified_since, limit)
+        params = self._build_local_provider_params(last_processed_reference, modified_since, limit)
 
         response = requests.get(api_url, params=params)
 

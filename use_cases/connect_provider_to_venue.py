@@ -1,11 +1,10 @@
 from decimal import Decimal
-
 from typing import Dict, Optional
 
 from domain.price_rule import PriceRule
 from domain.stock_provider.stock_provider_repository import StockProviderRepository
 from local_providers import AllocineStocks, FnacStocks, LibrairesStocks, TiteLiveStocks
-from models import AllocineVenueProvider, ApiErrors, VenueProvider, VenueSQLEntity, AllocineVenueProviderPriceRule
+from models import AllocineVenueProvider, AllocineVenueProviderPriceRule, ApiErrors, VenueProvider, VenueSQLEntity
 from repository import repository
 from repository.allocine_pivot_queries import get_allocine_theaterId_for_venue
 from repository.venue_queries import find_by_id
@@ -59,7 +58,7 @@ def _connect_standardized_providers_to_venue(venue: VenueSQLEntity, payload: Dic
 
 
 def _create_allocine_venue_provider_price_rule(allocine_venue_provider: VenueProvider,
-                                               price: Decimal) :
+                                               price: Decimal) -> AllocineVenueProviderPriceRule:
     venue_provider_price_rule = AllocineVenueProviderPriceRule()
     venue_provider_price_rule.allocineVenueProvider = allocine_venue_provider
     venue_provider_price_rule.priceRule = PriceRule.default
@@ -82,7 +81,7 @@ def _create_allocine_venue_provider(allocine_theater_id: str, payload: Dict,
 
 def check_venue_can_be_synchronized_with_provider(venue: VenueSQLEntity,
                                                   stock_repository: StockProviderRepository,
-                                                  name: str ) -> None:
+                                                  name: str) -> None:
     if not venue.siret or not stock_repository.can_be_synchronized(venue.siret):
         errors = ApiErrors()
         errors.status_code = ERROR_CODE_SIRET_NOT_SUPPORTED
