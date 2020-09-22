@@ -24,6 +24,8 @@ class ProviderAPITest:
             # Then
             assert str(exception.value) == 'Error 400 when getting ProviderAPI stocks for SIRET: 12345678912345'
 
+            requests.get = MagicMock()
+
         def should_call_provider_api_with_given_siret(self):
             # Given
             siret = '12345678912345'

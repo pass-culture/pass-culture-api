@@ -1,12 +1,12 @@
 from datetime import datetime
-from typing import List, Callable
+from typing import Callable, List
 
 from sqlalchemy import Sequence
 
 from infrastructure.container import api_libraires_stocks
 from local_providers.local_provider import LocalProvider
 from local_providers.providable_info import ProvidableInfo
-from models import VenueProvider, OfferSQLEntity, StockSQLEntity
+from models import OfferSQLEntity, StockSQLEntity, VenueProvider
 from models.db import Model, db
 from repository import product_queries
 from repository.booking_queries import count_not_cancelled_bookings_quantity_by_stock_id
@@ -32,8 +32,8 @@ class LibrairesStocks(LocalProvider):
 
         except StopIteration:
             self.libraires_stock_data = api_libraires_stocks.stocks_information(self.siret,
-                                                                        self.last_processed_isbn,
-                                                                        self.modified_since)
+                                                                                self.last_processed_isbn,
+                                                                                self.modified_since)
             self.libraires_stock = next(self.libraires_stock_data)
 
         self.last_processed_isbn = str(self.libraires_stock['ref'])

@@ -1,6 +1,7 @@
 import subprocess
 
-from flask import current_app as app, jsonify, request
+from flask import current_app as app
+from flask import jsonify, request
 from flask_login import login_required
 
 import local_providers
@@ -14,9 +15,8 @@ from use_cases.connect_provider_to_venue import connect_provider_to_venue
 from utils.config import API_ROOT_PATH
 from utils.human_ids import dehumanize
 from utils.includes import VENUE_PROVIDER_INCLUDES
-from utils.rest import expect_json_data, \
-    load_or_404
-from validation.routes.venue_providers import check_new_venue_provider_information, check_existing_provider
+from utils.rest import expect_json_data, load_or_404
+from validation.routes.venue_providers import check_existing_provider, check_new_venue_provider_information
 
 
 @app.route('/venueProviders', methods=['GET'])
@@ -55,15 +55,17 @@ def create_venue_provider():
     check_existing_provider(provider)
 
     provider_class = getattr(local_providers, provider.localClass)
-    api_stock_provider = _get_provider_repository()
-    new_venue_provider = connect_provider_to_venue(provider_class, api_stock_provider, venue_provider_payload)
+    stock_provider_repository = _get_stock_provider_repository()
+    new_venue_provider = connect_provider_to_venue(provider_class, stock_provider_repository, venue_provider_payload)
 
     _run_first_synchronization(new_venue_provider)
 
     return jsonify(as_dict(new_venue_provider, includes=VENUE_PROVIDER_INCLUDES)), 201
 
-def _get_provider_repository() -> StockProviderRepository:
+
+def _get_stock_provider_repository() -> StockProviderRepository:
     return api_libraires_stocks
+
 
 def _run_first_synchronization(new_venue_provider: VenueProvider):
     subprocess.Popen('PYTHONPATH="." python scripts/pc.py update_providables'
