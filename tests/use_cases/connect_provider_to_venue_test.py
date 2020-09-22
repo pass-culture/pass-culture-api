@@ -100,7 +100,7 @@ class UseCaseTest:
 
                 # then
                 assert error.value.errors['provider'] == [
-                    'L’importation d’offres avec Leslibraires.fr n’est pas disponible pour le SIRET 12345678912345']
+                    'L’importation d’offres avec LesLibraires n’est pas disponible pour le SIRET 12345678912345']
 
             @clean_database
             def test_should_not_connect_venue_to_libraires_provider_if_venue_has_no_siret(self, app):
@@ -126,7 +126,7 @@ class UseCaseTest:
 
                 # then
                 assert error.value.errors['provider'] == [
-                    'L’importation d’offres avec Leslibraires.fr n’est pas disponible sans SIRET associé au lieu. Ajoutez un SIRET pour pouvoir importer les offres.']
+                    'L’importation d’offres avec LesLibraires n’est pas disponible sans SIRET associé au lieu. Ajoutez un SIRET pour pouvoir importer les offres.']
 
         class WhenProviderIsTiteLive:
             @clean_database
@@ -178,7 +178,7 @@ class UseCaseTest:
 
                 # then
                 assert error.value.errors['provider'] == [
-                    'L’importation d’offres avec TiteLive Stocks (Epagine / Place des libraires.com)'
+                    'L’importation d’offres avec TiteLive'
                     ' n’est pas disponible pour le SIRET 12345678912345']
 
             @clean_database
@@ -205,7 +205,7 @@ class UseCaseTest:
 
                 # then
                 assert error.value.errors['provider'] == [
-                    'L’importation d’offres avec TiteLive Stocks (Epagine / Place des libraires.com) n’est '
+                    'L’importation d’offres avec TiteLive n’est '
                     'pas disponible sans SIRET associé au lieu. Ajoutez un SIRET pour pouvoir importer les offres.']
 
         class WhenProviderIsFnac:

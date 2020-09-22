@@ -6,7 +6,8 @@ from flask_login import login_required
 
 import local_providers
 from domain.stock_provider.stock_provider_repository import StockProviderRepository
-from infrastructure.container import api_libraires_stocks
+from infrastructure.container import api_libraires_stocks, api_fnac_stocks
+from local_providers import LibrairesStocks
 from models.api_errors import ApiErrors
 from models.venue_provider import VenueProvider
 from repository.provider_queries import get_provider_enabled_for_pro_by_id
@@ -55,7 +56,7 @@ def create_venue_provider():
     check_existing_provider(provider)
 
     provider_class = getattr(local_providers, provider.localClass)
-    stock_provider_repository = _get_stock_provider_repository()
+    stock_provider_repository = _get_stock_provider_repository(provider_class)
     new_venue_provider = connect_provider_to_venue(provider_class, stock_provider_repository, venue_provider_payload)
 
     _run_first_synchronization(new_venue_provider)
@@ -63,8 +64,11 @@ def create_venue_provider():
     return jsonify(as_dict(new_venue_provider, includes=VENUE_PROVIDER_INCLUDES)), 201
 
 
-def _get_stock_provider_repository() -> StockProviderRepository:
-    return api_libraires_stocks
+def _get_stock_provider_repository(provider_class) -> StockProviderRepository:
+    if provider_class == LibrairesStocks:
+        return api_libraires_stocks
+    else:
+        return api_fnac_stocks
 
 
 def _run_first_synchronization(new_venue_provider: VenueProvider):

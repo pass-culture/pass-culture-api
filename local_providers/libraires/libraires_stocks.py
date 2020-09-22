@@ -41,7 +41,8 @@ class LibrairesStocks(LocalProvider):
         if not self.product:
             return []
 
-        providable_info_offer = self.create_providable_info(OfferSQLEntity, f"{self.libraires_stock['ref']}@{self.siret}",
+        providable_info_offer = self.create_providable_info(OfferSQLEntity,
+                                                            f"{self.libraires_stock['ref']}@{self.siret}",
                                                             datetime.utcnow())
         providable_info_stock = self.create_providable_info(StockSQLEntity,
                                                             f"{self.libraires_stock['ref']}@{self.siret}",
