@@ -42,8 +42,3 @@ def _convert_image_to_base64(image: Image) -> str:
     image.save(image_as_bytes)
     image_as_base64 = base64.b64encode(image_as_bytes.getvalue())
     return f'data:image/png;base64,{str(image_as_base64, encoding="utf-8")}'
-
-
-# FIXME: exemple de fonction qui pourrait correspondre à l'idée de "repository".
-def get_bookable_offers():
-    return XXX  # requêter dans la base de données

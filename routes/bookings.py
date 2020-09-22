@@ -7,6 +7,7 @@ from flask_login import current_user, login_required
 
 from connectors import redis
 import core.offers.api as offers_api
+import core.offers.repository as offers_repository
 from domain.user_activation import create_initial_deposit, is_activation_booking
 from domain.user_emails import send_activation_email
 from infrastructure.container import get_bookings_for_beneficiary
@@ -77,8 +78,9 @@ def create_booking():
     recommendation_id = request.json.get('recommendationId')
     quantity = request.json.get('quantity')
 
-    stock = StockSQLEntity.query.filter_by(id=stock_id).first_or_404()
-    recommendation = Recommendation.query.filter_by(id=recommendation_id).first_or_404()
+    # FIXME: should we pass an id or an object to book_offer? Must find agreement.
+    stock = offers_repository.get_stock_by_id(stock_id)
+    recommendation = offers_repository.get_recommendation_by_id(recommendation_id)
     booking = offers_api.book_offer(current_user, stock, quantity, recommendation)
 
     return jsonify(serialize_booking(booking)), 201
@@ -87,7 +89,8 @@ def create_booking():
 @app.route('/bookings/<booking_id>/cancel', methods=['PUT'])
 @login_required
 def cancel_booking(booking_id: str):
-    booking = BookingSQLEntity.query.filter_by(id=booking_id).first_or_404()
+    # FIXME: should we pass an id or an object to book_offer? Must find agreement.
+    booking = offers_repository.get_bookings_by_id(booking_id)
 
     offers_api.cancel_booking(current_user, booking)
 

@@ -1,8 +1,6 @@
 from flask import current_app as app
-from sqlalchemy.orm import joinedload
 
 from connectors import redis
-import domain.expenses
 from models.booking_sql_entity import BookingSQLEntity
 from models.db import db
 from models.feature import FeatureToggle
@@ -14,6 +12,7 @@ from utils.mailing import send_raw_email
 from utils.token import random_token
 from infrastructure.services.notification.mailjet_notification_service import MailjetNotificationService
 
+from . import repository
 from . import validation
 
 
@@ -38,7 +37,7 @@ def book_offer(
         amount=stock.price,
     )
 
-    expenses = get_user_expenses(beneficiary)
+    expenses = repository.get_user_expenses(beneficiary)
     validation.check_expenses_limits(expenses, booking)
 
     db.session.add(booking)
@@ -67,18 +66,3 @@ def cancel_booking(user: UserSQLEntity, booking: BookingSQLEntity) -> None:
 
     if feature_queries.is_active(FeatureToggle.SYNCHRONIZE_ALGOLIA):
         redis.add_offer_id(client=app.redis_client, offer_id=booking.stock.offer.id)
-
-
-# FIXME: not sure it's the right place...
-def get_user_expenses(self, user: UserSQLEntity) -> dict:
-    bookings = (
-        BookingSQLEntity.query
-        .filter_by(user=user)
-        .filter_by(isCancelled=False)
-        .options(
-            joinedload(BookingSQLEntity.stock).
-            joinedload(StockSQLEntity.offer)
-        )
-        .all()
-    )
-    return domain.expenses.get_expenses(bookings)

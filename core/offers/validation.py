@@ -1,11 +1,8 @@
 import datetime
 
 import domain.expenses
-from models.booking_sql_entity import BookingSQLEntity
-from models.stock_sql_entity import StockSQLEntity
-from models.db import db
-
 from . import exceptions
+from . import repository
 
 
 def check_can_book_free_offer(user, stock):
@@ -15,17 +12,7 @@ def check_can_book_free_offer(user, stock):
 
 def check_offer_already_booked(user, offer):
     """Raise ``OfferIsAlreadyBooked`` if the user already booked this offer."""
-    if (
-        db.query(
-            BookingSQLEntity.query
-            .filter_by(
-                userId=user.id,
-                isCancelled=False,
-            )
-            .join(StockSQLEntity)
-            .filter_by(StockSQLEntity.offerId == offer.id)
-        )
-    ):
+    if repository.has_user_already_booked_offer(user, offer):
         raise exceptions.OfferIsAlreadyBooked()
 
 
