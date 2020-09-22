@@ -93,14 +93,6 @@ def _check_venue_can_be_synchronized_with_provider(siret: str,
         api_errors.status_code = ERROR_CODE_SIRET_NOT_SUPPORTED
         api_errors.add_error('provider', _get_synchronization_error_message(provider_name, siret))
         raise api_errors
-def check_venue_can_be_synchronized_with_provider(venue: VenueSQLEntity,
-                                                  stock_repository: StockProviderRepository,
-                                                  name: str) -> None:
-    if not venue.siret or not stock_repository.can_be_synchronized(venue.siret):
-        errors = ApiErrors()
-        errors.status_code = ERROR_CODE_SIRET_NOT_SUPPORTED
-        errors.add_error('provider', _get_synchronization_error_message(name, venue.siret))
-        raise errors
 
 
 def _get_synchronization_error_message(provider_name: str, siret: Optional[str]) -> str:

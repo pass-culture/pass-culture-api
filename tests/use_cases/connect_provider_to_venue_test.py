@@ -108,7 +108,6 @@ class UseCaseTest:
                 offerer = create_offerer()
                 venue = create_venue(offerer, siret=None, is_virtual=True)
                 provider = activate_provider('LibrairesStocks')
-                stock_repository = MagicMock(StockProviderLibrairesRepository)
 
                 repository.save(venue)
 

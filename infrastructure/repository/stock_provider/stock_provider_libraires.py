@@ -17,7 +17,7 @@ class StockProviderLibrairesRepository(StockProviderRepository):
         stocks = self.libraires_api.stocks(siret=siret,
                                            last_processed_reference=last_processed_reference,
                                            modified_since=modified_since)
-        return iter(stocks.get('stocks', []))
+        return iter(stocks['stocks'])
 
     def can_be_synchronized(self, siret: str) -> bool:
         return self.libraires_api.is_siret_registered(siret=siret)

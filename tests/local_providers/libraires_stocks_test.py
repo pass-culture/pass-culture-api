@@ -1,5 +1,5 @@
 from datetime import datetime
-from unittest.mock import Mock, call, patch
+from unittest.mock import call, patch
 
 from local_providers.libraires.libraires_stocks import LibrairesStocks
 from models import OfferSQLEntity, StockSQLEntity
