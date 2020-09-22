@@ -117,7 +117,6 @@ class FnacStocksTest:
             stock = create_stock(id_at_providers='9780199536986@12345678912345', offer=offer, quantity=20)
 
             repository.save(product, offer, stock)
-
             fnac_stocks = FnacStocks(venue_provider)
 
             # When

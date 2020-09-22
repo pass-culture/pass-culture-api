@@ -1,6 +1,7 @@
 from datetime import datetime
 from unittest.mock import MagicMock
 
+from infrastructure.repository.stock_provider.provider_api import ProviderAPI
 from infrastructure.repository.stock_provider.stock_provider_libraires import StockProviderLibrairesRepository
 
 
@@ -9,11 +10,6 @@ class StockProviderLibrairesRepositoryTest:
         self.stock_provider_libraires_repository = StockProviderLibrairesRepository()
         self.stock_provider_libraires_repository.libraires_api.stocks = MagicMock()
         self.stock_provider_libraires_repository.libraires_api.is_siret_registered = MagicMock()
-
-    def should_instanciate_provider_api_with_correct_params(self):
-        # Then
-        assert self.stock_provider_libraires_repository.libraires_api.api_url == 'https://passculture.leslibraires.fr/stocks'
-        assert self.stock_provider_libraires_repository.libraires_api.name == 'Libraires'
 
     def should_call_provider_api_stocks_with_expected_arguments(self):
         # When
