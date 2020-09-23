@@ -49,6 +49,19 @@ class StockProviderFnacRepositoryTest:
         # Then
         assert len(list(fnac_stock_information)) == 0
 
+    def should_return_no_stock_information_when_fnac_api_returns_empty_body_result(self):
+        # Given
+        self.stock_provider_fnac_repository.fnac_api.stocks.return_value = {}
+
+        # When
+        fnac_stock_information = self.stock_provider_fnac_repository.stocks_information(
+            siret='12345678912345',
+            last_processed_reference='9782070584628',
+            modified_since=datetime(2019, 10, 1))
+
+        # Then
+        assert len(list(fnac_stock_information)) == 0
+
     def should_return_correct_stock_information_when_fnac_api_returns_two_stocks(self):
         # Given
         self.stock_provider_fnac_repository.fnac_api.stocks.return_value = {

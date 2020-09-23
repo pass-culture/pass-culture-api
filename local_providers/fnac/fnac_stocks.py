@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Callable
+from typing import List
 
 from sqlalchemy import Sequence
 
@@ -16,13 +16,13 @@ class FnacStocks(LocalProvider):
     name = 'FNAC'
     can_create = True
 
-    def __init__(self, venue_provider: VenueProvider, read_last_modified_date: Callable, **options):
+    def __init__(self, venue_provider: VenueProvider, **options):
         super().__init__(venue_provider, **options)
         self.venue = venue_provider.venue
         self.siret = self.venue.siret
         self.last_processed_isbn = ''
         self.fnac_stock_data = iter([])
-        self.modified_since = read_last_modified_date(venue_provider.lastSyncDate)
+        self.modified_since = venue_provider.lastSyncDate
         self.product = None
         self.offer_id = None
 

@@ -19,7 +19,7 @@ class StockProviderFnacRepository(StockProviderRepository):
         stocks = self.fnac_api.stocks(siret=siret,
                                       last_processed_reference=last_processed_reference,
                                       modified_since=modified_since)
-        return iter(stocks['stocks'])
+        return iter(stocks.get('stocks', []))
 
     def can_be_synchronized(self, siret: str) -> bool:
         return self.fnac_api.is_siret_registered(siret=siret)
