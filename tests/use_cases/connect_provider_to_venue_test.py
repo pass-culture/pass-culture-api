@@ -7,7 +7,6 @@ from tests.local_providers.provider_test_utils import TestLocalProvider
 from tests.model_creators.generic_creators import create_offerer, create_provider, create_venue
 from tests.model_creators.provider_creators import activate_provider
 
-from infrastructure.repository.stock_provider.stock_provider_libraires import StockProviderLibrairesRepository
 from local_providers import AllocineStocks, FnacStocks, LibrairesStocks, TiteLiveStocks
 from models import AllocineVenueProvider, AllocineVenueProviderPriceRule, ApiErrors, VenueProvider
 from repository import repository

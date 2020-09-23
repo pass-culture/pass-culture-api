@@ -130,6 +130,28 @@ class ProviderAPITest:
                                                  },
                                                  headers={'Authorization': 'Basic 744563534'})
 
+        def should_call_api_with_authentication_token_if_given(self):
+            # Given
+            siret = '12345678912345'
+            last_processed_isbn = '9780199536986'
+            modified_since = '2019-12-16T00:00:00'
+            requests.get.return_value = MagicMock(status_code=200)
+            self.provider_api = ProviderAPI(api_url='http://example.com/stocks',
+                                            name='ProviderAPI',
+                                            authentication_token="744563534")
+
+            # When
+            self.provider_api.stocks(siret, last_processed_isbn, modified_since)
+
+            # Then
+            requests.get.assert_called_once_with(url='http://example.com/stocks/12345678912345',
+                                                 params={
+                                                     'limit': '1000',
+                                                     'after': last_processed_isbn,
+                                                     'modifiedSince': modified_since
+                                                 },
+                                                 headers={'Authorization': 'Basic 744563534'})
+
     class IsSiretRegisteredTest:
         def setup_method(self):
             requests.get = MagicMock()

@@ -1,5 +1,5 @@
 from decimal import Decimal
-from typing import Dict, Optional
+from typing import Callable, Dict, Optional
 
 from domain.price_rule import PriceRule
 from domain.stock_provider.stock_provider_repository import StockProviderRepository
