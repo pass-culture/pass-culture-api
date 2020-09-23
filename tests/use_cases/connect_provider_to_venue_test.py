@@ -1,16 +1,16 @@
 from decimal import Decimal
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
-from tests.conftest import clean_database
-from tests.local_providers.provider_test_utils import TestLocalProvider
-from tests.model_creators.generic_creators import create_offerer, create_provider, create_venue
-from tests.model_creators.provider_creators import activate_provider
 
 from infrastructure.repository.stock_provider.stock_provider_libraires import StockProviderLibrairesRepository
 from local_providers import AllocineStocks, FnacStocks, LibrairesStocks, TiteLiveStocks
 from models import AllocineVenueProvider, AllocineVenueProviderPriceRule, ApiErrors, VenueProvider
 from repository import repository
+from tests.conftest import clean_database
+from tests.local_providers.provider_test_utils import TestLocalProvider
+from tests.model_creators.generic_creators import create_offerer, create_provider, create_venue
+from tests.model_creators.provider_creators import activate_provider
 from use_cases.connect_provider_to_venue import connect_provider_to_venue
 from utils.human_ids import humanize
 
@@ -87,7 +87,7 @@ class UseCaseTest:
 
                 stock_repository = MagicMock()
                 stock_repository.can_be_synchronized.return_value = False
-                provider_type = LibrairesStocks
+                provider_class = LibrairesStocks
 
                 venue_provider_payload = {
                     'providerId': humanize(provider.id),
@@ -96,7 +96,7 @@ class UseCaseTest:
 
                 # when
                 with pytest.raises(ApiErrors) as error:
-                    print(connect_provider_to_venue(provider_type, stock_repository, venue_provider_payload))
+                    print(connect_provider_to_venue(provider_class, stock_repository, venue_provider_payload))
 
                 # then
                 assert error.value.errors['provider'] == [
@@ -130,7 +130,8 @@ class UseCaseTest:
 
         class WhenProviderIsTiteLive:
             @clean_database
-            def test_should_connect_venue_to_titelive_provider(self, app):
+            @patch('use_cases.connect_provider_to_venue.can_be_synchronized_with_titelive')
+            def test_should_connect_venue_to_titelive_provider(self, stubbed_can_by_synchronized, app):
                 # Given
                 offerer = create_offerer()
                 venue = create_venue(offerer)
@@ -138,9 +139,9 @@ class UseCaseTest:
 
                 repository.save(venue)
 
-                stock_repository = MagicMock()
-                stock_repository.can_be_synchronized.return_value = True
                 provider_type = TiteLiveStocks
+                stock_repository = None
+                stubbed_can_by_synchronized.return_value = True
 
                 venue_provider_payload = {
                     'providerId': humanize(provider.id),
@@ -155,7 +156,9 @@ class UseCaseTest:
                 assert titelive_venue_provider.venue == venue
 
             @clean_database
-            def test_should_not_connect_venue_to_titelive_provider_if_not_interfaced(self, app):
+            @patch('use_cases.connect_provider_to_venue.can_be_synchronized_with_titelive')
+            def test_should_not_connect_venue_to_titelive_provider_if_not_interfaced(self, stubbed_can_by_synchronized,
+                                                                                     app):
                 # Given
                 offerer = create_offerer()
                 venue = create_venue(offerer, siret='12345678912345')
@@ -163,10 +166,10 @@ class UseCaseTest:
 
                 repository.save(venue)
 
-                stock_repository = MagicMock()
-                stock_repository.can_be_synchronized.return_value = False
+                stock_repository = None
                 provider_type = TiteLiveStocks
 
+                stubbed_can_by_synchronized.return_value = False
                 venue_provider_payload = {
                     'providerId': humanize(provider.id),
                     'venueId': humanize(venue.id),
