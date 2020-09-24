@@ -1,4 +1,4 @@
-import factor
+import factory
 import factory.sqlalchemy
 
 from . import models

@@ -17,12 +17,16 @@ from . import validation
 
 
 def book_offer(
-    beneficiary: UserSQLEntity,
-    stock: StockSQLEntity,
+    beneficiary_id: int,
+    stock_id: int,
     quantity: int,
-    recommendation: Recommendation,
+    recommendation_id: int,
 ) -> BookingSQLEntity:
     """Return a booking or raise an exception if it's not possible."""
+    beneficiary = users_repository.get_user_by_id(user_id)
+    stock = repository.get_stock_by_id(stock_id)
+    recommendation = recommendations_repository.get_recommendation_by_id(recommendation_id)
+
     validation.check_can_book_free_offer(beneficiary, stock)
     validation.check_offer_already_booked(beneficiary, stock.offer)
     validation.check_quantity(stock.offer, quantity)
@@ -49,8 +53,11 @@ def book_offer(
     return booking
 
 
-def cancel_booking(user: UserSQLEntity, booking: BookingSQLEntity) -> None:
-    validation.check_can_cancel_booking()
+def cancel_booking(user_id: int, booking_id: int) -> None:
+    user = users_repository.get_user_by_id(user_id)
+    booking = repository.get_booking_by_id(booking_id)
+
+    validation.check_can_cancel_booking(user, booking)
 
     booking.isCancelled = True
 
@@ -66,3 +73,5 @@ def cancel_booking(user: UserSQLEntity, booking: BookingSQLEntity) -> None:
 
     if feature_queries.is_active(FeatureToggle.SYNCHRONIZE_ALGOLIA):
         redis.add_offer_id(client=app.redis_client, offer_id=booking.stock.offer.id)
+
+    return booking

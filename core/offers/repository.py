@@ -7,6 +7,13 @@ from models.user_sql_entity import UserSQLEntity
 from . import models
 
 
+def get_booking_by_id(booking_id):
+    # FIXME: the repository should rather raise a DoesNotExist error.
+    # The error should get caught by the route, which would return a
+    # 404 response.
+    return models.Booking.query.filter_by(id=booking_id).first_or_404()
+
+
 def has_user_already_booked_offer(user, offer):
     return (
         db.query(

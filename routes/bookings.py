@@ -78,10 +78,7 @@ def create_booking():
     recommendation_id = request.json.get('recommendationId')
     quantity = request.json.get('quantity')
 
-    # FIXME: should we pass an id or an object to book_offer? Must find agreement.
-    stock = offers_repository.get_stock_by_id(stock_id)
-    recommendation = offers_repository.get_recommendation_by_id(recommendation_id)
-    booking = offers_api.book_offer(current_user, stock, quantity, recommendation)
+    booking = offers_api.book_offer(current_user.id, stock_id, quantity, recommendation_id)
 
     return jsonify(serialize_booking(booking)), 201
 
@@ -89,10 +86,7 @@ def create_booking():
 @app.route('/bookings/<booking_id>/cancel', methods=['PUT'])
 @login_required
 def cancel_booking(booking_id: str):
-    # FIXME: should we pass an id or an object to book_offer? Must find agreement.
-    booking = offers_repository.get_bookings_by_id(booking_id)
-
-    offers_api.cancel_booking(current_user, booking)
+    booking = offers_api.cancel_booking(current_user.id, booking_id)
 
     return jsonify(serialize_booking_for_cancel(booking)), 200
 
