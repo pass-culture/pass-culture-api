@@ -3,8 +3,7 @@ from models.api_errors import ApiErrors
 from models.api_key import ApiKey
 from models.bank_information import BankInformation
 from models.beneficiary_import import BeneficiaryImport, BeneficiaryImportSources
-from models.beneficiary_import_status import BeneficiaryImportStatus, \
-    ImportStatus
+from models.beneficiary_import_status import BeneficiaryImportStatus, ImportStatus
 from models.booking_sql_entity import BookingSQLEntity
 from models.criterion import Criterion
 from models.deactivable_mixin import DeactivableMixin
@@ -44,61 +43,61 @@ from models.venue_provider import VenueProvider
 from models.venue_type import VenueType
 from models.versioned_mixin import VersionedMixin
 from models.allocine_venue_provider import AllocineVenueProvider
-from models.allocine_venue_provider_price_rule import \
-    AllocineVenueProviderPriceRule
+from models.allocine_venue_provider_price_rule import AllocineVenueProviderPriceRule
 from models.iris_france import IrisFrance
+from models.db import db
 
 __all__ = (
-    'VersionedMixin',
-    'ApiErrors',
-    'ApiKey',
-    'AllocinePivot',
-    'AllocineVenueProvider',
-    'BankInformation',
-    'BeneficiaryImport',
-    'BeneficiaryImportStatus',
-    'Criterion',
-    'PcObject',
-    'DeactivableMixin',
-    'Deposit',
-    'Email',
-    'EventType',
-    'ExtraDataMixin',
-    'FavoriteSQLEntity',
-    'Feature',
-    'HasAddressMixin',
-    'HasThumbMixin',
-    'IrisFrance',
-    'IrisVenues',
-    'BookFormat',
-    'NeedsValidationMixin',
-    'ProvidableMixin',
-    'BookingSQLEntity',
-    'MediationSQLEntity',
-    'StockSQLEntity',
-    'Offerer',
-    'VenueProvider',
-    'AllocineVenueProviderPriceRule',
-    'LocalProviderEvent',
-    'OfferCriterion',
-    'OfferSQLEntity',
-    'Payment',
-    'PaymentStatus',
-    'PaymentMessage',
-    'Provider',
-    'Product',
-    'Recommendation',
-    'DiscoveryView',
-    'DiscoveryViewV3',
-    'RightsType',
-    'ThingType',
-    'UserOfferer',
-    'UserSQLEntity',
-    'UserSession',
-    'VenueSQLEntity',
-    'VenueType',
-    'VenueLabelSQLEntity',
-    'SeenOffer'
+    "VersionedMixin",
+    "ApiErrors",
+    "ApiKey",
+    "AllocinePivot",
+    "AllocineVenueProvider",
+    "BankInformation",
+    "BeneficiaryImport",
+    "BeneficiaryImportStatus",
+    "Criterion",
+    "PcObject",
+    "DeactivableMixin",
+    "Deposit",
+    "Email",
+    "EventType",
+    "ExtraDataMixin",
+    "FavoriteSQLEntity",
+    "Feature",
+    "HasAddressMixin",
+    "HasThumbMixin",
+    "IrisFrance",
+    "IrisVenues",
+    "BookFormat",
+    "NeedsValidationMixin",
+    "ProvidableMixin",
+    "BookingSQLEntity",
+    "MediationSQLEntity",
+    "StockSQLEntity",
+    "Offerer",
+    "VenueProvider",
+    "AllocineVenueProviderPriceRule",
+    "LocalProviderEvent",
+    "OfferCriterion",
+    "OfferSQLEntity",
+    "Payment",
+    "PaymentStatus",
+    "PaymentMessage",
+    "Provider",
+    "Product",
+    "Recommendation",
+    "DiscoveryView",
+    "DiscoveryViewV3",
+    "RightsType",
+    "ThingType",
+    "UserOfferer",
+    "UserSQLEntity",
+    "UserSession",
+    "VenueSQLEntity",
+    "VenueType",
+    "VenueLabelSQLEntity",
+    "SeenOffer",
 )
 
 # Order matters
@@ -137,10 +136,12 @@ models = (
     PaymentStatus,
     IrisFrance,
     IrisVenues,
-    SeenOffer
+    SeenOffer,
 )
 
 materialized_views = (
     DiscoveryView,
     DiscoveryViewV3,
 )
+
+db = db
