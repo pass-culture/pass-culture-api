@@ -103,3 +103,15 @@ def date_time_cast_error(error: DateTimeCastError) -> Tuple[Dict, int]:
 def already_activated_exception(error: AlreadyActivatedException) -> Tuple[Dict, int]:
     app.logger.error(json.dumps(error.errors))
     return jsonify(error.errors), 405
+
+
+import marshmallow
+@app.errorhandler(marshmallow.ValidationError)
+def deserialization_error(error: marshmallow.ValidationError) -> Tuple[Dict, int]:
+    api_errors = ApiErrors()
+    for key, error_messages in error.messages:
+        # marshmallow peut détecter plusieurs erreurs par champ. Ici
+        # on s'adapte à ce qui est fait actuellement : ne renvoyer
+        # qu'une erreur par champ.
+        api_errors.add_error(key, error_messages[0])
+    return jsonify(api_errors.errors), 400
