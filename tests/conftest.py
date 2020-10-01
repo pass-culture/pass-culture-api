@@ -21,7 +21,7 @@ from repository.user_queries import find_user_by_email
 from routes import install_routes
 from tests.model_creators.generic_creators import PLAIN_DEFAULT_TESTING_PASSWORD
 from utils.json_encoder import EnumJSONEncoder
-from flask_sqlalchemy import SQLAlchemy
+from models.db import db
 
 
 def run_migrations():
@@ -78,12 +78,8 @@ def _db(app):
     Provide the transactional fixtures with access to the database via a Flask-SQLAlchemy
     database connection.
     """
-    db = SQLAlchemy(
-        engine_options={
-            "pool_size": int(os.environ.get("DATABASE_POOL_SIZE", 20)),
-        },
-        app=app,
-    )
+    mock_db = db
+    mock_db.init_app(app)
     install_database_extensions(app)
 
     run_migrations()
@@ -93,7 +89,7 @@ def _db(app):
     install_routes()
     install_local_providers()
 
-    return db
+    return mock_db
 
 
 def mocked_mail(f):

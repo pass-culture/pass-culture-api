@@ -370,6 +370,7 @@ class LocalProviderTest:
             provider._handle_thumb(existing_product)
 
             # Then
+            repository.save(existing_product)
             assert provider.checkedThumbs == 1
             assert provider.updatedThumbs == 0
             assert provider.createdThumbs == 1
@@ -459,6 +460,7 @@ class LocalProviderTest:
             _save_same_thumb_from_thumb_count_to_index(product, thumb_index, thumb)
 
             # Then
+            repository.save(product)
             assert product.thumbCount == 4
 
         @clean_database
@@ -485,6 +487,7 @@ class LocalProviderTest:
             _save_same_thumb_from_thumb_count_to_index(product, thumb_index, thumb)
 
             # Then
+            repository.save(product)
             assert product.thumbCount == 4
 
         @patch('local_providers.local_provider._add_new_thumb')
@@ -514,5 +517,6 @@ class LocalProviderTest:
             _save_same_thumb_from_thumb_count_to_index(product, thumb_index, thumb)
 
             # Then
+            repository.save(product)
             assert mock_add_new_thumb.call_count == 1
             assert product.thumbCount == 4
