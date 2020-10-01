@@ -5,8 +5,15 @@ from models import OfferSQLEntity, StockSQLEntity
 from models.db import db
 from repository import repository
 from tests.conftest import clean_database
-from tests.model_creators.generic_creators import create_stock, create_offerer, create_venue
-from tests.model_creators.specific_creators import create_product_with_thing_type, create_offer_with_thing_product
+from tests.model_creators.generic_creators import (
+    create_stock,
+    create_offerer,
+    create_venue,
+)
+from tests.model_creators.specific_creators import (
+    create_product_with_thing_type,
+    create_offer_with_thing_product,
+)
 
 
 class SaveChunksTest:
@@ -18,13 +25,11 @@ class SaveChunksTest:
         product = create_product_with_thing_type()
         repository.save(venue, product)
 
-        offer = create_offer_with_thing_product(venue,
-                                                product=product,
-                                                id_at_providers='1%12345678912345')
+        offer = create_offer_with_thing_product(
+            venue, product=product, id_at_providers="1%12345678912345"
+        )
         offer.venueId = venue.id
-        chunk_to_insert = {
-            '1|OfferSQLEntity': offer
-        }
+        chunk_to_insert = {"1|OfferSQLEntity": offer}
         db.session.expunge(offer)
 
         chunk_to_update = {}
@@ -43,19 +48,19 @@ class SaveChunksTest:
         product = create_product_with_thing_type()
         repository.save(venue, product)
 
-        offer = create_offer_with_thing_product(venue,
-                                                product=product,
-                                                id_at_providers='1%12345678912345')
+        offer = create_offer_with_thing_product(
+            venue, product=product, id_at_providers="1%12345678912345"
+        )
         offer.venueId = venue.id
-        offer_id = db.session.execute(Sequence('offer_id_seq'))
+        offer_id = db.session.execute(Sequence("offer_id_seq"))
         offer.id = offer_id
 
         stock = create_stock(offer=offer)
         stock.offerId = offer_id
 
         chunk_to_insert = {
-            '1|OfferSQLEntity': offer,
-            '1|StockSQLEntity': stock,
+            "1|OfferSQLEntity": offer,
+            "1|StockSQLEntity": stock,
         }
         db.session.expunge(offer)
         db.session.expunge(stock)
@@ -75,15 +80,15 @@ class SaveChunksTest:
         offerer = create_offerer()
         venue = create_venue(offerer)
         product = create_product_with_thing_type()
-        offer = create_offer_with_thing_product(venue,
-                                                product=product,
-                                                id_at_providers='1%12345678912345')
+        offer = create_offer_with_thing_product(
+            venue, product=product, id_at_providers="1%12345678912345"
+        )
         repository.save(venue, product, offer)
 
         db.session.refresh(offer)
         offer.isDuo = True
         chunk_to_update = {
-            '1|OfferSQLEntity': offer,
+            "1|OfferSQLEntity": offer,
         }
         db.session.expunge(offer)
 
@@ -101,12 +106,12 @@ class SaveChunksTest:
         offerer = create_offerer()
         venue = create_venue(offerer)
         product = create_product_with_thing_type()
-        offer1 = create_offer_with_thing_product(venue,
-                                                 product=product,
-                                                 id_at_providers='1%12345678912345')
-        offer2 = create_offer_with_thing_product(venue,
-                                                 product=product,
-                                                 id_at_providers='2%12345678912345')
+        offer1 = create_offer_with_thing_product(
+            venue, product=product, id_at_providers="1%12345678912345"
+        )
+        offer2 = create_offer_with_thing_product(
+            venue, product=product, id_at_providers="2%12345678912345"
+        )
         stock = create_stock(offer=offer1)
         repository.save(venue, product, offer1, offer2, stock)
 
@@ -117,9 +122,9 @@ class SaveChunksTest:
         offer2.isDuo = True
         stock.quantity = 2
         chunk_to_update = {
-            '1|OfferSQLEntity': offer1,
-            '1|StockSQLEntity': stock,
-            '2|OfferSQLEntity': offer2,
+            "1|OfferSQLEntity": offer1,
+            "1|StockSQLEntity": stock,
+            "2|OfferSQLEntity": offer2,
         }
         db.session.expunge(offer1)
         db.session.expunge(offer2)

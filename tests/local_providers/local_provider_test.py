@@ -8,27 +8,32 @@ from models import Product, ThingType, VenueProvider, ApiErrors, LocalProviderEv
 from models.local_provider_event import LocalProviderEventType
 from repository import repository
 from tests.conftest import clean_database
-from tests.local_providers.provider_test_utils import TestLocalProvider, TestLocalProviderWithApiErrors, \
-    TestLocalProviderNoCreation, TestLocalProviderWithThumb, TestLocalProviderWithThumbIndexAt4
-from tests.model_creators.generic_creators import create_offerer, create_venue, create_provider
+from tests.local_providers.provider_test_utils import (
+    TestLocalProvider,
+    TestLocalProviderWithApiErrors,
+    TestLocalProviderNoCreation,
+    TestLocalProviderWithThumb,
+    TestLocalProviderWithThumbIndexAt4,
+)
+from tests.model_creators.generic_creators import (
+    create_offerer,
+    create_venue,
+    create_provider,
+)
 from tests.model_creators.provider_creators import create_providable_info
 from tests.model_creators.specific_creators import create_product_with_thing_type
 
 
 class LocalProviderTest:
     class UpdateObjectsTest:
-        @patch('tests.local_providers.provider_test_utils.TestLocalProvider.__next__')
+        @patch("tests.local_providers.provider_test_utils.TestLocalProvider.__next__")
         @clean_database
         def test_iterator_is_called_until_exhausted(self, next_function, app):
             # Given
-            provider_test = create_provider(local_class='TestLocalProvider')
+            provider_test = create_provider(local_class="TestLocalProvider")
             repository.save(provider_test)
 
-            next_function.side_effect = [
-                [],
-                [],
-                []
-            ]
+            next_function.side_effect = [[], [], []]
 
             provider = TestLocalProvider()
 
@@ -38,17 +43,16 @@ class LocalProviderTest:
             # Then
             assert next_function.call_count == 4
 
-        @patch('tests.local_providers.provider_test_utils.TestLocalProvider.__next__')
+        @patch("tests.local_providers.provider_test_utils.TestLocalProvider.__next__")
         @clean_database
-        def test_iterator_should_log_provider_event_from_start_to_stop(self, next_function, app):
+        def test_iterator_should_log_provider_event_from_start_to_stop(
+            self, next_function, app
+        ):
             # Given
-            provider_test = create_provider(local_class='TestLocalProvider')
+            provider_test = create_provider(local_class="TestLocalProvider")
             repository.save(provider_test)
 
-            next_function.side_effect = [
-                [],
-                []
-            ]
+            next_function.side_effect = [[], []]
 
             provider = TestLocalProvider()
 
@@ -56,26 +60,24 @@ class LocalProviderTest:
             provider.updateObjects()
 
             # Then
-            provider_events = LocalProviderEvent.query \
-                .order_by(LocalProviderEvent.id.asc()) \
-                .all()
+            provider_events = LocalProviderEvent.query.order_by(
+                LocalProviderEvent.id.asc()
+            ).all()
             assert provider_events[0].type == LocalProviderEventType.SyncStart
             assert provider_events[1].type == LocalProviderEventType.SyncEnd
 
-        @patch('tests.local_providers.provider_test_utils.TestLocalProvider.__next__')
+        @patch("tests.local_providers.provider_test_utils.TestLocalProvider.__next__")
         @clean_database
-        def test_creates_new_object_when_no_object_in_database(self,
-                                                               next_function,
-                                                               app):
+        def test_creates_new_object_when_no_object_in_database(
+            self, next_function, app
+        ):
             # Given
-            provider_test = create_provider(local_class='TestLocalProvider')
+            provider_test = create_provider(local_class="TestLocalProvider")
             repository.save(provider_test)
 
             providable_info = create_providable_info()
 
-            next_function.side_effect = [
-                [providable_info]
-            ]
+            next_function.side_effect = [[providable_info]]
 
             provider = TestLocalProvider()
 
@@ -84,29 +86,27 @@ class LocalProviderTest:
 
             # Then
             new_product = Product.query.one()
-            assert new_product.name == 'New Product'
+            assert new_product.name == "New Product"
             assert new_product.type == str(ThingType.LIVRE_EDITION)
 
-        @patch('tests.local_providers.provider_test_utils.TestLocalProvider.__next__')
+        @patch("tests.local_providers.provider_test_utils.TestLocalProvider.__next__")
         @clean_database
-        def test_updates_existing_object(self,
-                                         next_function,
-                                         app):
+        def test_updates_existing_object(self, next_function, app):
             # Given
-            provider_test = create_provider(local_class='TestLocalProvider')
+            provider_test = create_provider(local_class="TestLocalProvider")
             repository.save(provider_test)
 
             providable_info = create_providable_info(date_modified=datetime(2018, 1, 1))
 
-            next_function.side_effect = [
-                [providable_info]
-            ]
+            next_function.side_effect = [[providable_info]]
 
-            existing_product = create_product_with_thing_type(thing_name='Old product name',
-                                                              thing_type=ThingType.INSTRUMENT,
-                                                              id_at_providers=providable_info.id_at_providers,
-                                                              last_provider_id=provider_test.id,
-                                                              date_modified_at_last_provider=datetime(2000, 1, 1))
+            existing_product = create_product_with_thing_type(
+                thing_name="Old product name",
+                thing_type=ThingType.INSTRUMENT,
+                id_at_providers=providable_info.id_at_providers,
+                last_provider_id=provider_test.id,
+                date_modified_at_last_provider=datetime(2000, 1, 1),
+            )
             repository.save(existing_product)
 
             provider = TestLocalProvider()
@@ -116,30 +116,33 @@ class LocalProviderTest:
 
             # Then
             new_product = Product.query.one()
-            assert new_product.name == 'New Product'
+            assert new_product.name == "New Product"
             assert new_product.type == str(ThingType.LIVRE_EDITION)
-            assert new_product.dateModifiedAtLastProvider == providable_info.date_modified_at_provider
+            assert (
+                new_product.dateModifiedAtLastProvider
+                == providable_info.date_modified_at_provider
+            )
 
-        @patch('tests.local_providers.provider_test_utils.TestLocalProvider.__next__')
+        @patch("tests.local_providers.provider_test_utils.TestLocalProvider.__next__")
         @clean_database
-        def test_does_not_update_existing_object_when_date_is_older_than_last_modified_date(self,
-                                                                                            next_function,
-                                                                                            app):
+        def test_does_not_update_existing_object_when_date_is_older_than_last_modified_date(
+            self, next_function, app
+        ):
             # Given
-            provider_test = create_provider(local_class='TestLocalProvider')
+            provider_test = create_provider(local_class="TestLocalProvider")
             repository.save(provider_test)
 
             providable_info = create_providable_info(date_modified=datetime(2018, 1, 1))
 
-            next_function.side_effect = [
-                [providable_info]
-            ]
+            next_function.side_effect = [[providable_info]]
 
-            existing_product = create_product_with_thing_type(thing_name='Old product name',
-                                                              thing_type=ThingType.INSTRUMENT,
-                                                              id_at_providers=providable_info.id_at_providers,
-                                                              last_provider_id=provider_test.id,
-                                                              date_modified_at_last_provider=datetime(2019, 1, 1))
+            existing_product = create_product_with_thing_type(
+                thing_name="Old product name",
+                thing_type=ThingType.INSTRUMENT,
+                id_at_providers=providable_info.id_at_providers,
+                last_provider_id=provider_test.id,
+                date_modified_at_last_provider=datetime(2019, 1, 1),
+            )
             repository.save(existing_product)
 
             provider = TestLocalProvider()
@@ -149,24 +152,25 @@ class LocalProviderTest:
 
             # Then
             same_product = Product.query.one()
-            assert same_product.name == 'Old product name'
+            assert same_product.name == "Old product name"
             assert same_product.type == str(ThingType.INSTRUMENT)
-            assert same_product.dateModifiedAtLastProvider == existing_product.dateModifiedAtLastProvider
+            assert (
+                same_product.dateModifiedAtLastProvider
+                == existing_product.dateModifiedAtLastProvider
+            )
 
-        @patch('tests.local_providers.provider_test_utils.TestLocalProvider.__next__')
+        @patch("tests.local_providers.provider_test_utils.TestLocalProvider.__next__")
         @clean_database
-        def test_does_not_update_objects_when_venue_provider_is_not_active(self,
-                                                                           next_function,
-                                                                           app):
+        def test_does_not_update_objects_when_venue_provider_is_not_active(
+            self, next_function, app
+        ):
             # Given
-            provider_test = create_provider(local_class='TestLocalProvider')
+            provider_test = create_provider(local_class="TestLocalProvider")
             repository.save(provider_test)
 
             providable_info = create_providable_info(date_modified=datetime(2018, 1, 1))
 
-            next_function.side_effect = [
-                [providable_info]
-            ]
+            next_function.side_effect = [[providable_info]]
 
             venue_provider = VenueProvider()
             venue_provider.provider = provider_test
@@ -182,20 +186,20 @@ class LocalProviderTest:
             # Then
             assert Product.query.count() == 0
 
-        @patch('tests.local_providers.provider_test_utils.TestLocalProvider.__next__')
+        @patch("tests.local_providers.provider_test_utils.TestLocalProvider.__next__")
         @clean_database
-        def test_does_not_update_objects_when_provider_is_not_active(self,
-                                                                     next_function,
-                                                                     app):
+        def test_does_not_update_objects_when_provider_is_not_active(
+            self, next_function, app
+        ):
             # Given
-            provider_test = create_provider(local_class='TestLocalProvider', is_active=False)
+            provider_test = create_provider(
+                local_class="TestLocalProvider", is_active=False
+            )
             repository.save(provider_test)
 
             providable_info = create_providable_info(date_modified=datetime(2018, 1, 1))
 
-            next_function.side_effect = [
-                [providable_info]
-            ]
+            next_function.side_effect = [[providable_info]]
 
             provider = TestLocalProvider()
 
@@ -205,20 +209,20 @@ class LocalProviderTest:
             # Then
             assert Product.query.count() == 0
 
-        @patch('tests.local_providers.provider_test_utils.TestLocalProviderNoCreation.__next__')
+        @patch(
+            "tests.local_providers.provider_test_utils.TestLocalProviderNoCreation.__next__"
+        )
         @clean_database
-        def test_does_not_create_new_object_when_can_create_is_false(self,
-                                                                     next_function,
-                                                                     app):
+        def test_does_not_create_new_object_when_can_create_is_false(
+            self, next_function, app
+        ):
             # Given
-            provider_test = create_provider(local_class='TestLocalProviderNoCreation')
+            provider_test = create_provider(local_class="TestLocalProviderNoCreation")
             repository.save(provider_test)
 
             providable_info = create_providable_info()
 
-            next_function.side_effect = [
-                [providable_info]
-            ]
+            next_function.side_effect = [[providable_info]]
 
             provider = TestLocalProviderNoCreation()
 
@@ -228,23 +232,18 @@ class LocalProviderTest:
             # Then
             assert Product.query.count() == 0
 
-        @patch('tests.local_providers.provider_test_utils.TestLocalProvider.__next__')
+        @patch("tests.local_providers.provider_test_utils.TestLocalProvider.__next__")
         @clean_database
-        def test_creates_only_one_object_when_limit_is_one(self,
-                                                           next_function,
-                                                           app):
+        def test_creates_only_one_object_when_limit_is_one(self, next_function, app):
             # Given
-            provider_test = create_provider(local_class='TestLocalProvider')
+            provider_test = create_provider(local_class="TestLocalProvider")
             repository.save(provider_test)
 
             providable_info1 = create_providable_info()
 
-            providable_info2 = create_providable_info(id_at_providers='2')
+            providable_info2 = create_providable_info(id_at_providers="2")
 
-            next_function.side_effect = [
-                [providable_info1],
-                [providable_info2]
-            ]
+            next_function.side_effect = [[providable_info1], [providable_info2]]
 
             provider = TestLocalProvider()
 
@@ -253,14 +252,14 @@ class LocalProviderTest:
 
             # Then
             new_product = Product.query.one()
-            assert new_product.name == 'New Product'
+            assert new_product.name == "New Product"
             assert new_product.type == str(ThingType.LIVRE_EDITION)
 
     class CreateObjectTest:
         @clean_database
         def test_returns_object_with_expected_attributes(self, app):
             # Given
-            provider_test = create_provider(local_class='TestLocalProvider')
+            provider_test = create_provider(local_class="TestLocalProvider")
             repository.save(provider_test)
 
             providable_info = create_providable_info()
@@ -272,14 +271,18 @@ class LocalProviderTest:
 
             # Then
             assert isinstance(product, Product)
-            assert product.name == 'New Product'
+            assert product.name == "New Product"
             assert product.type == str(ThingType.LIVRE_EDITION)
             assert product.lastProviderId == provider_test.id
 
         @clean_database
-        def test_raises_api_errors_exception_when_errors_occur_on_model_and_log_error(self, app):
+        def test_raises_api_errors_exception_when_errors_occur_on_model_and_log_error(
+            self, app
+        ):
             # Given
-            provider_test = create_provider(local_class='TestLocalProviderWithApiErrors')
+            provider_test = create_provider(
+                local_class="TestLocalProviderWithApiErrors"
+            )
             repository.save(provider_test)
 
             providable_info = create_providable_info()
@@ -291,8 +294,9 @@ class LocalProviderTest:
                 provider._create_object(providable_info)
 
             # Then
-            assert api_errors.value.errors[
-                       'url'] == ['Une offre de type Jeux (support physique) ne peut pas être numérique']
+            assert api_errors.value.errors["url"] == [
+                "Une offre de type Jeux (support physique) ne peut pas être numérique"
+            ]
             assert Product.query.count() == 0
             provider_event = LocalProviderEvent.query.one()
             assert provider_event.type == LocalProviderEventType.SyncError
@@ -301,49 +305,56 @@ class LocalProviderTest:
         @clean_database
         def test_returns_object_with_expected_attributes(self, app):
             # Given
-            provider_test = create_provider(local_class='TestLocalProvider')
+            provider_test = create_provider(local_class="TestLocalProvider")
             repository.save(provider_test)
 
             providable_info = create_providable_info()
 
             provider = TestLocalProvider()
 
-            existing_product = create_product_with_thing_type(thing_name='Old product name',
-                                                              thing_type=ThingType.INSTRUMENT,
-                                                              id_at_providers=providable_info.id_at_providers,
-                                                              last_provider_id=provider_test.id,
-                                                              date_modified_at_last_provider=datetime(2000, 1, 1))
+            existing_product = create_product_with_thing_type(
+                thing_name="Old product name",
+                thing_type=ThingType.INSTRUMENT,
+                id_at_providers=providable_info.id_at_providers,
+                last_provider_id=provider_test.id,
+                date_modified_at_last_provider=datetime(2000, 1, 1),
+            )
 
             # When
             provider._handle_update(existing_product, providable_info)
 
             # Then
-            assert existing_product.name == 'New Product'
+            assert existing_product.name == "New Product"
             assert existing_product.type == str(ThingType.LIVRE_EDITION)
 
         @clean_database
         def test_raises_api_errors_exception_when_errors_occur_on_model(self, app):
             # Given
-            provider_test = create_provider(local_class='TestLocalProviderWithApiErrors')
+            provider_test = create_provider(
+                local_class="TestLocalProviderWithApiErrors"
+            )
             repository.save(provider_test)
 
             providable_info = create_providable_info()
 
             provider = TestLocalProviderWithApiErrors()
 
-            existing_product = create_product_with_thing_type(thing_name='Old product name',
-                                                              thing_type=ThingType.INSTRUMENT,
-                                                              id_at_providers=providable_info.id_at_providers,
-                                                              last_provider_id=provider_test.id,
-                                                              date_modified_at_last_provider=datetime(2000, 1, 1))
+            existing_product = create_product_with_thing_type(
+                thing_name="Old product name",
+                thing_type=ThingType.INSTRUMENT,
+                id_at_providers=providable_info.id_at_providers,
+                last_provider_id=provider_test.id,
+                date_modified_at_last_provider=datetime(2000, 1, 1),
+            )
 
             # When
             with pytest.raises(ApiErrors) as api_errors:
                 provider._handle_update(existing_product, providable_info)
 
             # Then
-            assert api_errors.value.errors[
-                       'url'] == ['Une offre de type Jeux (support physique) ne peut pas être numérique']
+            assert api_errors.value.errors["url"] == [
+                "Une offre de type Jeux (support physique) ne peut pas être numérique"
+            ]
             provider_event = LocalProviderEvent.query.one()
             assert provider_event.type == LocalProviderEventType.SyncError
 
@@ -351,19 +362,21 @@ class LocalProviderTest:
         @clean_database
         def test_call_save_thumb_should_increase_thumbCount_by_1(self, app):
             # Given
-            provider_test = create_provider(local_class='TestLocalProviderWithThumb')
+            provider_test = create_provider(local_class="TestLocalProviderWithThumb")
             repository.save(provider_test)
 
             providable_info = create_providable_info()
 
             provider = TestLocalProviderWithThumb()
 
-            existing_product = create_product_with_thing_type(thing_name='Old product name',
-                                                              thing_type=ThingType.INSTRUMENT,
-                                                              id_at_providers=providable_info.id_at_providers,
-                                                              last_provider_id=provider_test.id,
-                                                              date_modified_at_last_provider=datetime(2000, 1, 1),
-                                                              thumb_count=0)
+            existing_product = create_product_with_thing_type(
+                thing_name="Old product name",
+                thing_type=ThingType.INSTRUMENT,
+                id_at_providers=providable_info.id_at_providers,
+                last_provider_id=provider_test.id,
+                date_modified_at_last_provider=datetime(2000, 1, 1),
+                thumb_count=0,
+            )
             repository.save(existing_product)
 
             # When
@@ -376,23 +389,27 @@ class LocalProviderTest:
             assert provider.createdThumbs == 1
             assert existing_product.thumbCount == 1
 
-        @patch('local_providers.local_provider._save_same_thumb_from_thumb_count_to_index')
+        @patch(
+            "local_providers.local_provider._save_same_thumb_from_thumb_count_to_index"
+        )
         @clean_database
         def test_call_save_thumb_once_when_thumb_count_is_0(self, mock_save_thumb, app):
             # Given
-            provider_test = create_provider(local_class='TestLocalProviderWithThumb')
+            provider_test = create_provider(local_class="TestLocalProviderWithThumb")
             repository.save(provider_test)
 
             providable_info = create_providable_info()
 
             provider = TestLocalProviderWithThumb()
 
-            existing_product = create_product_with_thing_type(thing_name='Old product name',
-                                                              thing_type=ThingType.INSTRUMENT,
-                                                              id_at_providers=providable_info.id_at_providers,
-                                                              last_provider_id=provider_test.id,
-                                                              date_modified_at_last_provider=datetime(2000, 1, 1),
-                                                              thumb_count=0)
+            existing_product = create_product_with_thing_type(
+                thing_name="Old product name",
+                thing_type=ThingType.INSTRUMENT,
+                id_at_providers=providable_info.id_at_providers,
+                last_provider_id=provider_test.id,
+                date_modified_at_last_provider=datetime(2000, 1, 1),
+                thumb_count=0,
+            )
             # When
             provider._handle_thumb(existing_product)
 
@@ -402,29 +419,33 @@ class LocalProviderTest:
             assert provider.updatedThumbs == 0
             assert provider.createdThumbs == 1
 
-        @patch('local_providers.local_provider.save_provider_thumb')
-        @patch('utils.object_storage.build_thumb_path')
+        @patch("local_providers.local_provider.save_provider_thumb")
+        @patch("utils.object_storage.build_thumb_path")
         @clean_database
-        def test_create_several_thumbs_when_thumb_index_is_4_and_current_thumbCount_is_0(self,
-                                                                                         mock_get_thumb_storage_id,
-                                                                                         mock_save_thumb, app):
+        def test_create_several_thumbs_when_thumb_index_is_4_and_current_thumbCount_is_0(
+            self, mock_get_thumb_storage_id, mock_save_thumb, app
+        ):
             # Given
-            provider_test = create_provider(local_class='TestLocalProviderWithThumbIndexAt4')
+            provider_test = create_provider(
+                local_class="TestLocalProviderWithThumbIndexAt4"
+            )
             repository.save(provider_test)
 
             providable_info = create_providable_info()
 
             provider = TestLocalProviderWithThumbIndexAt4()
 
-            existing_product = create_product_with_thing_type(thing_name='Old product name',
-                                                              thing_type=ThingType.INSTRUMENT,
-                                                              id_at_providers=providable_info.id_at_providers,
-                                                              last_provider_id=provider_test.id,
-                                                              date_modified_at_last_provider=datetime(2000, 1, 1),
-                                                              thumb_count=0)
+            existing_product = create_product_with_thing_type(
+                thing_name="Old product name",
+                thing_type=ThingType.INSTRUMENT,
+                id_at_providers=providable_info.id_at_providers,
+                last_provider_id=provider_test.id,
+                date_modified_at_last_provider=datetime(2000, 1, 1),
+                thumb_count=0,
+            )
             existing_product.id = 5
 
-            mock_get_thumb_storage_id.return_value = 'products/AAERT'
+            mock_get_thumb_storage_id.return_value = "products/AAERT"
 
             # When
             provider._handle_thumb(existing_product)
@@ -437,21 +458,25 @@ class LocalProviderTest:
 
     class SaveThumbFromThumbCountToIndexTest:
         @clean_database
-        def test_should_iterate_from_current_thumbCount_to_thumbIndex_when_thumbCount_is_0(self, app):
+        def test_should_iterate_from_current_thumbCount_to_thumbIndex_when_thumbCount_is_0(
+            self, app
+        ):
             # Given
-            provider_test = create_provider(local_class='TestLocalProviderWithThumb')
+            provider_test = create_provider(local_class="TestLocalProviderWithThumb")
             repository.save(provider_test)
 
             providable_info = create_providable_info()
 
             provider = TestLocalProviderWithThumb()
 
-            product = create_product_with_thing_type(thing_name='Old product name',
-                                                     thing_type=ThingType.INSTRUMENT,
-                                                     id_at_providers=providable_info.id_at_providers,
-                                                     last_provider_id=provider_test.id,
-                                                     date_modified_at_last_provider=datetime(2000, 1, 1),
-                                                     thumb_count=0)
+            product = create_product_with_thing_type(
+                thing_name="Old product name",
+                thing_type=ThingType.INSTRUMENT,
+                id_at_providers=providable_info.id_at_providers,
+                last_provider_id=provider_test.id,
+                date_modified_at_last_provider=datetime(2000, 1, 1),
+                thumb_count=0,
+            )
             repository.save(product)
             thumb_index = 4
             thumb = provider.get_object_thumb()
@@ -464,21 +489,25 @@ class LocalProviderTest:
             assert product.thumbCount == 4
 
         @clean_database
-        def test_should_iterate_from_current_thumbCount_to_thumbIndex_when_thumbCount_is_None(self, app):
+        def test_should_iterate_from_current_thumbCount_to_thumbIndex_when_thumbCount_is_None(
+            self, app
+        ):
             # Given
-            provider_test = create_provider(local_class='TestLocalProviderWithThumb')
+            provider_test = create_provider(local_class="TestLocalProviderWithThumb")
             repository.save(provider_test)
 
             providable_info = create_providable_info()
 
             provider = TestLocalProviderWithThumb()
 
-            product = create_product_with_thing_type(thing_name='Old product name',
-                                                     thing_type=ThingType.INSTRUMENT,
-                                                     id_at_providers=providable_info.id_at_providers,
-                                                     last_provider_id=provider_test.id,
-                                                     date_modified_at_last_provider=datetime(2000, 1, 1),
-                                                     thumb_count=None)
+            product = create_product_with_thing_type(
+                thing_name="Old product name",
+                thing_type=ThingType.INSTRUMENT,
+                id_at_providers=providable_info.id_at_providers,
+                last_provider_id=provider_test.id,
+                date_modified_at_last_provider=datetime(2000, 1, 1),
+                thumb_count=None,
+            )
             repository.save(product)
             thumb_index = 4
             thumb = provider.get_object_thumb()
@@ -490,25 +519,27 @@ class LocalProviderTest:
             repository.save(product)
             assert product.thumbCount == 4
 
-        @patch('local_providers.local_provider._add_new_thumb')
+        @patch("local_providers.local_provider._add_new_thumb")
         @clean_database
-        def test_should_only_replace_image_at_specific_thumb_index_when_thumCount_is_superior_to_thumbIndex(self,
-                                                                                                            mock_add_new_thumb,
-                                                                                                            app):
+        def test_should_only_replace_image_at_specific_thumb_index_when_thumCount_is_superior_to_thumbIndex(
+            self, mock_add_new_thumb, app
+        ):
             # Given
-            provider_test = create_provider(local_class='TestLocalProviderWithThumb')
+            provider_test = create_provider(local_class="TestLocalProviderWithThumb")
             repository.save(provider_test)
 
             providable_info = create_providable_info()
 
             provider = TestLocalProviderWithThumb()
 
-            product = create_product_with_thing_type(thing_name='Old product name',
-                                                     thing_type=ThingType.INSTRUMENT,
-                                                     id_at_providers=providable_info.id_at_providers,
-                                                     last_provider_id=provider_test.id,
-                                                     date_modified_at_last_provider=datetime(2000, 1, 1),
-                                                     thumb_count=4)
+            product = create_product_with_thing_type(
+                thing_name="Old product name",
+                thing_type=ThingType.INSTRUMENT,
+                id_at_providers=providable_info.id_at_providers,
+                last_provider_id=provider_test.id,
+                date_modified_at_last_provider=datetime(2000, 1, 1),
+                thumb_count=4,
+            )
             repository.save(product)
             thumb_index = 1
             thumb = provider.get_object_thumb()

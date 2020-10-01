@@ -6,6 +6,7 @@ from sqlalchemy import select
 import models
 from models.db import db, Model
 from utils.human_ids import humanize
+from models import OfferSQLEntity
 
 
 def insert_chunk(chunk_to_insert: Dict):
