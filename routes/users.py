@@ -83,6 +83,18 @@ class UserSerializer(marshmallow.Schema):
 @login_or_api_key_required
 @expect_json_data
 def patch_profile():
+    """Update user's profile.
+
+    ---
+    post:
+      description: Update the logged-in user's profile.
+      responses:
+        200:
+          description: Return the user's profile
+          content:
+            application/json:
+              schema: UserSerializer
+    """
     request_data = request.json.keys()
 
     schema = UserUpdateSchema()
