@@ -72,12 +72,25 @@ class UserUpdateSchema(marshmallow.Schema):
 class UserSerializer(marshmallow.Schema):
     id  = fields.Integer()
     email = fields.Email()
-    phone_number = fields.Email()
+    phone_number = fields.String()
     # [...]
     has_physical_venues = fields.Boolean()
     has_offers = fields.Boolean()
 
 
+# Avec un peu d'outillage, je pense qu'on peut facilement arriver à
+# une docstring plus concise, du genre :
+#
+#     """Update user's profile
+#
+#     ---
+#     patch:
+#       description: Return the user's profile
+#       body: UserUpdateSchema
+#       serializer: UserSerializer
+#     """
+#
+# cf. https://apispec.readthedocs.io/en/latest/writing_plugins.html#example-docstring-parsing-plugin
 
 @app.route('/users/current', methods=['PATCH'])
 @login_or_api_key_required
@@ -86,11 +99,16 @@ def patch_profile():
     """Update user's profile.
 
     ---
-    post:
+    patch:
       description: Update the logged-in user's profile.
+      requestBody:
+        content:
+          application/json:
+            schema: UserUpdateSchema
       responses:
         200:
           description: Return the user's profile
+          parameters:
           content:
             application/json:
               schema: UserSerializer
