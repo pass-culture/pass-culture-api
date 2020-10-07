@@ -1,66 +1,33 @@
 import copy
 
 BENEFICIARY_INCLUDES = [
-    '-culturalSurveyId',
-    '-culturalSurveyFilledDate',
-    '-hasSeenTutorials',
-    '-lastConnectionDate',
-    '-password',
-    '-resetPasswordToken',
-    '-resetPasswordTokenValidityLimit',
-    '-validationToken',
-    'expenses',
-    'wallet_balance',
-    'wallet_is_activated',
-    'wallet_date_created',
+    '-culturalSurveyId', '-culturalSurveyFilledDate', '-hasSeenTutorials',
+    '-lastConnectionDate', '-password', '-resetPasswordToken',
+    '-resetPasswordTokenValidityLimit', '-validationToken', 'expenses',
+    'wallet_balance', 'wallet_is_activated', 'wallet_date_created',
     'needsToSeeTutorials'
 ]
 
-OFFERER_INCLUDES = [
-    {
-        "key": "managedVenues",
-        "includes": [
-            '-validationToken',
-            "nOffers",
-            "iban",
-            "bic"
-        ]
-    },
-    "nOffers",
-    "isValidated",
-    "userHasAccess",
-    "bic",
-    "iban",
-    "demarchesSimplifieesApplicationId",
-    "-validationToken"
-]
+OFFERER_INCLUDES = [{
+    "key": "managedVenues",
+    "includes": ['-validationToken', "nOffers", "iban", "bic"]
+}, "nOffers", "isValidated", "userHasAccess", "bic", "iban",
+                    "demarchesSimplifieesApplicationId", "-validationToken"]
 
 OFFER_INCLUDES = [
-    "isDigital",
-    "isEditable",
-    "isEvent",
-    'hasBookingLimitDatetimesPassed',
-    'isBookable',
-    "isThing",
-    "lastProvider",
-    "offerType",
-    "thumbUrl",
-    {
+    "isDigital", "isEditable", "isEvent", 'hasBookingLimitDatetimesPassed',
+    'isBookable', "isThing", "lastProvider", "offerType", "thumbUrl", {
         "key": "activeMediation",
         "includes": ["thumbUrl"]
-    },
-    {
+    }, {
         "key": "mediations",
         "includes": ["thumbUrl"]
-    },
-    {
+    }, {
         "key": "product",
-        "includes": [
-            '-type'
-        ]
-    },
-    {
-        "key": "stocks",
+        "includes": ['-type']
+    }, {
+        "key":
+        "stocks",
         "includes": [
             'bookingsQuantity',
             'isBookable',
@@ -68,31 +35,22 @@ OFFER_INCLUDES = [
             'isEventExpired',
             'remainingQuantity',
         ]
-    },
-    {
-        "key": "venue",
-        "includes": [
-            {
-                "key": "managingOfferer",
-                "includes": [
-                    "-validationToken",
-                    "isValidated",
-                    "bic",
-                    "iban"
-                ]
-            },
-            '-validationToken',
-            "isValidated",
-            "bic",
-            "iban"
-        ]
+    }, {
+        "key":
+        "venue",
+        "includes": [{
+            "key":
+            "managingOfferer",
+            "includes": ["-validationToken", "isValidated", "bic", "iban"]
+        }, '-validationToken', "isValidated", "bic", "iban"]
     }
 ]
 
 RECOMMENDATION_INCLUDES = [
     "thumbUrl",
     {
-        "key": "offer",
+        "key":
+        "offer",
         "includes": [
             "dateRange",
             "isEvent",
@@ -101,10 +59,10 @@ RECOMMENDATION_INCLUDES = [
             "offerType",
             "stocks",
             {
-                "key": "venue",
+                "key":
+                "venue",
                 "includes": [
-                    "-validationToken",
-                    {
+                    "-validationToken", {
                         "key": "managingOfferer",
                         "includes": ["-validationToken"]
                     }
@@ -130,29 +88,23 @@ WEBAPP_GET_BOOKING_INCLUDES = [
     "completedUrl",
     'isEventExpired',
     {
-        "key": "stock",
+        "key":
+        "stock",
         "includes": [
             'isBookable',
             'isEventExpired',
             'remainingQuantity',
             {
-                "key": "offer",
+                "key":
+                "offer",
                 "includes": [
-                    'thumbUrl',
-                    'hasBookingLimitDatetimesPassed',
-                    'isBookable',
-                    'isDigital',
-                    'isEvent',
-                    "offerType",
-                    {
-                        "key": "stocks",
-                        "includes": [
-                            'isBookable',
-                            'isEventExpired',
-                            'remainingQuantity'
-                        ]
-                    },
-                    {
+                    'thumbUrl', 'hasBookingLimitDatetimesPassed', 'isBookable',
+                    'isDigital', 'isEvent', "offerType", {
+                        "key":
+                        "stocks",
+                        "includes":
+                        ['isBookable', 'isEventExpired', 'remainingQuantity']
+                    }, {
                         "key": "venue",
                         "includes": ['-validationToken']
                     }
@@ -171,35 +123,22 @@ WEBAPP_GET_BOOKING_WITH_QR_CODE_INCLUDES = copy.deepcopy(
 WEBAPP_GET_BOOKING_WITH_QR_CODE_INCLUDES.append("qrCode")
 
 VENUE_INCLUDES = [
-    'isValidated',
-    'bic',
-    'iban',
-    'demarchesSimplifieesApplicationId',
-    "-validationToken",
-    {
+    'isValidated', 'bic', 'iban', 'demarchesSimplifieesApplicationId',
+    "-validationToken", {
         "key": "managingOfferer",
-        "includes": [
-            '-validationToken',
-            "bic",
-            "iban"
-        ]
+        "includes": ['-validationToken', "bic", "iban"]
     }
 ]
 
-VENUE_PROVIDER_INCLUDES = [
-    "provider",
-    "nOffers",
-    "-_sa_polymorphic_on"
-]
+VENUE_PROVIDER_INCLUDES = ["provider", "nOffers", "-_sa_polymorphic_on"]
 
 OFFERER_FOR_PENDING_VALIDATION_INCLUDES = [
-    "validationToken",
-    "-thumbCount",
-    "-idAtProviders",
-    {
-        "key": "UserOfferers",
+    "validationToken", "-thumbCount", "-idAtProviders", {
+        "key":
+        "UserOfferers",
         "includes": [{
-            "key": "user",
+            "key":
+            "user",
             "includes": [
                 'validationToken',
                 '-resetPasswordTokenValidityLimit',
@@ -210,9 +149,9 @@ OFFERER_FOR_PENDING_VALIDATION_INCLUDES = [
                 '-id',
             ]
         }]
-    },
-    {
-        "key": "managedVenues",
+    }, {
+        "key":
+        "managedVenues",
         "includes": [
             'validationToken',
             '-publicName',
@@ -227,14 +166,8 @@ OFFERER_FOR_PENDING_VALIDATION_INCLUDES = [
     }
 ]
 
-MEDIATION_INCLUDES = [
-    "thumbUrl"
-]
+MEDIATION_INCLUDES = ["thumbUrl"]
 
-FEATURE_INCLUDES = [
-    'nameKey'
-]
+FEATURE_INCLUDES = ['nameKey']
 
-USER_OFFERER_INCLUDES = [
-    '-validationToken'
-]
+USER_OFFERER_INCLUDES = ['-validationToken']

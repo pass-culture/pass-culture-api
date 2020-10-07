@@ -23,6 +23,7 @@ def get_provider_from_api_key():
             .filter_by(apiKey=request.headers['apikey']) \
             .first()
 
+
 def login_or_api_key_required(f):
     @wraps(f)
     def wrapper(*args, **kwds):
@@ -54,10 +55,14 @@ def query_with_order_by(query, order_by):
                 else order_by
             query = query.order_by(*order_by)
         except ProgrammingError as e:
-            field = re.search('column "?(.*?)"? does not exist', e._message, re.IGNORECASE)
+            field = re.search('column "?(.*?)"? does not exist', e._message,
+                              re.IGNORECASE)
             if field:
                 errors = ApiErrors()
-                errors.add_error('order_by', 'order_by value references an unknown field : ' + field.group(1))
+                errors.add_error(
+                    'order_by',
+                    'order_by value references an unknown field : ' +
+                    field.group(1))
                 raise errors
             else:
                 raise e
@@ -69,9 +74,9 @@ def check_single_order_by_string(order_by_string):
     optional_table_prefix = '("?\\w+"?\\.|)'
     column_identifier = '"?\\w+"?'
     optional_sorting_order = '(|\\s+desc|\\s+asc)'
-    if not re.match(f'^{optional_table_prefix}{column_identifier}{optional_sorting_order}$',
-                    order_by_string,
-                    re.IGNORECASE):
+    if not re.match(
+            f'^{optional_table_prefix}{column_identifier}{optional_sorting_order}$',
+            order_by_string, re.IGNORECASE):
         api_errors = ApiErrors()
         api_errors.add_error('order_by',
                              'Invalid order_by field : "%s"' % order_by_string)
@@ -99,8 +104,15 @@ def check_order_by(order_by):
             check_single_order_by_string(part)
 
 
-def handle_rest_get_list(modelClass, query=None, refine=None, order_by=None, includes=(),
-                         print_elements=None, paginate=None, page=None, with_total_data_count=False,
+def handle_rest_get_list(modelClass,
+                         query=None,
+                         refine=None,
+                         order_by=None,
+                         includes=(),
+                         print_elements=None,
+                         paginate=None,
+                         page=None,
+                         with_total_data_count=False,
                          should_distinct=False):
 
     if query is None:

@@ -21,9 +21,7 @@ def swift_con():
     region_name = os.environ.get('OVH_REGION_NAME', 'GRA')
 
     auth_url = 'https://auth.cloud.ovh.net/v3/'
-    options = {
-        'region_name': region_name
-    }
+    options = {'region_name': region_name}
     auth_version = '3'
     return swiftclient.Connection(user=user,
                                   key=key,
@@ -58,7 +56,8 @@ def store_public_object(bucket, id, blob, content_type, symlink_path=None):
         new_type_file = open(str(file_local_path) + ".type", "w")
         new_type_file.write(content_type)
 
-        if symlink_path and not os.path.isfile(file_local_path) and not os.path.islink(file_local_path):
+        if symlink_path and not os.path.isfile(
+                file_local_path) and not os.path.islink(file_local_path):
             os.symlink(symlink_path, file_local_path)
             return
 
@@ -67,12 +66,10 @@ def store_public_object(bucket, id, blob, content_type, symlink_path=None):
     else:
         container_name = os.environ.get('OVH_BUCKET_NAME')
         storage_path = 'thumbs/' + id
-        swift_con().put_object(
-            container_name,
-            storage_path,
-            contents=blob,
-            content_type=content_type
-        )
+        swift_con().put_object(container_name,
+                               storage_path,
+                               contents=blob,
+                               content_type=content_type)
 
 
 def delete_public_object(bucket, id):

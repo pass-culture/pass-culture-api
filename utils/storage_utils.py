@@ -20,9 +20,7 @@ def swift_con(dest_container_name):
         return 1
 
     auth_url = 'https://auth.cloud.ovh.net/v3/'
-    options = {
-        'region_name': region_name
-    }
+    options = {'region_name': region_name}
     auth_version = '3'
     return swiftclient.Connection(user=user,
                                   key=key,
@@ -39,9 +37,7 @@ def swift_con_prod():
     region_name = os.environ.get('OVH_REGION_NAME_PROD', 'GRA')
 
     auth_url = 'https://auth.cloud.ovh.net/v3/'
-    options = {
-        'region_name': region_name
-    }
+    options = {'region_name': region_name}
     auth_version = '3'
     return swiftclient.Connection(user=user,
                                   key=key,

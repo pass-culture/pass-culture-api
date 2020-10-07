@@ -22,7 +22,8 @@ def configure_json_logger() -> None:
 
 class CustomJsonFormatter(jsonlogger.JsonFormatter):
     def add_fields(self, log_record, record, message_dict):
-        super(CustomJsonFormatter, self).add_fields(log_record, record, message_dict)
+        super(CustomJsonFormatter, self).add_fields(log_record, record,
+                                                    message_dict)
 
         log_record['timestamp'] = datetime \
             .fromtimestamp(record.__dict__.get('created')) \
