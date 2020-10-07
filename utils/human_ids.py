@@ -1,6 +1,7 @@
 """ human_ids """
 import binascii
 from base64 import b32encode, b32decode
+
 # This library creates IDs for use in our URLs,
 # trying to achieve a balance between having a short
 # length and being usable by humans
@@ -18,11 +19,11 @@ def dehumanize(public_id: str) -> Optional[int]:
         return None
     missing_padding = len(public_id) % 8
     if missing_padding != 0:
-        public_id += '=' * (8 - missing_padding)
+        public_id += "=" * (8 - missing_padding)
     try:
-        xbytes = b32decode(public_id.replace('8', 'O').replace('9', 'I'))
+        xbytes = b32decode(public_id.replace("8", "O").replace("9", "I"))
     except binascii.Error:
-        raise NonDehumanizableId('id non dehumanizable')
+        raise NonDehumanizableId("id non dehumanizable")
     return int_from_bytes(xbytes)
 
 
@@ -31,10 +32,7 @@ def humanize(integer):
     if integer is None:
         return None
     b32 = b32encode(int_to_bytes(integer))
-    return b32.decode('ascii')\
-              .replace('O', '8')\
-              .replace('I', '9')\
-              .rstrip('=')
+    return b32.decode("ascii").replace("O", "8").replace("I", "9").rstrip("=")
 
 
 def dehumanize_ids_list(humanized_list: List):
@@ -42,8 +40,8 @@ def dehumanize_ids_list(humanized_list: List):
 
 
 def int_to_bytes(x):
-    return x.to_bytes((x.bit_length() + 7) // 8, 'big')
+    return x.to_bytes((x.bit_length() + 7) // 8, "big")
 
 
 def int_from_bytes(xbytes):
-    return int.from_bytes(xbytes, 'big')
+    return int.from_bytes(xbytes, "big")
