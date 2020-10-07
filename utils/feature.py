@@ -16,8 +16,7 @@ def feature_required(feature_toggle: FeatureToggle):
 
             errors = ApiErrors()
             errors.add_error(
-                'Forbidden',
-                'You don\'t have access to this page or resource'
+                'Forbidden', 'You don\'t have access to this page or resource'
             )
             errors.status_code = 403
             raise errors

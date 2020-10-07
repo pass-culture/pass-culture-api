@@ -13,18 +13,13 @@ BENEFICIARY_INCLUDES = [
     'wallet_balance',
     'wallet_is_activated',
     'wallet_date_created',
-    'needsToSeeTutorials'
+    'needsToSeeTutorials',
 ]
 
 OFFERER_INCLUDES = [
     {
         "key": "managedVenues",
-        "includes": [
-            '-validationToken',
-            "nOffers",
-            "iban",
-            "bic"
-        ]
+        "includes": ['-validationToken', "nOffers", "iban", "bic"],
     },
     "nOffers",
     "isValidated",
@@ -32,7 +27,7 @@ OFFERER_INCLUDES = [
     "bic",
     "iban",
     "demarchesSimplifieesApplicationId",
-    "-validationToken"
+    "-validationToken",
 ]
 
 OFFER_INCLUDES = [
@@ -45,20 +40,9 @@ OFFER_INCLUDES = [
     "lastProvider",
     "offerType",
     "thumbUrl",
-    {
-        "key": "activeMediation",
-        "includes": ["thumbUrl"]
-    },
-    {
-        "key": "mediations",
-        "includes": ["thumbUrl"]
-    },
-    {
-        "key": "product",
-        "includes": [
-            '-type'
-        ]
-    },
+    {"key": "activeMediation", "includes": ["thumbUrl"]},
+    {"key": "mediations", "includes": ["thumbUrl"]},
+    {"key": "product", "includes": ['-type']},
     {
         "key": "stocks",
         "includes": [
@@ -67,26 +51,21 @@ OFFER_INCLUDES = [
             'isEventDeletable',
             'isEventExpired',
             'remainingQuantity',
-        ]
+        ],
     },
     {
         "key": "venue",
         "includes": [
             {
                 "key": "managingOfferer",
-                "includes": [
-                    "-validationToken",
-                    "isValidated",
-                    "bic",
-                    "iban"
-                ]
+                "includes": ["-validationToken", "isValidated", "bic", "iban"],
             },
             '-validationToken',
             "isValidated",
             "bic",
-            "iban"
-        ]
-    }
+            "iban",
+        ],
+    },
 ]
 
 RECOMMENDATION_INCLUDES = [
@@ -104,13 +83,10 @@ RECOMMENDATION_INCLUDES = [
                 "key": "venue",
                 "includes": [
                     "-validationToken",
-                    {
-                        "key": "managingOfferer",
-                        "includes": ["-validationToken"]
-                    }
-                ]
+                    {"key": "managingOfferer", "includes": ["-validationToken"]},
+                ],
             },
-        ]
+        ],
     },
 ]
 
@@ -149,25 +125,18 @@ WEBAPP_GET_BOOKING_INCLUDES = [
                         "includes": [
                             'isBookable',
                             'isEventExpired',
-                            'remainingQuantity'
-                        ]
+                            'remainingQuantity',
+                        ],
                     },
-                    {
-                        "key": "venue",
-                        "includes": ['-validationToken']
-                    }
-                ]
+                    {"key": "venue", "includes": ['-validationToken']},
+                ],
             },
-        ]
+        ],
     },
-    {
-        "key": "mediation",
-        "includes": ['thumbUrl']
-    },
+    {"key": "mediation", "includes": ['thumbUrl']},
 ]
 
-WEBAPP_GET_BOOKING_WITH_QR_CODE_INCLUDES = copy.deepcopy(
-    WEBAPP_GET_BOOKING_INCLUDES)
+WEBAPP_GET_BOOKING_WITH_QR_CODE_INCLUDES = copy.deepcopy(WEBAPP_GET_BOOKING_INCLUDES)
 WEBAPP_GET_BOOKING_WITH_QR_CODE_INCLUDES.append("qrCode")
 
 VENUE_INCLUDES = [
@@ -176,21 +145,10 @@ VENUE_INCLUDES = [
     'iban',
     'demarchesSimplifieesApplicationId',
     "-validationToken",
-    {
-        "key": "managingOfferer",
-        "includes": [
-            '-validationToken',
-            "bic",
-            "iban"
-        ]
-    }
+    {"key": "managingOfferer", "includes": ['-validationToken', "bic", "iban"]},
 ]
 
-VENUE_PROVIDER_INCLUDES = [
-    "provider",
-    "nOffers",
-    "-_sa_polymorphic_on"
-]
+VENUE_PROVIDER_INCLUDES = ["provider", "nOffers", "-_sa_polymorphic_on"]
 
 OFFERER_FOR_PENDING_VALIDATION_INCLUDES = [
     "validationToken",
@@ -198,18 +156,20 @@ OFFERER_FOR_PENDING_VALIDATION_INCLUDES = [
     "-idAtProviders",
     {
         "key": "UserOfferers",
-        "includes": [{
-            "key": "user",
-            "includes": [
-                'validationToken',
-                '-resetPasswordTokenValidityLimit',
-                '-resetPasswordToken',
-                '-clearTextPassword',
-                '-password',
-                '-dateOfBirth',
-                '-id',
-            ]
-        }]
+        "includes": [
+            {
+                "key": "user",
+                "includes": [
+                    'validationToken',
+                    '-resetPasswordTokenValidityLimit',
+                    '-resetPasswordToken',
+                    '-clearTextPassword',
+                    '-password',
+                    '-dateOfBirth',
+                    '-id',
+                ],
+            }
+        ],
     },
     {
         "key": "managedVenues",
@@ -223,18 +183,12 @@ OFFERER_FOR_PENDING_VALIDATION_INCLUDES = [
             '-latitude',
             '-longitude',
             '-dateModifiedAtLastProvider',
-        ]
-    }
+        ],
+    },
 ]
 
-MEDIATION_INCLUDES = [
-    "thumbUrl"
-]
+MEDIATION_INCLUDES = ["thumbUrl"]
 
-FEATURE_INCLUDES = [
-    'nameKey'
-]
+FEATURE_INCLUDES = ['nameKey']
 
-USER_OFFERER_INCLUDES = [
-    '-validationToken'
-]
+USER_OFFERER_INCLUDES = ['-validationToken']

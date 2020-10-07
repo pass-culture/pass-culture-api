@@ -1,6 +1,7 @@
 """ human_ids """
 import binascii
 from base64 import b32encode, b32decode
+
 # This library creates IDs for use in our URLs,
 # trying to achieve a balance between having a short
 # length and being usable by humans
@@ -31,10 +32,7 @@ def humanize(integer):
     if integer is None:
         return None
     b32 = b32encode(int_to_bytes(integer))
-    return b32.decode('ascii')\
-              .replace('O', '8')\
-              .replace('I', '9')\
-              .rstrip('=')
+    return b32.decode('ascii').replace('O', '8').replace('I', '9').rstrip('=')
 
 
 def dehumanize_ids_list(humanized_list: List):

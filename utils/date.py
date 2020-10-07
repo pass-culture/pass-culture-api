@@ -19,7 +19,7 @@ ENGLISH_TO_FRENCH_MONTH = {
     "September": "Septembre",
     "October": "Octobre",
     "November": "Novembre",
-    "December": "Décembre"
+    "December": "Décembre",
 }
 
 
@@ -50,9 +50,7 @@ def match_format(value: str, format: str) -> str:
 
 
 def format_datetime(date_time: datetime) -> str:
-    return babel_format_datetime(date_time,
-                                 format='long',
-                                 locale='fr')[:-9]
+    return babel_format_datetime(date_time, format='long', locale='fr')[:-9]
 
 
 def get_department_timezone(departement_code: str) -> str:
@@ -66,7 +64,9 @@ def get_department_timezone(departement_code: str) -> str:
     return 'Europe/Paris'
 
 
-def utc_datetime_to_department_timezone(date_time: datetime, departement_code: str) -> datetime:
+def utc_datetime_to_department_timezone(
+    date_time: datetime, departement_code: str
+) -> datetime:
     from_zone = tz.gettz(DEFAULT_STORED_TIMEZONE)
     to_zone = tz.gettz(get_department_timezone(departement_code))
     utc_datetime = date_time.replace(tzinfo=from_zone)

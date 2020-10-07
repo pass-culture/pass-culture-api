@@ -20,16 +20,16 @@ def swift_con(dest_container_name):
         return 1
 
     auth_url = 'https://auth.cloud.ovh.net/v3/'
-    options = {
-        'region_name': region_name
-    }
+    options = {'region_name': region_name}
     auth_version = '3'
-    return swiftclient.Connection(user=user,
-                                  key=key,
-                                  authurl=auth_url,
-                                  os_options=options,
-                                  tenant_name=tenant_name,
-                                  auth_version=auth_version)
+    return swiftclient.Connection(
+        user=user,
+        key=key,
+        authurl=auth_url,
+        os_options=options,
+        tenant_name=tenant_name,
+        auth_version=auth_version,
+    )
 
 
 def swift_con_prod():
@@ -39,16 +39,16 @@ def swift_con_prod():
     region_name = os.environ.get('OVH_REGION_NAME_PROD', 'GRA')
 
     auth_url = 'https://auth.cloud.ovh.net/v3/'
-    options = {
-        'region_name': region_name
-    }
+    options = {'region_name': region_name}
     auth_version = '3'
-    return swiftclient.Connection(user=user,
-                                  key=key,
-                                  authurl=auth_url,
-                                  os_options=options,
-                                  tenant_name=tenant_name,
-                                  auth_version=auth_version)
+    return swiftclient.Connection(
+        user=user,
+        key=key,
+        authurl=auth_url,
+        os_options=options,
+        tenant_name=tenant_name,
+        auth_version=auth_version,
+    )
 
 
 def do_local_backup_prod_container(dest_folder_name):
@@ -65,11 +65,18 @@ def do_local_backup_prod_container(dest_folder_name):
 
     for data in prod_conn.get_container(prod_container_name)[1]:
         obj_tuple = prod_conn.get_object(prod_container_name, data['name'])
-        destination_path = Path(os.path.dirname(os.path.realpath(__file__))) \
-                           / '..' / 'static' / dest_folder_name / data['name']
+        destination_path = (
+            Path(os.path.dirname(os.path.realpath(__file__)))
+            / '..'
+            / 'static'
+            / dest_folder_name
+            / data['name']
+        )
         object_count += 1
-        if not destination_path.is_file() \
-                or data['bytes'] != destination_path.stat().st_size:
+        if (
+            not destination_path.is_file()
+            or data['bytes'] != destination_path.stat().st_size
+        ):
             with open(destination_path, 'wb') as destination_file:
                 destination_file.write(obj_tuple[1])
             download_count += 1
@@ -83,7 +90,10 @@ def do_local_backup_prod_container(dest_folder_name):
 
 
 def do_copy_prod_container_content_to_dest_container(dest_container_name):
-    if dest_container_name == 'storage-pc-staging' or dest_container_name == 'storage-pc-dev':
+    if (
+        dest_container_name == 'storage-pc-staging'
+        or dest_container_name == 'storage-pc-dev'
+    ):
         conn = swift_con(dest_container_name)
     else:
         print('Ce conteneur ne semble pas exister')
@@ -98,10 +108,12 @@ def do_copy_prod_container_content_to_dest_container(dest_container_name):
 
     for data in prod_conn.get_container(prod_container_name)[1]:
         obj_tuple = prod_conn.get_object(prod_container_name, data['name'])
-        conn.put_object(dest_container_name,
-                        data['name'],
-                        contents=obj_tuple[1],
-                        content_type=data['content_type'])
+        conn.put_object(
+            dest_container_name,
+            data['name'],
+            contents=obj_tuple[1],
+            content_type=data['content_type'],
+        )
         print("Object [" + data['name'] + "] copied")
 
     return 0
