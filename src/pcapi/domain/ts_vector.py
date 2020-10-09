@@ -1,6 +1,5 @@
 from typing import List
 
-from nltk.corpus import stopwords
 from sqlalchemy import and_, func, Index
 from sqlalchemy.sql.expression import or_
 
@@ -8,9 +7,10 @@ from pcapi.utils.string_processing import remove_single_letters_for_search, toke
 
 
 LANGUAGE = 'french'
-CUSTOM_STOPWORDS = ['où']
-STOP_WORDS = set(stopwords.words(LANGUAGE))
-STOP_WORDS.update(CUSTOM_STOPWORDS)
+# PostgreSQL takes care of filtering out stopwords, except a few words
+# that we use to filter out when we used nltk stopwords. To avoid a
+# regression, we'll filter them out manually.
+STOP_WORDS = {'ils', 'les'}
 
 
 def create_fts_index(name, ts_vector) -> Index:
