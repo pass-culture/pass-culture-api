@@ -1595,200 +1595,37 @@ def test_find_filtered_offerers_with_default_param_return_all_offerers(app):
 
 
 @clean_database
-def test_find_filtered_offerers_with_one_keyword_at_venue_public_name_level(app):
-    # given
-    offerer_with_only_virtual_venue_with_offer = create_offerer(siren="123456785")
-    offerer_with_only_virtual_venue_without_offer = create_offerer(siren="123456786")
-    offerer_with_both_venues_none_offer = create_offerer(siren="123456781")
-    offerer_with_both_venues_offer_on_both = create_offerer(siren="123456782")
-    offerer_with_both_venues_offer_on_virtual = create_offerer(siren="123456783")
-    offerer_with_both_venues_offer_on_not_virtual = create_offerer(siren="123456784")
+def test_find_filtered_offerers_based_on_keywords(app):
+    offerer1 = create_offerer(siren=None)
+    venue1 = create_venue(offerer1, public_name='chouette lieu de ouf les', siret='1' * 14)
+    repository.save(offerer1, venue1)
 
-    virtual_venue_with_offer_1 = create_venue(offerer_with_only_virtual_venue_with_offer, is_virtual=True, siret=None)
-    virtual_venue_without_offer_1 = create_venue(offerer_with_only_virtual_venue_without_offer, is_virtual=True,
-                                                 siret=None)
-    virtual_venue_without_offer_2 = create_venue(offerer_with_both_venues_none_offer, is_virtual=True, siret=None)
-    venue_without_offer_2 = create_venue(offerer_with_both_venues_none_offer, siret="12345678112345")
-    virtual_venue_with_offer_3 = create_venue(offerer_with_both_venues_offer_on_both, is_virtual=True, siret=None,
-                                              public_name='chouette lieu de ouf')
-    venue_with_offer_3 = create_venue(offerer_with_both_venues_offer_on_both, siret="12345678212345",
-                                      public_name='chouette lieu de ouf')
-    virtual_venue_with_offer_4 = create_venue(offerer_with_both_venues_offer_on_virtual, is_virtual=True, siret=None,
-                                              public_name='chouette lieu de ouf')
-    venue_without_offer_4 = create_venue(offerer_with_both_venues_offer_on_virtual, siret="12345678312345",
-                                         public_name='chouette lieu de ouf')
-    virtual_venue_without_offer_5 = create_venue(offerer_with_both_venues_offer_on_not_virtual, is_virtual=True,
-                                                 siret=None, public_name='chouette lieu de ouf')
-    venue_with_offer_5 = create_venue(offerer_with_both_venues_offer_on_not_virtual, siret="12345678412345",
-                                      public_name='chouette lieu de ouf')
+    offerer2 = create_offerer(siren=None)
+    venue2 = create_venue(offerer2, public_name='chouette lieu de ouf les', is_virtual=True, siret=None)
+    repository.save(offerer2, venue2)
 
-    offer_1 = create_offer_with_thing_product(virtual_venue_with_offer_1, url='http://url.com')
-    offer_2 = create_offer_with_thing_product(virtual_venue_with_offer_3, url='http://url.com')
-    offer_3 = create_offer_with_event_product(venue_with_offer_3)
-    offer_4 = create_offer_with_thing_product(virtual_venue_with_offer_4, url='http://url.com')
-    offer_5 = create_offer_with_event_product(venue_with_offer_5)
+    offerer3 = create_offerer(siren=None)
+    venue3 = create_venue(offerer3, public_name='Le Petit Rintintin les', siret='2' * 14)
+    repository.save(offerer3, venue3)
 
-    repository.save(offer_1, offer_2, offer_3, offer_4, offer_5,
-                  virtual_venue_without_offer_1, virtual_venue_without_offer_2, virtual_venue_without_offer_5,
-                  venue_without_offer_2, venue_without_offer_4)
+    query = Offerer.query.join(VenueSQLEntity)
 
-    # when
-    offerers = filter_offerers_with_keywords_string(Offerer.query.join(VenueSQLEntity), 'chouette')
+    # Single keyword
+    offerers = filter_offerers_with_keywords_string(query, 'chouette')
+    assert set(offerers) == {offerer1, offerer2}
 
-    # then
-    assert offerer_with_only_virtual_venue_with_offer not in offerers
-    assert offerer_with_only_virtual_venue_without_offer not in offerers
-    assert offerer_with_both_venues_none_offer not in offerers
-    assert offerer_with_both_venues_offer_on_both in offerers
-    assert offerer_with_both_venues_offer_on_virtual in offerers
-    assert offerer_with_both_venues_offer_on_not_virtual in offerers
+    # Partial keyword
+    offerers = filter_offerers_with_keywords_string(query, 'chou')
+    assert set(offerers) == {offerer1, offerer2}
 
+    # Multiple keywords
+    offerers = filter_offerers_with_keywords_string(query, 'chouette ouf')
+    assert set(offerers) == {offerer1, offerer2}
 
-@clean_database
-def test_find_filtered_offerers_with_one_partial_keyword_at_venue_public_name_level(app):
-    # given
-    offerer_with_only_virtual_venue_with_offer = create_offerer(siren="123456785")
-    offerer_with_only_virtual_venue_without_offer = create_offerer(siren="123456786")
-    offerer_with_both_venues_none_offer = create_offerer(siren="123456781")
-    offerer_with_both_venues_offer_on_both = create_offerer(siren="123456782")
-    offerer_with_both_venues_offer_on_virtual = create_offerer(siren="123456783")
-    offerer_with_both_venues_offer_on_not_virtual = create_offerer(siren="123456784")
+    # Stopwords are ignored by PostgreSQL
+    offerers = filter_offerers_with_keywords_string(query, 'petit de')
+    assert set(offerers) == {offerer3}
 
-    virtual_venue_with_offer_1 = create_venue(offerer_with_only_virtual_venue_with_offer, is_virtual=True, siret=None)
-    virtual_venue_without_offer_1 = create_venue(offerer_with_only_virtual_venue_without_offer, is_virtual=True,
-                                                 siret=None)
-    virtual_venue_without_offer_2 = create_venue(offerer_with_both_venues_none_offer, is_virtual=True, siret=None)
-    venue_without_offer_2 = create_venue(offerer_with_both_venues_none_offer, siret="12345678112345")
-    virtual_venue_with_offer_3 = create_venue(offerer_with_both_venues_offer_on_both, is_virtual=True, siret=None,
-                                              public_name='chouette lieu de ouf')
-    venue_with_offer_3 = create_venue(offerer_with_both_venues_offer_on_both, siret="12345678212345",
-                                      public_name='chouette lieu de ouf')
-    virtual_venue_with_offer_4 = create_venue(offerer_with_both_venues_offer_on_virtual, is_virtual=True, siret=None,
-                                              public_name='chouette lieu de ouf')
-    venue_without_offer_4 = create_venue(offerer_with_both_venues_offer_on_virtual, siret="12345678312345",
-                                         public_name='chouette lieu de ouf')
-    virtual_venue_without_offer_5 = create_venue(offerer_with_both_venues_offer_on_not_virtual, is_virtual=True,
-                                                 siret=None, public_name='chouette lieu de ouf')
-    venue_with_offer_5 = create_venue(offerer_with_both_venues_offer_on_not_virtual, siret="12345678412345",
-                                      public_name='chouette lieu de ouf')
-
-    offer_1 = create_offer_with_thing_product(virtual_venue_with_offer_1, url='http://url.com')
-    offer_2 = create_offer_with_thing_product(virtual_venue_with_offer_3, url='http://url.com')
-    offer_3 = create_offer_with_event_product(venue_with_offer_3)
-    offer_4 = create_offer_with_thing_product(virtual_venue_with_offer_4, url='http://url.com')
-    offer_5 = create_offer_with_event_product(venue_with_offer_5)
-
-    repository.save(offer_1, offer_2, offer_3, offer_4, offer_5,
-                  virtual_venue_without_offer_1, virtual_venue_without_offer_2, virtual_venue_without_offer_5,
-                  venue_without_offer_2, venue_without_offer_4)
-
-    # when
-    offerers = filter_offerers_with_keywords_string(Offerer.query.join(VenueSQLEntity), 'chou')
-
-    # then
-    assert offerer_with_only_virtual_venue_with_offer not in offerers
-    assert offerer_with_only_virtual_venue_without_offer not in offerers
-    assert offerer_with_both_venues_none_offer not in offerers
-    assert offerer_with_both_venues_offer_on_both in offerers
-    assert offerer_with_both_venues_offer_on_virtual in offerers
-    assert offerer_with_both_venues_offer_on_not_virtual in offerers
-
-
-@clean_database
-def test_find_filtered_offerers_with_several_keywords_at_venue_public_name_level(app):
-    # given
-    offerer_with_only_virtual_venue_with_offer = create_offerer(siren="123456785")
-    offerer_with_only_virtual_venue_without_offer = create_offerer(siren="123456786")
-    offerer_with_both_venues_none_offer = create_offerer(siren="123456781")
-    offerer_with_both_venues_offer_on_both = create_offerer(siren="123456782")
-    offerer_with_both_venues_offer_on_virtual = create_offerer(siren="123456783")
-    offerer_with_both_venues_offer_on_not_virtual = create_offerer(siren="123456784")
-
-    virtual_venue_with_offer_1 = create_venue(offerer_with_only_virtual_venue_with_offer, is_virtual=True, siret=None)
-    virtual_venue_without_offer_1 = create_venue(offerer_with_only_virtual_venue_without_offer, is_virtual=True,
-                                                 siret=None)
-    virtual_venue_without_offer_2 = create_venue(offerer_with_both_venues_none_offer, is_virtual=True, siret=None)
-    venue_without_offer_2 = create_venue(offerer_with_both_venues_none_offer, siret="12345678112345")
-    virtual_venue_with_offer_3 = create_venue(offerer_with_both_venues_offer_on_both, is_virtual=True, siret=None,
-                                              public_name='chouette lieu de ouf')
-    venue_with_offer_3 = create_venue(offerer_with_both_venues_offer_on_both, siret="12345678212345",
-                                      public_name='chouette lieu de ouf')
-    virtual_venue_with_offer_4 = create_venue(offerer_with_both_venues_offer_on_virtual, is_virtual=True, siret=None,
-                                              public_name='chouette lieu de ouf')
-    venue_without_offer_4 = create_venue(offerer_with_both_venues_offer_on_virtual, siret="12345678312345",
-                                         public_name='chouette lieu de ouf')
-    virtual_venue_without_offer_5 = create_venue(offerer_with_both_venues_offer_on_not_virtual, is_virtual=True,
-                                                 siret=None, public_name='chouette lieu de ouf')
-    venue_with_offer_5 = create_venue(offerer_with_both_venues_offer_on_not_virtual, siret="12345678412345",
-                                      public_name='chouette lieu de ouf')
-
-    offer_1 = create_offer_with_thing_product(virtual_venue_with_offer_1, url='http://url.com')
-    offer_2 = create_offer_with_thing_product(virtual_venue_with_offer_3, url='http://url.com')
-    offer_3 = create_offer_with_event_product(venue_with_offer_3)
-    offer_4 = create_offer_with_thing_product(virtual_venue_with_offer_4, url='http://url.com')
-    offer_5 = create_offer_with_event_product(venue_with_offer_5)
-
-    repository.save(offer_1, offer_2, offer_3, offer_4, offer_5,
-                  virtual_venue_without_offer_1, virtual_venue_without_offer_2, virtual_venue_without_offer_5,
-                  venue_without_offer_2, venue_without_offer_4)
-
-    # when
-    offerers = filter_offerers_with_keywords_string(Offerer.query.join(VenueSQLEntity), 'chouette ouf')
-
-    # then
-    assert offerer_with_only_virtual_venue_with_offer not in offerers
-    assert offerer_with_only_virtual_venue_without_offer not in offerers
-    assert offerer_with_both_venues_none_offer not in offerers
-    assert offerer_with_both_venues_offer_on_both in offerers
-    assert offerer_with_both_venues_offer_on_virtual in offerers
-    assert offerer_with_both_venues_offer_on_not_virtual in offerers
-
-
-@clean_database
-def test_find_filtered_offerers_with_several_partial_keywords_at_venue_public_name_level(app):
-    # given
-    offerer_with_only_virtual_venue_with_offer = create_offerer(siren="123456785")
-    offerer_with_only_virtual_venue_without_offer = create_offerer(siren="123456786")
-    offerer_with_both_venues_none_offer = create_offerer(siren="123456781")
-    offerer_with_both_venues_offer_on_both = create_offerer(siren="123456782")
-    offerer_with_both_venues_offer_on_virtual = create_offerer(siren="123456783")
-    offerer_with_both_venues_offer_on_not_virtual = create_offerer(siren="123456784")
-
-    virtual_venue_with_offer_1 = create_venue(offerer_with_only_virtual_venue_with_offer, is_virtual=True, siret=None)
-    virtual_venue_without_offer_1 = create_venue(offerer_with_only_virtual_venue_without_offer, is_virtual=True,
-                                                 siret=None)
-    virtual_venue_without_offer_2 = create_venue(offerer_with_both_venues_none_offer, is_virtual=True, siret=None)
-    venue_without_offer_2 = create_venue(offerer_with_both_venues_none_offer, siret="12345678112345")
-    virtual_venue_with_offer_3 = create_venue(offerer_with_both_venues_offer_on_both, is_virtual=True, siret=None,
-                                              public_name='chouette lieu de ouf')
-    venue_with_offer_3 = create_venue(offerer_with_both_venues_offer_on_both, siret="12345678212345",
-                                      public_name='chouette lieu de ouf')
-    virtual_venue_with_offer_4 = create_venue(offerer_with_both_venues_offer_on_virtual, is_virtual=True, siret=None,
-                                              public_name='chouette lieu de ouf')
-    venue_without_offer_4 = create_venue(offerer_with_both_venues_offer_on_virtual, siret="12345678312345",
-                                         public_name='chouette lieu de ouf')
-    virtual_venue_without_offer_5 = create_venue(offerer_with_both_venues_offer_on_not_virtual, is_virtual=True,
-                                                 siret=None, public_name='chouette lieu de ouf')
-    venue_with_offer_5 = create_venue(offerer_with_both_venues_offer_on_not_virtual, siret="12345678412345",
-                                      public_name='chouette lieu de ouf')
-
-    offer_1 = create_offer_with_thing_product(virtual_venue_with_offer_1, url='http://url.com')
-    offer_2 = create_offer_with_thing_product(virtual_venue_with_offer_3, url='http://url.com')
-    offer_3 = create_offer_with_event_product(venue_with_offer_3)
-    offer_4 = create_offer_with_thing_product(virtual_venue_with_offer_4, url='http://url.com')
-    offer_5 = create_offer_with_event_product(venue_with_offer_5)
-
-    repository.save(offer_1, offer_2, offer_3, offer_4, offer_5,
-                  virtual_venue_without_offer_1, virtual_venue_without_offer_2, virtual_venue_without_offer_5,
-                  venue_without_offer_2, venue_without_offer_4)
-
-    # when
-    offerers = filter_offerers_with_keywords_string(Offerer.query.join(VenueSQLEntity), 'chou ou')
-
-    # then
-    assert offerer_with_only_virtual_venue_with_offer not in offerers
-    assert offerer_with_only_virtual_venue_without_offer not in offerers
-    assert offerer_with_both_venues_none_offer not in offerers
-    assert offerer_with_both_venues_offer_on_both in offerers
-    assert offerer_with_both_venues_offer_on_virtual in offerers
-    assert offerer_with_both_venues_offer_on_not_virtual in offerers
+    # Extra stopwords are filtered out by pcapi itself
+    offerers = filter_offerers_with_keywords_string(query, 'petit les')
+    assert set(offerers) == {offerer3}
