@@ -36,7 +36,6 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            python -m nltk.downloader punkt stopwords &> /dev/null
             if [ ! -z "$(alembic branches)" ]; then echo "Multiple alembic heads found"; exit 1; fi
       - run:
           name: Running tests
@@ -106,7 +105,6 @@ jobs:
             . venv/bin/activate
             pip install -e .
             pip install -r requirements.txt;
-            python -m nltk.downloader punkt stopwords;
             python install_database_extensions.py;
             alembic upgrade head;
       - run:
