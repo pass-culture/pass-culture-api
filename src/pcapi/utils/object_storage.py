@@ -5,20 +5,20 @@ from pathlib import Path, PurePath
 import swiftclient
 
 from pcapi.models.db import Model
-from pcapi.utils.config import IS_DEV
+import pcapi.utils.config as settings
 from pcapi.utils.human_ids import humanize
 from pcapi.utils.inflect_engine import inflect_engine
 
 
 def get_storage_base_url():
-    return os.environ.get('OBJECT_STORAGE_URL')
+    return settings.OBJECT_STORAGE_URL
 
 
 def swift_con():
-    user = os.environ.get('OVH_USER')
-    key = os.environ.get('OVH_PASSWORD')
-    tenant_name = os.environ.get('OVH_TENANT_NAME')
-    region_name = os.environ.get('OVH_REGION_NAME', 'GRA')
+    user = settings.OVH_USER
+    key = settings.OVH_PASSWORD
+    tenant_name = settings.OVH_TENANT_NAME
+    region_name = settings.OVH_REGION_NAME
 
     auth_url = 'https://auth.cloud.ovh.net/v3/'
     options = {
@@ -50,7 +50,7 @@ def local_path(bucket, id):
 
 
 def store_public_object(bucket, id, blob, content_type, symlink_path=None):
-    if IS_DEV:
+    if settings.IS_DEV:
         os.makedirs(local_dir(bucket, id), exist_ok=True)
 
         file_local_path = local_path(bucket, id)

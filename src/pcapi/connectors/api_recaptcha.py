@@ -1,10 +1,10 @@
 import os
 import requests
 
+import pcapi.utils.config as settings
+
 
 RECAPTCHA_API_URL = 'https://www.google.com/recaptcha/api/siteverify'
-RECAPTCHA_SECRET = os.environ.get("RECAPTCHA_SECRET")
-RECAPTCHA_REQUIRED_SCORE = os.environ.get("RECAPTCHA_REQUIRED_SCORE", 0.5)
 RECAPTCHA_ERROR_CODES = {
     'missing-input-secret': 'The secret parameter is missing.',
     'invalid-input-secret': 'The secret parameter is invalid or malformed.',
@@ -21,7 +21,7 @@ class ReCaptchaException(Exception):
 
 def validate_recaptcha_token(token: str, original_action: str) -> bool:
     params = {
-        "secret": RECAPTCHA_SECRET,
+        "secret": settings.RECAPTCHA_SECRET,
         "response": token
     }
     api_response = requests.post(RECAPTCHA_API_URL, data=params)
@@ -46,6 +46,6 @@ def validate_recaptcha_token(token: str, original_action: str) -> bool:
             raise ReCaptchaException(f"The action '{action}' does not match '{original_action}' from the form")
 
         score = json_response.get('score', 0)
-        return score >= RECAPTCHA_REQUIRED_SCORE
+        return score >= settings.RECAPTCHA_REQUIRED_SCORE
 
     raise ReCaptchaException("This is not a valid reCAPTCHA token")
