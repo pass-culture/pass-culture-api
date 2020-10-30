@@ -65,7 +65,7 @@ class AddOfferIdTest:
 
 
 class GetOfferIdsTest:
-    @patch("pcapi.connectors.redis.REDIS_OFFER_IDS_CHUNK_SIZE", return_value=1000)
+    @patch("pcapi.settings.REDIS_OFFER_IDS_CHUNK_SIZE", 1000)
     def test_should_return_offer_ids_from_list(self, mock_redis_lrange_end):
         # Given
         client = MagicMock()
@@ -199,7 +199,7 @@ class AddVenueProviderTest:
 
 
 class GetVenueProvidersTest:
-    @patch("pcapi.connectors.redis.REDIS_VENUE_PROVIDERS_CHUNK_SIZE", 2)
+    @patch("pcapi.settings.REDIS_VENUE_PROVIDERS_CHUNK_SIZE", 2)
     def test_should_return_venue_providers(self):
         # Given
         client = MagicMock()
