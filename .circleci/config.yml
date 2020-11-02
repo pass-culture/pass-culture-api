@@ -140,6 +140,30 @@ jobs:
       - run: docker build -t ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GCP_REGISTRY_NAME}/${IMAGE_NAME}:$CIRCLE_SHA1 .
       - run: docker push ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GCP_REGISTRY_NAME}/${IMAGE_NAME}:$CIRCLE_SHA1
 
+  deploy-cloudrun:
+    executor: gcp-sdk
+    steps:
+      - authenticate_gcp
+      - run:
+          name: Deploy passculture-api image from artifact registry to CloudRun
+          environment:
+            APP_NAME: pass-culture-api
+            IMAGE_NAME: pass-culture-api
+            PORT: 80
+            GCP_REGION: europe-west1
+            GCP_PROJECT: pass-culture-app-projet-test
+            GCP_REGISTRY_NAME: pass-culture-artifact-registry
+          command: |
+            gcloud run deploy ${APP_NAME} \
+            --platform=managed \
+            --no-allow-unauthenticated \
+            --vpc-connector=cloud-run-to-cloud-sql \
+            --project ${GCP_PROJECT} \
+            --region ${GCP_REGION} \
+            --port=$PORT \
+            --async \
+            --image=${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GCP_REGISTRY_NAME}/${IMAGE_NAME}:latest
+
   tests-data-analytics:
     docker:
       - image: circleci/python:3.6.11
@@ -336,6 +360,11 @@ workflows:
             branches:
               only:
                 - migration-gcp
+      - deploy-cloudrun
+          # filters:
+          #   branches:
+          #     only:
+          #       - migration-gcp
 
   nightly:
     triggers:
