@@ -1,4 +1,22 @@
 version: 2.1
+
+executors:
+  gcp-sdk:
+    docker:
+      - image: google/cloud-sdk:316.0.0
+        auth:
+          username: $DOCKERHUB_USER
+          password: $DOCKERHUB_PASSWORD
+
+commands:
+  authenticate_gcp:
+    description: Authenticate to a GCP project
+    steps:
+      - run: echo ${GOOGLE_AUTH} > ${HOME}/gcp-key.json
+      - run: gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
+      - run: gcloud --quiet config set project ${GCP_PROJECT}
+      - run: gcloud beta auth configure-docker ${GCP_REGION}-docker.pkg.dev
+
 jobs:
   run-tests:
     parameters:
@@ -108,35 +126,18 @@ jobs:
           when: on_fail
 
   build-and-push-image:
-    machine: true
-    # docker:
-    #   - image: passcultureapp/docker-gcp:19.03
-    #     auth:
-    #       username: $DOCKERHUB_USER
-    #       password: $DOCKERHUB_PASSWORD
+    executor: gcp-sdk
     environment:
       IMAGE_NAME: pass-culture-api
       GCP_REGION: europe-west1
-      GCP_REGISTRY_NAME: test-camils-20-10-22
+      GCP_REGISTRY_NAME: pass-culture-artifact-registry
     steps:
       - checkout
-      - run: echo ${TEST_GOOGLE_AUTH} > ${HOME}/gcp-key.json
+      - setup_remote_docker:
+          version: 19.03.13
+          docker_layer_caching: true
+      - authenticate_gcp
       - run: docker build -t ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GCP_REGISTRY_NAME}/${IMAGE_NAME}:$CIRCLE_SHA1 .
-      - run: sudo chmod -R 0777 /opt
-      - run: gcloud version
-      - run:
-          # already installed version of gcloud is 239.0.0 and doesn't support artifact registry
-          name: install gcloud cli
-          command: |
-            curl -L -o google-cloud-sdk.zip https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.zip
-            unzip google-cloud-sdk.zip
-            rm google-cloud-sdk.zip
-            google-cloud-sdk/install.sh --usage-reporting=false --bash-completion=false --path-update=false --additional-components beta
-      - run: google-cloud-sdk/bin/gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
-      - run: google-cloud-sdk/bin/gcloud --quiet config set project ${GCP_PROJECT}
-      - run: google-cloud-sdk/bin/gcloud beta auth configure-docker ${GCP_REGION}-docker.pkg.dev
-      - run: cat /home/circleci/.docker/config.json
-      - run: sed -i 's;gcloud;/home/circleci/project/google-cloud-sdk/bin/gcloud;g' /home/circleci/.docker/config.json
       - run: docker push ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GCP_REGISTRY_NAME}/${IMAGE_NAME}:$CIRCLE_SHA1
 
   tests-data-analytics:
@@ -316,8 +317,6 @@ jobs:
             export BOT_MESSAGE="'Build *$CIRCLE_JOB* fail : $CIRCLE_BUILD_URL'"
             curl -X POST -H 'Content-type: application/json' --data "{'text': $BOT_MESSAGE}" $SLACK_OPS_BOT_URL
 
-orbs:
-  gcp-gcr: circleci/gcp-gcr@0.9.0
 workflows:
   version: 2
   commit:
@@ -337,7 +336,6 @@ workflows:
             branches:
               only:
                 - migration-gcp
-
 
   nightly:
     triggers:
