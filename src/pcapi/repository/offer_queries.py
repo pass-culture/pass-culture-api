@@ -12,6 +12,7 @@ from pcapi.domain.departments import ILE_DE_FRANCE_DEPT_CODES
 from pcapi.models import Booking, DiscoveryView, DiscoveryViewV3, \
     EventType, FavoriteSQLEntity, MediationSQLEntity, OfferSQLEntity, Offerer, SeenOffer, StockSQLEntity, ThingType, \
     UserSQLEntity, VenueSQLEntity
+from pcapi.domain.identifier.identifier import Identifier
 from pcapi.models.db import Model, db
 from pcapi.models.feature import FeatureToggle
 from pcapi.repository import feature_queries
@@ -21,6 +22,8 @@ from pcapi.repository.iris_venues_queries import find_venues_located_near_iris
 from pcapi.repository.venue_queries import get_only_venue_ids_for_department_codes
 from pcapi.use_cases.diversify_recommended_offers import order_offers_by_diversified_types
 from pcapi.utils.logger import logger
+from pcapi.utils.converter import from_tuple_to_int
+from pcapi.core.offers.repository import get_offers_by_filters
 
 ALL_DEPARTMENTS_CODE = '00'
 
@@ -349,3 +352,29 @@ def update_offers_is_active_status(offers_id: [int], is_active: bool) -> None:
         .filter(OfferSQLEntity.id.in_(offers_id)) \
         .update({"isActive": is_active}, synchronize_session=False)
     db.session.commit()
+
+def get_all_offers_id_by_filters(
+    user_id: int,
+    user_is_admin: bool,
+    offerer_id: Optional[int] = None,
+    exclude_active: Optional[bool] = False,
+    exclude_inactive: Optional[bool] = False,
+    venue_id: Optional[int] = None,
+    type_id: Optional[str] = None,
+    name_keywords: Optional[str] = None
+) -> List[int]:
+    query = get_offers_by_filters(
+        user_id=user_id,
+        user_is_admin=user_is_admin,
+        offerer_id=offerer_id,
+        exclude_active=exclude_active,
+        exclude_inactive=exclude_inactive,
+        venue_id=venue_id,
+        type_id=type_id,
+        name_keywords=name_keywords,
+    ).with_entities(OfferSQLEntity.id)
+
+    offer_ids_as_tuple = query.all()
+    offer_ids_as_int = from_tuple_to_int(offer_ids_as_tuple)
+
+    return offer_ids_as_int

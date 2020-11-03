@@ -29,7 +29,14 @@ from pcapi.routes.serialization.offers_serialize import (
 from pcapi.serialization.decorator import spectree_serialize
 from pcapi.core.offers.api import list_offers_for_pro_user
 from pcapi.use_cases.update_an_offer import update_an_offer
+<<<<<<< HEAD
 from pcapi.use_cases.update_offers_active_status import update_offers_active_status
+=======
+from pcapi.use_cases.update_offers_active_status import (
+    update_offers_active_status,
+    update_all_offers_active_status,
+)
+>>>>>>> (PC-4872) Fix conflicts
 from pcapi.utils.config import PRO_URL
 from pcapi.utils.human_ids import dehumanize
 from pcapi.utils.mailing import send_raw_email
@@ -38,6 +45,10 @@ from pcapi.utils.rest import (
     load_or_404,
     load_or_raise_error,
     login_or_api_key_required,
+<<<<<<< HEAD
+=======
+    expect_json_data,
+>>>>>>> (PC-4872) Fix conflicts
 )
 
 
@@ -97,6 +108,37 @@ def post_offer(body: PostOfferBodyModel) -> OfferResponseIdModel:
 @spectree_serialize(response_model=None, on_success_status=204)  # type: ignore
 def patch_offers_active_status(body: PatchOfferActiveStatusBodyModel) -> None:
     update_offers_active_status(body.ids, body.is_active)
+
+
+@private_api.route("/offers/all-active-status", methods=["PATCH"])
+@login_or_api_key_required
+@expect_json_data
+def patch_all_offers_active_status() -> None:
+    payload = request.json
+    offerer_identifier = (
+        dehumanize(payload.get("offererId"))
+        if payload.get("offererId") != "all"
+        else None
+    )
+    venue_identifier = (
+        dehumanize(payload.get("venueId")) if payload.get("venueId") != "all" else None
+    )
+
+    name_keywords = payload.get("name")
+    offers_new_active_status = payload.get("isActive")
+
+    update_all_offers_active_status(
+        user_id=current_user.id,
+        user_is_admin=current_user.isAdmin,
+        is_active=offers_new_active_status,
+        offerer_id=offerer_identifier,
+        exclude_active=payload.get("active") == "false",
+        exclude_inactive=payload.get("inactive") == "false",
+        venue_id=venue_identifier,
+        name_keywords=name_keywords,
+    )
+
+    return "", 204
 
 
 @private_api.route("/offers/<offer_id>", methods=["PATCH"])

@@ -918,3 +918,33 @@ class UpdateOffersIsActiveStatusTest:
         assert OfferSQLEntity.query.get(offer1.id).isActive == True
         assert OfferSQLEntity.query.get(offer2.id).isActive == True
         assert OfferSQLEntity.query.get(offer3.id).isActive == False
+
+class GetAllOffersIdByFiltersTest:
+    @pytest.mark.usefixtures("db_session")
+    def test_should_return_all_offers_ids_filtered_by_given_params(self, app):
+        # Given
+        user = create_user()
+        offerer = create_offerer()
+        create_user_offerer(user, offerer)
+        wanted_venue = create_venue(offerer=offerer)
+        unwanted_venue = create_venue(offerer=offerer, siret='12345678912344')
+        wanted_offer = create_offer_with_thing_product(venue=wanted_venue, thing_name='Wanted name', is_active=False)
+        unwanted_offer2 = create_offer_with_thing_product(venue=wanted_venue, is_active=False)
+        unwanted_offer3 = create_offer_with_thing_product(venue=wanted_venue)
+        unwanted_offer4 = create_offer_with_thing_product(venue=unwanted_venue)
+        repository.save(user, wanted_offer, unwanted_offer2, unwanted_offer3, unwanted_offer4)
+
+        # When
+        offers_id = get_all_offers_id_by_filters(
+            user_id=user.id,
+            user_is_admin=user.isAdmin,
+            offerer_id=offerer.id,
+            exclude_active=True,
+            exclude_inactive=False,
+            venue_id=wanted_venue.id,
+            name_keywords='Wanted'
+        )
+
+        # Then
+        assert len(offers_id) == 1
+        assert wanted_offer.id in offers_id
