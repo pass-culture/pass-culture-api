@@ -155,7 +155,7 @@ jobs:
       - run:
           name: Deploy passculture-api image from artifact registry to CloudRun
           command: |
-            echo ${GOOGLE_CLOUD_KEYS} | base64 -d > gcloud_keys
+            echo ${GOOGLE_CR_PROVIDER} | base64 -d > gcloud_keys
             gcloud -q auth activate-service-account --key-file gcloud_keys
             gcloud run deploy ${APP_NAME} \
             --platform=managed \
@@ -412,11 +412,11 @@ workflows:
             branches:
               only:
                 - migration-gcp
-      - deploy-cloudrun
-          # filters:
-          #   branches:
-          #     only:
-          #       - migration-gcp
+      - deploy-cloudrun:
+          filters:
+            branches:
+              only:
+                - migration-gcp
 
   nightly:
     triggers:
