@@ -142,18 +142,49 @@ jobs:
 
   deploy-cloudrun:
     executor: gcp-sdk
+    environment:
+      APP_NAME: pass-culture-api-dev
+      IMAGE_NAME: pass-culture-api
+      PORT: 80
+      GCP_REGION: europe-west1
+      GCP_PROJECT: pass-culture-app-projet-test
+      GCP_REGISTRY_NAME: pass-culture-artifact-registry
+
+      ON_USER_RECIPIENTS: dev+testing@passculture.app
+      ADMINISTRATION_EMAIL_ADDRESS: dev+testing@passculture.app
+      ALGOLIA_APPLICATION_ID: testingHXXTDUE7H0
+      DATABASE_URL: 10.159.0.3:5432
+      DEV_EMAIL_ADDRESS: dev+testing@passculture.app
+      ENV: testing
+      FTP_TITELIVE_URI: ftp.astitelive.com
+      FTP_TITELIVE_USER: MINCULTURE
+      JOUVE_API_DOMAIN: https://ws-passculture.jouve.com
+      JOUVE_USERNAME: passculture
+      JOUVE_VAULT_GUID: 790B582D-C901-4712-835D-61049B660213
+      MATOMO_SERVER_URL: https://pc-matomo.scalingo.io/
+      OBJECT_STORAGE_URL: https://storage.gra.cloud.ovh.net/v1/AUTH_688df1e25bd84a48a3804e7fa8938085/storage-pc-dev
+      OVH_BUCKET_NAME: storage-pc-dev
+      OVH_REGION_NAME: GRA
+      OVH_TENANT_NAME: 4754281319661209
+      OVH_USER: hP3PDYQsaxab
+      PAYMENTS_DETAILS_RECIPIENTS: dev+testing@passculture.app
+      PAYMENTS_REPORT_RECIPIENTS: dev+testing@passculture.app
+      PYTHONSTARTUP: /app/.env_ps1.py
+      REDIS_URL: pass-culture-app-projet-test:europe-west1:pass-culture-api-184c179a
+      SUPPORT_EMAIL_ADDRESS: dev+testing@passculture.app
+      TEST_VAR: test_variable
+      TRANSACTIONS_RECIPIENTS: "dev+testing@passculture.app"
+      UNICORN_N_WORKERS: 2
+      UNICORN_TIMEOUT: 90
+      UPDATE_BOOKING_USED: True
+      WALLET_BALANCES_RECIPIENTS: dev+testing@passculture.app
+
     steps:
-      - authenticate_gcp
       - run:
           name: Deploy passculture-api image from artifact registry to CloudRun
-          environment:
-            APP_NAME: pass-culture-api
-            IMAGE_NAME: pass-culture-api
-            PORT: 80
-            GCP_REGION: europe-west1
-            GCP_PROJECT: pass-culture-app-projet-test
-            GCP_REGISTRY_NAME: pass-culture-artifact-registry
           command: |
+            echo ${GOOGLE_CLOUD_KEYS} | base64 -d > gcloud_keys
+            gcloud -q auth activate-service-account --key-file gcloud_keys
             gcloud run deploy ${APP_NAME} \
             --platform=managed \
             --no-allow-unauthenticated \
@@ -162,6 +193,27 @@ jobs:
             --region ${GCP_REGION} \
             --port=$PORT \
             --async \
+            --set-env-vars "\
+              ALGOLIA_API_KEY=sm://${GCP_PROJECT}/${APP_NAME}_algolia_api_key, \
+              ALLOCINE_API_KEY=sm://${GCP_PROJECT}/${APP_NAME}_allocine_api_key, \
+              BASTION_TOKEN=sm://${GCP_PROJECT}/${APP_NAME}_bastion_token, \
+              DEMARCHES_SIMPLIFIEES_TOKEN=sm://${GCP_PROJECT}/${APP_NAME}_demarches_simplifiees_token, \
+              DEMARCHES_SIMPLIFIEES_WEBHOOK_TOKEN=sm://${GCP_PROJECT}/${APP_NAME}_demarches_simplifiees_webhook_token, \
+              EXPORT_TOKEN=sm://${GCP_PROJECT}/${APP_NAME}_export_token, \
+              FLASK_SECRET=sm://${GCP_PROJECT}/${APP_NAME}_flask_secret, \
+              FTP_TITELIVE_PWD=sm://${GCP_PROJECT}/${APP_NAME}_ftp_titelive_pwd, \
+              JOUVE_PASSWORD=sm://${GCP_PROJECT}/${APP_NAME}_jouve_password, \
+              MAILJET_API_KEY=sm://${GCP_PROJECT}/${APP_NAME}_mailjet_api_key, \
+              MAILJET_API_SECRET=sm://${GCP_PROJECT}/${APP_NAME}_mailjet_api_secret, \
+              OVH_PASSWORD=sm://${GCP_PROJECT}/ovh_password, \
+              PASS_CULTURE_BIC=sm://${GCP_PROJECT}/${APP_NAME}_pass_culture_bic, \
+              PASS_CULTURE_IBAN=sm://${GCP_PROJECT}/${APP_NAME}_pass_culture_iban, \
+              PASS_CULTURE_REMITTANCE_CODE=sm://${GCP_PROJECT}/${APP_NAME}_pass_culture_remittance_code, \
+              PC_GOOGLE_KEY=sm://${GCP_PROJECT}/${APP_NAME}_pc_google_key, \
+              PROVIDER_FNAC_BASIC_AUTHENTICATION_TOKEN=sm://${GCP_PROJECT}/${APP_NAME}_provider_fnac_basic_authentication_token, \
+              RECAPTCHA_SECRET=sm://${GCP_PROJECT}/${APP_NAME}_recaptcha_secret, \
+              SCALINGO_APP_TOKEN=sm://${GCP_PROJECT}/${APP_NAME}_scalingo_app_token \
+            " \
             --image=${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GCP_REGISTRY_NAME}/${IMAGE_NAME}:latest
 
   tests-data-analytics:
