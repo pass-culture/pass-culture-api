@@ -56,7 +56,7 @@ else:
 BLOB_SIZE = 30
 
 
-# TODO: ensure sentry does not log _KEY nor _PWD (?!?)
+# TODO: ensure sentry does not log _KEY nor _PWD (?!?) nor TOKEN
 
 
 # REDIS
@@ -99,3 +99,11 @@ RECAPTCHA_ERROR_CODES = {
 # GOOGLE SPREADSHEET
 GOOGLE_KEY = os.environ.get("PC_GOOGLE_KEY")
 GOOGLE_DASHBOARD_SPREADSHEET_NAME = os.environ.get('DASHBOARD_GSHEET_NAME')
+
+
+# SCALINGO
+SCALINGO_APP_TOKEN = os.environ.get('SCALINGO_APP_TOKEN')
+SCALINGO_AUTH_URL = 'https://auth.scalingo.com/v1'
+SCALINGO_API_URL = 'https://api.osc-fr1.scalingo.com/v1'
+SCALINGO_API_REGION = "osc-fr1"
+SCALINGO_API_CONTAINER_SIZE = "L"
