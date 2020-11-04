@@ -7,6 +7,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 import pygsheets
 from pygsheets import Spreadsheet
 
+from pcapi import settings
+
 
 user_spreadsheet_store = {}
 memo = Memoizer(user_spreadsheet_store)
@@ -18,7 +20,7 @@ class MissingGoogleKeyException(Exception):
 
 def get_credentials():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    google_key = os.environ.get("PC_GOOGLE_KEY")
+    google_key = settings.GOOGLE_KEY
     if google_key:
         google_key_json_payload = json.loads(google_key)
         key_path = "/tmp/data.json"
@@ -55,6 +57,6 @@ def get_authorized_emails_and_dept_codes():
 
 
 def get_dashboard_spreadsheet() -> Spreadsheet:
-    sheet_name = os.environ.get("DASHBOARD_GSHEET_NAME")
+    sheet_name = settings.GOOGLE_DASHBOARD_SPREADSHEET_NAME
     gc = pygsheets.authorize(service_account_env_var="PC_GOOGLE_KEY")
     return gc.open(sheet_name)

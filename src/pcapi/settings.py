@@ -94,3 +94,8 @@ RECAPTCHA_ERROR_CODES = {
     'bad-request': 'The request is invalid or malformed.',
     'timeout-or-duplicate': 'The response is no longer valid: either is too old or has been used previously.',
 }
+
+
+# GOOGLE SPREADSHEET
+GOOGLE_KEY = os.environ.get("PC_GOOGLE_KEY")
+GOOGLE_DASHBOARD_SPREADSHEET_NAME = os.environ.get('DASHBOARD_GSHEET_NAME')
