@@ -56,6 +56,9 @@ else:
 BLOB_SIZE = 30
 
 
+# TODO: ensure sentry does not log _KEY nor _PWD (?!?)
+
+
 # REDIS
 REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379')
 REDIS_OFFER_IDS_CHUNK_SIZE = int(os.environ.get('REDIS_OFFER_IDS_CHUNK_SIZE', 1000))
