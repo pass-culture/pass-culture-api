@@ -6,25 +6,21 @@ from typing import Pattern
 from zipfile import ZipFile
 
 from pcapi.domain.titelive import put_today_file_at_end_of_list
+from pcapi import settings
 from pcapi.utils.logger import logger
 
 
-FTP_TITELIVE_URI = os.environ.get("FTP_TITELIVE_URI")
-FTP_TITELIVE_USER = os.environ.get("FTP_TITELIVE_USER")
-FTP_TITELIVE_PWD = os.environ.get("FTP_TITELIVE_PWD")
-
-
-def get_titelive_ftp():
-    if FTP_TITELIVE_URI is None:
+def get_titelive_ftp() -> ftplib.FTP:
+    if settings.FTP_TITELIVE_URI is None:
         raise ValueError("URI du FTP Titelive non spécifiée.")
-    return ftplib.FTP(FTP_TITELIVE_URI)
+    return ftplib.FTP(settings.FTP_TITELIVE_URI)
 
 
-def connect_to_titelive_ftp():
+def connect_to_titelive_ftp() -> ftplib.FTP:
     ftp_titelive = get_titelive_ftp()
-    if FTP_TITELIVE_USER is None or FTP_TITELIVE_PWD is None:
+    if settings.FTP_TITELIVE_USER is None or settings.FTP_TITELIVE_PWD is None:
         raise ValueError("Informations de connexion au FTP Titelive non spécifiée.")
-    ftp_titelive.login(FTP_TITELIVE_USER, FTP_TITELIVE_PWD)
+    ftp_titelive.login(settings.FTP_TITELIVE_USER, settings.FTP_TITELIVE_PWD)
     return ftp_titelive
 
 
