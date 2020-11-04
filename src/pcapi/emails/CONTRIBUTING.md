@@ -42,8 +42,8 @@ Dans `Vars`, on peut y mettre :
 
 ## Constantes utiles
 
-- `DEV_EMAIL_ADDRESS` ;
-- `SUPPORT_EMAIL_ADDRESS`.
+- `settings.DEV_EMAIL_ADDRESS` ;
+- `settings.SUPPORT_EMAIL_ADDRESS`.
 
 ## Pour tester l'envoi d'un e-mail
 

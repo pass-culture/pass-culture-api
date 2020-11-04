@@ -24,6 +24,7 @@ from pcapi.models import UserSQLEntity
 from pcapi.models.email import EmailStatus
 from pcapi.repository.email_queries import save
 from pcapi.repository.feature_queries import feature_send_mail_to_users_enabled
+from pcapi import settings
 from pcapi.utils import logger
 from pcapi.utils.config import API_URL
 from pcapi.utils.config import ENV
@@ -37,9 +38,6 @@ from pcapi.utils.human_ids import humanize
 
 MAILJET_API_KEY = os.environ.get("MAILJET_API_KEY")
 MAILJET_API_SECRET = os.environ.get("MAILJET_API_SECRET")
-SUPPORT_EMAIL_ADDRESS = os.environ.get("SUPPORT_EMAIL_ADDRESS")
-ADMINISTRATION_EMAIL_ADDRESS = os.environ.get("ADMINISTRATION_EMAIL_ADDRESS")
-DEV_EMAIL_ADDRESS = os.environ.get("DEV_EMAIL_ADDRESS")
 
 
 class MailServiceException(Exception):
@@ -108,7 +106,7 @@ def create_email_recipients(recipients: List[str]) -> str:
     if feature_send_mail_to_users_enabled():
         return ", ".join(recipients)
     else:
-        return DEV_EMAIL_ADDRESS
+        return settings.DEV_EMAIL_ADDRESS
 
 
 def format_environment_for_email() -> str:
@@ -154,7 +152,7 @@ def make_validation_email_object(
 
     return {
         "FromName": "pass Culture",
-        "FromEmail": SUPPORT_EMAIL_ADDRESS,
+        "FromEmail": settings.SUPPORT_EMAIL_ADDRESS,
         "Subject": "%s - inscription / rattachement PRO à valider : %s" % (offerer_departement_code, offerer.name),
         "Html-part": email_html,
     }
@@ -187,7 +185,7 @@ def make_offerer_driven_cancellation_email_for_offerer(booking: Booking) -> Dict
     )
     return {
         "FromName": "pass Culture",
-        "FromEmail": SUPPORT_EMAIL_ADDRESS if feature_send_mail_to_users_enabled() else DEV_EMAIL_ADDRESS,
+        "FromEmail": settings.SUPPORT_EMAIL_ADDRESS if feature_send_mail_to_users_enabled() else settings.DEV_EMAIL_ADDRESS,
         "Subject": email_subject,
         "Html-part": email_html,
     }
@@ -233,7 +231,7 @@ def make_payment_message_email(xml: str, checksum: bytes) -> Dict:
     file_name = "message_banque_de_france_{}.xml".format(datetime.strftime(now, "%Y%m%d"))
 
     return {
-        "FromEmail": SUPPORT_EMAIL_ADDRESS,
+        "FromEmail": settings.SUPPORT_EMAIL_ADDRESS,
         "FromName": "pass Culture Pro",
         "Subject": "Virements XML pass Culture Pro - {}".format(datetime.strftime(now, "%Y-%m-%d")),
         "Attachments": [{"ContentType": "text/xml", "Filename": file_name, "Content": xml_b64encode}],
@@ -258,7 +256,7 @@ def make_payment_details_email(csv: str) -> Dict:
     csv_filename = f"details_des_paiements_{datetime.strftime(now, '%Y%m%d')}.csv"
     zipfile_content = _get_zipfile_content(csv, csv_filename)
     return {
-        "FromEmail": SUPPORT_EMAIL_ADDRESS,
+        "FromEmail": settings.SUPPORT_EMAIL_ADDRESS,
         "FromName": "pass Culture Pro",
         "Subject": "Détails des paiements pass Culture Pro - {}".format(datetime.strftime(now, "%Y-%m-%d")),
         "Attachments": [
@@ -285,7 +283,7 @@ def make_payments_report_email(not_processable_csv: str, error_csv: str, grouped
 
     return {
         "Subject": "Récapitulatif des paiements pass Culture Pro - {}".format(formatted_date),
-        "FromEmail": SUPPORT_EMAIL_ADDRESS,
+        "FromEmail": settings.SUPPORT_EMAIL_ADDRESS,
         "FromName": "pass Culture Pro",
         "Attachments": [
             {
@@ -312,7 +310,7 @@ def make_wallet_balances_email(csv: str) -> Dict:
     now = datetime.utcnow()
     csv_b64encode = base64.b64encode(csv.encode("utf-8")).decode()
     return {
-        "FromEmail": SUPPORT_EMAIL_ADDRESS,
+        "FromEmail": settings.SUPPORT_EMAIL_ADDRESS,
         "FromName": "pass Culture Pro",
         "Subject": "Soldes des utilisateurs pass Culture - {}".format(datetime.strftime(now, "%Y-%m-%d")),
         "Attachments": [
@@ -330,7 +328,7 @@ def make_activation_users_email(csv: str) -> Dict:
     now = datetime.utcnow()
     csv_b64encode = base64.b64encode(csv.encode("utf-8")).decode()
     return {
-        "FromEmail": SUPPORT_EMAIL_ADDRESS,
+        "FromEmail": settings.SUPPORT_EMAIL_ADDRESS,
         "FromName": "pass Culture Pro",
         "Subject": "Liste des utilisateurs créés pour l'activation du pass Culture - {}".format(
             datetime.strftime(now, "%Y-%m-%d")
@@ -360,7 +358,7 @@ def compute_email_html_part_and_recipients(email_html_part, recipients: Union[Li
                 environment=ENV, recipients=recipients_string, html_part=email_html_part
             )
         )
-        email_to = DEV_EMAIL_ADDRESS
+        email_to = settings.DEV_EMAIL_ADDRESS
     return email_html_part, email_to
 
 
@@ -394,8 +392,8 @@ def make_offer_creation_notification_email(offer: Offer, author: UserSQLEntity) 
     location_information = offer.venue.departementCode or "numérique"
     return {
         "Html-part": html,
-        "To": [ADMINISTRATION_EMAIL_ADDRESS],
-        "FromEmail": SUPPORT_EMAIL_ADDRESS,
+        "To": [settings.ADMINISTRATION_EMAIL_ADDRESS],
+        "FromEmail": settings.SUPPORT_EMAIL_ADDRESS,
         "FromName": "pass Culture",
         "Subject": f"[Création d’offre - {location_information}] {offer.product.name}",
     }
@@ -419,13 +417,13 @@ def make_webapp_user_validation_email(user: UserSQLEntity, app_origin_url: str) 
         "To": user.email,
         "Subject": "Validation de votre adresse email pour le pass Culture",
         "FromName": "pass Culture",
-        "FromEmail": SUPPORT_EMAIL_ADDRESS if feature_send_mail_to_users_enabled() else DEV_EMAIL_ADDRESS,
+        "FromEmail": settings.SUPPORT_EMAIL_ADDRESS if feature_send_mail_to_users_enabled() else settings.DEV_EMAIL_ADDRESS,
     }
 
 
 def make_pro_user_validation_email(user: UserSQLEntity, app_origin_url: str) -> Dict:
     return {
-        "FromEmail": SUPPORT_EMAIL_ADDRESS if feature_send_mail_to_users_enabled() else DEV_EMAIL_ADDRESS,
+        "FromEmail": settings.SUPPORT_EMAIL_ADDRESS if feature_send_mail_to_users_enabled() else settings.DEV_EMAIL_ADDRESS,
         "FromName": "pass Culture pro",
         "Subject": "[pass Culture pro] Validation de votre adresse email pour le pass Culture",
         "MJ-TemplateID": 778688,

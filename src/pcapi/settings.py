@@ -58,6 +58,11 @@ BLOB_SIZE = 30
 
 # TODO: ensure sentry does not log _KEY nor _PWD (?!?) nor TOKEN
 
+# GENERAL
+SUPPORT_EMAIL_ADDRESS = os.environ.get('SUPPORT_EMAIL_ADDRESS')
+ADMINISTRATION_EMAIL_ADDRESS = os.environ.get('ADMINISTRATION_EMAIL_ADDRESS')
+DEV_EMAIL_ADDRESS = os.environ.get('DEV_EMAIL_ADDRESS')
+
 
 # REDIS
 REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379')
