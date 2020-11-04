@@ -66,6 +66,7 @@ class ProcessMultiIndexingTest:
             call(client=client, venue_provider={"id": 2, "providerId": 2, "venueId": 2}),
             call(client=client, venue_provider={"id": 3, "providerId": 3, "venueId": 3}),
         ]
+        # TODO: What's the point of the under check ? Why do we check the call to a constant ?
         mock_sleep.assert_called_once_with(mock_wait_time_for_available_worker)
 
 
