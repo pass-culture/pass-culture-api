@@ -71,3 +71,17 @@ ALGOLIA_INDEX_NAME = os.environ.get('ALGOLIA_INDEX_NAME')
 
 ALGOLIA_SYNC_WORKERS_POOL_SIZE = int(os.environ.get('ALGOLIA_SYNC_WORKERS_POOL_SIZE', 10))
 ALGOLIA_WAIT_TIME_FOR_AVAILABLE_WORKER = 60
+
+
+# RECAPTCHA
+RECAPTCHA_API_URL = 'https://www.google.com/recaptcha/api/siteverify'
+RECAPTCHA_SECRET = os.environ.get("RECAPTCHA_SECRET")
+RECAPTCHA_REQUIRED_SCORE = os.environ.get("RECAPTCHA_REQUIRED_SCORE", 0.5)
+RECAPTCHA_ERROR_CODES = {
+    'missing-input-secret': 'The secret parameter is missing.',
+    'invalid-input-secret': 'The secret parameter is invalid or malformed.',
+    'missing-input-response': 'The response parameter is missing.',
+    'invalid-input-response': 'The response parameter is invalid or malformed.',
+    'bad-request': 'The request is invalid or malformed.',
+    'timeout-or-duplicate': 'The response is no longer valid: either is too old or has been used previously.',
+}

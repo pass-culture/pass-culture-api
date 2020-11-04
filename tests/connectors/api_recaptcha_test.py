@@ -5,9 +5,9 @@ import uuid
 
 import pytest
 
-from pcapi.connectors.api_recaptcha import RECAPTCHA_API_URL
 from pcapi.connectors.api_recaptcha import ReCaptchaException
 from pcapi.connectors.api_recaptcha import validate_recaptcha_token
+from pcapi import settings
 
 
 ORIGINAL_ACTION = "submit"
@@ -90,7 +90,10 @@ def test_valid_response_from_api(request_post, response_return_value, expected_r
     api_response = validate_recaptcha_token(token, ORIGINAL_ACTION)
 
     # Then
-    request_post.assert_called_once_with(RECAPTCHA_API_URL, data={"secret": "recaptcha-secret", "response": token})
+    request_post.assert_called_once_with(
+        settings.RECAPTCHA_API_URL,
+        data={"secret": "recaptcha-secret", "response": token}
+    )
     assert api_response == expected_result
 
 
