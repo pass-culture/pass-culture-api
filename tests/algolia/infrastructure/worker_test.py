@@ -31,8 +31,8 @@ class ProcessMultiIndexingTest:
         # Then
         mock_delete_venue_providers.assert_called_once_with(client=client)
 
-    @patch.dict("os.environ", {"ALGOLIA_SYNC_WORKERS_POOL_SIZE": "2"})
-    @patch("pcapi.algolia.infrastructure.worker.ALGOLIA_WAIT_TIME_FOR_AVAILABLE_WORKER")
+    @patch("pcapi.settings.ALGOLIA_SYNC_WORKERS_POOL_SIZE", 2)
+    @patch("pcapi.settings.ALGOLIA_WAIT_TIME_FOR_AVAILABLE_WORKER")
     @patch("pcapi.algolia.infrastructure.worker.sleep")
     @patch("pcapi.algolia.infrastructure.worker._run_indexing")
     @patch("pcapi.algolia.infrastructure.worker.get_number_of_venue_providers_currently_in_sync")
