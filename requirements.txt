@@ -26,6 +26,9 @@ mailjet-rest==1.3.3
 mypy==0.782
 nltk==3.5
 pgcli==2.2.0
+# pinned because installing pyproj 3.0.0.post1 raises an error: "proj
+# executable not found. Please set the PROJ_DIR variable."
+pyproj==3.0.0
 Pillow==7.2.0
 PostgreSQL-Audit==0.10.0
 pydantic[email]==1.6.1
