@@ -52,6 +52,7 @@ from pcapi.models.venue_label_sql_entity import VenueLabelSQLEntity
 from pcapi.models.venue_type import VenueType
 from pcapi.scripts.iris.import_iris import WGS_SPATIAL_REFERENCE_IDENTIFIER
 from pcapi.scripts.iris.import_iris import create_centroid_from_polygon
+from pcapi import settings
 from pcapi.utils.token import random_token
 
 
@@ -60,7 +61,6 @@ DEFAULT_USER = UserSQLEntity()
 PLAIN_DEFAULT_TESTING_PASSWORD = "user@AZERTY123"
 DEFAULT_USER.setPassword(PLAIN_DEFAULT_TESTING_PASSWORD)
 HASHED_DEFAULT_TESTING_PASSWORD = DEFAULT_USER.password
-DEMARCHES_SIMPLIFIEES_ENROLLMENT_PROCEDURE_ID = int(os.environ.get("DEMARCHES_SIMPLIFIEES_ENROLLMENT_PROCEDURE_ID", 88))
 
 
 def create_api_key(idx: int = None, offerer_id: int = 99, value: str = "A_MOCKED_API_KEY") -> ApiKey:
@@ -100,7 +100,7 @@ def create_beneficiary_import(
     date: datetime = datetime.utcnow(),
     detail: str = None,
     idx: int = None,
-    source_id: int = DEMARCHES_SIMPLIFIEES_ENROLLMENT_PROCEDURE_ID,
+    source_id: int = settings.DEMARCHES_SIMPLIFIEES_ENROLLMENT_PROCEDURE_ID,
     source: str = BeneficiaryImportSources.demarches_simplifiees.value,
     status: ImportStatus = ImportStatus.CREATED,
     user: UserSQLEntity = None,

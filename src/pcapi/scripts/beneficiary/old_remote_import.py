@@ -1,5 +1,4 @@
 from datetime import datetime
-import os
 import re
 from typing import Callable
 from typing import Dict
@@ -19,12 +18,11 @@ from pcapi.repository.beneficiary_import_queries import is_already_imported
 from pcapi.repository.beneficiary_import_queries import save_beneficiary_import_with_status
 from pcapi.repository.user_queries import find_by_civility
 from pcapi.repository.user_queries import find_user_by_email
+from pcapi import settings
 from pcapi.utils.logger import logger
 from pcapi.utils.mailing import MailServiceException
 from pcapi.utils.mailing import send_raw_email
 
-
-TOKEN = os.environ.get("DEMARCHES_SIMPLIFIEES_TOKEN", None)
 
 
 def run(
@@ -35,13 +33,15 @@ def run(
     already_imported: Callable[..., bool] = is_already_imported,
     already_existing_user: Callable[..., UserSQLEntity] = find_user_by_email,
 ) -> None:
-    procedure_id = int(os.environ.get("DEMARCHES_SIMPLIFIEES_ENROLLMENT_PROCEDURE_ID", None))
+    procedure_id = settings.DEMARCHES_SIMPLIFIEES_OLD_ENROLLMENT_PROCEDURE_ID
     logger.info(
         f"[BATCH][REMOTE IMPORT BENEFICIARIES] Start import from Démarches Simplifiées - Procedure {procedure_id}"
     )
     error_messages: List[str] = []
     new_beneficiaries: List[UserSQLEntity] = []
-    applications_ids = get_all_applications_ids(procedure_id, TOKEN, process_applications_updated_after)
+    applications_ids = get_all_applications_ids(
+        procedure_id, settings.DEMARCHES_SIMPLIFIEES_TOKEN, process_applications_updated_after
+    )
     retry_ids = get_applications_ids_to_retry()
 
     logger.info(
@@ -52,7 +52,7 @@ def run(
     )
 
     for application_id in retry_ids + applications_ids:
-        details = get_details(application_id, procedure_id, TOKEN)
+        details = get_details(application_id, procedure_id, settings.DEMARCHES_SIMPLIFIEES_TOKEN)
         try:
             information = parse_beneficiary_information(details)
         except Exception:

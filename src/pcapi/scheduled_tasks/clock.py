@@ -26,14 +26,7 @@ from pcapi.scheduled_tasks.decorators import log_cron
 from pcapi.scripts.beneficiary import old_remote_import
 from pcapi.scripts.beneficiary import remote_import
 from pcapi.scripts.update_booking_used import update_booking_used_after_stock_occurrence
-
-
-DEMARCHES_SIMPLIFIEES_OLD_ENROLLMENT_PROCEDURE_ID = os.environ.get(
-    "DEMARCHES_SIMPLIFIEES_ENROLLMENT_PROCEDURE_ID", None
-)
-DEMARCHES_SIMPLIFIEES_NEW_ENROLLMENT_PROCEDURE_ID = os.environ.get(
-    "DEMARCHES_SIMPLIFIEES_ENROLLMENT_PROCEDURE_ID_v2", None
-)
+from pcapi import settings
 
 
 @log_cron
@@ -77,7 +70,7 @@ def synchronize_praxiel_stocks(app) -> None:
 @cron_context
 @cron_require_feature(FeatureToggle.BENEFICIARIES_IMPORT)
 def pc_old_remote_import_beneficiaries(app) -> None:
-    procedure_id = int(DEMARCHES_SIMPLIFIEES_OLD_ENROLLMENT_PROCEDURE_ID)
+    procedure_id = int(settings.DEMARCHES_SIMPLIFIEES_OLD_ENROLLMENT_PROCEDURE_ID)
     import_from_date = find_most_recent_beneficiary_creation_date_for_source(
         BeneficiaryImportSources.demarches_simplifiees, procedure_id
     )
@@ -87,7 +80,7 @@ def pc_old_remote_import_beneficiaries(app) -> None:
 @log_cron
 @cron_context
 def pc_remote_import_beneficiaries(app) -> None:
-    procedure_id = int(DEMARCHES_SIMPLIFIEES_NEW_ENROLLMENT_PROCEDURE_ID)
+    procedure_id = int(settings.DEMARCHES_SIMPLIFIEES_NEW_ENROLLMENT_PROCEDURE_ID)
     import_from_date = find_most_recent_beneficiary_creation_date_for_source(
         BeneficiaryImportSources.demarches_simplifiees, procedure_id
     )
