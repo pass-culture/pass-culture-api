@@ -178,7 +178,7 @@ class GetOfferProductResponseModel(BaseModel):
     ageMax: Optional[int]
     ageMin: Optional[int]
     conditions: Optional[str]
-    dateModifiedAtLastProvider: str
+    dateModifiedAtLastProvider: Optional[str]
     description: Optional[str]
     durationMinutes: Optional[int]
     extraData: Any
@@ -201,7 +201,7 @@ class GetOfferStockResponseModel(BaseModel):
     bookingsQuantity: int
     dateCreated: str
     dateModified: str
-    dateModifiedAtLastProvider: str
+    dateModifiedAtLastProvider: Optional[str]
     fieldsUpdated: List[str]
     hasBeenMigrated: Optional[bool]
     id: str
@@ -222,7 +222,7 @@ class GetOfferManagingOffererResponseModel(BaseModel):
     bic: Optional[str]
     city: str
     dateCreated: str
-    dateModifiedAtLastProvider: str
+    dateModifiedAtLastProvider: Optional[str]
     fieldsUpdated: List[str]
     iban: Optional[str]
     id: str
@@ -280,7 +280,7 @@ class GetOfferMediationResponseModel(BaseModel):
     authorId: Optional[str]
     credit: Optional[str]
     dateCreated: str
-    dateModifiedAtLastProvider: str
+    dateModifiedAtLastProvider: Optional[str]
     fieldsUpdated: List[str]
     id: str
     idAtProviders: Optional[str]
@@ -298,7 +298,7 @@ class GetOfferResponseModel(BaseModel):
     bookingEmail: Optional[str]
     conditions: Optional[str]
     dateCreated: str
-    dateModifiedAtLastProvider: str
+    dateModifiedAtLastProvider: Optional[str]
     description: Optional[str]
     durationMinutes: Optional[int]
     extraData: Any
