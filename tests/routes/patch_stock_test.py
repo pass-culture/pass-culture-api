@@ -60,7 +60,6 @@ class Returns200:
             "dateModified": date_modified,
             "dateModifiedAtLastProvider": "2020-10-15T00:00:00Z",
             "fieldsUpdated": [],
-            "hasBeenMigrated": None,
             "id": humanize(stock.id),
             "idAtProviders": None,
             "isSoftDeleted": False,

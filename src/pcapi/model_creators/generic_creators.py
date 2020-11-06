@@ -396,7 +396,6 @@ def create_stock(beginning_datetime: Optional[datetime] = None,
                  date_created: datetime = datetime.utcnow(),
                  date_modified: datetime = datetime.utcnow(),
                  date_modified_at_last_provider: Optional[datetime] = None,
-                 has_been_migrated: Optional[bool] = None,
                  idx: Optional[int] = None,
                  id_at_providers: Optional[str] = None,
                  is_soft_deleted: bool = False,
@@ -411,7 +410,6 @@ def create_stock(beginning_datetime: Optional[datetime] = None,
     stock.dateCreated = date_created
     stock.dateModified = date_modified
     stock.dateModifiedAtLastProvider = date_modified_at_last_provider
-    stock.hasBeenMigrated = has_been_migrated
     if idx:
         stock.id = idx
     stock.idAtProviders = id_at_providers
