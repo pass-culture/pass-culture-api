@@ -5,30 +5,28 @@ from pathlib import PurePath
 
 import swiftclient
 
+from pcapi import settings
 from pcapi.models.db import Model
 from pcapi.utils.config import IS_DEV
 from pcapi.utils.human_ids import humanize
 from pcapi.utils.inflect_engine import inflect_engine
 
 
-def get_storage_base_url():
-    return os.environ.get("OBJECT_STORAGE_URL")
-
-
 def swift_con():
-    user = os.environ.get("OVH_USER")
-    key = os.environ.get("OVH_PASSWORD")
-    tenant_name = os.environ.get("OVH_TENANT_NAME")
-    region_name = os.environ.get("OVH_REGION_NAME", "GRA")
-
     auth_url = "https://auth.cloud.ovh.net/v3/"
-    options = {"region_name": region_name}
+    options = {"region_name": settings.OVH_REGION_NAME}
     auth_version = "3"
     return swiftclient.Connection(
-        user=user, key=key, authurl=auth_url, os_options=options, tenant_name=tenant_name, auth_version=auth_version
+        user=settings.OVH_USER,
+        key=settings.OVH_PASSWORD,
+        authurl=auth_url,
+        os_options=options,
+        tenant_name=settings.OVH_TENANT_NAME,
+        auth_version=auth_version,
     )
 
 
+# TODO: use the pcapi direectory as a real reference to the static files ?
 STORAGE_DIR = Path(os.path.dirname(os.path.realpath(__file__))) / ".." / "static" / "object_store_data"
 
 
@@ -60,7 +58,7 @@ def store_public_object(bucket, id, blob, content_type, symlink_path=None):
         new_file = open(file_local_path, "wb")
         new_file.write(blob)
     else:
-        container_name = os.environ.get("OVH_BUCKET_NAME")
+        container_name = settings.OVH_BUCKET_NAME
         storage_path = "thumbs/" + id
         swift_con().put_object(container_name, storage_path, contents=blob, content_type=content_type)
 

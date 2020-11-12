@@ -1,7 +1,7 @@
 from typing import Optional
 
+from pcapi import settings
 from pcapi.utils.human_ids import humanize
-from pcapi.utils.object_storage import get_storage_base_url
 
 
 class ThumbUrl:
@@ -18,6 +18,5 @@ class ThumbUrl:
         return ThumbUrl(identifier, "mediations")
 
     def url(self) -> Optional[str]:
-        base_url = get_storage_base_url()
-        thumb_url = base_url + "/thumbs"
+        thumb_url = settings.OBJECT_STORAGE_URL + "/thumbs"
         return "{}/{}/{}".format(thumb_url, self.model_name, humanize(self.identifier))

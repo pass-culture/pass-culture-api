@@ -3,18 +3,20 @@ from pathlib import Path
 
 import swiftclient
 
+from pcapi import settings
+
 
 def swift_con(dest_container_name):
     if dest_container_name == "storage-pc-dev":
-        user = os.environ.get("OVH_USER_TESTING")
-        key = os.environ.get("OVH_PASSWORD_TESTING")
-        tenant_name = os.environ.get("OVH_TENANT_NAME_TESTING")
-        region_name = os.environ.get("OVH_REGION_NAME_TESTING", "GRA")
+        user = settings.OVH_USER_TESTING
+        key = settings.OVH_PASSWORD_TESTING
+        tenant_name = settings.OVH_TENANT_NAME_TESTING
+        region_name = settings.OVH_REGION_NAME_TESTING
     elif dest_container_name == "storage-pc-staging":
-        user = os.environ.get("OVH_USER_STAGING")
-        key = os.environ.get("OVH_PASSWORD_STAGING")
-        tenant_name = os.environ.get("OVH_TENANT_NAME_STAGING")
-        region_name = os.environ.get("OVH_REGION_NAME_STAGING", "GRA")
+        user = settings.OVH_USER_STAGING
+        key = settings.OVH_PASSWORD_STAGING
+        tenant_name = settings.OVH_TENANT_NAME_STAGING
+        region_name = settings.OVH_REGION_NAME_STAGING
     else:
         print("Ce conteneur ne semble pas exister")
         return 1
@@ -28,10 +30,10 @@ def swift_con(dest_container_name):
 
 
 def swift_con_prod():
-    user = os.environ.get("OVH_USER_PROD")
-    key = os.environ.get("OVH_PASSWORD_PROD")
-    tenant_name = os.environ.get("OVH_TENANT_NAME_PROD")
-    region_name = os.environ.get("OVH_REGION_NAME_PROD", "GRA")
+    user = settings.OVH_USER_PROD
+    key = settings.OVH_PASSWORD_PROD
+    tenant_name = settings.OVH_TENANT_NAME_PROD
+    region_name = settings.OVH_REGION_NAME_PROD
 
     auth_url = "https://auth.cloud.ovh.net/v3/"
     options = {"region_name": region_name}
@@ -42,6 +44,7 @@ def swift_con_prod():
 
 
 def do_local_backup_prod_container(dest_folder_name):
+    # TODO: move this to use settings.OVH_BUCKET_NAME
     if "OVH_BUCKET_NAME" in os.environ:
         prod_container_name = os.environ.get("OVH_BUCKET_NAME")
         prod_conn = swift_con_prod()
@@ -79,6 +82,7 @@ def do_copy_prod_container_content_to_dest_container(dest_container_name):
         print("Ce conteneur ne semble pas exister")
         return 1
 
+    # TODO: move this to use settings.OVH_BUCKET_NAME
     if "OVH_BUCKET_NAME" in os.environ:
         prod_container_name = os.environ.get("OVH_BUCKET_NAME")
         prod_conn = swift_con_prod()
@@ -132,13 +136,13 @@ def do_delete_file(container_name, file_name):
 def do_list_content(container_name):
     if container_name == "storage-pc-dev":
         conn = swift_con(container_name)
-        container_url_path = os.environ.get("OVH_URL_PATH_TESTING")
+        container_url_path = settings.OVH_URL_PATH_TESTING
     elif container_name == "storage-pc-staging":
         conn = swift_con(container_name)
-        container_url_path = os.environ.get("OVH_URL_PATH_STAGING")
+        container_url_path = settings.OVH_URL_PATH_STAGING
     elif container_name == "storage-pc":
         conn = swift_con_prod()
-        container_url_path = os.environ.get("OVH_URL_PATH_PROD")
+        container_url_path = settings.OVH_URL_PATH_PROD
     else:
         raise ValueError("Ce conteneur ne semble pas exister")
 

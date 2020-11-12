@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+import pytest
+
 from pcapi.model_creators.generic_creators import create_mediation
 from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_recommendation
@@ -11,8 +13,10 @@ from pcapi.model_creators.specific_creators import create_product_with_event_typ
 from pcapi.model_creators.specific_creators import create_product_with_thing_type
 
 
-@patch("pcapi.models.has_thumb_mixin.get_storage_base_url", return_value="http://localhost/storage")
-def test_model_thumb_url_should_use_mediation_first_as_thumb_url(get_storage_base_url):
+pytestmark = pytest.mark.usefixtures("db_session")
+
+
+def test_model_thumb_url_should_use_mediation_first_as_thumb_url():
     # given
     user = create_user(email="user@example.com")
     offerer = create_offerer()
@@ -29,8 +33,7 @@ def test_model_thumb_url_should_use_mediation_first_as_thumb_url(get_storage_bas
     assert recommendation.thumbUrl == "http://localhost/storage/thumbs/mediations/AE"
 
 
-@patch("pcapi.models.has_thumb_mixin.get_storage_base_url", return_value="http://localhost/storage")
-def test_model_thumb_url_should_have_thumb_url_using_product_id_when_no_mediation(get_storage_base_url):
+def test_model_thumb_url_should_have_thumb_url_using_product_id_when_no_mediation():
     # given
     product = create_product_with_thing_type(thumb_count=1)
     product.id = 2
@@ -45,8 +48,8 @@ def test_model_thumb_url_should_have_thumb_url_using_product_id_when_no_mediatio
     assert recommendation.thumbUrl == "http://localhost/storage/thumbs/products/A9"
 
 
-@patch("pcapi.models.has_thumb_mixin.get_storage_base_url", return_value="https://passculture.app/storage/v2")
-def test_model_should_use_environment_variable(get_storage_base_url):
+@patch("pcapi.settings.OBJECT_STORAGE_URL", "https://passculture.app/storage/v2")
+def test_model_should_use_settings_variable():
     # given
     user = create_user(email="user@example.com")
     offerer = create_offerer()
