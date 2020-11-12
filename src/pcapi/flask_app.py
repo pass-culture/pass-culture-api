@@ -27,6 +27,7 @@ from spectree import SpecTree
 from sqlalchemy import orm
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
+from pcapi import settings
 from pcapi.models.db import db
 from pcapi.repository.feature_queries import feature_request_profiling_enabled
 from pcapi.serialization.utils import before_handler
@@ -36,8 +37,6 @@ from pcapi.utils.config import REDIS_URL
 from pcapi.utils.health_checker import read_version_from_file
 from pcapi.utils.json_encoder import EnumJSONEncoder
 from pcapi.utils.logger import json_logger
-from pcapi.utils.mailing import MAILJET_API_KEY
-from pcapi.utils.mailing import MAILJET_API_SECRET
 
 
 if IS_DEV is False:
@@ -72,7 +71,7 @@ if not jwt_secret_key:
 
 app.secret_key = os.environ.get("FLASK_SECRET", "+%+3Q23!zbc+!Dd@")
 app.json_encoder = EnumJSONEncoder
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+app.config["SQLALCHEMY_DATABASE_URI"] = settings.DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = False
 app.config["SESSION_COOKIE_HTTPONLY"] = True
@@ -145,5 +144,5 @@ CORS(
 app.url_map.strict_slashes = False
 
 with app.app_context():
-    app.mailjet_client = Client(auth=(MAILJET_API_KEY, MAILJET_API_SECRET), version="v3")
+    app.mailjet_client = Client(auth=(settings.MAILJET_API_KEY, settings.MAILJET_API_SECRET), version="v3")
     app.redis_client = redis.from_url(url=REDIS_URL, decode_responses=True)

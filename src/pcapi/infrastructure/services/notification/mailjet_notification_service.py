@@ -1,7 +1,7 @@
 from datetime import datetime
-import os
 from typing import Callable
 
+from pcapi import settings
 from pcapi.core.bookings.models import Booking
 from pcapi.domain.beneficiary_contact.beneficiary_contact import BeneficiaryContact
 from pcapi.domain.beneficiary_contact.beneficiary_contact_exceptions import AddNewBeneficiaryContactException
@@ -62,7 +62,7 @@ class MailjetNotificationService(NotificationService):
             raise AddNewBeneficiaryContactException("mailjet", update_response.reason)
 
     def add_contact_to_eligible_soon_list(self, beneficiary_contact: BeneficiaryContact) -> None:
-        list_id = os.environ.get("MAILJET_NOT_YET_ELIGIBLE_LIST_ID")
+        list_id = settings.MAILJET_NOT_YET_ELIGIBLE_LIST_ID
         add_to_list_response = add_contact_to_list(beneficiary_contact.email, list_id)
 
         status_code = add_to_list_response.status_code

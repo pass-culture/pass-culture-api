@@ -36,10 +36,6 @@ from pcapi.utils.date import utc_datetime_to_department_timezone
 from pcapi.utils.human_ids import humanize
 
 
-MAILJET_API_KEY = os.environ.get("MAILJET_API_KEY")
-MAILJET_API_SECRET = os.environ.get("MAILJET_API_SECRET")
-
-
 class MailServiceException(Exception):
     pass
 
