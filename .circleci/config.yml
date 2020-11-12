@@ -55,11 +55,11 @@ jobs:
       - run:
           name: Check imports are well organized with isort
           when: always
-          command: venv/bin/isort . --check-only
+          command: venv/bin/isort . --check-only --diff
       - run:
           name: Check code is well formatted with black
           when: always
-          command: venv/bin/black . --check
+          command: venv/bin/black . --check --diff
       - when:
           condition: << parameters.is_nightly_build >>
           steps:
