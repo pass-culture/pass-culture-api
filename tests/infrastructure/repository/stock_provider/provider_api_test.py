@@ -57,7 +57,7 @@ class ProviderAPITest:
 
             # Then
             requests.get.assert_called_once_with(
-                url='http://example.com/stocks/12345678912345', params={'limit': '1000'}, headers={})
+                url='http://example.com/stocks/12345678912345', params={'limit': '1000'}, headers={}, timeout=30)
 
         @patch('pcapi.infrastructure.repository.stock_provider.provider_api.requests')
         def should_call_provider_api_with_given_siret_and_last_processed_isbn(self,requests):
@@ -77,7 +77,11 @@ class ProviderAPITest:
                                                      'limit': '1000',
                                                      'after': last_processed_isbn
                                                  },
+<<<<<<< HEAD
                                                  headers={})
+=======
+                                                 headers={}, timeout=30)
+>>>>>>> 8ba473567... (PC-5136): Praxiel - add higher timeout tolerance for providers calls
 
         @patch('pcapi.infrastructure.repository.stock_provider.provider_api.requests')
         def should_call_provider_api_with_given_siret_and_last_modification_date(self, requests):
@@ -97,7 +101,11 @@ class ProviderAPITest:
                                                      'limit': '1000',
                                                      'modifiedSince': modified_since
                                                  },
+<<<<<<< HEAD
                                                  headers={})
+=======
+                                                 headers={}, timeout=30)
+>>>>>>> 8ba473567... (PC-5136): Praxiel - add higher timeout tolerance for providers calls
 
         @patch('pcapi.infrastructure.repository.stock_provider.provider_api.requests')
         def should_call_provider_api_with_given_all_parameters(self, requests):
@@ -118,7 +126,11 @@ class ProviderAPITest:
                                                      'after': last_processed_isbn,
                                                      'modifiedSince': modified_since
                                                  },
+<<<<<<< HEAD
                                                  headers={})
+=======
+                                                 headers={}, timeout=30)
+>>>>>>> 8ba473567... (PC-5136): Praxiel - add higher timeout tolerance for providers calls
 
         @patch('pcapi.infrastructure.repository.stock_provider.provider_api.requests')
         def should_call_api_with_authentication_token_if_given(self, requests):
@@ -142,7 +154,11 @@ class ProviderAPITest:
                                                      'after': last_processed_isbn,
                                                      'modifiedSince': modified_since
                                                  },
+<<<<<<< HEAD
                                                  headers={'Authorization': 'Basic 744563534'})
+=======
+                                                 headers={'Authorization': 'Basic 744563534'}, timeout=30)
+>>>>>>> 8ba473567... (PC-5136): Praxiel - add higher timeout tolerance for providers calls
 
     class IsSiretRegisteredTest:
         def setup_method(self):
@@ -159,7 +175,11 @@ class ProviderAPITest:
             self.provider_api.is_siret_registered(siret)
 
             # Then
+<<<<<<< HEAD
             requests.get.assert_called_once_with(url='http://example.com/stocks/12345678912345', headers={})
+=======
+            requests.get.assert_called_once_with(url='http://example.com/stocks/12345678912345', headers={}, timeout=30)
+>>>>>>> 8ba473567... (PC-5136): Praxiel - add higher timeout tolerance for providers calls
 
         @patch('pcapi.infrastructure.repository.stock_provider.provider_api.requests')
         def should_returns_true_if_api_returns_200(self, requests):
@@ -199,5 +219,11 @@ class ProviderAPITest:
             self.provider_api.is_siret_registered(siret)
 
             # Then
+<<<<<<< HEAD
             requests.get.assert_called_once_with(url='http://example.com/stocks/12345678912345',
                                                  headers={'Authorization': 'Basic 744563534'})
+=======
+            requests.get.assert_called_once_with(
+                url="http://example.com/stocks/12345678912345", headers={"Authorization": "Basic 744563534"}
+            , timeout=30)
+>>>>>>> 8ba473567... (PC-5136): Praxiel - add higher timeout tolerance for providers calls

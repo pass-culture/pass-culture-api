@@ -12,7 +12,8 @@ REQUEST_TIMEOUT_IN_SECOND = 10
 
 def _wrapper(request_func: Callable, method: str, url: str, **kwargs: Any) -> Response:
     try:
-        response = request_func(method=method, url=url, timeout=REQUEST_TIMEOUT_IN_SECOND, **kwargs)
+        timeout = kwargs.pop('timeout', REQUEST_TIMEOUT_IN_SECOND)
+        response = request_func(method=method, url=url, timeout=timeout, **kwargs)
         json_logger.info("External service called", extra={
             'url': response.url,
             'statusCode': response.status_code,
