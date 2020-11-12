@@ -5,9 +5,9 @@ import uuid
 
 import pytest
 
+from pcapi import settings
 from pcapi.connectors.api_recaptcha import ReCaptchaException
 from pcapi.connectors.api_recaptcha import validate_recaptcha_token
-from pcapi import settings
 
 
 ORIGINAL_ACTION = "submit"
