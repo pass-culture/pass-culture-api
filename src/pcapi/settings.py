@@ -66,6 +66,7 @@ DEV_EMAIL_ADDRESS = os.environ.get('DEV_EMAIL_ADDRESS')
 
 # DB
 DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_POOL_SIZE = int(os.environ.get('DATABASE_POOL_SIZE', 20))
 
 
 # REDIS
