@@ -2,9 +2,9 @@ from typing import Dict
 from typing import Union
 from urllib.parse import quote
 
+from pcapi import settings
 from pcapi.domain.beneficiary.beneficiary import Beneficiary
 from pcapi.models import UserSQLEntity
-from pcapi import settings
 from pcapi.utils.mailing import format_environment_for_email
 
 

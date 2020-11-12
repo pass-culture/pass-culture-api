@@ -10,6 +10,7 @@ from typing import Union
 from geoalchemy2.shape import from_shape
 from shapely.geometry import Polygon
 
+from pcapi import settings
 from pcapi.core.bookings import api as bookings_api
 from pcapi.domain.payments import PaymentDetails
 from pcapi.domain.price_rule import PriceRule
@@ -52,7 +53,6 @@ from pcapi.models.venue_label_sql_entity import VenueLabelSQLEntity
 from pcapi.models.venue_type import VenueType
 from pcapi.scripts.iris.import_iris import WGS_SPATIAL_REFERENCE_IDENTIFIER
 from pcapi.scripts.iris.import_iris import create_centroid_from_polygon
-from pcapi import settings
 from pcapi.utils.token import random_token
 
 

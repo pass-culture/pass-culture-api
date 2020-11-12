@@ -1,9 +1,9 @@
 from typing import Dict
 
+from pcapi import settings
 from pcapi.core.bookings.models import Booking
 from pcapi.models.offer_type import ProductType
 from pcapi.repository.feature_queries import feature_send_mail_to_users_enabled
-from pcapi import settings
 from pcapi.utils.date import get_date_formatted_for_email
 from pcapi.utils.date import get_time_formatted_for_email
 from pcapi.utils.date import utc_datetime_to_department_timezone

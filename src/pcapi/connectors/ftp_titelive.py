@@ -5,8 +5,8 @@ from typing import List
 from typing import Pattern
 from zipfile import ZipFile
 
-from pcapi.domain.titelive import put_today_file_at_end_of_list
 from pcapi import settings
+from pcapi.domain.titelive import put_today_file_at_end_of_list
 from pcapi.utils.logger import logger
 
 

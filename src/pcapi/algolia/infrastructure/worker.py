@@ -3,13 +3,13 @@ from typing import Dict
 
 from redis import Redis
 
+from pcapi import settings
 from pcapi.connectors.redis import add_venue_provider_currently_in_sync
 from pcapi.connectors.redis import delete_venue_providers
 from pcapi.connectors.redis import get_number_of_venue_providers_currently_in_sync
 from pcapi.connectors.redis import get_venue_providers
 from pcapi.connectors.scalingo_api import ScalingoApiException
 from pcapi.connectors.scalingo_api import run_process_in_one_off_container
-from pcapi import settings
 from pcapi.utils.logger import logger
 
 

@@ -4,6 +4,7 @@ from typing import Callable
 from typing import Dict
 from typing import List
 
+from pcapi import settings
 from pcapi.connectors.api_demarches_simplifiees import get_application_details
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_validator import get_beneficiary_duplicates
 from pcapi.domain.demarches_simplifiees import get_closed_application_ids_for_demarche_simplifiee
@@ -18,7 +19,6 @@ from pcapi.repository.beneficiary_import_queries import find_applications_ids_to
 from pcapi.repository.beneficiary_import_queries import is_already_imported
 from pcapi.repository.beneficiary_import_queries import save_beneficiary_import_with_status
 from pcapi.repository.user_queries import find_user_by_email
-from pcapi import settings
 from pcapi.utils.logger import logger
 from pcapi.utils.mailing import MailServiceException
 from pcapi.utils.mailing import send_raw_email

@@ -4,6 +4,7 @@ from typing import Callable
 from typing import Dict
 from typing import List
 
+from pcapi import settings
 from pcapi.connectors.api_demarches_simplifiees import get_application_details
 from pcapi.domain.demarches_simplifiees import get_closed_application_ids_for_demarche_simplifiee
 from pcapi.domain.user_activation import create_beneficiary_from_application
@@ -18,11 +19,9 @@ from pcapi.repository.beneficiary_import_queries import is_already_imported
 from pcapi.repository.beneficiary_import_queries import save_beneficiary_import_with_status
 from pcapi.repository.user_queries import find_by_civility
 from pcapi.repository.user_queries import find_user_by_email
-from pcapi import settings
 from pcapi.utils.logger import logger
 from pcapi.utils.mailing import MailServiceException
 from pcapi.utils.mailing import send_raw_email
-
 
 
 def run(

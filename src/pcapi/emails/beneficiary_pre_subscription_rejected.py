@@ -1,8 +1,8 @@
 import os
 from typing import Dict
 
-from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription import BeneficiaryPreSubscription
 from pcapi import settings
+from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription import BeneficiaryPreSubscription
 
 
 def make_duplicate_beneficiary_pre_subscription_rejected_data(

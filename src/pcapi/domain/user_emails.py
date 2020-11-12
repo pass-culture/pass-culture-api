@@ -2,6 +2,7 @@ from typing import Callable
 from typing import List
 from typing import Union
 
+from pcapi import settings
 from pcapi.core.bookings.models import Booking
 from pcapi.domain.beneficiary.beneficiary import Beneficiary
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription import BeneficiaryPreSubscription

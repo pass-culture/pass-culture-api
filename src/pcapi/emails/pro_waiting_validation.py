@@ -1,9 +1,9 @@
 from typing import Dict
 
+from pcapi import settings
 from pcapi.models import Offerer
 from pcapi.models import UserSQLEntity
 from pcapi.repository.feature_queries import feature_send_mail_to_users_enabled
-from pcapi import settings
 
 
 def retrieve_data_for_pro_user_waiting_offerer_validation_email(user: UserSQLEntity, offerer: Offerer) -> Dict:

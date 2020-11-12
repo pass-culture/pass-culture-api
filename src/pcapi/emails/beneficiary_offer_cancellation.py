@@ -1,9 +1,9 @@
 from typing import Dict
 
+from pcapi import settings
 from pcapi.models import Booking
 from pcapi.models import Stock
 from pcapi.repository.feature_queries import feature_send_mail_to_users_enabled
-from pcapi import settings
 from pcapi.utils.mailing import build_pc_pro_offer_link
 from pcapi.utils.mailing import extract_users_information_from_bookings
 from pcapi.utils.mailing import format_booking_date_for_email

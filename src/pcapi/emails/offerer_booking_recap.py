@@ -1,10 +1,10 @@
 from typing import Dict
 from typing import List
 
+from pcapi import settings
 from pcapi.core.bookings.models import Booking
 import pcapi.core.bookings.repository as booking_repository
 from pcapi.models.offer_type import ProductType
-from pcapi import settings
 from pcapi.utils.mailing import build_pc_pro_offer_link
 from pcapi.utils.mailing import create_email_recipients
 from pcapi.utils.mailing import extract_users_information_from_bookings

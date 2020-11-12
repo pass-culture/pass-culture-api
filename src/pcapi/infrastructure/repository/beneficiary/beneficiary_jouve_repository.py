@@ -2,12 +2,12 @@ import datetime
 
 import requests
 
+from pcapi import settings
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription import BeneficiaryPreSubscription
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_repository import (
     BeneficiaryPreSubscriptionRepository,
 )
 from pcapi.infrastructure.repository.beneficiary import beneficiary_jouve_converter
-from pcapi import settings
 
 
 class ApiJouveException(Exception):

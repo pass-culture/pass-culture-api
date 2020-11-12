@@ -12,6 +12,7 @@ from flask import current_app as app
 from flask import render_template
 from requests import Response
 
+from pcapi import settings
 from pcapi.connectors import api_entreprises
 from pcapi.core.bookings.repository import find_ongoing_bookings_by_stock
 from pcapi.domain.postal_code.postal_code import PostalCode
@@ -24,7 +25,6 @@ from pcapi.models import UserSQLEntity
 from pcapi.models.email import EmailStatus
 from pcapi.repository.email_queries import save
 from pcapi.repository.feature_queries import feature_send_mail_to_users_enabled
-from pcapi import settings
 from pcapi.utils import logger
 from pcapi.utils.config import API_URL
 from pcapi.utils.config import ENV

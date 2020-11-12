@@ -1,5 +1,5 @@
-from pcapi.utils import requests
 from pcapi import settings
+from pcapi.utils import requests
 
 
 class ReCaptchaException(Exception):

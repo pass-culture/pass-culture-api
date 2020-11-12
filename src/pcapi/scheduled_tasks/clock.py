@@ -8,6 +8,7 @@ import os
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 
+from pcapi import settings
 from pcapi.flask_app import app
 from pcapi.local_providers.provider_manager import synchronize_venue_providers_for_provider
 from pcapi.models.beneficiary_import import BeneficiaryImportSources
@@ -26,8 +27,6 @@ from pcapi.scheduled_tasks.decorators import log_cron
 from pcapi.scripts.beneficiary import old_remote_import
 from pcapi.scripts.beneficiary import remote_import
 from pcapi.scripts.update_booking_used import update_booking_used_after_stock_occurrence
-from pcapi import settings
-
 
 @log_cron
 @cron_context

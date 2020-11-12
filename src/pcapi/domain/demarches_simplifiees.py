@@ -4,13 +4,13 @@ from typing import List
 from typing import Optional
 from typing import Union
 
+from pcapi import settings
 from pcapi.connectors.api_demarches_simplifiees import DmsApplicationStates
 from pcapi.connectors.api_demarches_simplifiees import get_all_applications_for_procedure
 from pcapi.connectors.api_demarches_simplifiees import get_application_details
 from pcapi.domain.bank_account import format_raw_iban_and_bic
 from pcapi.domain.bank_information import CannotRegisterBankInformation
 from pcapi.models.bank_information import BankInformationStatus
-from pcapi import settings
 from pcapi.utils.date import DATE_ISO_FORMAT
 from pcapi.utils.logger import logger
 
