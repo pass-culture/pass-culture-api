@@ -4,18 +4,21 @@ executors:
   gcp-sdk:
     docker:
       - image: google/cloud-sdk:316.0.0
-        auth:
-          username: $DOCKERHUB_USER
-          password: $DOCKERHUB_PASSWORD
+
+  helm:
+    docker:
+      - image: passcultureapp/helm-gcp:3.4.1
 
 commands:
   authenticate_gcp:
     description: Authenticate to a GCP project
+    parameters:
+      gcp-key-name:
+        type: env_var_name
     steps:
-      - run: echo ${GOOGLE_AUTH} > ${HOME}/gcp-key.json
+      - run: echo ${<< parameters.gcp-key-name >>} > ${HOME}/gcp-key.json
       - run: gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
       - run: gcloud --quiet config set project ${GCP_PROJECT}
-      - run: gcloud beta auth configure-docker ${GCP_REGION}-docker.pkg.dev
 
 jobs:
   run-tests:
@@ -136,7 +139,9 @@ jobs:
       - setup_remote_docker:
           version: 19.03.13
           docker_layer_caching: true
-      - authenticate_gcp
+      - authenticate_gcp:
+          gcp-key-name: GCP_INFRA_KEY
+      - run: gcloud beta auth configure-docker ${GCP_REGION}-docker.pkg.dev
       - run: docker build -t ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GCP_REGISTRY_NAME}/${IMAGE_NAME}:$CIRCLE_SHA1 .
       - run: docker push ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GCP_REGISTRY_NAME}/${IMAGE_NAME}:$CIRCLE_SHA1
 
@@ -150,13 +155,12 @@ jobs:
       GCP_PROJECT: pass-culture-app-projet-test
       GCP_REGISTRY_NAME: pass-culture-artifact-registry
       SA_EMAIL: secret-reader@pass-culture-app-projet-test.iam.gserviceaccount.com
-
     steps:
+      - authenticate_gcp:
+          gcp-key-name: GCP_METIER_KEY
       - run:
           name: Deploy passculture-api image from artifact registry to CloudRun
           command: |
-            echo ${GOOGLE_CR_PROVIDER} | base64 -d > gcloud_keys
-            gcloud -q auth activate-service-account --key-file gcloud_keys
             gcloud run deploy ${APP_NAME} \
             --platform=managed \
             --no-allow-unauthenticated \
@@ -215,6 +219,40 @@ jobs:
               RECAPTCHA_SECRET=sm://${GCP_PROJECT}/${APP_NAME}_recaptcha_secret, \
               SCALINGO_APP_TOKEN=sm://${GCP_PROJECT}/${APP_NAME}_scalingo_app_token" \
             --image=${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GCP_REGISTRY_NAME}/${IMAGE_NAME}:latest
+
+  deploy-cron-and-worker:
+    executor: helm
+    environment:
+      GCP_REGION: europe-west1
+      GKE_CLUSTER_NAME: cluster-metier-development
+      HELM_EXPERIMENTAL_OCI: 1
+      CHART_REGISTRY_SERVER: europe-west1-docker.pkg.dev/pass-culture-app-projet-test
+      CHART_REGISTRY_NAMESPACE: pass-culture-artifact-registry
+      CHART_REGISTRY_NAME: passculture-chart
+      HELM_CHART_URI: ${CHART_REGISTRY_SERVER}/${CHART_REGISTRY_NAMESPACE}/${CHART_REGISTRY_NAME}:${TAG}
+      HELM_CHART_NAME: passculture
+      HELM_RELEASE_NAME: development
+      KUBERNETES_NAMESPACE: development
+      HELM_VALUES_FILE: values.yaml
+      TAG: stable
+    steps:
+      - authenticate_gcp:
+          gcp-key-name: GCP_METIER_KEY
+      - run:
+          name: Get GKE cluster credentials
+          command: gcloud container clusters get-credentials --region ${GCP_REGION} ${GKE_CLUSTER_NAME}
+      - run:
+          name: Login to GCP Artifact Registry with helm
+          command: echo ${GCP_INFRA_KEY} | helm registry login  -u _json_key --password-stdin ${CHART_REGISTRY_SERVER}
+      - run:
+          name: Pull chart from registry
+          command: helm chart pull ${CHART_REGISTRY_SERVER}/${CHART_REGISTRY_NAMESPACE}/${CHART_REGISTRY_NAME}:${TAG}
+      - run:
+          name: Export chart in local filesystem
+          command: helm chart export ${CHART_REGISTRY_SERVER}/${CHART_REGISTRY_NAMESPACE}/${CHART_REGISTRY_NAME}:${TAG} -d tmp/
+      - run:
+          name:
+          command: helm upgrade -i --wait ${HELM_RELEASE_NAME} tmp/${HELM_CHART_NAME} -n ${KUBERNETES_NAMESPACE} -f tmp/${HELM_CHART_NAME}/${HELM_VALUES_FILE}
 
   tests-data-analytics:
     docker:
@@ -413,6 +451,11 @@ workflows:
               only:
                 - migration-gcp
       - deploy-cloudrun:
+          filters:
+            branches:
+              only:
+                - migration-gcp
+      - deploy-cron-and-worker:
           filters:
             branches:
               only:
