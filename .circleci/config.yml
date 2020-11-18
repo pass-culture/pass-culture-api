@@ -225,12 +225,11 @@ jobs:
     environment:
       GCP_REGION: europe-west1
       GCP_PROJECT: pass-culture-app-projet-test
+      GCP_REGISTRY_NAME: pass-culture-artifact-registry
       GKE_CLUSTER_NAME: cluster-metier-development
       HELM_EXPERIMENTAL_OCI: 1
-      GCP_REGISTRY_NAME: pass-culture-artifact-registry
       CHART_NAME: passculture-chart
       HELM_CHART_URI: ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GCP_REGISTRY_NAME}/${CHART_NAME}:${TAG}
-
       HELM_CHART_NAME: passculture
       HELM_RELEASE_NAME: development
       KUBERNETES_NAMESPACE: development
@@ -436,31 +435,31 @@ workflows:
   version: 2
   commit:
     jobs:
-      - run-tests:
-          filters:
-            branches:
-              ignore:
-                - production
+      # - run-tests:
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - production
       - build-container:
           filters:
             branches:
               only:
-                - master
+                - PC-5084/deploy-cron-helm-chart
       - build-and-push-image:
           filters:
             branches:
               only:
-                - migration-gcp
+                - PC-5084/deploy-cron-helm-chart
       - deploy-cloudrun:
           filters:
             branches:
               only:
-                - migration-gcp
+                - PC-5084/deploy-cron-helm-chart
       - deploy-cron-and-worker:
           filters:
             branches:
               only:
-                - migration-gcp
+                - PC-5084/deploy-cron-helm-chart
 
   nightly:
     triggers:
