@@ -224,12 +224,13 @@ jobs:
     executor: helm
     environment:
       GCP_REGION: europe-west1
+      GCP_PROJECT: pass-culture-app-projet-test
       GKE_CLUSTER_NAME: cluster-metier-development
       HELM_EXPERIMENTAL_OCI: 1
-      CHART_REGISTRY_SERVER: europe-west1-docker.pkg.dev/pass-culture-app-projet-test
-      CHART_REGISTRY_NAMESPACE: pass-culture-artifact-registry
-      CHART_REGISTRY_NAME: passculture-chart
-      HELM_CHART_URI: ${CHART_REGISTRY_SERVER}/${CHART_REGISTRY_NAMESPACE}/${CHART_REGISTRY_NAME}:${TAG}
+      GCP_REGISTRY_NAME: pass-culture-artifact-registry
+      CHART_NAME: passculture-chart
+      HELM_CHART_URI: ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GCP_REGISTRY_NAME}/${CHART_NAME}:${TAG}
+
       HELM_CHART_NAME: passculture
       HELM_RELEASE_NAME: development
       KUBERNETES_NAMESPACE: development
@@ -243,13 +244,13 @@ jobs:
           command: gcloud container clusters get-credentials --region ${GCP_REGION} ${GKE_CLUSTER_NAME}
       - run:
           name: Login to GCP Artifact Registry with helm
-          command: echo ${GCP_INFRA_KEY} | helm registry login  -u _json_key --password-stdin ${CHART_REGISTRY_SERVER}
+          command: echo ${GCP_INFRA_KEY} | helm registry login  -u _json_key --password-stdin ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}
       - run:
           name: Pull chart from registry
-          command: helm chart pull ${CHART_REGISTRY_SERVER}/${CHART_REGISTRY_NAMESPACE}/${CHART_REGISTRY_NAME}:${TAG}
+          command: helm chart pull ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GCP_REGISTRY_NAME}/${CHART_NAME}:${TAG}
       - run:
           name: Export chart in local filesystem
-          command: helm chart export ${CHART_REGISTRY_SERVER}/${CHART_REGISTRY_NAMESPACE}/${CHART_REGISTRY_NAME}:${TAG} -d tmp/
+          command: helm chart export ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GCP_REGISTRY_NAME}/${CHART_NAME}:${TAG} -d tmp/
       - run:
           name:
           command: helm upgrade -i --wait ${HELM_RELEASE_NAME} tmp/${HELM_CHART_NAME} -n ${KUBERNETES_NAMESPACE} -f tmp/${HELM_CHART_NAME}/${HELM_VALUES_FILE}
