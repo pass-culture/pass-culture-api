@@ -780,6 +780,9 @@ class GetAllOffersIdByFiltersTest:
         wanted_stock = create_stock_from_offer(
             offer=wanted_offer, beginning_datetime=datetime(2020, 10, 10, 10, 00, 00, 0)
         )
+        wanted_stock = create_stock_from_offer(
+            offer=wanted_offer, beginning_datetime=datetime(2020, 10, 10, 10, 00, 00, 0)
+        )
         unwanted_stock = create_stock_from_offer(
             offer=wanted_offer2, beginning_datetime=datetime(2020, 11, 11, 10, 00, 00, 0)
         )
