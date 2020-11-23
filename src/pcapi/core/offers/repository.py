@@ -8,6 +8,7 @@ from sqlalchemy import func
 from sqlalchemy import not_
 from sqlalchemy import or_
 from sqlalchemy.orm import Query
+from sqlalchemy.orm import aliased
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.functions import coalesce
 
@@ -123,11 +124,12 @@ def get_offers_by_filters(
     if status is not None:
         query = _filter_by_status(query, datetime_now, status)
     if period_beginning_date is not None or period_ending_date is not None:
-        query = query.join(Stock)
+        stock_alias = aliased(Stock)
+        query = query.join(Offer.stocks.of_type(stock_alias))
         if period_beginning_date is not None:
-            query = query.filter(Stock.beginningDatetime >= period_beginning_date)
+            query = query.filter(stock_alias.beginningDatetime >= period_beginning_date)
         if period_ending_date is not None:
-            query = query.filter(Stock.beginningDatetime <= period_ending_date)
+            query = query.filter(stock_alias.beginningDatetime <= period_ending_date)
 
     return query.distinct(Offer.id)
 
