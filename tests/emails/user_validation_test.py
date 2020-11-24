@@ -1,17 +1,16 @@
+import pytest
+
 from pcapi import settings
 import pcapi.core.users.factories as users_factories
-from pcapi.model_creators.generic_creators import create_user
 from pcapi.utils.mailing import make_admin_user_validation_email
 from pcapi.utils.mailing import make_pro_user_validation_email
 
-from tests.conftest import clean_database
 
-
+@pytest.mark.usefixtures("db_session")
 class ProValidationEmailsTest:
     def test_make_pro_user_validation_email_includes_validation_url_with_token_and_user_email(self, app):
         # Given
-        user = create_user(email="test@example.com")
-        user.generate_validation_token()
+        user = users_factories.UserFactory(email="test@example.com", validationToken="token123")
 
         # When
         email = make_pro_user_validation_email(user)
@@ -21,8 +20,8 @@ class ProValidationEmailsTest:
             "MJ-TemplateID": 1660341,
             "MJ-TemplateLanguage": True,
             "Vars": {
-                "nom_structure": "John Doe",
-                "lien_validation_mail": f"{settings.PRO_URL}/inscription/validation/{user.validationToken}",
+                "nom_structure": "Jeanne Doux",
+                "lien_validation_mail": f"{settings.PRO_URL}/inscription/validation/token123",
             },
         }
 
@@ -30,8 +29,8 @@ class ProValidationEmailsTest:
         assert email == expected
 
 
+@pytest.mark.usefixtures("db_session")
 class AdminValidationEmailsTest:
-    @clean_database
     def test_make_admin_user_validation_email_includes_validation_url_with_token_and_user_email(self, app):
         # Given
         user = users_factories.UserFactory(email="admin@example.com", isAdmin=True)

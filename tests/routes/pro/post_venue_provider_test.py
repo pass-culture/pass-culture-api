@@ -16,7 +16,6 @@ from pcapi.utils.human_ids import dehumanize
 from pcapi.utils.human_ids import humanize
 
 from tests.conftest import TestClient
-from tests.conftest import clean_database
 
 
 class Returns201:
@@ -272,7 +271,7 @@ class Returns400:
         assert response.status_code == 400
         assert response.json["global"] == ["Votre lieu est déjà lié à cette source"]
 
-    @clean_database
+    @pytest.mark.usefixtures("db_session")
     def when_add_allocine_stocks_provider_with_wrong_format_price(self, app):
         # Given
         venue = offer_factories.VenueFactory(managingOfferer__siren="775671464")
