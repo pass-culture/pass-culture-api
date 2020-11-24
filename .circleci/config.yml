@@ -250,7 +250,7 @@ jobs:
           name: Export chart in local filesystem
           command: helm chart export ${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GCP_REGISTRY_NAME}/${CHART_NAME}:${TAG} -d tmp/
       - run:
-          name:
+          name: Install chart update
           command: helm upgrade -i --wait ${HELM_RELEASE_NAME} tmp/${HELM_CHART_NAME} -n ${KUBERNETES_NAMESPACE} -f tmp/${HELM_CHART_NAME}/${HELM_VALUES_FILE}
 
   tests-data-analytics:
@@ -450,6 +450,8 @@ workflows:
               only:
                 - migration-gcp
       - deploy-cloudrun:
+          requires:
+            - build-and-push-image
           filters:
             branches:
               only:
