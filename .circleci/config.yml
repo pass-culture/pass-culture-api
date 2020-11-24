@@ -168,7 +168,6 @@ jobs:
             --project ${GCP_PROJECT} \
             --region ${GCP_REGION} \
             --port=$PORT \
-            --async \
             --service-account ${SA_EMAIL} \
             --set-env-vars "\
               ON_USER_RECIPIENTS=dev+testing@passculture.app, \
