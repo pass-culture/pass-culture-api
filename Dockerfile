@@ -1,20 +1,21 @@
-FROM python:3.7.6-slim
+FROM python:3.7.6-slim AS api-flask
 
 ENV PYTHONUNBUFFERED 1
-WORKDIR /usr/src/app
-RUN apt update && apt-get -y install gcc postgresql-client libpq-dev curl git && apt-get clean
-
-COPY requirements.txt ./
-
-RUN pip install -r requirements.txt
+WORKDIR /usr/local/bin
+RUN apt update && apt -y install gcc libpq-dev && apt clean
+COPY ./requirements.txt ./
+RUN pip install --no-cache-dir -r ./requirements.txt
 RUN python -m nltk.downloader punkt stopwords
-
-COPY . .
-COPY src/pcapi .
-RUN pip install -e .
-
 EXPOSE 5000
 
+FROM api-flask
+WORKDIR /usr/src/app
+RUN apt update && \
+    apt -y install postgresql-client curl git && \
+    apt clean
+COPY . .
+COPY src/pcapi .
+RUN pip --no-cache-dir install -e .
 COPY --from=us-docker.pkg.dev/berglas/berglas/berglas:latest /bin/berglas /bin/berglas
 CMD exec /bin/berglas exec -- gunicorn \
                     -w $UNICORN_N_WORKERS \
