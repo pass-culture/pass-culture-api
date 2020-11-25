@@ -5,7 +5,7 @@ WORKDIR /usr/local/bin
 RUN apt update && apt -y install gcc libpq-dev && apt clean
 COPY ./requirements.txt ./
 RUN pip install --no-cache-dir -r ./requirements.txt
-RUN python -m nltk.downloader punkt stopwords
+RUN python -m nltk.downloader -d /usr/local/share/nltk_data punkt stopwords
 EXPOSE 5000
 
 FROM api-flask

@@ -192,7 +192,7 @@ jobs:
               PAYMENTS_DETAILS_RECIPIENTS=dev+testing@passculture.app, \
               PAYMENTS_REPORT_RECIPIENTS=dev+testing@passculture.app, \
               PYTHONSTARTUP=/app/.env_ps1.py, \
-              REDIS_URL=m://${GCP_PROJECT}/redis-pass-culture-api-ehp-credentials-chain, \
+              REDIS_URL=sm://${GCP_PROJECT}/redis-pass-culture-api-ehp-credentials-chain, \
               SUPPORT_EMAIL_ADDRESS=dev+testing@passculture.app, \
               TEST_VAR=test_variable, \
               TRANSACTIONS_RECIPIENTS="dev+testing@passculture.app", \
