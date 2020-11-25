@@ -151,6 +151,7 @@ jobs:
       APP_NAME: pass-culture-api-dev
       IMAGE_NAME: pass-culture-api
       PORT: 80
+      MEMORY: 2Gi
       GCP_REGION: europe-west1
       GCP_PROJECT: pass-culture-app-projet-test
       GCP_REGISTRY_NAME: pass-culture-artifact-registry
@@ -168,12 +169,13 @@ jobs:
             --project ${GCP_PROJECT} \
             --region ${GCP_REGION} \
             --port=$PORT \
+            --memory=${MEMORY} \
             --service-account ${SA_EMAIL} \
             --set-env-vars "\
               ON_USER_RECIPIENTS=dev+testing@passculture.app, \
               ADMINISTRATION_EMAIL_ADDRESS=dev+testing@passculture.app, \
               ALGOLIA_APPLICATION_ID=testingHXXTDUE7H0, \
-              DATABASE_URL=10.159.0.3:5432, \
+              DATABASE_URL=sm://${GCP_PROJECT}/postgres-pass-culture-api-ehp-credentials-chain, \
               DEV_EMAIL_ADDRESS=dev+testing@passculture.app, \
               ENV=testing, \
               FTP_TITELIVE_URI=ftp.astitelive.com, \
@@ -190,7 +192,7 @@ jobs:
               PAYMENTS_DETAILS_RECIPIENTS=dev+testing@passculture.app, \
               PAYMENTS_REPORT_RECIPIENTS=dev+testing@passculture.app, \
               PYTHONSTARTUP=/app/.env_ps1.py, \
-              REDIS_URL=pass-culture-app-projet-test:europe-west1:pass-culture-api-184c179a, \
+              REDIS_URL=m://${GCP_PROJECT}/redis-pass-culture-api-ehp-credentials-chain, \
               SUPPORT_EMAIL_ADDRESS=dev+testing@passculture.app, \
               TEST_VAR=test_variable, \
               TRANSACTIONS_RECIPIENTS="dev+testing@passculture.app", \
