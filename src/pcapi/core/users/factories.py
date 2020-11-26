@@ -25,6 +25,7 @@ class UserFactory(BaseFactory):
     lastName = "Doux"
     publicName = "Jeanne Doux"
     isEmailValidated = True
+    isBeneficiary = True
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
@@ -38,7 +39,7 @@ class UserFactory(BaseFactory):
 
         if not create:
             return None
-        if obj.isAdmin or not obj.canBookFreeOffers:
+        if obj.isAdmin or not obj.isBeneficiary:
             return None
         deposit_kwargs = {"user": obj}
         if extracted:
