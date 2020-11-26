@@ -173,6 +173,7 @@ jobs:
           command: |
             git clone https://github.com/betagouv/pass-culture-main.git
             cd pass-culture-main
+            git checkout 5480-remove-now-useless-docker-compose-env-variable
             rm -rf shared
             git clone https://github.com/betagouv/pass-culture-browser.git webapp
             ./install_lib_ci.sh
@@ -299,6 +300,8 @@ workflows:
   version: 2
   commit:
     jobs:
+      - functional-tests-webapp
+      - functional-tests-pro
       - run-tests:
           name: "Run tests after commit"
           filters:
