@@ -40,3 +40,6 @@ else:
     NATIVE_APP_URL = f"passculture://app.passculture.{ENV}"
 
 BLOB_SIZE = 30
+
+# DATABASE
+DB_MIGRATION_STATEMENT_TIMEOUT = int(os.environ.get("DB_MIGRATION_STATEMENT_TIMEOUT", 60000))

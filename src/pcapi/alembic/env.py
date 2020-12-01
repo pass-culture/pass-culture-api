@@ -10,6 +10,7 @@ from pcapi.models.db import db
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
+from pcapi.utils.config import DB_MIGRATION_STATEMENT_TIMEOUT
 from pcapi.utils.config import IS_DEV
 
 
@@ -44,7 +45,11 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
     """
     database_url = os.environ.get("DATABASE_URL")
-    connectable = create_engine(database_url)
+    db_options = []
+    if DB_MIGRATION_STATEMENT_TIMEOUT:
+        db_options.append("-c statement_timeout=%i" % DB_MIGRATION_STATEMENT_TIMEOUT)
+    connectable = create_engine(database_url, connect_args={"options": " ".join(db_options)})
+
     with connectable.connect() as connection:
         context.configure(
             connection=connection,
