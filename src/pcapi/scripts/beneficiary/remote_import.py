@@ -206,7 +206,7 @@ def _process_rejection(information: Dict, procedure_id: int) -> None:
 
 def _process_error(error_messages: List[str], application_id: int, procedure_id: int) -> None:
     error = f"Le dossier {application_id} contient des erreurs et a été ignoré - Procedure {procedure_id}"
-    logger.error("[BATCH][REMOTE IMPORT BENEFICIARIES] %s", error)
+    logger.warning("[BATCH][REMOTE IMPORT BENEFICIARIES] %s", error)
     error_messages.append(error)
     save_beneficiary_import_with_status(
         ImportStatus.ERROR,
