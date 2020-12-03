@@ -3,7 +3,6 @@ from datetime import datetime
 from datetime import time
 import math
 from typing import List
-from typing import Set
 
 from dateutil import tz
 from sqlalchemy import Date
@@ -38,6 +37,7 @@ from pcapi.models.payment_status import TransactionStatus
 from pcapi.models.recommendation import Recommendation
 from pcapi.models.user_sql_entity import UserSQLEntity
 from pcapi.utils.date import get_department_timezone
+from pcapi.utils.token import random_token
 
 
 DUO_QUANTITY = 2
@@ -176,6 +176,14 @@ def find_expiring_bookings() -> Query:
         .filter(Booking.isUsed.is_(False))
         .filter(Booking.dateCreated <= today_at_midnight - conf.BOOKINGS_AUTO_EXPIRY_DELAY)
     )
+
+
+def generate_booking_token():
+    for i in range(100):  # pylint: disable=unused-variable
+        token = random_token()
+        if not token_exists(token):
+            return token
+    raise ValueError("Could not generate new booking token")
 
 
 def _query_keep_on_non_activation_offers() -> Query:
