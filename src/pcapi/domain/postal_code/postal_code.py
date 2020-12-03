@@ -4,6 +4,7 @@ OVERSEAS_DEPARTEMENT_IDENTIFIER = "97"
 
 
 class PostalCode:
+    __test__ = False
     postalCode: str
 
     def __init__(self, postalCode: str):

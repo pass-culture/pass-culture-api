@@ -5,6 +5,8 @@ from pcapi.domain.venue.venue_label.venue_label_repository import VenueLabelRepo
 
 
 class GetVenueLabels:
+    __test__ = False
+
     def __init__(self, venue_label_repository: VenueLabelRepository):
         self.venue_label_repository = venue_label_repository
 

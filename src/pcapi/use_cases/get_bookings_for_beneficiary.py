@@ -3,6 +3,8 @@ from pcapi.domain.beneficiary_bookings.beneficiary_bookings_with_stocks import B
 
 
 class GetBookingsForBeneficiary:
+    __test__ = False
+
     def __init__(self, beneficiary_bookings_repository: BeneficiaryBookingsRepository):
         self.beneficiary_bookings_repository = beneficiary_bookings_repository
 

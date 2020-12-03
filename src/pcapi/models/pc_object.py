@@ -34,6 +34,7 @@ OBLIGATORY_FIELD_ERROR_CODE = "23502"
 
 
 class DeletedRecordException(Exception):
+    __test__ = False
     pass
 
 
