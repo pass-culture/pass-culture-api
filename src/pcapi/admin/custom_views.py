@@ -13,6 +13,8 @@ from wtforms import validators
 
 from pcapi.admin.base_configuration import BaseAdminView
 from pcapi.connectors import redis
+from pcapi.domain.password import generate_reset_token
+from pcapi.domain.password import random_password
 from pcapi.domain.user_activation import IMPORT_STATUS_MODIFICATION_RULE
 from pcapi.domain.user_activation import is_import_status_change_allowed
 from pcapi.flask_app import app
@@ -20,8 +22,11 @@ from pcapi.models import BeneficiaryImport
 from pcapi.models import ImportStatus
 from pcapi.models import Offer
 from pcapi.models import UserOfferer
+from pcapi.models.deposit import DEPOSIT_DEFAULT_AMOUNT
+from pcapi.models.deposit import Deposit
 from pcapi.models.user_sql_entity import UserSQLEntity
 from pcapi.repository import repository
+from pcapi.scripts.beneficiary import THIRTY_DAYS_IN_HOURS
 
 
 class OfferAdminView(BaseAdminView):
@@ -109,6 +114,7 @@ class ProUserAdminView(BaseAdminView):
 
 class BeneficiaryUserAdminView(BaseAdminView):
     can_edit = True
+    can_create = True
     column_list = [
         "id",
         "canBookFreeOffers",
@@ -154,6 +160,14 @@ class BeneficiaryUserAdminView(BaseAdminView):
         if form.canBookFreeOffers.data and model.isAdmin:
             raise validators.ValidationError("Un admin ne peut pas réserver des offres")
 
+        if is_created:
+            model.password = random_password()
+            generate_reset_token(model, validity_duration_hours=THIRTY_DAYS_IN_HOURS)
+
+            deposit = Deposit()
+            deposit.amount = DEPOSIT_DEFAULT_AMOUNT
+            deposit.source = "flask-admin"
+            model.deposits = [deposit]
         super().on_model_change(form, model, is_created)
 
     def get_query(self) -> query:
