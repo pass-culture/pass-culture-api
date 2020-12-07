@@ -35,10 +35,10 @@ class ProviderAPI:
                 f"Error {response.status_code} when getting {self.name} stocks for SIRET: {siret}"
             )
 
-        try:
-            return response.json()
-        except ValueError:
+        if not response.content:
             return {}
+
+        return response.json()
 
     def is_siret_registered(self, siret: str) -> bool:
         api_url = self._build_local_provider_url(siret)
