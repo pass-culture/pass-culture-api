@@ -46,4 +46,6 @@ class Recommendation(PcObject, Model):
 
     @property
     def thumbUrl(self) -> str:
-        return self.offer.thumbUrl
+        if self.offer:
+            return self.offer.thumbUrl
+        return self.mediation.thumbUrl
