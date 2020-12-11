@@ -5,8 +5,6 @@ from pcapi import settings
 from pcapi.core.users import models
 from pcapi.models import UserSQLEntity
 from pcapi.repository.feature_queries import feature_send_mail_to_users_enabled
-from pcapi.utils.mailing import DEV_EMAIL_ADDRESS
-from pcapi.utils.mailing import SUPPORT_EMAIL_ADDRESS
 from pcapi.utils.mailing import format_environment_for_email
 
 
@@ -17,7 +15,7 @@ def get_activation_email_data(user: UserSQLEntity) -> Dict:
     env = format_environment_for_email()
 
     return {
-        "FromEmail": SUPPORT_EMAIL_ADDRESS,
+        "FromEmail": settings.SUPPORT_EMAIL_ADDRESS,
         "Mj-TemplateID": 994771,
         "Mj-TemplateLanguage": True,
         "To": email,
@@ -31,10 +29,10 @@ def get_activation_email_data_for_native(user: UserSQLEntity, token: models.Toke
         f"{settings.NATIVE_APP_URL}/email-confirmation?token={token.value}&expiration_timestamp={expiration_timestamp}"
     )
     return {
-        "FromEmail": SUPPORT_EMAIL_ADDRESS,
+        "FromEmail": settings.SUPPORT_EMAIL_ADDRESS,
         "Mj-TemplateID": 1897370,
         "Mj-TemplateLanguage": True,
-        "To": user.email if feature_send_mail_to_users_enabled() else DEV_EMAIL_ADDRESS,
+        "To": user.email if feature_send_mail_to_users_enabled() else settings.DEV_EMAIL_ADDRESS,
         "Vars": {
             "native_app_link": email_confirmation_link,
         },
