@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+env
+
 python src/pcapi/scripts/pc.py install_data && python src/pcapi/scripts/pc.py install_postgres_extension && alembic upgrade head
 
 gunicorn \

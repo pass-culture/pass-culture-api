@@ -94,7 +94,7 @@ commands:
                 SCALINGO_APP_TOKEN=sm://${GCP_PROJECT}/<< parameters.app_name >>_scalingo_app_token, \
                 SUPPORT_EMAIL_ADDRESS=sm://${GCP_PROJECT}/<< parameters.app_name >>_support_email_address, \
                 TRANSACTIONS_RECIPIENTS=sm://${GCP_PROJECT}/<< parameters.app_name >>_transactions_recipients, \
-                WALLET_BALANCES_RECIPIENTS=sm://${GCP_PROJECT}/<< parameters.app_name >>_wallet_balances_recipients" \
+                WALLET_BALANCES_RECIPIENTS=sm://${GCP_PROJECT}/<< parameters.app_name >>_wallet_balances_recipients, \
             --image=${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT}/${GCP_REGISTRY_NAME}/${DOCKER_IMAGE_NAME}:<< parameters.app_image_tag >>
 
 ###################
@@ -515,6 +515,7 @@ workflows:
             branches:
               only:
                 - master
+                - PC-5681-secrets-segregation
           context:
             - GCP
       - deploy-cloudrun:
@@ -524,6 +525,7 @@ workflows:
             branches:
               only:
                 - master
+                - PC-5681-secrets-segregation
           context:
             - GCP
       - deploy-cron-and-worker:
