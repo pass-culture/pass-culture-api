@@ -518,25 +518,26 @@ workflows:
               only:
                 - master
 
-  gcp:
-    jobs:
-      - build-and-push-image:
-          filters:
-            branches:
-              only:
-                - master
-          context:
-            - GCP
-      - deploy-cloudrun:
-          requires:
-            - build-and-push-image
-          context:
-            - GCP
-      - deploy-cron-and-worker:
-          requires:
-            - build-and-push-image
-          context:
-            - GCP
+  ## Temporarily commented out because failure of a step of this workflow blocks Scalingo deployments
+  # gcp:
+  #   jobs:
+  #     - build-and-push-image:
+  #         filters:
+  #           branches:
+  #             only:
+  #               - master
+  #         context:
+  #           - GCP
+  #     - deploy-cloudrun:
+  #         requires:
+  #           - build-and-push-image
+  #         context:
+  #           - GCP
+  #     - deploy-cron-and-worker:
+  #         requires:
+  #           - build-and-push-image
+  #         context:
+  #           - GCP
 
   nightly:
     triggers:
