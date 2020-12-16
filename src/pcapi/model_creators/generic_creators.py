@@ -476,6 +476,7 @@ def create_user(
     idx: int = None,
     is_admin: bool = False,
     is_beneficiary: bool = True,
+    is_email_validated: bool = True,
     last_connection_date: datetime = None,
     last_name: str = None,
     needs_to_fill_cultural_survey: bool = False,
@@ -501,6 +502,7 @@ def create_user(
     user.id = idx
     user.isAdmin = is_admin
     user.isBeneficiary = is_beneficiary
+    user.isEmailValidated = is_email_validated
     user.lastConnectionDate = last_connection_date
     user.lastName = last_name
     user.needsToFillCulturalSurvey = needs_to_fill_cultural_survey
