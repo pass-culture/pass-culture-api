@@ -8,6 +8,7 @@ from pcapi.utils.mailing import DEV_EMAIL_ADDRESS
 
 
 SUPPORT_EMAIL_ADDRESS = os.environ.get("SUPPORT_EMAIL_ADDRESS")
+from pcapi.utils.mailing import format_environment_for_email
 
 
 def build_expired_bookings_recap_email_data_for_beneficiary(
@@ -21,6 +22,7 @@ def build_expired_bookings_recap_email_data_for_beneficiary(
         "Vars": {
             "user_firstName": beneficiary.firstName,
             "bookings": _extract_bookings_information_from_bookings_list(bookings),
+            "env": format_environment_for_email(),
         },
     }
 

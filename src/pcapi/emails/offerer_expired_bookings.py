@@ -6,8 +6,10 @@ from pcapi.models import Booking
 from pcapi.models import Offerer
 from pcapi.repository.feature_queries import feature_send_mail_to_users_enabled
 from pcapi.utils.mailing import DEV_EMAIL_ADDRESS
+from pcapi.utils.mailing import build_pc_pro_offer_link
 from pcapi.utils.mailing import format_booking_date_for_email
 from pcapi.utils.mailing import format_booking_hours_for_email
+from pcapi.utils.mailing import format_environment_for_email
 
 
 SUPPORT_EMAIL_ADDRESS = os.environ.get("SUPPORT_EMAIL_ADDRESS")
@@ -24,6 +26,7 @@ def build_expired_bookings_recap_email_data_for_offerer(
         "Vars": {
             "bookings": _extract_bookings_information_from_bookings_list(bookings),
             "department": PostalCode(offerer.postalCode).get_departement_code(),
+            "env": format_environment_for_email(),
         },
     }
 
@@ -43,6 +46,7 @@ def _extract_bookings_information_from_bookings_list(bookings: typing.List[Booki
                 "quantity": booking.quantity,
                 "user_name": booking.user.publicName,
                 "user_email": booking.user.email,
+                "pcpro_offer_link": build_pc_pro_offer_link(offer),
             }
         )
     return bookings_info
