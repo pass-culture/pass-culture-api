@@ -117,6 +117,10 @@ def create_offer_with_event_product(
     offer.idAtProviders = id_at_providers
     offer.isDuo = is_duo
     offer.withdrawalDetails = withdrawal_details
+    offer.audioDisabilityCompliant = True
+    offer.motorDisabilityCompliant = True
+    offer.mentalDisabilityCompliant = True
+    offer.visualDisabilityCompliant = True
 
     return offer
 
@@ -202,6 +206,10 @@ def create_offer_with_thing_product(
     offer.id = idx
     offer.withdrawalDetails = withdrawal_details
     offer.isDuo = False
+    offer.audioDisabilityCompliant = True
+    offer.motorDisabilityCompliant = True
+    offer.mentalDisabilityCompliant = True
+    offer.visualDisabilityCompliant = True
 
     if extra_data:
         offer.extraData = extra_data
