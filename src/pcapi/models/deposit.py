@@ -7,7 +7,6 @@ from sqlalchemy import ForeignKey
 from sqlalchemy import Numeric
 from sqlalchemy import String
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql.sqltypes import SmallInteger
 
 from pcapi.models.db import Model
 from pcapi.models.pc_object import PcObject
@@ -28,5 +27,3 @@ class Deposit(PcObject, Model):
     source = Column(String(300), nullable=False)
 
     dateCreated = Column(DateTime, nullable=False, default=datetime.utcnow)
-
-    version = Column(SmallInteger, nullable=True)
