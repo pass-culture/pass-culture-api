@@ -67,9 +67,6 @@ class OfferVenueResponse(BaseModel):
         allow_population_by_field_name = True
 
 
-LABELS_BY_DICT_MAPPING = {"musicSubType": ""}
-
-
 def get_id_converter(labels_by_id: Dict, field_name: str) -> Callable[[Optional[str]], Optional[str]]:
     def convert_id_into_label(value_id: Optional[str]) -> Optional[str]:
         try:
