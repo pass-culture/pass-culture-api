@@ -1,6 +1,7 @@
 import datetime
 from typing import List
 from typing import Optional
+from typing import Union
 
 from flask import current_app as app
 import pytz
@@ -20,10 +21,15 @@ from pcapi.models import RightsType
 from pcapi.models import Stock
 from pcapi.models import VenueSQLEntity
 from pcapi.models import db
+from pcapi.models.api_errors import ApiErrors
 from pcapi.models.feature import FeatureToggle
 from pcapi.repository import feature_queries
+from pcapi.repository import offer_queries
+from pcapi.repository import offerer_queries
 from pcapi.repository import repository
 from pcapi.routes.serialization.offers_serialize import PostOfferBodyModel
+from pcapi.routes.serialization.stock_serialize import StockCreationBodyModel
+from pcapi.routes.serialization.stock_serialize import StockEditionBodyModel
 from pcapi.utils import mailing
 from pcapi.utils.rest import ensure_current_user_has_rights
 from pcapi.utils.rest import load_or_raise_error
@@ -190,19 +196,21 @@ def update_offers_active_status(query, is_active):
             redis.add_offer_id(client=app.redis_client, offer_id=offer_id)
 
 
-def create_stock(
+def _create_stock(
     offer: Offer,
     price: float,
     quantity: int = None,
     beginning: datetime.datetime = None,
     booking_limit_datetime: datetime.datetime = None,
-) -> Stock:
+):
     """Return the new stock or raise an exception if it's not possible."""
     validation.check_required_dates_for_stock(offer, beginning, booking_limit_datetime)
     validation.check_offer_is_editable(offer)
     validation.check_stocks_are_editable_for_offer(offer)
+    validation.check_stock_price(price)
+    validation.check_stock_quantity(quantity)
 
-    stock = Stock(
+    return Stock(
         offer=offer,
         price=price,
         quantity=quantity,
@@ -210,23 +218,41 @@ def create_stock(
         bookingLimitDatetime=booking_limit_datetime,
     )
 
-    repository.save(stock)
 
+def create_stock(
+    offer: models.Offer,
+    price: float,
+    quantity: int = None,
+    beginning: datetime.datetime = None,
+    booking_limit_datetime: datetime.datetime = None,
+    save: bool = True,
+) -> Stock:
+    stock = _create_stock(
+        offer,
+        price,
+        quantity,
+        beginning,
+        booking_limit_datetime,
+    )
+
+    repository.save(stock)
     if feature_queries.is_active(FeatureToggle.SYNCHRONIZE_ALGOLIA):
         redis.add_offer_id(client=app.redis_client, offer_id=offer.id)
 
     return stock
 
 
-def edit_stock(
+def _edit_stock(
     stock: Stock,
     price: int = None,
     quantity: int = None,
     beginning: datetime.datetime = None,
     booking_limit_datetime: datetime.datetime = None,
-) -> Stock:
+):
     validation.check_stock_is_updatable(stock)
     validation.check_required_dates_for_stock(stock.offer, beginning, booking_limit_datetime)
+    validation.check_stock_price(price)
+    validation.check_stock_quantity(quantity, stock.bookingsQuantity)
 
     # FIXME (dbaty, 2020-11-25): We need this ugly workaround because
     # the frontend sends us datetimes like "2020-12-03T14:00:00Z"
@@ -262,35 +288,126 @@ def edit_stock(
         validation.check_update_only_allowed_stock_fields_for_allocine_offer(updated_fields)
         stock.fieldsUpdated = list(updated_fields)
 
-    previous_beginning = stock.beginningDatetime
-
     for model_attr, value in updates.items():
         setattr(stock, model_attr, value)
+
+    return stock
+
+
+def _notify_upon_stock_edit(stock: Stock):
+    bookings = bookings_repository.find_not_cancelled_bookings_by_stock(stock)
+    if bookings:
+        bookings = update_confirmation_dates(bookings, stock.beginningDatetime)
+        date_in_two_days = datetime.datetime.utcnow() + datetime.timedelta(days=2)
+        check_event_is_in_more_than_48_hours = stock.beginningDatetime > date_in_two_days
+        if check_event_is_in_more_than_48_hours:
+            bookings = _invalidate_bookings(bookings)
+        try:
+            user_emails.send_batch_stock_postponement_emails_to_users(bookings, send_email=mailing.send_raw_email)
+        except mailing.MailServiceException as exc:
+            # fmt: off
+            app.logger.exception(
+                "Could not notify beneficiaries about update of stock=%s: %s",
+                stock.id,
+                exc,
+            )
+            # fmt: on
+
+
+def edit_stock(
+    stock: Stock,
+    price: int = None,
+    quantity: int = None,
+    beginning: datetime.datetime = None,
+    booking_limit_datetime: datetime.datetime = None,
+) -> Stock:
+    previous_beginning = stock.beginningDatetime
+    stock = _edit_stock(
+        stock,
+        price,
+        quantity,
+        beginning,
+        booking_limit_datetime,
+    )
+
     repository.save(stock)
 
-    if beginning != previous_beginning:
-        bookings = bookings_repository.find_not_cancelled_bookings_by_stock(stock)
-        if bookings:
-            bookings = update_confirmation_dates(bookings, beginning)
-            date_in_two_days = datetime.datetime.utcnow() + datetime.timedelta(days=2)
-            check_event_is_in_more_than_48_hours = beginning > date_in_two_days
-            if check_event_is_in_more_than_48_hours:
-                bookings = _invalidate_bookings(bookings)
-            try:
-                user_emails.send_batch_stock_postponement_emails_to_users(bookings, send_email=mailing.send_raw_email)
-            except mailing.MailServiceException as exc:
-                # fmt: off
-                app.logger.exception(
-                    "Could not notify beneficiaries about update of stock=%s: %s",
-                    stock.id,
-                    exc,
-                )
-                # fmt: on
+    if stock.beginningDatetime != previous_beginning:
+        _notify_upon_stock_edit(stock)
+        # bookings = bookings_repository.find_not_cancelled_bookings_by_stock(stock)
+        # if bookings:
+        #     bookings = update_confirmation_dates(bookings, beginning)
+        #     date_in_two_days = datetime.datetime.utcnow() + datetime.timedelta(days=2)
+        #     check_event_is_in_more_than_48_hours = beginning > date_in_two_days
+        #     if check_event_is_in_more_than_48_hours:
+        #         bookings = _invalidate_bookings(bookings)
+        #     try:
+        #         user_emails.send_batch_stock_postponement_emails_to_users(bookings, send_email=mailing.send_raw_email)
+        #     except mailing.MailServiceException as exc:
+        #         # fmt: off
+        #         app.logger.exception(
+        #             "Could not notify beneficiaries about update of stock=%s: %s",
+        #             stock.id,
+        #             exc,
+        #         )
+        #         # fmt: on
 
     if feature_queries.is_active(FeatureToggle.SYNCHRONIZE_ALGOLIA):
         redis.add_offer_id(client=app.redis_client, offer_id=stock.offerId)
-
     return stock
+
+
+def bulk_create_edit_stocks(offer_id: int, stock_data_list: List[Union[StockCreationBodyModel, StockEditionBodyModel]]):
+    stocks = []
+    edited_stocks = []
+    edited_stocks_previous_beginnings = {}
+    stock_errors = [{}] * len(stock_data_list)
+    db.session.begin_nested()
+
+    offerer = offerer_queries.get_by_offer_id(offer_id)
+    ensure_current_user_has_rights(RightsType.editor, offerer.id)
+
+    for idx, data in enumerate(stock_data_list):
+        try:
+            if isinstance(data, StockEditionBodyModel):
+                stock = Stock.queryNotSoftDeleted().filter_by(id=data.id).join(Offer, VenueSQLEntity).first_or_404()
+                edited_stocks_previous_beginnings[stock.id] = stock.beginningDatetime
+                edited_stock = _edit_stock(
+                    stock,
+                    price=data.price,
+                    quantity=data.quantity,
+                    beginning=data.beginning_datetime,
+                    booking_limit_datetime=data.booking_limit_datetime,
+                )
+                edited_stocks.append(edited_stock)
+                stocks.append(edited_stock)
+            else:
+                offer = offer_queries.get_offer_by_id(offer_id)
+                created_stock = _create_stock(
+                    offer=offer,
+                    price=data.price,
+                    quantity=data.quantity,
+                    beginning=data.beginning_datetime,
+                    booking_limit_datetime=data.booking_limit_datetime,
+                )
+                stocks.append(created_stock)
+        except ApiErrors as e:
+            stock_errors[idx] = e.errors
+
+    if any(stock_errors):
+        db.session.rollback()
+        raise ApiErrors(stock_errors)
+
+    repository.save(*stocks)
+
+    for stock in edited_stocks:
+        previous_beginning = edited_stocks_previous_beginnings[stock.id]
+        if stock.beginningDatetime != previous_beginning:
+            _notify_upon_stock_edit(stock)
+    if feature_queries.is_active(FeatureToggle.SYNCHRONIZE_ALGOLIA):
+        redis.add_offer_id(client=app.redis_client, offer_id=offer_id)
+
+    return stocks
 
 
 def _invalidate_bookings(bookings: List[Booking]) -> List[Booking]:

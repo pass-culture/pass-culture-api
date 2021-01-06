@@ -198,7 +198,7 @@ def test_should_not_update_quantity_stock_when_value_is_less_than_booking_count(
         repository.save(stock)
 
     # then
-    assert e.value.errors["quantity"] == ["Le stock total ne peut être inférieur au nombre de réservations"]
+    assert e.value.errors["quantity"] == ["Le stock total ne peut être inférieur au nombre de réservations."]
 
 
 class IsBookableTest:

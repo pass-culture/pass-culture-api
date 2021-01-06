@@ -6,6 +6,8 @@ from pcapi.models import VenueSQLEntity
 from pcapi.models.user_offerer import RightsType
 from pcapi.repository import offerer_queries
 from pcapi.repository.offer_queries import get_offer_by_id
+from pcapi.routes.serialization.stock_serialize import ListStockResponseIdModel
+from pcapi.routes.serialization.stock_serialize import StockBulkCreationEditionBodyModel
 from pcapi.routes.serialization.stock_serialize import StockCreationBodyModel
 from pcapi.routes.serialization.stock_serialize import StockEditionBodyModel
 from pcapi.routes.serialization.stock_serialize import StockResponseIdModel
@@ -13,6 +15,16 @@ from pcapi.serialization.decorator import spectree_serialize
 from pcapi.utils.human_ids import dehumanize
 from pcapi.utils.rest import ensure_current_user_has_rights
 from pcapi.utils.rest import login_or_api_key_required
+
+
+@private_api.route("/stocks/bulk", methods=["POST"])
+@login_or_api_key_required
+@spectree_serialize(on_success_status=201, response_model=ListStockResponseIdModel)
+def bulk_create_edit_stock(body: StockBulkCreationEditionBodyModel) -> ListStockResponseIdModel:
+    stocks = offers_api.bulk_create_edit_stocks(dehumanize(body.offer_id), body.stocks)
+    return ListStockResponseIdModel(
+        stocks=[StockResponseIdModel.from_orm(stock) for stock in stocks],
+    )
 
 
 @private_api.route("/stocks", methods=["POST"])

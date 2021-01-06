@@ -137,7 +137,7 @@ class Stock(PcObject, Model, ProvidableMixin, SoftDeletableMixin, VersionedMixin
     def restize_internal_error(ie):
         if "check_stock" in str(ie.orig):
             if "quantity_too_low" in str(ie.orig):
-                return ["quantity", "Le stock total ne peut être inférieur au nombre de réservations"]
+                return ["quantity", "Le stock total ne peut être inférieur au nombre de réservations."]
             if "bookingLimitDatetime_too_late" in str(ie.orig):
                 return [
                     "bookingLimitDatetime",

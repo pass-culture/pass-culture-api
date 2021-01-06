@@ -217,7 +217,7 @@ class EditStockTest:
                 beginning=stock.beginningDatetime,
                 booking_limit_datetime=stock.bookingLimitDatetime,
             )
-        msg = "Le stock total ne peut être inférieur au nombre de réservations"
+        msg = "Le stock total ne peut être inférieur au nombre de réservations."
         assert error.value.errors["quantity"][0] == msg
 
         # With enough quantity

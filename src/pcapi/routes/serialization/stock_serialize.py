@@ -1,6 +1,8 @@
 import datetime
 from typing import Any
+from typing import List
 from typing import Optional
+from typing import Union
 
 from pydantic import BaseModel
 
@@ -57,3 +59,12 @@ class StockResponseIdModel(BaseModel):
         orm_mode = True
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
+
+
+class StockBulkCreationEditionBodyModel(BaseModel):
+    offer_id: str
+    stocks: List[Union[StockCreationBodyModel, StockEditionBodyModel]]
+
+
+class ListStockResponseIdModel(BaseModel):
+    stocks: List[StockResponseIdModel]

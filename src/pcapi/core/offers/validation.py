@@ -1,6 +1,7 @@
 from datetime import datetime
 from io import BytesIO
 from typing import Optional
+from typing import Union
 
 from PIL import Image
 
@@ -45,6 +46,26 @@ def check_stocks_are_editable_for_offer(offer: Offer) -> None:
     if offer.isFromProvider:
         api_errors = ApiErrors()
         api_errors.add_error("global", "Les offres importées ne sont pas modifiables")
+        raise api_errors
+
+
+def check_stock_quantity(quantity: Union[int, None], bookingQuantity: int = 0) -> None:
+    api_errors = ApiErrors()
+
+    if quantity and quantity < 0:
+        api_errors.add_error("quantity", "Le stock doit être positif.")
+
+    if quantity and bookingQuantity and (quantity - bookingQuantity) < 0:
+        api_errors.add_error("quantity", "Le stock total ne peut être inférieur au nombre de réservations.")
+
+    if api_errors.errors:
+        raise api_errors
+
+
+def check_stock_price(price: int) -> None:
+    if price < 0:
+        api_errors = ApiErrors()
+        api_errors.add_error("price", "Le prix doit être positif.")
         raise api_errors
 
 
