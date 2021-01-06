@@ -3,9 +3,13 @@ from pcapi.flask_app import private_api
 from pcapi.models import Offer
 from pcapi.models import Stock
 from pcapi.models import VenueSQLEntity
+from pcapi.models.api_errors import ApiErrors
+from pcapi.models.db import db
 from pcapi.models.user_offerer import RightsType
 from pcapi.repository import offerer_queries
 from pcapi.repository.offer_queries import get_offer_by_id
+from pcapi.routes.serialization.stock_serialize import ListStockResponseIdModel
+from pcapi.routes.serialization.stock_serialize import StockBulkCreationEditionBodyModel
 from pcapi.routes.serialization.stock_serialize import StockCreationBodyModel
 from pcapi.routes.serialization.stock_serialize import StockEditionBodyModel
 from pcapi.routes.serialization.stock_serialize import StockResponseIdModel
@@ -13,6 +17,57 @@ from pcapi.serialization.decorator import spectree_serialize
 from pcapi.utils.human_ids import dehumanize
 from pcapi.utils.rest import ensure_current_user_has_rights
 from pcapi.utils.rest import login_or_api_key_required
+
+
+@private_api.route("/stocks/bulk", methods=["POST"])
+@login_or_api_key_required
+@spectree_serialize(on_success_status=201, response_model=ListStockResponseIdModel)
+def bulk_create_edit_stock(body: StockBulkCreationEditionBodyModel) -> ListStockResponseIdModel:
+    stocks = []
+    stock_errors = [{}] * len(body.stocks)
+    has_errors = False
+    db.session.begin_nested()
+
+    for idx, data in enumerate(body.stocks):
+        try:
+            if isinstance(data, StockEditionBodyModel):
+                stock = Stock.queryNotSoftDeleted().filter_by(id=data.id).join(Offer, VenueSQLEntity).first_or_404()
+                offerer_id = stock.offer.venue.managingOffererId
+                ensure_current_user_has_rights(RightsType.editor, offerer_id)
+                edited_stock = offers_api.edit_stock(
+                    stock,
+                    price=data.price,
+                    quantity=data.quantity,
+                    beginning=data.beginning_datetime,
+                    booking_limit_datetime=data.booking_limit_datetime,
+                )
+                stocks.append(edited_stock)
+            else:
+                offerer = offerer_queries.get_by_offer_id(data.offer_id)
+                ensure_current_user_has_rights(RightsType.editor, offerer.id)
+
+                offer = get_offer_by_id(data.offer_id)
+                created_stock = offers_api.create_stock(
+                    offer=offer,
+                    price=data.price,
+                    quantity=data.quantity,
+                    beginning=data.beginning_datetime,
+                    booking_limit_datetime=data.booking_limit_datetime,
+                )
+                stocks.append(created_stock)
+        except ApiErrors as e:
+            has_errors = True
+            stock_errors[idx] = e.errors
+            db.session.begin_nested()
+
+    if has_errors:
+        db.session.rollback()
+        raise ApiErrors(stock_errors)
+
+    db.session.commit()
+    return ListStockResponseIdModel(
+        stocks=[StockResponseIdModel.from_orm(stock) for stock in stocks],
+    )
 
 
 @private_api.route("/stocks", methods=["POST"])

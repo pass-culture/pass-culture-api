@@ -39,8 +39,116 @@ class Returns201:
         assert stock.price == 1222
         assert stock.bookingLimitDatetime is None
 
+    def test_bulk_create_one_stock(self, app):
+        offer = offers_factories.ThingOfferFactory()
+        offers_factories.UserOffererFactory(
+            user__email="user@example.com",
+            offerer=offer.venue.managingOfferer,
+        )
+
+        # When
+        stock_data = {"stocks": [{"price": 20, "offerId": humanize(offer.id)}]}
+
+        response = TestClient(app.test_client()).with_auth("user@example.com").post("/stocks/bulk/", json=stock_data)
+
+        # Then
+        assert response.status_code == 201
+
+        response_dict = response.json
+        assert len(response_dict["stocks"]) == len(stock_data["stocks"])
+
+        created_stock = Stock.query.filter_by(id=dehumanize(response_dict["stocks"][0]["id"])).first()
+        assert offer.id == created_stock.offerId
+        assert created_stock.price == 20
+
+    def test_bulk_edit_one_stock(self, app):
+        offer = offers_factories.ThingOfferFactory()
+        stock = offers_factories.StockFactory(offer=offer, price=10)
+        offers_factories.UserOffererFactory(
+            user__email="user@example.com",
+            offerer=offer.venue.managingOfferer,
+        )
+
+        # When
+        stock_data = {"stocks": [{"id": stock.id, "price": 20}]}
+        response = TestClient(app.test_client()).with_auth("user@example.com").post("/stocks/bulk/", json=stock_data)
+
+        # Then
+        assert response.status_code == 201
+
+        response_dict = response.json
+        assert len(response_dict["stocks"]) == len(stock_data["stocks"])
+
+        edited_stock = Stock.query.filter_by(id=dehumanize(response_dict["stocks"][0]["id"])).first()
+        assert edited_stock.price == 20
+
+    def test_bulk_edit_and_create_stock(self, app):
+        offer = offers_factories.ThingOfferFactory()
+        stock = offers_factories.StockFactory(offer=offer, price=10)
+        offers_factories.UserOffererFactory(
+            user__email="user@example.com",
+            offerer=offer.venue.managingOfferer,
+        )
+
+        # When
+        stock_data = {
+            "stocks": [
+                {"id": stock.id, "price": 20},
+                {"price": 30, "offerId": humanize(offer.id)},
+                {"price": 40, "offerId": humanize(offer.id)},
+            ]
+        }
+
+        response = TestClient(app.test_client()).with_auth("user@example.com").post("/stocks/bulk/", json=stock_data)
+
+        # Then
+        assert response.status_code == 201
+
+        response_dict = response.json
+        assert len(response_dict["stocks"]) == len(stock_data["stocks"])
+
+        for idx, result_stock_id in enumerate(response_dict["stocks"]):
+            result_stock = Stock.query.filter_by(id=dehumanize(result_stock_id["id"])).first()
+            assert result_stock.price == stock_data["stocks"][idx]["price"]
+
 
 class Returns400:
+    def test_bulk_edit_and_create_stock(self, app):
+        offer = offers_factories.ThingOfferFactory()
+        stock = offers_factories.StockFactory(offer=offer, price=10)
+        offers_factories.UserOffererFactory(
+            user__email="user@example.com",
+            offerer=offer.venue.managingOfferer,
+        )
+
+        # When
+        stock_data = {
+            "stocks": [
+                {"id": stock.id, "price": 20},
+                {"quantity": -1, "price": 20, "offerId": humanize(offer.id)},
+                {"quantity": 10, "price": 40, "offerId": humanize(offer.id)},
+            ]
+        }
+
+        response = TestClient(app.test_client()).with_auth("user@example.com").post("/stocks/bulk/", json=stock_data)
+
+        # Then
+        assert response.status_code == 400
+
+        response_dict = response.json
+        # correct errors format
+        assert response_dict[0] == {}
+        assert response_dict[1] == {
+            "quantity": ["Le stock doit être positif"],
+        }
+        assert response_dict[2] == {}
+
+        offer_stocks = Stock.query.filter_by(offerId=offer.id)
+        # nothing have been create.
+        assert offer_stocks.count() == 1
+        # existing stock haven't been update.
+        assert offer_stocks[0].price == 10
+
     def when_missing_offer_id(self, app, db_session):
         # Given
         user = users_factories.UserFactory()
