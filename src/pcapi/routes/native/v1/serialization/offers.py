@@ -19,14 +19,14 @@ from pcapi.utils.logger import logger
 
 
 class Coordinates(BaseModel):
-    latitude: Optional[Decimal]
-    longitude: Optional[Decimal]
+    latitude: Optional[Decimal] = Field(..., nullable=True)
+    longitude: Optional[Decimal] = Field(..., nullable=True)
 
 
 class OfferCategoryResponse(BaseModel):
     categoryType: CategoryType
     label: str
-    name: Optional[CategoryNameEnum]
+    name: Optional[CategoryNameEnum] = Field(..., nullable=True)
 
 
 class OfferOffererResponse(BaseModel):
@@ -38,8 +38,8 @@ class OfferOffererResponse(BaseModel):
 
 class OfferStockResponse(BaseModel):
     id: int
-    beginningDatetime: Optional[datetime]
-    bookingLimitDatetime: Optional[datetime]
+    beginningDatetime: Optional[datetime] = Field(..., nullable=True)
+    bookingLimitDatetime: Optional[datetime] = Field(..., nullable=True)
     isBookable: bool
     price: Decimal
 
@@ -54,12 +54,12 @@ class OfferVenueResponse(BaseModel):
         return super().from_orm(venue)
 
     id: int
-    address: Optional[str]
-    city: Optional[str]
+    address: Optional[str] = Field(..., nullable=True)
+    city: Optional[str] = Field(..., nullable=True)
     managingOfferer: OfferOffererResponse = Field(..., alias="offerer")
     name: str
-    postalCode: Optional[str]
-    publicName: Optional[str]
+    postalCode: Optional[str] = Field(..., nullable=True)
+    publicName: Optional[str] = Field(..., nullable=True)
     coordinates: Coordinates
 
     class Config:
@@ -85,7 +85,7 @@ def get_id_converter(labels_by_id: Dict, field_name: str) -> Callable[[Optional[
 
 class OfferExtraData(BaseModel):
     author: Optional[str]
-    durationMinutes: Optional[int]
+    durationMinutes: Optional[int] = Field(..., nullable=True)
     isbn: Optional[str]
     musicSubType: Optional[str]
     musicType: Optional[str]
@@ -111,15 +111,15 @@ class OfferExtraData(BaseModel):
 
 
 class OfferAccessibilityResponse(BaseModel):
-    audioDisability: Optional[bool]
-    mentalDisability: Optional[bool]
-    motorDisability: Optional[bool]
-    visualDisability: Optional[bool]
+    audioDisability: Optional[bool] = Field(..., nullable=True)
+    mentalDisability: Optional[bool] = Field(..., nullable=True)
+    motorDisability: Optional[bool] = Field(..., nullable=True)
+    visualDisability: Optional[bool] = Field(..., nullable=True)
 
 
 class OfferImageResponse(BaseModel):
     url: str
-    credit: Optional[str]
+    credit: Optional[str] = Field(..., nullable=True)
 
     class Config:
         orm_mode = True
@@ -149,18 +149,18 @@ class OfferResponse(BaseModel):
 
     id: int
     accessibility: OfferAccessibilityResponse
-    description: Optional[str]
-    externalTicketOfficeUrl: Optional[str]
-    extraData: Optional[OfferExtraData]
+    description: Optional[str] = Field(..., nullable=True)
+    externalTicketOfficeUrl: Optional[str] = Field(..., nullable=True)
+    extraData: OfferExtraData
     isActive: bool
     isDigital: bool
     isDuo: bool
     name: str
     category: OfferCategoryResponse
     stocks: List[OfferStockResponse]
-    image: Optional[OfferImageResponse]
+    image: Optional[OfferImageResponse] = Field(..., nullable=True)
     venue: OfferVenueResponse
-    withdrawalDetails: Optional[str]
+    withdrawalDetails: Optional[str] = Field(..., nullable=True)
 
     class Config:
         orm_mode = True
