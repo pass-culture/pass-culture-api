@@ -6,5 +6,4 @@ from pcapi.serialization.utils import before_handler
 
 native_v1 = Blueprint("native_v1", __name__)
 
-api = SpecTree("flask", MODE="strict", before=before_handler, PATH="/")
-api.register(native_v1)
+api = SpecTree("flask", MODE="strict", before=before_handler, PATH="/", app=native_v1)
