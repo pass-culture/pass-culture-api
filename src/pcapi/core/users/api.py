@@ -15,6 +15,7 @@ from pcapi.core.users import exceptions
 from pcapi.core.users.models import Token
 from pcapi.core.users.models import TokenType
 from pcapi.core.users.models import User
+from pcapi.core.users.models import Beneficiary
 from pcapi.core.users.utils import create_custom_jwt_token
 from pcapi.core.users.utils import decode_jwt_token
 from pcapi.core.users.utils import encode_jwt_payload
@@ -50,11 +51,11 @@ def create_reset_password_token(user: User) -> Token:
     return generate_and_save_token(user, TokenType.RESET_PASSWORD, life_time=constants.RESET_PASSWORD_TOKEN_LIFE_TIME)
 
 
-def create_id_check_token(user: User) -> Optional[Token]:
-    if not is_user_eligible(user):
+def create_id_check_token(beneficiary: Beneficiary) -> Optional[Token]:
+    if not _is_beneficiary_eligible(beneficiary):
         return None
 
-    return generate_and_save_token(user, TokenType.ID_CHECK, constants.ID_CHECK_TOKEN_LIFE_TIME)
+    return generate_and_save_token(beneficiary, TokenType.ID_CHECK, constants.ID_CHECK_TOKEN_LIFE_TIME)
 
 
 def generate_and_save_token(user: User, token_type: TokenType, life_time: Optional[timedelta] = None) -> Token:
@@ -78,11 +79,11 @@ def create_account(
     has_allowed_recommendations: bool = False,
     is_email_validated: bool = False,
     send_activation_mail: bool = True,
-) -> User:
+) -> Beneficiary:
     if find_user_by_email(email):
         raise exceptions.UserAlreadyExistsException()
 
-    user = User(
+    beneficiary = Beneficiary(
         email=format_email(email),
         dateOfBirth=datetime.combine(birthdate, datetime.min.time()),
         isEmailValidated=is_email_validated,
@@ -93,30 +94,30 @@ def create_account(
         hasAllowedRecommendations=has_allowed_recommendations,
     )
 
-    age = user.calculate_age()
+    age = beneficiary.calculate_age()
     if not age or age < constants.ACCOUNT_CREATION_MINIMUM_AGE:
         raise exceptions.UnderAgeUserException()
 
-    user.setPassword(password)
-    repository.save(user)
+    beneficiary.setPassword(password)
+    repository.save(beneficiary)
 
     if not is_email_validated and send_activation_mail:
-        request_email_confirmation(user)
-    return user
+        request_email_confirmation(beneficiary)
+    return beneficiary
 
 
-def activate_beneficiary(user: User, deposit_source: str) -> User:
-    if not is_user_eligible(user):
+def activate_beneficiary(beneficiary: Beneficiary, deposit_source: str) -> Beneficiary:
+    if not _is_beneficiary_eligible(beneficiary):
         raise exceptions.NotEligible()
-    user.isBeneficiary = True
-    deposit = payment_api.create_deposit(user, deposit_source=deposit_source)
-    db.session.add_all((user, deposit))
+    beneficiary.isBeneficiary = True
+    deposit = payment_api.create_deposit(beneficiary, deposit_source=deposit_source)
+    db.session.add_all((beneficiary, deposit))
     db.session.commit()
-    return user
+    return beneficiary
 
 
 def attach_beneficiary_import_details(
-    beneficiary: User, beneficiary_pre_subscription: BeneficiaryPreSubscription
+    beneficiary: Beneficiary, beneficiary_pre_subscription: BeneficiaryPreSubscription
 ) -> None:
     beneficiary_import = BeneficiaryImport()
 
@@ -148,19 +149,19 @@ def request_password_reset(user: User) -> None:
         raise exceptions.EmailNotSent()
 
 
-def is_user_eligible(user: User) -> bool:
-    age = user.calculate_age()
+def _is_beneficiary_eligible(beneficiary: Beneficiary) -> bool:
+    age = beneficiary.calculate_age()
     return age is not None and age == constants.ELIGIBILITY_AGE
 
 
-def fulfill_user_data(user: User, deposit_source: str) -> User:
-    user.password = random_password()
-    generate_reset_token(user, validity_duration_hours=THIRTY_DAYS_IN_HOURS)
+def fill_beneficiary_data(beneficiary: Beneficiary, deposit_source: str) -> Beneficiary:
+    beneficiary.password = random_password()
+    generate_reset_token(beneficiary, validity_duration_hours=THIRTY_DAYS_IN_HOURS)
 
-    deposit = payment_api.create_deposit(user, deposit_source)
-    user.deposits = [deposit]
+    deposit = payment_api.create_deposit(beneficiary, deposit_source)
+    beneficiary.deposits = [deposit]
 
-    return user
+    return beneficiary
 
 
 def suspend_account(user: User, reason: constants.SuspensionReason, actor: User) -> None:

@@ -6,7 +6,7 @@ from pcapi.repository.user_queries import find_user_by_email
 
 from . import exceptions
 from . import models
-from .models import User
+from .models import User, Beneficiary
 
 
 def _check_user_and_credentials(user: User, password: str) -> None:
@@ -14,7 +14,9 @@ def _check_user_and_credentials(user: User, password: str) -> None:
         raise exceptions.InvalidIdentifier()
     if not user.isActive:
         raise exceptions.InvalidIdentifier()
-    if not user.isValidated or not user.isEmailValidated:
+    if not user.isValidated:
+        raise exceptions.UnvalidatedAccount()
+    if isinstance(user,Beneficiary) and not user.isEmailValidated:
         raise exceptions.UnvalidatedAccount()
     if not user.checkPassword(password):
         raise exceptions.InvalidPassword()

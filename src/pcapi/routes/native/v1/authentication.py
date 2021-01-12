@@ -92,19 +92,19 @@ def reset_password(body: ResetPasswordRequest) -> None:
 @blueprint.native_v1.route("/validate_email", methods=["POST"])
 @spectree_serialize(on_success_status=200, api=blueprint.api, response_model=ValidateEmailResponse)
 def validate_email(body: ValidateEmailRequest) -> ValidateEmailResponse:
-    user = users_repo.get_user_with_valid_token(body.email_validation_token, [TokenType.EMAIL_VALIDATION])
+    beneficiary = users_repo.get_user_with_valid_token(body.email_validation_token, [TokenType.EMAIL_VALIDATION])
 
-    if not user:
+    if not beneficiary:
         raise ApiErrors({"token": ["Le token de validation d'email est invalide."]})
 
-    user.isEmailValidated = True
-    repository.save(user)
+    beneficiary.isEmailValidated = True
+    repository.save(beneficiary)
 
-    id_check_token = users_api.create_id_check_token(user)
+    id_check_token = users_api.create_id_check_token(beneficiary)
 
     response = ValidateEmailResponse(
-        access_token=create_access_token(identity=user.email),
-        refresh_token=create_refresh_token(identity=user.email),
+        access_token=create_access_token(identity=beneficiary.email),
+        refresh_token=create_refresh_token(identity=beneficiary.email),
         id_check_token=id_check_token.value if id_check_token else None,
     )
 

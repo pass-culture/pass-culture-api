@@ -156,8 +156,6 @@ class User(PcObject, Model, NeedsValidationMixin, VersionedMixin):
 
     hasSeenTutorials = Column(Boolean, nullable=True)
 
-    isEmailValidated = Column(Boolean, nullable=True, server_default=expression.false())
-
     isBeneficiary = Column(Boolean, nullable=False, server_default=expression.false())
 
     hasAllowedRecommendations = Column(Boolean, nullable=False, server_default=expression.false())
@@ -171,6 +169,12 @@ class User(PcObject, Model, NeedsValidationMixin, VersionedMixin):
     # use DeactivableMixin. We'll need to add a migration that adds a
     # NOT NULL constraint.
     isActive = Column(Boolean, nullable=True, server_default=expression.true(), default=True)
+
+    __mapper_args__ = {
+        'polymorphic_on':isBeneficiary,
+        'polymorphic_identity':False
+    }
+
 
     def checkPassword(self, passwordToCheck):
         return check_password(passwordToCheck, self.password)
@@ -273,3 +277,10 @@ class User(PcObject, Model, NeedsValidationMixin, VersionedMixin):
     @property
     def hasOffers(self):
         return any([offerer.nOffers > 0 for offerer in self.offerers])
+
+class Beneficiary(User):
+    isEmailValidated = Column(Boolean, nullable=True, server_default=expression.false())
+
+    __mapper_args__ = {
+        'polymorphic_identity':True
+    }

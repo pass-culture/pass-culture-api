@@ -80,9 +80,9 @@ class BeneficiaryUserView(SuspensionMixin, BaseAdminView):
 
         if is_created:
             # This is to prevent a circulary import dependency
-            from pcapi.core.users.api import fulfill_user_data
+            from pcapi.core.users.api import fill_beneficiary_data
 
-            fulfill_user_data(model, "pass-culture-admin")
+            fill_beneficiary_data(model, "pass-culture-admin")
 
         super().on_model_change(form, model, is_created)
 

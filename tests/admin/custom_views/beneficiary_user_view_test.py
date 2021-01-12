@@ -5,7 +5,7 @@ import pytest
 
 from pcapi.admin.custom_views.suspension_mixin import _allow_suspension_and_unsuspension
 import pcapi.core.users.factories as users_factories
-from pcapi.core.users.models import User
+from pcapi.core.users.models import User, Beneficiary
 from pcapi.models import Deposit
 
 from tests.conftest import TestClient
@@ -93,7 +93,7 @@ class BeneficiaryUserViewTest:
     @patch("wtforms.csrf.session.SessionCSRF.validate_csrf_token")
     def test_suspend_beneficiary(self, mocked_validate_csrf_token, app):
         admin = users_factories.UserFactory(email="admin15@example.com", isAdmin=True)
-        beneficiary = users_factories.UserFactory(email="user15@example.com")
+        beneficiary = users_factories.BeneficiaryFactory(email="user15@example.com")
 
         client = TestClient(app.test_client()).with_auth(admin.email)
         url = f"/pc/back-office/beneficiary_users/suspend?user_id={beneficiary.id}"
@@ -112,7 +112,7 @@ class BeneficiaryUserViewTest:
     @patch("wtforms.csrf.session.SessionCSRF.validate_csrf_token")
     def test_unsuspend_beneficiary(self, mocked_validate_csrf_token, app):
         admin = users_factories.UserFactory(email="admin15@example.com", isAdmin=True)
-        beneficiary = users_factories.UserFactory(email="user15@example.com", isActive=False)
+        beneficiary = users_factories.BeneficiaryFactory(email="user15@example.com", isActive=False)
 
         client = TestClient(app.test_client()).with_auth(admin.email)
         url = f"/pc/back-office/beneficiary_users/unsuspend?user_id={beneficiary.id}"
@@ -129,7 +129,7 @@ class BeneficiaryUserViewTest:
     @patch("pcapi.settings.IS_PROD", True)
     def test_suspend_beneficiary_is_restricted(self, app):
         admin = users_factories.UserFactory(email="admin@example.com", isAdmin=True)
-        beneficiary = users_factories.UserFactory(email="user@example.com")
+        beneficiary = users_factories.BeneficiaryFactory(email="user@example.com")
 
         client = TestClient(app.test_client()).with_auth(admin.email)
         url = f"/pc/back-office/beneficiary_users/suspend?user_id={beneficiary.id}"
@@ -155,7 +155,7 @@ class BeneficiaryUserViewTest:
     @patch("pcapi.admin.custom_views.beneficiary_user_view.send_raw_email")
     def test_beneficiary_user_edition_does_not_send_email(self, mocked_send_raw_email, mocked_flask_flash, app):
         users_factories.UserFactory(email="user@example.com", isAdmin=True)
-        user_to_edit = users_factories.UserFactory(email="not_yet_edited@email.com", isAdmin=False)
+        user_to_edit = users_factories.BeneficiaryFactory(email="not_yet_edited@email.com")
 
         data = dict(
             email="edited@email.com",
