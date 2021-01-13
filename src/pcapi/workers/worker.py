@@ -18,6 +18,8 @@ from sentry_sdk.integrations.redis import RedisIntegration
 from sentry_sdk.integrations.rq import RqIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
+# FIXME (cgaunet, 2021-01-13): this is to prevent Booking circular import when importing user in read_version_from_file
+from pcapi import models  # pylint: disable=unused-import
 from pcapi import settings
 from pcapi.flask_app import app
 from pcapi.utils.health_checker import check_database_connection
