@@ -39,8 +39,6 @@ def run(
         procedure_id,
         procedure_id,
     )
-    error_messages: List[str] = []
-    new_beneficiaries: List[User] = []
     applications_ids = get_all_applications_ids(procedure_id, settings.DMS_TOKEN, process_applications_updated_after)
     retry_ids = get_applications_ids_to_retry()
 
@@ -68,7 +66,6 @@ def run(
                 exc_info=True,
             )
             error = f"Le dossier {application_id} contient des erreurs et a été ignoré - Procedure {procedure_id}"
-            error_messages.append(error)
             save_beneficiary_import_with_status(
                 ImportStatus.ERROR,
                 application_id,
@@ -85,8 +82,6 @@ def run(
         if not already_imported(information["application_id"]):
             process_beneficiary_application(
                 information=information,
-                error_messages=error_messages,
-                new_beneficiaries=new_beneficiaries,
                 retry_ids=retry_ids,
                 procedure_id=procedure_id,
             )
@@ -98,8 +93,6 @@ def run(
 
 def process_beneficiary_application(
     information: Dict,
-    error_messages: List[str],
-    new_beneficiaries: List[User],
     retry_ids: List[int],
     procedure_id: int,
 ) -> None:
@@ -110,9 +103,9 @@ def process_beneficiary_application(
     )
 
     if not duplicate_users or information["application_id"] in retry_ids:
-        _process_creation(error_messages, information, new_beneficiaries, procedure_id)
+        _process_creation(information, procedure_id)
     else:
-        _process_duplication(duplicate_users, error_messages, information, procedure_id)
+        _process_duplication(duplicate_users, information, procedure_id)
 
 
 def parse_beneficiary_information(application_detail: Dict) -> Dict:
@@ -145,9 +138,7 @@ def parse_beneficiary_information(application_detail: Dict) -> Dict:
     return information
 
 
-def _process_creation(
-    error_messages: List[str], information: Dict, new_beneficiaries: List[User], procedure_id: int
-) -> None:
+def _process_creation(information: Dict, procedure_id: int) -> None:
     new_beneficiary = create_beneficiary_from_application(information)
     try:
         repository.save(new_beneficiary)
@@ -158,7 +149,6 @@ def _process_creation(
             api_errors,
             procedure_id,
         )
-        error_messages.append(str(api_errors))
     else:
         logger.info(
             "[BATCH][REMOTE IMPORT BENEFICIARIES] Successfully created user for application %s - Procedure %s",
@@ -172,7 +162,6 @@ def _process_creation(
             source_id=procedure_id,
             user=new_beneficiary,
         )
-        new_beneficiaries.append(new_beneficiary)
         try:
             send_activation_email(new_beneficiary, send_raw_email)
         except MailServiceException as mail_service_exception:
@@ -184,14 +173,11 @@ def _process_creation(
             )
 
 
-def _process_duplication(
-    duplicate_users: List[User], error_messages: List[str], information: Dict, procedure_id: int
-) -> None:
+def _process_duplication(duplicate_users: List[User], information: Dict, procedure_id: int) -> None:
     number_of_beneficiaries = len(duplicate_users)
     duplicate_ids = ", ".join([str(u.id) for u in duplicate_users])
     message = f"{number_of_beneficiaries} utilisateur(s) en doublon {duplicate_ids} pour le dossier {information['application_id']} - Procedure {procedure_id}"
     logger.warning("[BATCH][REMOTE IMPORT BENEFICIARIES] Duplicate beneficiaries found : %s", message)
-    error_messages.append(message)
     save_beneficiary_import_with_status(
         ImportStatus.DUPLICATE,
         information["application_id"],

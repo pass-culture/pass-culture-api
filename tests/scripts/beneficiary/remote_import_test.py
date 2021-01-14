@@ -234,8 +234,6 @@ class RunTest:
                 "activity": "Étudiant",
                 "postal_code": "67200",
             },
-            error_messages=[],
-            new_beneficiaries=[],
             retry_ids=[],
             procedure_id=2567158,
         )
@@ -261,9 +259,7 @@ class ProcessBeneficiaryApplicationTest:
         }
 
         # when
-        remote_import.process_beneficiary_application(
-            information, error_messages=[], new_beneficiaries=[], retry_ids=[], procedure_id=123456
-        )
+        remote_import.process_beneficiary_application(information, retry_ids=[], procedure_id=123456)
 
         # then
         first = User.query.first()
@@ -291,9 +287,7 @@ class ProcessBeneficiaryApplicationTest:
         }
 
         # when
-        remote_import.process_beneficiary_application(
-            information, error_messages=[], new_beneficiaries=[], retry_ids=[], procedure_id=123456
-        )
+        remote_import.process_beneficiary_application(information, retry_ids=[], procedure_id=123456)
 
         # then
         beneficiary_import = BeneficiaryImport.query.first()
@@ -325,9 +319,7 @@ class ProcessBeneficiaryApplicationTest:
         create_beneficiary_from_application.return_value = create_user()
 
         # when
-        remote_import.process_beneficiary_application(
-            information, error_messages=[], new_beneficiaries=[], retry_ids=[], procedure_id=123456
-        )
+        remote_import.process_beneficiary_application(information, retry_ids=[], procedure_id=123456)
 
         # then
         send_activation_email.assert_called()
@@ -335,9 +327,10 @@ class ProcessBeneficiaryApplicationTest:
     @patch("pcapi.scripts.beneficiary.remote_import.create_beneficiary_from_application")
     @patch("pcapi.scripts.beneficiary.remote_import.repository")
     @patch("pcapi.scripts.beneficiary.remote_import.send_activation_email")
+    @patch("pcapi.utils.logger.logger.warning")
     @pytest.mark.usefixtures("db_session")
     def test_error_is_collected_if_beneficiary_could_not_be_saved(
-        self, send_activation_email, mock_repository, create_beneficiary_from_application, app
+        self, warning_logger, send_activation_email, mock_repository, create_beneficiary_from_application, app
     ):
         # given
         information = {
@@ -354,18 +347,18 @@ class ProcessBeneficiaryApplicationTest:
         }
         create_beneficiary_from_application.side_effect = [User()]
         mock_repository.save.side_effect = [ApiErrors({"postalCode": ["baaaaad value"]})]
-        new_beneficiaries = []
-        error_messages = []
 
         # when
-        remote_import.process_beneficiary_application(
-            information, error_messages, new_beneficiaries, retry_ids=[], procedure_id=123456
-        )
+        remote_import.process_beneficiary_application(information, retry_ids=[], procedure_id=123456)
 
         # then
         send_activation_email.assert_not_called()
-        assert error_messages == ['{\n  "postalCode": [\n    "baaaaad value"\n  ]\n}']
-        assert not new_beneficiaries
+        warning_logger.assert_called()
+        assert (
+            warning_logger.call_args[0][0]
+            == "[BATCH][REMOTE IMPORT BENEFICIARIES] Could not save application %s, because of error: %s - Procedure %s"
+        )
+        assert warning_logger.call_args[0][2].errors == {"postalCode": ["baaaaad value"]}
 
     @patch("pcapi.scripts.beneficiary.remote_import.repository")
     @patch("pcapi.scripts.beneficiary.remote_import.send_activation_email")
@@ -388,9 +381,7 @@ class ProcessBeneficiaryApplicationTest:
         repository.save(existing_user)
 
         # when
-        remote_import.process_beneficiary_application(
-            information, error_messages=[], new_beneficiaries=[], retry_ids=[], procedure_id=123456
-        )
+        remote_import.process_beneficiary_application(information, retry_ids=[], procedure_id=123456)
 
         # then
         send_activation_email.assert_not_called()
@@ -419,9 +410,7 @@ class ProcessBeneficiaryApplicationTest:
         retry_ids = [123]
 
         # when
-        remote_import.process_beneficiary_application(
-            information, error_messages=[], new_beneficiaries=[], retry_ids=retry_ids, procedure_id=123456
-        )
+        remote_import.process_beneficiary_application(information, retry_ids=retry_ids, procedure_id=123456)
 
         # then
         send_activation_email.assert_called()
@@ -447,9 +436,7 @@ class ProcessBeneficiaryApplicationTest:
         mock_get_beneficiary_duplicates.return_value = [create_user(idx=11), create_user(idx=22)]
 
         # when
-        remote_import.process_beneficiary_application(
-            information, error_messages=[], new_beneficiaries=[], retry_ids=[], procedure_id=123456
-        )
+        remote_import.process_beneficiary_application(information, retry_ids=[], procedure_id=123456)
 
         # then
         beneficiary_import = BeneficiaryImport.query.first()
