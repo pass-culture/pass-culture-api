@@ -4,6 +4,7 @@ from decimal import Decimal
 
 import pytest
 
+from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription import BeneficiaryPreSubscription
 from pcapi.domain.user_activation import create_beneficiary_from_application
 from pcapi.domain.user_activation import is_import_status_change_allowed
 from pcapi.models import ImportStatus
@@ -47,22 +48,27 @@ class IsImportStatusChangeAllowedTest:
         assert is_import_status_change_allowed(ImportStatus.RETRY, new_status) is False
 
 
+@pytest.mark.usefixtures("db_session")
 class CreateBeneficiaryFromApplicationTest:
     def test_return_newly_created_user(self):
         # given
         THIRTY_DAYS_FROM_NOW = (datetime.utcnow() + timedelta(days=30)).date()
-        beneficiary_information = {
-            "department": "67",
-            "last_name": "Doe",
-            "first_name": "Jane",
-            "activity": "Lycéen",
-            "civility": "Mme",
-            "birth_date": datetime(2000, 5, 1),
-            "email": "jane.doe@test.com",
-            "phone": "0612345678",
-            "postal_code": "67200",
-            "application_id": 123,
-        }
+        beneficiary_information = BeneficiaryPreSubscription(
+            raw_department_code="67",
+            last_name="Doe",
+            first_name="Jane",
+            activity="Lycéen",
+            civility="Mme",
+            date_of_birth=datetime(2000, 5, 1),
+            email="jane.doe@test.com",
+            phone_number="0612345678",
+            postal_code="67200",
+            application_id=123,
+            address=None,
+            city=None,
+            source=None,
+            source_id=None,
+        )
 
         # when
         beneficiary = create_beneficiary_from_application(beneficiary_information)
@@ -87,18 +93,22 @@ class CreateBeneficiaryFromApplicationTest:
 
     def test_a_deposit_is_made_for_the_new_beneficiary(self):
         # given
-        beneficiary_information = {
-            "department": "67",
-            "last_name": "Doe",
-            "first_name": "Jane",
-            "activity": "Lycéen",
-            "civility": "Mme",
-            "birth_date": datetime(2000, 5, 1),
-            "email": "jane.doe@test.com",
-            "phone": "0612345678",
-            "postal_code": "67200",
-            "application_id": 123,
-        }
+        beneficiary_information = BeneficiaryPreSubscription(
+            raw_department_code="67",
+            last_name="Doe",
+            first_name="Jane",
+            activity="Lycéen",
+            civility="Mme",
+            date_of_birth=datetime(2000, 5, 1),
+            email="jane.doe@test.com",
+            phone_number="0612345678",
+            postal_code="67200",
+            application_id=123,
+            address=None,
+            city=None,
+            source=None,
+            source_id=None,
+        )
         # when
         beneficiary = create_beneficiary_from_application(beneficiary_information)
 

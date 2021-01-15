@@ -20,9 +20,12 @@ class BeneficiaryPreSubscription:
     postal_code: str
     source: str
     source_id: Optional[int]
+    raw_department_code: Optional[str] = None
 
     @property
     def department_code(self) -> str:
+        if self.raw_department_code:
+            return self.raw_department_code
         return PostalCode(self.postal_code).get_departement_code()
 
     @property

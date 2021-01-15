@@ -8,6 +8,7 @@ from mailjet_rest import Client
 import pytest
 
 from pcapi.core.users.models import User
+from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription import BeneficiaryPreSubscription
 from pcapi.model_creators.generic_creators import create_user
 from pcapi.models import ApiErrors
 from pcapi.models import BeneficiaryImport
@@ -222,18 +223,23 @@ class RunTest:
 
         # then
         process_beneficiary_application.assert_called_with(
-            information={
-                "last_name": "Doe",
-                "first_name": "John",
-                "civility": "Mme",
-                "email": "john.doe@test.com",
-                "application_id": 123,
-                "department": "67",
-                "phone": "0123456789",
-                "birth_date": datetime(2000, 5, 1, 0, 0),
-                "activity": "Étudiant",
-                "postal_code": "67200",
-            },
+            pre_subscription=BeneficiaryPreSubscription(
+                last_name="Doe",
+                first_name="John",
+                civility="Mme",
+                email="john.doe@test.com",
+                application_id=123,
+                # department="67",
+                phone_number="0123456789",
+                date_of_birth=datetime(2000, 5, 1, 0, 0),
+                activity="Étudiant",
+                postal_code="67200",
+                raw_department_code="67",
+                address=None,
+                city=None,
+                source=None,
+                source_id=None,
+            ),
             retry_ids=[],
             procedure_id=2567158,
         )
@@ -245,18 +251,22 @@ class ProcessBeneficiaryApplicationTest:
         # given
         app.mailjet_client = Mock(spec=Client)
         app.mailjet_client.send = Mock()
-        information = {
-            "department": "93",
-            "last_name": "Doe",
-            "first_name": "Jane",
-            "birth_date": datetime(2000, 5, 1),
-            "email": "jane.doe@example.com",
-            "phone": "0612345678",
-            "postal_code": "93130",
-            "application_id": 123,
-            "civility": "Mme",
-            "activity": "Étudiant",
-        }
+        information = BeneficiaryPreSubscription(
+            # "department": "93",
+            last_name="Doe",
+            first_name="Jane",
+            date_of_birth=datetime(2000, 5, 1),
+            email="jane.doe@example.com",
+            phone_number="0612345678",
+            postal_code="93130",
+            application_id=123,
+            civility="Mme",
+            activity="Étudiant",
+            address=None,
+            city=None,
+            source=None,
+            source_id=None,
+        )
 
         # when
         remote_import.process_beneficiary_application(information, retry_ids=[], procedure_id=123456)
@@ -273,18 +283,22 @@ class ProcessBeneficiaryApplicationTest:
         # given
         app.mailjet_client = Mock(spec=Client)
         app.mailjet_client.send = Mock()
-        information = {
-            "department": "93",
-            "last_name": "Doe",
-            "first_name": "Jane",
-            "birth_date": datetime(2000, 5, 1),
-            "email": "jane.doe@example.com",
-            "phone": "0612345678",
-            "postal_code": "93130",
-            "application_id": 123,
-            "civility": "Mme",
-            "activity": "Étudiant",
-        }
+        information = BeneficiaryPreSubscription(
+            # "department": "93",
+            last_name="Doe",
+            first_name="Jane",
+            date_of_birth=datetime(2000, 5, 1),
+            email="jane.doe@example.com",
+            phone_number="0612345678",
+            postal_code="93130",
+            application_id=123,
+            civility="Mme",
+            activity="Étudiant",
+            address=None,
+            city=None,
+            source=None,
+            source_id=None,
+        )
 
         # when
         remote_import.process_beneficiary_application(information, retry_ids=[], procedure_id=123456)
@@ -303,18 +317,22 @@ class ProcessBeneficiaryApplicationTest:
         self, send_activation_email, mock_repository, create_beneficiary_from_application, app
     ):
         # given
-        information = {
-            "department": "93",
-            "last_name": "Doe",
-            "first_name": "Jane",
-            "birth_date": datetime(2000, 5, 1),
-            "email": "jane.doe@example.com",
-            "phone": "0612345678",
-            "postal_code": "93130",
-            "application_id": 123,
-            "civility": "Mme",
-            "activity": "Étudiant",
-        }
+        information = BeneficiaryPreSubscription(
+            # "department": "93",
+            last_name="Doe",
+            first_name="Jane",
+            date_of_birth=datetime(2000, 5, 1),
+            email="jane.doe@example.com",
+            phone_number="0612345678",
+            postal_code="93130",
+            application_id=123,
+            civility="Mme",
+            activity="Étudiant",
+            address=None,
+            city=None,
+            source=None,
+            source_id=None,
+        )
 
         create_beneficiary_from_application.return_value = create_user()
 
@@ -333,18 +351,22 @@ class ProcessBeneficiaryApplicationTest:
         self, warning_logger, send_activation_email, mock_repository, create_beneficiary_from_application, app
     ):
         # given
-        information = {
-            "department": "93",
-            "last_name": "Doe",
-            "first_name": "Jane",
-            "birth_date": datetime(2000, 5, 1),
-            "email": "jane.doe@example.com",
-            "phone": "0612345678",
-            "postal_code": "93130",
-            "application_id": 123,
-            "civility": "Mme",
-            "activity": "Étudiant",
-        }
+        information = BeneficiaryPreSubscription(
+            # "department": "93",
+            last_name="Doe",
+            first_name="Jane",
+            date_of_birth=datetime(2000, 5, 1),
+            email="jane.doe@example.com",
+            phone_number="0612345678",
+            postal_code="93130",
+            application_id=123,
+            civility="Mme",
+            activity="Étudiant",
+            address=None,
+            city=None,
+            source=None,
+            source_id=None,
+        )
         create_beneficiary_from_application.side_effect = [User()]
         mock_repository.save.side_effect = [ApiErrors({"postalCode": ["baaaaad value"]})]
 
@@ -365,18 +387,22 @@ class ProcessBeneficiaryApplicationTest:
     @pytest.mark.usefixtures("db_session")
     def test_beneficiary_is_not_created_if_duplicates_are_found(self, send_activation_email, mock_repository, app):
         # given
-        information = {
-            "department": "93",
-            "last_name": "Doe",
-            "first_name": "Jane",
-            "birth_date": datetime(2000, 5, 1),
-            "email": "jane.doe@example.com",
-            "phone": "0612345678",
-            "postal_code": "93130",
-            "application_id": 123,
-            "civility": "Mme",
-            "activity": "Étudiant",
-        }
+        information = BeneficiaryPreSubscription(
+            # "department": "93",
+            last_name="Doe",
+            first_name="Jane",
+            date_of_birth=datetime(2000, 5, 1),
+            email="jane.doe@example.com",
+            phone_number="0612345678",
+            postal_code="93130",
+            application_id=123,
+            civility="Mme",
+            activity="Étudiant",
+            address=None,
+            city=None,
+            source=None,
+            source_id=None,
+        )
         existing_user = create_user(date_of_birth=datetime(2000, 5, 1), first_name="Jane", last_name="Doe")
         repository.save(existing_user)
 
@@ -393,18 +419,22 @@ class ProcessBeneficiaryApplicationTest:
     @pytest.mark.usefixtures("db_session")
     def test_beneficiary_is_created_if_duplicates_are_found_but_id_is_in_retry_list(self, send_activation_email, app):
         # given
-        information = {
-            "department": "93",
-            "last_name": "Doe",
-            "first_name": "Jane",
-            "birth_date": datetime(2000, 5, 1),
-            "email": "jane.doe@example.com",
-            "phone": "0612345678",
-            "postal_code": "93130",
-            "application_id": 123,
-            "civility": "Mme",
-            "activity": "Étudiant",
-        }
+        information = BeneficiaryPreSubscription(
+            # "department": "93",
+            last_name="Doe",
+            first_name="Jane",
+            date_of_birth=datetime(2000, 5, 1),
+            email="jane.doe@example.com",
+            phone_number="0612345678",
+            postal_code="93130",
+            application_id=123,
+            civility="Mme",
+            activity="Étudiant",
+            address=None,
+            city=None,
+            source=None,
+            source_id=None,
+        )
         existing_user = create_user(date_of_birth=datetime(2000, 5, 1), first_name="Jane", last_name="Doe")
         repository.save(existing_user)
         retry_ids = [123]
@@ -421,18 +451,22 @@ class ProcessBeneficiaryApplicationTest:
     @pytest.mark.usefixtures("db_session")
     def test_an_import_status_is_saved_if_beneficiary_is_a_duplicate(self, mock_get_beneficiary_duplicates, app):
         # given
-        information = {
-            "department": "93",
-            "last_name": "Doe",
-            "first_name": "Jane",
-            "birth_date": datetime(2000, 5, 1),
-            "email": "jane.doe@example.com",
-            "phone": "0612345678",
-            "postal_code": "93130",
-            "application_id": 123,
-            "civility": "Mme",
-            "activity": "Étudiant",
-        }
+        information = BeneficiaryPreSubscription(
+            # "department": "93",
+            last_name="Doe",
+            first_name="Jane",
+            date_of_birth=datetime(2000, 5, 1),
+            email="jane.doe@example.com",
+            phone_number="0612345678",
+            postal_code="93130",
+            application_id=123,
+            civility="Mme",
+            activity="Étudiant",
+            address=None,
+            city=None,
+            source=None,
+            source_id=None,
+        )
         mock_get_beneficiary_duplicates.return_value = [create_user(idx=11), create_user(idx=22)]
 
         # when
@@ -451,14 +485,14 @@ class ParseBeneficiaryInformationTest:
         information = parse_beneficiary_information(APPLICATION_DETAIL_STANDARD_RESPONSE)
 
         # then
-        assert information["last_name"] == "Doe"
-        assert information["first_name"] == "John"
-        assert information["birth_date"] == datetime(2000, 5, 1)
-        assert information["civility"] == "M."
-        assert information["email"] == "john.doe@test.com"
-        assert information["phone"] == "0123456789"
-        assert information["postal_code"] == "93130"
-        assert information["application_id"] == 123
+        assert information.last_name == "Doe"
+        assert information.first_name == "John"
+        assert information.date_of_birth == datetime(2000, 5, 1)
+        assert information.civility == "M."
+        assert information.email == "john.doe@test.com"
+        assert information.phone_number == "0123456789"
+        assert information.postal_code == "93130"
+        assert information.application_id == 123
 
     def test_handles_two_digits_department_code(self):
         # given
@@ -468,7 +502,7 @@ class ParseBeneficiaryInformationTest:
         information = parse_beneficiary_information(application_detail)
 
         # then
-        assert information["department"] == "67"
+        assert information.department_code == "67"
 
     def test_handles_three_digits_department_code(self):
         # given
@@ -478,7 +512,7 @@ class ParseBeneficiaryInformationTest:
         information = parse_beneficiary_information(application_detail)
 
         # then
-        assert information["department"] == "973"
+        assert information.department_code == "973"
 
     def test_handles_uppercased_mixed_digits_and_letter_department_code(self):
         # given
@@ -488,7 +522,7 @@ class ParseBeneficiaryInformationTest:
         information = parse_beneficiary_information(application_detail)
 
         # then
-        assert information["department"] == "2B"
+        assert information.department_code == "2B"
 
     def test_handles_lowercased_mixed_digits_and_letter_department_code(self):
         # given
@@ -498,7 +532,7 @@ class ParseBeneficiaryInformationTest:
         information = parse_beneficiary_information(application_detail)
 
         # then
-        assert information["department"] == "2a"
+        assert information.department_code == "2a"
 
     def test_handles_department_code_with_another_label(self):
         # given
@@ -512,7 +546,7 @@ class ParseBeneficiaryInformationTest:
         information = parse_beneficiary_information(application_detail)
 
         # then
-        assert information["department"] == "67"
+        assert information.department_code == "67"
 
     def test_handles_postal_codes_wrapped_with_spaces(self):
         # given
@@ -522,7 +556,7 @@ class ParseBeneficiaryInformationTest:
         information = parse_beneficiary_information(application_detail)
 
         # then
-        assert information["postal_code"] == "93130"
+        assert information.postal_code == "93130"
 
     def test_handles_postal_codes_containing_spaces(self):
         # given
@@ -532,7 +566,7 @@ class ParseBeneficiaryInformationTest:
         information = parse_beneficiary_information(application_detail)
 
         # then
-        assert information["postal_code"] == "67200"
+        assert information.postal_code == "67200"
 
     def test_handles_postal_codes_containing_city_name(self):
         # given
@@ -542,7 +576,7 @@ class ParseBeneficiaryInformationTest:
         information = parse_beneficiary_information(application_detail)
 
         # then
-        assert information["postal_code"] == "67200"
+        assert information.postal_code == "67200"
 
     def test_handles_civility_parsing(self):
         # given
@@ -552,7 +586,7 @@ class ParseBeneficiaryInformationTest:
         information = parse_beneficiary_information(application_detail)
 
         # then
-        assert information["civility"] == "M."
+        assert information.civility == "M."
 
     def test_handles_activity_parsing(self):
         # given
@@ -562,7 +596,7 @@ class ParseBeneficiaryInformationTest:
         information = parse_beneficiary_information(application_detail)
 
         # then
-        assert information["activity"] == "Étudiant"
+        assert information.activity == "Étudiant"
 
     def test_handles_activity_even_if_activity_is_not_filled(self):
         # given
@@ -572,4 +606,4 @@ class ParseBeneficiaryInformationTest:
         information = parse_beneficiary_information(application_detail)
 
         # then
-        assert information["activity"] is None
+        assert information.activity is None

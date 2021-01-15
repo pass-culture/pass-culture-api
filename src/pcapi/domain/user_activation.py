@@ -1,5 +1,6 @@
 from pcapi.core.payments import api as payments_api
 from pcapi.core.users.models import User
+from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription import BeneficiaryPreSubscription
 from pcapi.domain.password import generate_reset_token
 from pcapi.domain.password import random_password
 from pcapi.models.beneficiary_import_status import ImportStatus
@@ -11,25 +12,25 @@ IMPORT_STATUS_MODIFICATION_RULE = (
 )
 
 
-def create_beneficiary_from_application(application_detail: dict) -> User:
+def create_beneficiary_from_application(beneficiary_pre_subscription: BeneficiaryPreSubscription) -> User:
     beneficiary = User()
-    beneficiary.lastName = application_detail["last_name"]
-    beneficiary.firstName = application_detail["first_name"]
-    beneficiary.publicName = "%s %s" % (application_detail["first_name"], application_detail["last_name"])
-    beneficiary.email = application_detail["email"]
-    beneficiary.phoneNumber = application_detail["phone"]
-    beneficiary.departementCode = application_detail["department"]
-    beneficiary.postalCode = application_detail["postal_code"]
-    beneficiary.dateOfBirth = application_detail["birth_date"]
-    beneficiary.civility = application_detail["civility"]
-    beneficiary.activity = application_detail["activity"]
+    beneficiary.lastName = beneficiary_pre_subscription.last_name
+    beneficiary.firstName = beneficiary_pre_subscription.first_name
+    beneficiary.publicName = beneficiary_pre_subscription.public_name
+    beneficiary.email = beneficiary_pre_subscription.email
+    beneficiary.phoneNumber = beneficiary_pre_subscription.phone_number
+    beneficiary.departementCode = beneficiary_pre_subscription.department_code
+    beneficiary.postalCode = beneficiary_pre_subscription.postal_code
+    beneficiary.dateOfBirth = beneficiary_pre_subscription.date_of_birth
+    beneficiary.civility = beneficiary_pre_subscription.civility
+    beneficiary.activity = beneficiary_pre_subscription.activity
     beneficiary.isBeneficiary = True
     beneficiary.isAdmin = False
     beneficiary.password = random_password()
     beneficiary.hasSeenTutorials = False
     generate_reset_token(beneficiary, validity_duration_hours=THIRTY_DAYS_IN_HOURS)
 
-    application_id = application_detail["application_id"]
+    application_id = beneficiary_pre_subscription.application_id
     deposit = payments_api.create_deposit(beneficiary, f"démarches simplifiées dossier [{application_id}]")
     beneficiary.deposits = [deposit]
 

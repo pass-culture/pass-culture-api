@@ -7,6 +7,7 @@ from typing import List
 from pcapi import settings
 from pcapi.connectors.api_demarches_simplifiees import get_application_details
 from pcapi.core.users.models import User
+from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription import BeneficiaryPreSubscription
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_validator import get_beneficiary_duplicates
 from pcapi.domain.demarches_simplifiees import get_closed_application_ids_for_demarche_simplifiee
 from pcapi.domain.user_activation import create_beneficiary_from_application
@@ -56,7 +57,7 @@ def run(
     for application_id in retry_ids + applications_ids:
         details = get_details(application_id, procedure_id, settings.DMS_TOKEN)
         try:
-            information = parse_beneficiary_information(details)
+            pre_subscription = parse_beneficiary_information(details)
         except Exception as exc:  # pylint: disable=broad-except
             logger.info(
                 "[BATCH][REMOTE IMPORT BENEFICIARIES] Application %s in procedure %s had errors and was ignored: %s",
@@ -75,13 +76,13 @@ def run(
             )
             continue
 
-        if already_existing_user(information["email"]):
-            _process_rejection(information, procedure_id=procedure_id)
+        if already_existing_user(pre_subscription.email):
+            _process_rejection(pre_subscription, procedure_id=procedure_id)
             continue
 
-        if not already_imported(information["application_id"]):
+        if not already_imported(pre_subscription.application_id):
             process_beneficiary_application(
-                information=information,
+                pre_subscription=pre_subscription,
                 retry_ids=retry_ids,
                 procedure_id=procedure_id,
             )
@@ -92,23 +93,23 @@ def run(
 
 
 def process_beneficiary_application(
-    information: Dict,
+    pre_subscription: BeneficiaryPreSubscription,
     retry_ids: List[int],
     procedure_id: int,
 ) -> None:
     duplicate_users = get_beneficiary_duplicates(
-        first_name=information["first_name"],
-        last_name=information["last_name"],
-        date_of_birth=information["birth_date"],
+        first_name=pre_subscription.first_name,
+        last_name=pre_subscription.last_name,
+        date_of_birth=pre_subscription.date_of_birth,
     )
 
-    if not duplicate_users or information["application_id"] in retry_ids:
-        _process_creation(information, procedure_id)
+    if not duplicate_users or pre_subscription.application_id in retry_ids:
+        _process_creation(pre_subscription, procedure_id)
     else:
-        _process_duplication(duplicate_users, information, procedure_id)
+        _process_duplication(duplicate_users, pre_subscription, procedure_id)
 
 
-def parse_beneficiary_information(application_detail: Dict) -> Dict:
+def parse_beneficiary_information(application_detail: Dict) -> BeneficiaryPreSubscription:
     dossier = application_detail["dossier"]
 
     information = {
@@ -135,29 +136,44 @@ def parse_beneficiary_information(application_detail: Dict) -> Dict:
         if label == "Veuillez indiquer votre statut":
             information["activity"] = value
 
-    return information
+    return BeneficiaryPreSubscription(
+        first_name=information["first_name"],
+        last_name=information["last_name"],
+        civility=information["civility"],
+        email=information["email"],
+        application_id=information["application_id"],
+        date_of_birth=information["birth_date"],
+        phone_number=information["phone"],
+        postal_code=information["postal_code"],
+        activity=information["activity"],
+        raw_department_code=information["department"],
+        address=None,
+        city=None,
+        source=None,
+        source_id=None,
+    )
 
 
-def _process_creation(information: Dict, procedure_id: int) -> None:
-    new_beneficiary = create_beneficiary_from_application(information)
+def _process_creation(pre_subscription: BeneficiaryPreSubscription, procedure_id: int) -> None:
+    new_beneficiary = create_beneficiary_from_application(pre_subscription)
     try:
         repository.save(new_beneficiary)
     except ApiErrors as api_errors:
         logger.warning(
             "[BATCH][REMOTE IMPORT BENEFICIARIES] Could not save application %s, because of error: %s - Procedure %s",
-            information["application_id"],
+            pre_subscription.application_id,
             api_errors,
             procedure_id,
         )
     else:
         logger.info(
             "[BATCH][REMOTE IMPORT BENEFICIARIES] Successfully created user for application %s - Procedure %s",
-            information["application_id"],
+            pre_subscription.application_id,
             procedure_id,
         )
         save_beneficiary_import_with_status(
             ImportStatus.CREATED,
-            information["application_id"],
+            pre_subscription.application_id,
             source=BeneficiaryImportSources.demarches_simplifiees,
             source_id=procedure_id,
             user=new_beneficiary,
@@ -167,36 +183,38 @@ def _process_creation(information: Dict, procedure_id: int) -> None:
         except MailServiceException as mail_service_exception:
             logger.exception(
                 "Email send_activation_email failure for application %s - Procedure %s : %s",
-                information["application_id"],
+                pre_subscription.application_id,
                 procedure_id,
                 mail_service_exception,
             )
 
 
-def _process_duplication(duplicate_users: List[User], information: Dict, procedure_id: int) -> None:
+def _process_duplication(
+    duplicate_users: List[User], pre_subscription: BeneficiaryPreSubscription, procedure_id: int
+) -> None:
     number_of_beneficiaries = len(duplicate_users)
     duplicate_ids = ", ".join([str(u.id) for u in duplicate_users])
-    message = f"{number_of_beneficiaries} utilisateur(s) en doublon {duplicate_ids} pour le dossier {information['application_id']} - Procedure {procedure_id}"
+    message = f"{number_of_beneficiaries} utilisateur(s) en doublon {duplicate_ids} pour le dossier {pre_subscription.application_id} - Procedure {procedure_id}"
     logger.warning("[BATCH][REMOTE IMPORT BENEFICIARIES] Duplicate beneficiaries found : %s", message)
     save_beneficiary_import_with_status(
         ImportStatus.DUPLICATE,
-        information["application_id"],
+        pre_subscription.application_id,
         source=BeneficiaryImportSources.demarches_simplifiees,
         source_id=procedure_id,
         detail=f"Utilisateur en doublon : {duplicate_ids}",
     )
 
 
-def _process_rejection(information: Dict, procedure_id: int) -> None:
+def _process_rejection(pre_subscription: BeneficiaryPreSubscription, procedure_id: int) -> None:
     save_beneficiary_import_with_status(
         ImportStatus.REJECTED,
-        information["application_id"],
+        pre_subscription.application_id,
         source=BeneficiaryImportSources.demarches_simplifiees,
         source_id=procedure_id,
         detail="Compte existant avec cet email",
     )
     logger.warning(
         "[BATCH][REMOTE IMPORT BENEFICIARIES] Rejected application %s because of already existing email - Procedure %s",
-        information["application_id"],
+        pre_subscription.application_id,
         procedure_id,
     )
