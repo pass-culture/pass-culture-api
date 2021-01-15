@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 from pcapi.domain.postal_code.postal_code import PostalCode
+from pcapi.models.beneficiary_import import BeneficiaryImportSources
 
 
 @dataclass
@@ -30,6 +31,8 @@ class BeneficiaryPreSubscription:
 
     @property
     def deposit_source(self) -> str:
+        if self.source == BeneficiaryImportSources.demarches_simplifiees.value:
+            return f"démarches simplifiées dossier [{self.application_id}]"
         return f"dossier {self.source} [{self.application_id}]"
 
     @property
