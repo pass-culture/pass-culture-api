@@ -10,8 +10,8 @@ from pcapi.core.users.models import User
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription import BeneficiaryPreSubscription
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_validator import get_beneficiary_duplicates
 from pcapi.domain.demarches_simplifiees import get_closed_application_ids_for_demarche_simplifiee
-from pcapi.domain.user_activation import create_beneficiary_from_application
 from pcapi.domain.user_emails import send_activation_email
+from pcapi.infrastructure.repository.beneficiary import beneficiary_pre_subscription_sql_converter
 from pcapi.models import ApiErrors
 from pcapi.models import ImportStatus
 from pcapi.models.beneficiary_import import BeneficiaryImportSources
@@ -155,7 +155,7 @@ def parse_beneficiary_information(application_detail: Dict) -> BeneficiaryPreSub
 
 
 def _process_creation(pre_subscription: BeneficiaryPreSubscription, procedure_id: int) -> None:
-    new_beneficiary = create_beneficiary_from_application(pre_subscription)
+    new_beneficiary = beneficiary_pre_subscription_sql_converter.to_model(pre_subscription, import_details=False)
     try:
         repository.save(new_beneficiary)
     except ApiErrors as api_errors:

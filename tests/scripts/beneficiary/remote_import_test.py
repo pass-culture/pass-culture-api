@@ -265,7 +265,7 @@ class ProcessBeneficiaryApplicationTest:
             activity="Étudiant",
             address=None,
             city=None,
-            source=None,
+            source=BeneficiaryImportSources.demarches_simplifiees.value,
             source_id=None,
         )
 
@@ -297,7 +297,7 @@ class ProcessBeneficiaryApplicationTest:
             activity="Étudiant",
             address=None,
             city=None,
-            source=None,
+            source=BeneficiaryImportSources.demarches_simplifiees.value,
             source_id=None,
         )
 
@@ -310,13 +310,10 @@ class ProcessBeneficiaryApplicationTest:
         assert beneficiary_import.currentStatus == ImportStatus.CREATED
         assert beneficiary_import.applicationId == 123
 
-    @patch("pcapi.scripts.beneficiary.remote_import.create_beneficiary_from_application")
     @patch("pcapi.scripts.beneficiary.remote_import.repository")
     @patch("pcapi.scripts.beneficiary.remote_import.send_activation_email")
     @pytest.mark.usefixtures("db_session")
-    def test_account_activation_email_is_sent(
-        self, send_activation_email, mock_repository, create_beneficiary_from_application, app
-    ):
+    def test_account_activation_email_is_sent(self, send_activation_email, mock_repository, app):
         # given
         information = BeneficiaryPreSubscription(
             # "department": "93",
@@ -331,11 +328,9 @@ class ProcessBeneficiaryApplicationTest:
             activity="Étudiant",
             address=None,
             city=None,
-            source=None,
+            source=BeneficiaryImportSources.demarches_simplifiees.value,
             source_id=None,
         )
-
-        create_beneficiary_from_application.return_value = create_user()
 
         # when
         remote_import.process_beneficiary_application(information, retry_ids=[], procedure_id=123456)
@@ -343,13 +338,12 @@ class ProcessBeneficiaryApplicationTest:
         # then
         send_activation_email.assert_called()
 
-    @patch("pcapi.scripts.beneficiary.remote_import.create_beneficiary_from_application")
     @patch("pcapi.scripts.beneficiary.remote_import.repository")
     @patch("pcapi.scripts.beneficiary.remote_import.send_activation_email")
     @patch("pcapi.utils.logger.logger.warning")
     @pytest.mark.usefixtures("db_session")
     def test_error_is_collected_if_beneficiary_could_not_be_saved(
-        self, warning_logger, send_activation_email, mock_repository, create_beneficiary_from_application, app
+        self, warning_logger, send_activation_email, mock_repository, app
     ):
         # given
         information = BeneficiaryPreSubscription(
@@ -365,10 +359,9 @@ class ProcessBeneficiaryApplicationTest:
             activity="Étudiant",
             address=None,
             city=None,
-            source=None,
+            source=BeneficiaryImportSources.demarches_simplifiees.value,
             source_id=None,
         )
-        create_beneficiary_from_application.side_effect = [User()]
         mock_repository.save.side_effect = [ApiErrors({"postalCode": ["baaaaad value"]})]
 
         # when
@@ -401,7 +394,7 @@ class ProcessBeneficiaryApplicationTest:
             activity="Étudiant",
             address=None,
             city=None,
-            source=None,
+            source=BeneficiaryImportSources.demarches_simplifiees.value,
             source_id=None,
         )
         existing_user = create_user(date_of_birth=datetime(2000, 5, 1), first_name="Jane", last_name="Doe")
@@ -433,7 +426,7 @@ class ProcessBeneficiaryApplicationTest:
             activity="Étudiant",
             address=None,
             city=None,
-            source=None,
+            source=BeneficiaryImportSources.demarches_simplifiees.value,
             source_id=None,
         )
         existing_user = create_user(date_of_birth=datetime(2000, 5, 1), first_name="Jane", last_name="Doe")
@@ -465,7 +458,7 @@ class ProcessBeneficiaryApplicationTest:
             activity="Étudiant",
             address=None,
             city=None,
-            source=None,
+            source=BeneficiaryImportSources.demarches_simplifiees.value,
             source_id=None,
         )
         mock_get_beneficiary_duplicates.return_value = [create_user(idx=11), create_user(idx=22)]

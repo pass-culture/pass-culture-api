@@ -5,8 +5,8 @@ from decimal import Decimal
 import pytest
 
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription import BeneficiaryPreSubscription
-from pcapi.domain.user_activation import create_beneficiary_from_application
 from pcapi.domain.user_activation import is_import_status_change_allowed
+from pcapi.infrastructure.repository.beneficiary import beneficiary_pre_subscription_sql_converter
 from pcapi.models import ImportStatus
 from pcapi.models.beneficiary_import import BeneficiaryImportSources
 
@@ -72,7 +72,7 @@ class CreateBeneficiaryFromApplicationTest:
         )
 
         # when
-        beneficiary = create_beneficiary_from_application(beneficiary_information)
+        beneficiary = beneficiary_pre_subscription_sql_converter.to_model(beneficiary_information)
 
         # Then
         assert beneficiary.lastName == "Doe"
@@ -111,7 +111,7 @@ class CreateBeneficiaryFromApplicationTest:
             source_id=None,
         )
         # when
-        beneficiary = create_beneficiary_from_application(beneficiary_information)
+        beneficiary = beneficiary_pre_subscription_sql_converter.to_model(beneficiary_information)
 
         # then
         assert len(beneficiary.deposits) == 1
