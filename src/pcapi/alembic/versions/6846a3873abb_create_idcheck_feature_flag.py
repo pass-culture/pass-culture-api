@@ -1,7 +1,7 @@
 """create_idcheck_feature_flag
 
 Revision ID: 6846a3873abb
-Revises: 65e097fd4c74
+Revises: 1196c69e1385
 Create Date: 2021-01-15 10:51:29.909235
 
 """
@@ -12,7 +12,7 @@ from pcapi.models.feature import FeatureToggle
 
 
 revision = "6846a3873abb"
-down_revision = "65e097fd4c74"
+down_revision = "1196c69e1385"
 branch_labels = None
 depends_on = None
 
