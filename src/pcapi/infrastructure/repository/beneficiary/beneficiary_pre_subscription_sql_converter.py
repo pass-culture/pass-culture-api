@@ -9,7 +9,7 @@ from pcapi.models import ImportStatus
 from pcapi.scripts.beneficiary import THIRTY_DAYS_IN_HOURS
 
 
-def to_model(beneficiary_pre_subscription: BeneficiaryPreSubscription, import_details=True) -> User:
+def to_model(beneficiary_pre_subscription: BeneficiaryPreSubscription, import_details: bool = True) -> User:
     beneficiary = User()
 
     beneficiary.activity = beneficiary_pre_subscription.activity
@@ -34,7 +34,8 @@ def to_model(beneficiary_pre_subscription: BeneficiaryPreSubscription, import_de
     deposit = payments_api.create_deposit(beneficiary, beneficiary_pre_subscription.deposit_source)
     beneficiary.deposits = [deposit]
     if import_details:
-        users_api.attach_beneficiary_import_details(beneficiary, beneficiary_pre_subscription)
+        beneficiary_import = users_api.beneficiary_import_succeeded(beneficiary_pre_subscription)
+        beneficiary.beneficiaryImports = [beneficiary_import]
 
     return beneficiary
 

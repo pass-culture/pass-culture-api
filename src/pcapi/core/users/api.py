@@ -119,9 +119,9 @@ def activate_beneficiary(user: User, deposit_source: str) -> User:
     return user
 
 
-def attach_beneficiary_import_details(
-    beneficiary: User, beneficiary_pre_subscription: BeneficiaryPreSubscription
-) -> None:
+def beneficiary_import_succeeded(
+    beneficiary_pre_subscription: BeneficiaryPreSubscription,
+) -> BeneficiaryImport:
     beneficiary_import = BeneficiaryImport()
 
     beneficiary_import.applicationId = beneficiary_pre_subscription.application_id
@@ -129,7 +129,7 @@ def attach_beneficiary_import_details(
     beneficiary_import.source = beneficiary_pre_subscription.source.value
     beneficiary_import.setStatus(status=ImportStatus.CREATED)
 
-    beneficiary.beneficiaryImports = [beneficiary_import]
+    return beneficiary_import
 
 
 def request_email_confirmation(user: User) -> None:
