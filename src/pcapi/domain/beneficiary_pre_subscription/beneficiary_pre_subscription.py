@@ -19,7 +19,7 @@ class BeneficiaryPreSubscription:
     last_name: str
     phone_number: str
     postal_code: str
-    source: str
+    source: BeneficiaryImportSources
     source_id: Optional[int]
     raw_department_code: Optional[str] = None
 
@@ -31,9 +31,9 @@ class BeneficiaryPreSubscription:
 
     @property
     def deposit_source(self) -> str:
-        if self.source == BeneficiaryImportSources.demarches_simplifiees.value:
+        if self.source == BeneficiaryImportSources.demarches_simplifiees:
             return f"démarches simplifiées dossier [{self.application_id}]"
-        return f"dossier {self.source} [{self.application_id}]"
+        return f"dossier {self.source.value} [{self.application_id}]"
 
     @property
     def public_name(self) -> str:

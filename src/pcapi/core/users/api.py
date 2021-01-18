@@ -126,7 +126,7 @@ def attach_beneficiary_import_details(
 
     beneficiary_import.applicationId = beneficiary_pre_subscription.application_id
     beneficiary_import.sourceId = beneficiary_pre_subscription.source_id
-    beneficiary_import.source = beneficiary_pre_subscription.source
+    beneficiary_import.source = beneficiary_pre_subscription.source.value
     beneficiary_import.setStatus(status=ImportStatus.CREATED)
 
     beneficiary.beneficiaryImports = [beneficiary_import]

@@ -63,6 +63,6 @@ class BeneficiaryJouveBackend:
             last_name=content["lastName"],
             phone_number=content["phoneNumber"],
             postal_code=content["postalCode"],
-            source=BeneficiaryImportSources.jouve.value,
+            source=BeneficiaryImportSources.jouve,
             source_id=DEFAULT_JOUVE_SOURCE_ID,
         )

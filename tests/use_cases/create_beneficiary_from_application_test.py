@@ -11,6 +11,7 @@ from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription impo
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_exceptions import BeneficiaryIsADuplicate
 from pcapi.model_creators.generic_creators import create_user
 from pcapi.models import BeneficiaryImport
+from pcapi.models.beneficiary_import import BeneficiaryImportSources
 from pcapi.models.beneficiary_import_status import ImportStatus
 from pcapi.models.deposit import Deposit
 from pcapi.models.feature import override_features
@@ -28,7 +29,7 @@ PRE_SUBSCRIPTION_BASE_DATA = {
     "first_name": "Thomas",
     "last_name": "DURAND",
     "phone_number": "0123456789",
-    "source": "jouve",
+    "source": BeneficiaryImportSources.jouve,
     "source_id": None,
 }
 

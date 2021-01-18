@@ -8,6 +8,7 @@ from pcapi.domain.booking_recap.booking_recap import BookBookingRecap
 from pcapi.domain.booking_recap.booking_recap import EventBookingRecap
 from pcapi.domain.booking_recap.booking_recap import ThingBookingRecap
 from pcapi.domain.favorite.favorite import Favorite
+from pcapi.models import BeneficiaryImportSources
 from pcapi.models import Offer
 
 
@@ -23,7 +24,7 @@ def create_domain_beneficiary_pre_subcription(
     civility: str = "Mme",
     last_name: str = "DURAND",
     phone_number: str = "0123456789",
-    source: str = "jouve",
+    source: BeneficiaryImportSources = BeneficiaryImportSources.jouve,
     source_id: str = None,
 ) -> BeneficiaryPreSubscription:
     return BeneficiaryPreSubscription(

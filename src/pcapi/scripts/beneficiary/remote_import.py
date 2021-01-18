@@ -149,7 +149,7 @@ def parse_beneficiary_information(application_detail: Dict) -> BeneficiaryPreSub
         raw_department_code=information["department"],
         address=None,
         city=None,
-        source=BeneficiaryImportSources.demarches_simplifiees.value,
+        source=BeneficiaryImportSources.demarches_simplifiees,
         source_id=None,
     )
 
