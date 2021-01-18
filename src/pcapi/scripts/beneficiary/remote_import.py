@@ -6,6 +6,7 @@ from typing import List
 
 from pcapi import settings
 from pcapi.connectors.api_demarches_simplifiees import get_application_details
+from pcapi.core.users import api as users_api
 from pcapi.core.users.models import User
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription import BeneficiaryPreSubscription
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_validator import get_beneficiary_duplicates
@@ -13,12 +14,10 @@ from pcapi.domain.demarches_simplifiees import get_closed_application_ids_for_de
 from pcapi.domain.user_emails import send_activation_email
 from pcapi.infrastructure.repository.beneficiary import beneficiary_pre_subscription_sql_converter
 from pcapi.models import ApiErrors
-from pcapi.models import ImportStatus
 from pcapi.models.beneficiary_import import BeneficiaryImportSources
 from pcapi.repository import repository
 from pcapi.repository.beneficiary_import_queries import find_applications_ids_to_retry
 from pcapi.repository.beneficiary_import_queries import is_already_imported
-from pcapi.repository.beneficiary_import_queries import save_beneficiary_import_with_status
 from pcapi.repository.user_queries import find_user_by_email
 from pcapi.utils.logger import logger
 from pcapi.utils.mailing import MailServiceException
@@ -67,12 +66,12 @@ def run(
                 exc_info=True,
             )
             error = f"Le dossier {application_id} contient des erreurs et a été ignoré - Procedure {procedure_id}"
-            save_beneficiary_import_with_status(
-                ImportStatus.ERROR,
+            users_api.beneficiary_import_errored(
                 application_id,
                 source=BeneficiaryImportSources.demarches_simplifiees,
                 source_id=procedure_id,
                 detail=error,
+                save=True,
             )
             continue
 
@@ -171,13 +170,9 @@ def _process_creation(pre_subscription: BeneficiaryPreSubscription, procedure_id
             pre_subscription.application_id,
             procedure_id,
         )
-        save_beneficiary_import_with_status(
-            ImportStatus.CREATED,
-            pre_subscription.application_id,
-            source=BeneficiaryImportSources.demarches_simplifiees,
-            source_id=procedure_id,
-            user=new_beneficiary,
-        )
+        beneficiary_import = users_api.beneficiary_import_succeeded(pre_subscription)
+        beneficiary_import.beneficiary = new_beneficiary
+        repository.save(beneficiary_import)
         try:
             send_activation_email(new_beneficiary, send_raw_email)
         except MailServiceException as mail_service_exception:
@@ -196,22 +191,18 @@ def _process_duplication(
     duplicate_ids = ", ".join([str(u.id) for u in duplicate_users])
     message = f"{number_of_beneficiaries} utilisateur(s) en doublon {duplicate_ids} pour le dossier {pre_subscription.application_id} - Procedure {procedure_id}"
     logger.warning("[BATCH][REMOTE IMPORT BENEFICIARIES] Duplicate beneficiaries found : %s", message)
-    save_beneficiary_import_with_status(
-        ImportStatus.DUPLICATE,
-        pre_subscription.application_id,
-        source=BeneficiaryImportSources.demarches_simplifiees,
-        source_id=procedure_id,
+    users_api.beneficiary_import_duplicated(
+        pre_subscription,
         detail=f"Utilisateur en doublon : {duplicate_ids}",
+        save=True,
     )
 
 
 def _process_rejection(pre_subscription: BeneficiaryPreSubscription, procedure_id: int) -> None:
-    save_beneficiary_import_with_status(
-        ImportStatus.REJECTED,
-        pre_subscription.application_id,
-        source=BeneficiaryImportSources.demarches_simplifiees,
-        source_id=procedure_id,
+    users_api.beneficiary_import_rejected(
+        pre_subscription,
         detail="Compte existant avec cet email",
+        save=True,
     )
     logger.warning(
         "[BATCH][REMOTE IMPORT BENEFICIARIES] Rejected application %s because of already existing email - Procedure %s",

@@ -30,6 +30,7 @@ from pcapi.domain.password import random_password
 from pcapi.emails.beneficiary_email_change import build_beneficiary_confirmation_email_change_data
 from pcapi.emails.beneficiary_email_change import build_beneficiary_information_email_change_data
 from pcapi.models import BeneficiaryImport
+from pcapi.models import BeneficiaryImportSources
 from pcapi.models import ImportStatus
 from pcapi.models.db import db
 from pcapi.models.user_session import UserSession
@@ -119,17 +120,81 @@ def activate_beneficiary(user: User, deposit_source: str) -> User:
     return user
 
 
+def _save_beneficiary_import_with_status(
+    status: ImportStatus,
+    application_id: int,
+    source_id: int,
+    source: BeneficiaryImportSources,
+    detail: str = None,
+    save: bool = False,
+) -> BeneficiaryImport:
+    existing_beneficiary_import = BeneficiaryImport.query.filter_by(applicationId=application_id).first()
+
+    beneficiary_import = existing_beneficiary_import or BeneficiaryImport()
+
+    beneficiary_import.applicationId = application_id
+    beneficiary_import.sourceId = source_id
+    beneficiary_import.source = source.value
+    beneficiary_import.setStatus(status=status, detail=detail, author=None)
+
+    if save:
+        repository.save(beneficiary_import)
+
+    return beneficiary_import
+
+
 def beneficiary_import_succeeded(
     beneficiary_pre_subscription: BeneficiaryPreSubscription,
 ) -> BeneficiaryImport:
-    beneficiary_import = BeneficiaryImport()
+    return _save_beneficiary_import_with_status(
+        ImportStatus.CREATED,
+        application_id=beneficiary_pre_subscription.application_id,
+        source_id=beneficiary_pre_subscription.source_id,
+        source=beneficiary_pre_subscription.source,
+    )
 
-    beneficiary_import.applicationId = beneficiary_pre_subscription.application_id
-    beneficiary_import.sourceId = beneficiary_pre_subscription.source_id
-    beneficiary_import.source = beneficiary_pre_subscription.source.value
-    beneficiary_import.setStatus(status=ImportStatus.CREATED)
 
-    return beneficiary_import
+def beneficiary_import_duplicated(
+    beneficiary_pre_subscription: BeneficiaryPreSubscription, detail: str = None, save: bool = False
+) -> BeneficiaryImport:
+    return _save_beneficiary_import_with_status(
+        ImportStatus.DUPLICATE,
+        application_id=beneficiary_pre_subscription.application_id,
+        source_id=beneficiary_pre_subscription.source_id,
+        source=beneficiary_pre_subscription.source,
+        detail=detail,
+        save=save,
+    )
+
+
+def beneficiary_import_rejected(
+    beneficiary_pre_subscription: BeneficiaryPreSubscription, detail: str = None, save: bool = False
+) -> BeneficiaryImport:
+    return _save_beneficiary_import_with_status(
+        ImportStatus.REJECTED,
+        application_id=beneficiary_pre_subscription.application_id,
+        source_id=beneficiary_pre_subscription.source_id,
+        source=beneficiary_pre_subscription.source,
+        detail=detail,
+        save=save,
+    )
+
+
+def beneficiary_import_errored(
+    application_id: int,
+    source_id: int,
+    source: BeneficiaryImportSources,
+    detail: str = None,
+    save: bool = False,
+) -> BeneficiaryImport:
+    return _save_beneficiary_import_with_status(
+        ImportStatus.ERROR,
+        application_id=application_id,
+        source_id=source_id,
+        source=source,
+        detail=detail,
+        save=save,
+    )
 
 
 def request_email_confirmation(user: User) -> None:

@@ -1,3 +1,4 @@
+from datetime import date
 from datetime import datetime
 from datetime import timedelta
 import logging
@@ -596,3 +597,79 @@ class ParseBeneficiaryInformationTest:
 
         # then
         assert information.activity is None
+
+
+@pytest.mark.usefixtures("db_session")
+class RunIntegrationTest:
+    def _get_details(self, application_id: int, procedure_id: int, token: str):
+        return {
+            "dossier": {
+                "individual": {
+                    "nom": "doe",
+                    "prenom": "john",
+                    "civilite": "M",
+                },
+                "email": "john.doe@example.com",
+                "id": application_id,
+                "champs": [
+                    {"type_de_champ": {"libelle": "Veuillez indiquer votre département :"}, "value": "93"},
+                    {
+                        "type_de_champ": {"libelle": "Quelle est votre date de naissance"},
+                        "value": (date.today() - timedelta(days=6752)).strftime("%Y-%m-%d"),  # ~18.5 years
+                    },
+                    {
+                        "type_de_champ": {"libelle": "Quel est votre numéro de téléphone"},
+                        "value": "0102030405",
+                    },
+                    {
+                        "type_de_champ": {"libelle": "Quel est le code postal de votre commune de résidence ?"},
+                        "value": "93450",
+                    },
+                    {"type_de_champ": {"libelle": "Veuillez indiquer votre statut"}, "value": "Etudiant"},
+                ],
+            }
+        }
+
+    def _get_all_applications_ids(self, procedure_id: str, token: str, last_update: datetime):
+        return [123]
+
+    def test_import_user(self):
+        # when
+        remote_import.run(
+            ONE_WEEK_AGO,
+            get_details=self._get_details,
+            get_all_applications_ids=self._get_all_applications_ids,
+        )
+
+        # then
+        assert User.query.count() == 1
+        user = User.query.first()
+        assert user.firstName == "john"
+        assert user.postalCode == "93450"
+        assert BeneficiaryImport.query.count() == 1
+        beneficiary_import = BeneficiaryImport.query.first()
+        assert beneficiary_import.source == "demarches_simplifiees"
+        assert beneficiary_import.applicationId == 123
+        assert beneficiary_import.beneficiary == user
+        assert beneficiary_import.currentStatus == ImportStatus.CREATED
+
+    def test_import_duplicated_user(self):
+        # given
+        self.test_import_user()
+
+        # when
+        remote_import.run(
+            ONE_WEEK_AGO,
+            get_details=self._get_details,
+            get_all_applications_ids=self._get_all_applications_ids,
+        )
+
+        # then
+        assert User.query.count() == 1
+        assert BeneficiaryImport.query.count() == 1
+        user = User.query.first()
+        beneficiary_import = BeneficiaryImport.query.first()
+        assert beneficiary_import.source == "demarches_simplifiees"
+        assert beneficiary_import.applicationId == 123
+        assert beneficiary_import.beneficiary == user
+        assert beneficiary_import.currentStatus == ImportStatus.REJECTED
