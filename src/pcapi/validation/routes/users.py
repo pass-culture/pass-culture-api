@@ -1,5 +1,5 @@
 from pcapi.domain.password import check_password_strength
-from pcapi.models import ApiErrors
+from pcapi.models.api_errors import ApiErrors
 from pcapi.models.api_errors import ResourceNotFoundError
 
 

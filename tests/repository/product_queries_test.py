@@ -1,6 +1,8 @@
 import pytest
 
 from pcapi.core.offers.models import Mediation
+from pcapi.core.offers.models import Offer
+from pcapi.core.offers.models import Stock
 from pcapi.model_creators.generic_creators import create_booking
 from pcapi.model_creators.generic_creators import create_favorite
 from pcapi.model_creators.generic_creators import create_mediation
@@ -10,11 +12,9 @@ from pcapi.model_creators.generic_creators import create_user
 from pcapi.model_creators.generic_creators import create_venue
 from pcapi.model_creators.specific_creators import create_offer_with_thing_product
 from pcapi.model_creators.specific_creators import create_product_with_thing_type
-from pcapi.models import FavoriteSQLEntity
-from pcapi.models import Offer
-from pcapi.models import Product
-from pcapi.models import Stock
+from pcapi.models.favorite_sql_entity import FavoriteSQLEntity
 from pcapi.models.offer_type import ThingType
+from pcapi.models.product import Product
 from pcapi.repository import repository
 from pcapi.repository.product_queries import delete_unwanted_existing_product
 from pcapi.repository.product_queries import find_active_book_product_by_isbn

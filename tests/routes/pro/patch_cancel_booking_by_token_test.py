@@ -1,5 +1,6 @@
 import pytest
 
+from pcapi.core.bookings.models import Booking
 import pcapi.core.users.factories as users_factories
 from pcapi.model_creators.generic_creators import create_booking
 from pcapi.model_creators.generic_creators import create_offerer
@@ -9,8 +10,7 @@ from pcapi.model_creators.generic_creators import create_user_offerer
 from pcapi.model_creators.generic_creators import create_venue
 from pcapi.model_creators.specific_creators import create_offer_with_event_product
 from pcapi.model_creators.specific_creators import create_offer_with_thing_product
-from pcapi.models import ApiKey
-from pcapi.models import Booking
+from pcapi.models.api_key import ApiKey
 from pcapi.repository import repository
 from pcapi.utils.token import random_token
 

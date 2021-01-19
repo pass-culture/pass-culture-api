@@ -1,4 +1,4 @@
-from pcapi.models import Booking
+from pcapi.core.bookings.models import Booking
 
 
 def find_offer_compatible_with_bookings(offer_with_stock_id_tuples, bookings):

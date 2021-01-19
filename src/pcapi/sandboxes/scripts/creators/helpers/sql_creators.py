@@ -7,22 +7,22 @@ from typing import Iterable
 from typing import Optional
 
 from pcapi.core.bookings import api as bookings_api
+from pcapi.core.bookings.models import Booking
+from pcapi.core.offers.models import Offer
+from pcapi.core.offers.models import Stock
 from pcapi.core.users.models import User
-from pcapi.models import Booking
-from pcapi.models import EventType
-from pcapi.models import Offer
-from pcapi.models import Offerer
-from pcapi.models import Payment
-from pcapi.models import PaymentMessage
-from pcapi.models import Product
-from pcapi.models import Provider
-from pcapi.models import RightsType
-from pcapi.models import Stock
-from pcapi.models import ThingType
-from pcapi.models import UserOfferer
-from pcapi.models import VenueSQLEntity
+from pcapi.models.offer_type import EventType
+from pcapi.models.offer_type import ThingType
+from pcapi.models.offerer import Offerer
+from pcapi.models.payment import Payment
+from pcapi.models.payment_message import PaymentMessage
 from pcapi.models.payment_status import PaymentStatus
 from pcapi.models.payment_status import TransactionStatus
+from pcapi.models.product import Product
+from pcapi.models.provider import Provider
+from pcapi.models.user_offerer import RightsType
+from pcapi.models.user_offerer import UserOfferer
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 from pcapi.utils.token import random_token
 
 

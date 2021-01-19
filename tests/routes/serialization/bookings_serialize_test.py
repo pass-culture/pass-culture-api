@@ -14,8 +14,8 @@ from pcapi.model_creators.specific_creators import create_offer_with_event_produ
 from pcapi.model_creators.specific_creators import create_offer_with_thing_product
 from pcapi.model_creators.specific_creators import create_product_with_thing_type
 from pcapi.model_creators.specific_creators import create_stock_from_event_occurrence
-from pcapi.models import EventType
-from pcapi.models import ThingType
+from pcapi.models.offer_type import EventType
+from pcapi.models.offer_type import ThingType
 from pcapi.routes.serialization import serialize_booking
 from pcapi.routes.serialization.bookings_serialize import serialize_booking_minimal
 from pcapi.utils.human_ids import humanize

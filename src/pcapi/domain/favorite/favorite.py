@@ -1,7 +1,7 @@
 from typing import Dict
 
 from pcapi.core.offers.models import Mediation
-from pcapi.models import Offer
+from pcapi.core.offers.models import Offer
 
 
 class Favorite:

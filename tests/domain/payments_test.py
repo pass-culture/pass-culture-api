@@ -6,6 +6,8 @@ import uuid
 from freezegun import freeze_time
 import pytest
 
+from pcapi.core.bookings.models import Booking
+from pcapi.core.offers.models import Offer
 from pcapi.domain.payments import UnmatchedPayments
 from pcapi.domain.payments import apply_banishment
 from pcapi.domain.payments import create_all_payments_details
@@ -27,12 +29,10 @@ from pcapi.model_creators.generic_creators import create_stock
 from pcapi.model_creators.generic_creators import create_user
 from pcapi.model_creators.generic_creators import create_venue
 from pcapi.model_creators.specific_creators import create_offer_with_thing_product
-from pcapi.models import Booking
-from pcapi.models import Offer
-from pcapi.models import Offerer
-from pcapi.models import VenueSQLEntity
+from pcapi.models.offerer import Offerer
 from pcapi.models.payment import Payment
 from pcapi.models.payment_status import TransactionStatus
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 from pcapi.utils.human_ids import humanize
 
 

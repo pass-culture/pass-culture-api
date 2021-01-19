@@ -11,9 +11,9 @@ import pytest
 from pcapi.core.users import api as users_api
 from pcapi.core.users.models import User
 from pcapi.model_creators.generic_creators import create_user
-from pcapi.models import ApiErrors
-from pcapi.models import BeneficiaryImport
-from pcapi.models import ImportStatus
+from pcapi.models.api_errors import ApiErrors
+from pcapi.models.beneficiary_import import BeneficiaryImport
+from pcapi.models.beneficiary_import_status import ImportStatus
 from pcapi.repository import repository
 from pcapi.scripts.beneficiary import remote_import
 from pcapi.scripts.beneficiary.remote_import import parse_beneficiary_information

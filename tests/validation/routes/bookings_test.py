@@ -1,6 +1,6 @@
 import pytest
 
-from pcapi.models import ApiErrors
+from pcapi.models.api_errors import ApiErrors
 from pcapi.validation.routes.bookings import check_page_format_is_number
 
 

@@ -1,13 +1,15 @@
 import factory
 
-from pcapi import models
 import pcapi.core.bookings.conf as bookings_conf
 import pcapi.core.bookings.factories as bookings_factories
 from pcapi.core.testing import BaseFactory
 import pcapi.core.users.factories as users_factories
 from pcapi.domain import reimbursement
 from pcapi.models import payment_status
+from pcapi.models.deposit import Deposit
 from pcapi.models.feature import FeatureToggle
+from pcapi.models.payment import Payment
+from pcapi.models.payment_status import PaymentStatus
 from pcapi.repository import feature_queries
 
 
@@ -16,7 +18,7 @@ ALL_REIMBURSEMENT_RULES = {t.name for t in list(reimbursement.ReimbursementRules
 
 class DepositFactory(BaseFactory):
     class Meta:
-        model = models.Deposit
+        model = Deposit
 
     user = factory.SubFactory(users_factories.UserFactory)
     source = "public"
@@ -37,7 +39,7 @@ class DepositFactory(BaseFactory):
 
 class PaymentFactory(BaseFactory):
     class Meta:
-        model = models.Payment
+        model = Payment
 
     author = "batch"
     booking = factory.SubFactory(bookings_factories.BookingFactory)
@@ -62,4 +64,4 @@ class PaymentFactory(BaseFactory):
 
 class PaymentStatusFactory(BaseFactory):
     class Meta:
-        model = models.PaymentStatus
+        model = PaymentStatus

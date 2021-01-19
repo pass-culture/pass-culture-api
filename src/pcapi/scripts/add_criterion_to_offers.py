@@ -4,8 +4,8 @@ from flask import current_app as app
 
 from pcapi.connectors import redis
 from pcapi.core.offers.models import Offer
-from pcapi.models import Criterion
-from pcapi.models import OfferCriterion
+from pcapi.models.criterion import Criterion
+from pcapi.models.offer_criterion import OfferCriterion
 from pcapi.repository import repository
 from pcapi.utils.logger import logger
 

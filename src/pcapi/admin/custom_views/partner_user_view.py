@@ -14,7 +14,7 @@ from wtforms.validators import Optional
 from pcapi.admin.base_configuration import BaseAdminView
 from pcapi.core.users.models import User
 from pcapi.domain.password import random_password
-from pcapi.models import UserOfferer
+from pcapi.models.user_offerer import UserOfferer
 
 
 class PartnerUserView(BaseAdminView):

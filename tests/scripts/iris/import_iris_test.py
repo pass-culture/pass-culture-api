@@ -6,7 +6,7 @@ import pytest
 from shapely.geometry import Point
 from shapely.geometry import Polygon
 
-from pcapi.models import IrisFrance
+from pcapi.models.iris_france import IrisFrance
 from pcapi.scripts.iris.import_iris import create_centroid_from_polygon
 from pcapi.scripts.iris.import_iris import fill_iris_from
 from pcapi.scripts.iris.import_iris import import_iris_shape_file_to_table

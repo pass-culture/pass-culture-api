@@ -3,7 +3,7 @@ from time import sleep
 from pcapi import settings
 from pcapi.connectors.scalingo_api import ScalingoApiException
 from pcapi.connectors.scalingo_api import run_process_in_one_off_container
-from pcapi.models import VenueProvider
+from pcapi.models.venue_provider import VenueProvider
 from pcapi.repository import repository
 from pcapi.repository.venue_provider_queries import get_nb_containers_at_work
 from pcapi.repository.venue_provider_queries import get_venue_providers_to_sync

@@ -7,8 +7,8 @@ from pcapi.model_creators.generic_creators import create_allocine_pivot
 from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_venue
 from pcapi.model_creators.provider_creators import activate_provider
-from pcapi.models import AllocineVenueProvider
-from pcapi.models import AllocineVenueProviderPriceRule
+from pcapi.models.allocine_venue_provider import AllocineVenueProvider
+from pcapi.models.allocine_venue_provider_price_rule import AllocineVenueProviderPriceRule
 from pcapi.repository import repository
 from pcapi.use_cases.connect_venue_to_allocine import connect_venue_to_allocine
 from pcapi.utils.human_ids import humanize

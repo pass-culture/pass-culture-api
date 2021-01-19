@@ -9,7 +9,7 @@ from pcapi.domain.iris import link_valid_venue_to_irises
 from pcapi.model_creators.generic_creators import create_iris
 from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_venue
-from pcapi.models import IrisVenues
+from pcapi.models.iris_venues import IrisVenues
 from pcapi.repository import repository
 
 

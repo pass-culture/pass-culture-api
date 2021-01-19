@@ -2,10 +2,10 @@ from pcapi.core.bookings.models import Booking
 from pcapi.core.offers.models import Offer
 from pcapi.core.offers.models import Stock
 from pcapi.core.users.models import User
-from pcapi.models import VenueSQLEntity
 from pcapi.models.offerer import Offerer
 from pcapi.models.payment import Payment
 from pcapi.models.user_offerer import UserOfferer
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 from pcapi.sandboxes.scripts.utils.helpers import get_booking_helper
 from pcapi.sandboxes.scripts.utils.helpers import get_offer_helper
 from pcapi.sandboxes.scripts.utils.helpers import get_offerer_helper

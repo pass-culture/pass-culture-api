@@ -3,7 +3,7 @@ from typing import List
 from flask import current_app as app
 
 from pcapi.connectors import redis
-from pcapi.models import Offer
+from pcapi.core.offers.models import Offer
 from pcapi.repository import repository
 
 

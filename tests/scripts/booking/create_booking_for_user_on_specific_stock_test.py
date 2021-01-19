@@ -3,9 +3,9 @@ from unittest.mock import patch
 import pytest
 
 import pcapi.core.bookings.factories as bookings_factories
+from pcapi.core.bookings.models import Booking
 import pcapi.core.offers.factories as offers_factories
-from pcapi.models import Booking
-from pcapi.models import ThingType
+from pcapi.models.offer_type import ThingType
 from pcapi.scripts.booking.create_booking_for_user_on_specific_stock import (
     create_booking_for_user_on_specific_stock_bypassing_capping_limits,
 )

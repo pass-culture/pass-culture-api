@@ -2,8 +2,8 @@ from wtforms import Form
 
 from pcapi.admin.base_configuration import BaseAdminView
 from pcapi.connectors import redis
+from pcapi.core.offers.models import Offer
 from pcapi.flask_app import app
-from pcapi.models import Offer
 
 
 class OfferView(BaseAdminView):

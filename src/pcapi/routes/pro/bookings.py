@@ -12,10 +12,10 @@ import pcapi.core.bookings.validation as bookings_validation
 from pcapi.domain.users import check_is_authorized_to_access_bookings_recap
 from pcapi.flask_app import private_api
 from pcapi.flask_app import public_api
-from pcapi.models import ApiKey
-from pcapi.models import EventType
-from pcapi.models import RightsType
+from pcapi.models.api_key import ApiKey
+from pcapi.models.offer_type import EventType
 from pcapi.models.offer_type import ProductType
+from pcapi.models.user_offerer import RightsType
 from pcapi.repository.api_key_queries import find_api_key_by_value
 from pcapi.routes.serialization import serialize
 from pcapi.routes.serialization import serialize_booking

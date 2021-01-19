@@ -4,19 +4,19 @@ from typing import Optional
 from flask import render_template
 from sqlalchemy import text
 
+from pcapi.core.bookings.models import Booking
+from pcapi.core.offers.models import Offer
+from pcapi.core.offers.models import Stock
 from pcapi.domain.payments import keep_only_not_processable_payments
-from pcapi.models import BankInformation
-from pcapi.models import Booking
-from pcapi.models import Offer
-from pcapi.models import Offerer
-from pcapi.models import Payment
-from pcapi.models import PaymentMessage
-from pcapi.models import PaymentStatus
-from pcapi.models import Stock
-from pcapi.models import VenueSQLEntity
+from pcapi.models.bank_information import BankInformation
 from pcapi.models.bank_information import BankInformationStatus
 from pcapi.models.db import db
+from pcapi.models.offerer import Offerer
+from pcapi.models.payment import Payment
+from pcapi.models.payment_message import PaymentMessage
+from pcapi.models.payment_status import PaymentStatus
 from pcapi.models.payment_status import TransactionStatus
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 
 
 def find_error_payments() -> List[Payment]:

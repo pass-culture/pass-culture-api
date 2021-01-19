@@ -1,5 +1,5 @@
 from pcapi.core.users.models import User
-from pcapi.models import Deposit
+from pcapi.models.deposit import Deposit
 from pcapi.repository.user_queries import keep_only_webapp_users
 from pcapi.sandboxes.scripts.utils.helpers import get_beneficiary_helper
 

@@ -1,9 +1,9 @@
 from datetime import datetime
 
 from pcapi.core.users.models import User
-from pcapi.models import Offerer
-from pcapi.models import UserOfferer
-from pcapi.models import VenueSQLEntity
+from pcapi.models.offerer import Offerer
+from pcapi.models.user_offerer import UserOfferer
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 from pcapi.scripts.deactivate_offers_during_quarantine.deactivate_offers import (
     build_query_offers_with_max_stock_date_between_today_and_end_of_quarantine,
 )

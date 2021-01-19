@@ -4,6 +4,7 @@ from datetime import timedelta
 from _decimal import Decimal
 import pytest
 
+from pcapi.core.bookings.models import Booking
 from pcapi.domain.payments import create_payment_for_booking
 from pcapi.domain.reimbursement import BookingReimbursement
 from pcapi.domain.reimbursement import ReimbursementRules
@@ -13,7 +14,6 @@ from pcapi.model_creators.generic_creators import create_stock
 from pcapi.model_creators.generic_creators import create_user
 from pcapi.model_creators.generic_creators import create_venue
 from pcapi.model_creators.specific_creators import create_offer_with_event_product
-from pcapi.models import Booking
 from pcapi.repository import repository
 from pcapi.scripts.cancel_bookings_during_quarantine import cancel_booking_status_for_events_happening_during_quarantine
 

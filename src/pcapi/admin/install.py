@@ -14,15 +14,15 @@ from pcapi.admin.custom_views.partner_user_view import PartnerUserView
 from pcapi.admin.custom_views.pro_user_view import ProUserView
 from pcapi.admin.custom_views.user_offerer_view import UserOffererView
 from pcapi.admin.custom_views.venue_view import VenueView
+from pcapi.core.offers.models import Offer
 from pcapi.core.users.models import User
-from pcapi.models import AllocinePivot
-from pcapi.models import BeneficiaryImport
-from pcapi.models import Criterion
-from pcapi.models import Feature
-from pcapi.models import Offer
-from pcapi.models import Offerer
-from pcapi.models import UserOfferer
-from pcapi.models import VenueSQLEntity
+from pcapi.models.allocine_pivot import AllocinePivot
+from pcapi.models.beneficiary_import import BeneficiaryImport
+from pcapi.models.criterion import Criterion
+from pcapi.models.feature import Feature
+from pcapi.models.offerer import Offerer
+from pcapi.models.user_offerer import UserOfferer
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 
 
 class Category(Enum):

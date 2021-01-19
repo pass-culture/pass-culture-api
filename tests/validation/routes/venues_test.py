@@ -1,6 +1,6 @@
 import pytest
 
-from pcapi.models import ApiErrors
+from pcapi.models.api_errors import ApiErrors
 from pcapi.validation.routes.venues import check_existing_venue
 from pcapi.validation.routes.venues import validate_coordinates
 

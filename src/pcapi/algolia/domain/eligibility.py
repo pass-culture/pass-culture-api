@@ -3,7 +3,7 @@ from abc import abstractmethod
 from datetime import datetime
 from enum import Enum
 
-from pcapi.models import Offer
+from pcapi.core.offers.models import Offer
 
 
 class EligibilityRule(ABC):

@@ -4,9 +4,9 @@ from flask_login import login_required
 
 import pcapi.core.bookings.api as bookings_api
 from pcapi.core.bookings.models import Booking
+from pcapi.core.offers.models import Stock
 from pcapi.flask_app import private_api
 from pcapi.infrastructure.container import get_bookings_for_beneficiary
-from pcapi.models import Stock
 from pcapi.models.feature import FeatureToggle
 from pcapi.repository import feature_queries
 from pcapi.routes.serialization import as_dict

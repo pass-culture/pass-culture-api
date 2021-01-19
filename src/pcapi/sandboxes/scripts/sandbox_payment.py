@@ -12,9 +12,9 @@ from pcapi.model_creators.specific_creators import create_event_occurrence
 from pcapi.model_creators.specific_creators import create_offer_with_event_product
 from pcapi.model_creators.specific_creators import create_offer_with_thing_product
 from pcapi.model_creators.specific_creators import create_stock_from_event_occurrence
-from pcapi.models import EventType
-from pcapi.models import ThingType
-from pcapi.models import VenueSQLEntity
+from pcapi.models.offer_type import EventType
+from pcapi.models.offer_type import ThingType
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 from pcapi.repository import repository
 from pcapi.utils.logger import logger
 

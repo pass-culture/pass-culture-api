@@ -2,9 +2,9 @@ from typing import Optional
 
 from pcapi.domain.pro_offerers.paginated_offerers import PaginatedOfferers
 from pcapi.domain.pro_offerers.paginated_offerers_repository import PaginatedOfferersRepository
-from pcapi.models import Offerer
-from pcapi.models import UserOfferer
-from pcapi.models import VenueSQLEntity
+from pcapi.models.offerer import Offerer
+from pcapi.models.user_offerer import UserOfferer
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 from pcapi.repository.offerer_queries import filter_offerers_with_keywords_string
 
 

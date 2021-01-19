@@ -13,15 +13,15 @@ from requests import Response
 
 from pcapi import settings
 from pcapi.connectors import api_entreprises
+from pcapi.core.bookings.models import Booking
 from pcapi.core.bookings.repository import find_ongoing_bookings_by_stock
+from pcapi.core.offers.models import Offer
+from pcapi.core.offers.models import Stock
 from pcapi.core.users.models import User
 from pcapi.domain.postal_code.postal_code import PostalCode
-from pcapi.models import Booking
-from pcapi.models import Offer
-from pcapi.models import Offerer
-from pcapi.models import Stock
-from pcapi.models import UserOfferer
 from pcapi.models.email import EmailStatus
+from pcapi.models.offerer import Offerer
+from pcapi.models.user_offerer import UserOfferer
 from pcapi.repository.email_queries import save
 from pcapi.repository.feature_queries import feature_send_mail_to_users_enabled
 from pcapi.utils import logger

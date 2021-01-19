@@ -10,7 +10,7 @@ from pcapi import settings
 from pcapi.admin.base_configuration import BaseAdminView
 from pcapi.core.users.models import User
 from pcapi.domain.user_emails import send_activation_email
-from pcapi.models import UserOfferer
+from pcapi.models.user_offerer import UserOfferer
 from pcapi.utils.mailing import send_raw_email
 
 from .suspension_mixin import SuspensionMixin

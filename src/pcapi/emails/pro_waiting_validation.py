@@ -2,7 +2,7 @@ from typing import Dict
 
 from pcapi import settings
 from pcapi.core.users.models import User
-from pcapi.models import Offerer
+from pcapi.models.offerer import Offerer
 from pcapi.repository.feature_queries import feature_send_mail_to_users_enabled
 
 

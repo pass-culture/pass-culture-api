@@ -3,10 +3,10 @@ from typing import Callable
 from typing import Dict
 
 from pcapi.domain.price_rule import PriceRule
-from pcapi.models import AllocineVenueProvider
-from pcapi.models import AllocineVenueProviderPriceRule
-from pcapi.models import VenueProvider
-from pcapi.models import VenueSQLEntity
+from pcapi.models.allocine_venue_provider import AllocineVenueProvider
+from pcapi.models.allocine_venue_provider_price_rule import AllocineVenueProviderPriceRule
+from pcapi.models.venue_provider import VenueProvider
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 from pcapi.repository import repository
 from pcapi.utils.human_ids import dehumanize
 from pcapi.validation.routes.venues import check_existing_venue

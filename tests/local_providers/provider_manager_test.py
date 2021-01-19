@@ -15,7 +15,7 @@ from pcapi.model_creators.generic_creators import create_provider
 from pcapi.model_creators.generic_creators import create_venue
 from pcapi.model_creators.generic_creators import create_venue_provider
 from pcapi.model_creators.provider_creators import activate_provider
-from pcapi.models import VenueProvider
+from pcapi.models.venue_provider import VenueProvider
 from pcapi.repository import repository
 
 from tests.local_providers.provider_test_utils import TestLocalProvider

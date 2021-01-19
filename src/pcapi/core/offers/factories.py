@@ -3,10 +3,20 @@ import uuid
 
 import factory
 
-from pcapi import models
+from pcapi.core.offers.models import Mediation
+from pcapi.core.offers.models import Offer
+from pcapi.core.offers.models import Stock
 from pcapi.core.testing import BaseFactory
 import pcapi.core.users.factories as users_factories
 from pcapi.models import offer_type
+from pcapi.models.api_key import ApiKey
+from pcapi.models.criterion import Criterion
+from pcapi.models.offerer import Offerer
+from pcapi.models.product import Product
+from pcapi.models.user_offerer import RightsType
+from pcapi.models.user_offerer import UserOfferer
+from pcapi.models.venue_sql_entity import VenueSQLEntity
+from pcapi.models.venue_type import VenueType
 
 
 ALL_TYPES = {
@@ -16,7 +26,7 @@ ALL_TYPES = {
 
 class OffererFactory(BaseFactory):
     class Meta:
-        model = models.Offerer
+        model = Offerer
 
     name = factory.Sequence("Le Petit Rintintin Management {}".format)
     postalCode = "75000"
@@ -30,16 +40,16 @@ class OffererFactory(BaseFactory):
 
 class UserOffererFactory(BaseFactory):
     class Meta:
-        model = models.UserOfferer
+        model = UserOfferer
 
     user = factory.SubFactory(users_factories.UserFactory)
     offerer = factory.SubFactory(OffererFactory)
-    rights = models.RightsType.editor
+    rights = RightsType.editor
 
 
 class ApiKeyFactory(BaseFactory):
     class Meta:
-        model = models.ApiKey
+        model = ApiKey
 
     offerer = factory.SubFactory(OffererFactory)
     value = factory.Sequence("API KEY {}".format)
@@ -47,7 +57,7 @@ class ApiKeyFactory(BaseFactory):
 
 class VenueFactory(BaseFactory):
     class Meta:
-        model = models.VenueSQLEntity
+        model = VenueSQLEntity
 
     name = factory.Sequence("Le Petit Rintintin {}".format)
     departementCode = "75"
@@ -77,14 +87,14 @@ class VirtualVenueFactory(VenueFactory):
 
 class VirtualVenueTypeFactory(BaseFactory):
     class Meta:
-        model = models.VenueType
+        model = VenueType
 
     label = "Offre numérique"
 
 
 class ProductFactory(BaseFactory):
     class Meta:
-        model = models.Product
+        model = Product
 
     type = factory.Iterator(ALL_TYPES)
     name = factory.Sequence("Product {}".format)
@@ -113,7 +123,7 @@ class DigitalProductFactory(ThingProductFactory):
 
 class OfferFactory(BaseFactory):
     class Meta:
-        model = models.Offer
+        model = Offer
 
     product = factory.SubFactory(ThingProductFactory)
     venue = factory.SubFactory(VenueFactory)
@@ -140,7 +150,7 @@ class ThingOfferFactory(OfferFactory):
 
 class StockFactory(BaseFactory):
     class Meta:
-        model = models.Stock
+        model = Stock
 
     offer = factory.SubFactory(OfferFactory)
     price = 10
@@ -170,7 +180,7 @@ class EventStockFactory(StockFactory):
 
 class MediationFactory(BaseFactory):
     class Meta:
-        model = models.Mediation
+        model = Mediation
 
     offer = factory.SubFactory(OfferFactory)
     isActive = True
@@ -178,7 +188,7 @@ class MediationFactory(BaseFactory):
 
 class CriterionFactory(BaseFactory):
     class Meta:
-        model = models.Criterion
+        model = Criterion
 
     name = factory.Sequence("Criterion {}".format)
     scoreDelta = 1

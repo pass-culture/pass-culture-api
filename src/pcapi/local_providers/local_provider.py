@@ -7,7 +7,7 @@ from pcapi.connectors.thumb_storage import create_thumb
 from pcapi.local_providers.chunk_manager import get_existing_pc_obj
 from pcapi.local_providers.chunk_manager import save_chunks
 from pcapi.local_providers.providable_info import ProvidableInfo
-from pcapi.models import ApiErrors
+from pcapi.models.api_errors import ApiErrors
 from pcapi.models.db import Model
 from pcapi.models.db import db
 from pcapi.models.feature import FeatureToggle
