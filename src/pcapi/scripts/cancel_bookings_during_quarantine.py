@@ -3,9 +3,9 @@ from typing import List
 
 from sqlalchemy import and_
 
-from pcapi.models import Booking
-from pcapi.models import Payment
-from pcapi.models import Stock
+from pcapi.core.bookings.models import Booking
+from pcapi.core.offers.models import Stock
+from pcapi.models.payment import Payment
 from pcapi.repository import repository
 
 

@@ -19,8 +19,8 @@ from lxml import etree
 import pcapi.core.bookings.repository as booking_repository
 from pcapi.domain.bank_account import format_raw_iban_and_bic
 from pcapi.domain.reimbursement import BookingReimbursement
-from pcapi.models import PaymentMessage
 from pcapi.models.payment import Payment
+from pcapi.models.payment_message import PaymentMessage
 from pcapi.models.payment_status import TransactionStatus
 from pcapi.models.wallet_balance import WalletBalance
 from pcapi.utils.human_ids import humanize

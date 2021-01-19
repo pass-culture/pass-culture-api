@@ -7,9 +7,9 @@ from pcapi.local_providers import FnacStocks
 from pcapi.local_providers import LibrairesStocks
 from pcapi.local_providers import PraxielStocks
 from pcapi.local_providers import TiteLiveStocks
-from pcapi.models import ApiErrors
-from pcapi.models import VenueProvider
-from pcapi.models import VenueSQLEntity
+from pcapi.models.api_errors import ApiErrors
+from pcapi.models.venue_provider import VenueProvider
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 from pcapi.repository import repository
 from pcapi.utils.human_ids import dehumanize
 from pcapi.validation.routes.venues import check_existing_venue

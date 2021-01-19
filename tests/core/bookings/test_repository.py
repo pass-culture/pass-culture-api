@@ -9,6 +9,7 @@ import pytest
 from pytest import fixture
 
 from pcapi.core.bookings import factories
+from pcapi.core.bookings.models import Booking
 import pcapi.core.bookings.repository as booking_repository
 from pcapi.core.bookings.repository import find_by_pro_user_id
 from pcapi.core.offers.models import EVENT_AUTOMATIC_REFUND_DELAY
@@ -28,7 +29,6 @@ from pcapi.model_creators.specific_creators import create_offer_with_thing_produ
 from pcapi.model_creators.specific_creators import create_stock_from_offer
 from pcapi.model_creators.specific_creators import create_stock_with_event_offer
 from pcapi.model_creators.specific_creators import create_stock_with_thing_offer
-from pcapi.models import Booking
 from pcapi.models.api_errors import ApiErrors
 from pcapi.models.api_errors import ResourceNotFoundError
 from pcapi.models.offer_type import ThingType

@@ -5,6 +5,7 @@ from unittest.mock import patch
 import pytest
 from pytest import approx
 
+from pcapi.core.offers.models import Stock
 from pcapi.model_creators.generic_creators import create_booking
 from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_stock
@@ -15,8 +16,7 @@ from pcapi.model_creators.specific_creators import create_offer_with_thing_produ
 from pcapi.model_creators.specific_creators import create_stock_from_offer
 from pcapi.model_creators.specific_creators import create_stock_with_event_offer
 from pcapi.model_creators.specific_creators import create_stock_with_thing_offer
-from pcapi.models import ApiErrors
-from pcapi.models import Stock
+from pcapi.models.api_errors import ApiErrors
 from pcapi.models.pc_object import DeletedRecordException
 from pcapi.repository import repository
 

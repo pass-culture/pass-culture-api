@@ -3,7 +3,7 @@ from typing import List
 from sqlalchemy.orm import joinedload
 
 from pcapi.core.offers.models import Offer
-from pcapi.models import VenueSQLEntity
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 from pcapi.repository import repository
 
 

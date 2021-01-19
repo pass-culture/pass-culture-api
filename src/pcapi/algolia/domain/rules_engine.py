@@ -1,5 +1,5 @@
 from pcapi.algolia.domain.eligibility import EligibilityRules
-from pcapi.models import Offer
+from pcapi.core.offers.models import Offer
 
 
 def is_eligible_for_reindexing(offer: Offer, offer_details: dict) -> bool:

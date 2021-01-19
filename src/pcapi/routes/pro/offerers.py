@@ -12,10 +12,10 @@ from pcapi.domain.user_emails import send_ongoing_offerer_attachment_information
 from pcapi.domain.user_emails import send_pro_user_waiting_for_validation_by_admin_email
 from pcapi.flask_app import private_api
 from pcapi.infrastructure.container import list_offerers_for_pro_user
-from pcapi.models import ApiErrors
-from pcapi.models import Offerer
-from pcapi.models import RightsType
-from pcapi.models import UserOfferer
+from pcapi.models.api_errors import ApiErrors
+from pcapi.models.offerer import Offerer
+from pcapi.models.user_offerer import RightsType
+from pcapi.models.user_offerer import UserOfferer
 from pcapi.models.venue_sql_entity import create_digital_venue
 from pcapi.repository import repository
 from pcapi.repository.offerer_queries import find_by_siren

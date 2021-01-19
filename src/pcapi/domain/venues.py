@@ -1,6 +1,6 @@
 from typing import Dict
 
-from pcapi.models import VenueSQLEntity
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 from pcapi.routes.serialization import as_dict
 
 

@@ -3,9 +3,9 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from pcapi.models import Booking
-from pcapi.models import EventType
-from pcapi.models import ThingType
+from pcapi.core.bookings.models import Booking
+from pcapi.models.offer_type import EventType
+from pcapi.models.offer_type import ThingType
 from pcapi.routes.serialization import serialize
 from pcapi.serialization.utils import to_camel
 from pcapi.utils.human_ids import humanize

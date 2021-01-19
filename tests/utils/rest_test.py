@@ -1,11 +1,11 @@
 import pytest
 from sqlalchemy import func
 
+from pcapi.core.offers.models import Offer
 from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_venue
-from pcapi.models import ApiErrors
-from pcapi.models import Offer
-from pcapi.models import VenueSQLEntity
+from pcapi.models.api_errors import ApiErrors
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 from pcapi.repository import repository
 from pcapi.utils.human_ids import humanize
 from pcapi.utils.rest import check_order_by

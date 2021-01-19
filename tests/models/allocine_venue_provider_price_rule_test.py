@@ -6,8 +6,8 @@ from pcapi.model_creators.generic_creators import create_allocine_venue_provider
 from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_venue
 from pcapi.model_creators.provider_creators import activate_provider
-from pcapi.models import AllocineVenueProviderPriceRule
-from pcapi.models import ApiErrors
+from pcapi.models.allocine_venue_provider_price_rule import AllocineVenueProviderPriceRule
+from pcapi.models.api_errors import ApiErrors
 from pcapi.repository import repository
 from pcapi.repository.provider_queries import get_provider_by_local_class
 

@@ -8,14 +8,15 @@ from flask import current_app as app
 import pytest
 import pytz
 
-from pcapi import models
 import pcapi.core.bookings.factories as bookings_factories
 from pcapi.core.bookings.models import Booking
 import pcapi.core.offerers.factories as offerers_factories
 from pcapi.core.offers import api
 from pcapi.core.offers import exceptions
 from pcapi.core.offers import factories
+from pcapi.core.offers.models import Mediation
 from pcapi.core.offers.models import Offer
+from pcapi.core.offers.models import Stock
 import pcapi.core.users.factories as users_factories
 from pcapi.models import api_errors
 from pcapi.models import offer_type
@@ -106,7 +107,7 @@ class EditStockTest:
             booking_limit_datetime=booking_limit_datetime,
         )
 
-        stock = models.Stock.query.one()
+        stock = Stock.query.one()
         assert stock.price == 5
         assert stock.quantity == 20
         assert stock.beginningDatetime == beginning
@@ -128,7 +129,7 @@ class EditStockTest:
             booking_limit_datetime=stock.bookingLimitDatetime,
         )
 
-        stock = models.Stock.query.one()
+        stock = Stock.query.one()
         assert stock.beginningDatetime == beginning
         notified_bookings = mocked_send_email.call_args_list[0][0][0]
         assert notified_bookings == [booking1]
@@ -229,7 +230,7 @@ class EditStockTest:
             beginning=stock.beginningDatetime,
             booking_limit_datetime=stock.bookingLimitDatetime,
         )
-        stock = models.Stock.query.one()
+        stock = Stock.query.one()
         assert stock.quantity == 2
 
     def test_checks_booking_limit_is_after_beginning(self):
@@ -281,7 +282,7 @@ class EditStockTest:
             "booking_limit_datetime": new_booking_limit,
         }
         api.edit_stock(stock, **changes)
-        stock = models.Stock.query.one()
+        stock = Stock.query.one()
         assert stock.price == 5
         assert stock.quantity == 20
         assert stock.beginningDatetime == initial_beginning
@@ -317,7 +318,7 @@ class DeleteStockTest:
 
         api.delete_stock(stock)
 
-        stock = models.Stock.query.one()
+        stock = Stock.query.one()
         assert stock.isSoftDeleted
         mocked_add_offer_id.assert_called_once_with(client=app.redis_client, offer_id=stock.offerId)
 
@@ -331,13 +332,13 @@ class DeleteStockTest:
 
         api.delete_stock(stock)
 
-        stock = models.Stock.query.one()
+        stock = Stock.query.one()
         assert stock.isSoftDeleted
-        booking1 = models.Booking.query.get(booking1.id)
+        booking1 = Booking.query.get(booking1.id)
         assert booking1.isCancelled
-        booking2 = models.Booking.query.get(booking2.id)
+        booking2 = Booking.query.get(booking2.id)
         assert booking2.isCancelled  # unchanged
-        booking3 = models.Booking.query.get(booking3.id)
+        booking3 = Booking.query.get(booking3.id)
         assert not booking3.isCancelled  # unchanged
 
         notified_bookings_beneficiaries = mocked_send_to_beneficiaries.call_args_list[0][0][0]
@@ -352,7 +353,7 @@ class DeleteStockTest:
 
         api.delete_stock(stock)
 
-        stock = models.Stock.query.one()
+        stock = Stock.query.one()
         assert stock.isSoftDeleted
 
     def test_cannot_delete_if_stock_from_titelive(self):
@@ -365,7 +366,7 @@ class DeleteStockTest:
         msg = "Les offres importées ne sont pas modifiables"
         assert error.value.errors["global"][0] == msg
 
-        stock = models.Stock.query.one()
+        stock = Stock.query.one()
         assert not stock.isSoftDeleted
 
     def test_can_delete_if_event_ended_recently(self):
@@ -373,7 +374,7 @@ class DeleteStockTest:
         stock = factories.EventStockFactory(beginningDatetime=recently)
 
         api.delete_stock(stock)
-        stock = models.Stock.query.one()
+        stock = Stock.query.one()
         assert stock.isSoftDeleted
 
     def test_cannot_delete_if_too_late(self):
@@ -382,7 +383,7 @@ class DeleteStockTest:
 
         with pytest.raises(exceptions.TooLateToDeleteStock):
             api.delete_stock(stock)
-        stock = models.Stock.query.one()
+        stock = Stock.query.one()
         assert not stock.isSoftDeleted
 
 
@@ -420,11 +421,11 @@ class CreateMediationTest:
         offer = factories.ThingOfferFactory()
         image_as_bytes = (IMAGES_DIR / "mouette_small.jpg").read_bytes()
 
-        with pytest.raises(models.ApiErrors) as error:
+        with pytest.raises(api_errors.ApiErrors) as error:
             api.create_mediation(user, offer, "credits", image_as_bytes)
 
         assert error.value.errors["thumb"] == ["L'image doit faire 400 * 400 px minimum"]
-        assert models.Mediation.query.count() == 0
+        assert Mediation.query.count() == 0
 
 
 @pytest.mark.usefixtures("db_session")
@@ -666,11 +667,11 @@ class UpdateOfferTest:
     def test_cannot_update_with_name_too_long(self):
         offer = factories.OfferFactory(name="Old name")
 
-        with pytest.raises(models.ApiErrors) as error:
+        with pytest.raises(api_errors.ApiErrors) as error:
             api.update_offer(offer, name="Luftballons" * 99)
 
         assert error.value.errors == {"name": ["Vous devez saisir moins de 140 caractères"]}
-        assert models.Offer.query.one().name == "Old name"
+        assert Offer.query.one().name == "Old name"
 
     def test_success_on_allocine_offer(self):
         provider = offerers_factories.ProviderFactory(localClass="AllocineStocks")
@@ -678,7 +679,7 @@ class UpdateOfferTest:
 
         api.update_offer(offer, name="Old name", isDuo=True)
 
-        offer = models.Offer.query.one()
+        offer = Offer.query.one()
         assert offer.name == "Old name"
         assert offer.isDuo
 
@@ -686,11 +687,11 @@ class UpdateOfferTest:
         provider = offerers_factories.ProviderFactory(localClass="AllocineStocks")
         offer = factories.OfferFactory(lastProvider=provider, name="Old name")
 
-        with pytest.raises(models.ApiErrors) as error:
+        with pytest.raises(api_errors.ApiErrors) as error:
             api.update_offer(offer, name="New name", isDuo=True)
 
         assert error.value.errors == {"name": ["Vous ne pouvez pas modifier ce champ"]}
-        offer = models.Offer.query.one()
+        offer = Offer.query.one()
         assert offer.name == "Old name"
         assert not offer.isDuo
 
@@ -714,7 +715,7 @@ class UpdateOfferTest:
             mentalDisabilityCompliant=False,
         )
 
-        offer = models.Offer.query.one()
+        offer = Offer.query.one()
         assert offer.name == "Old name"
         assert offer.audioDisabilityCompliant == False
         assert offer.visualDisabilityCompliant == True
@@ -727,14 +728,14 @@ class UpdateOfferTest:
             lastProvider=provider, name="Old name", isDuo=False, audioDisabilityCompliant=True
         )
 
-        with pytest.raises(models.ApiErrors) as error:
+        with pytest.raises(api_errors.ApiErrors) as error:
             api.update_offer(offer, name="New name", isDuo=True, audioDisabilityCompliant=False)
 
         assert error.value.errors == {
             "name": ["Vous ne pouvez pas modifier ce champ"],
             "isDuo": ["Vous ne pouvez pas modifier ce champ"],
         }
-        offer = models.Offer.query.one()
+        offer = Offer.query.one()
         assert offer.name == "Old name"
         assert offer.isDuo == False
         assert offer.audioDisabilityCompliant == True
@@ -748,12 +749,12 @@ class UpdateOffersActiveStatusTest:
         offer2 = factories.OfferFactory(isActive=False)
         offer3 = factories.OfferFactory(isActive=False)
 
-        query = models.Offer.query.filter(models.Offer.id.in_({offer1.id, offer2.id}))
+        query = Offer.query.filter(Offer.id.in_({offer1.id, offer2.id}))
         api.update_offers_active_status(query, is_active=True)
 
-        assert models.Offer.query.get(offer1.id).isActive
-        assert models.Offer.query.get(offer2.id).isActive
-        assert not models.Offer.query.get(offer3.id).isActive
+        assert Offer.query.get(offer1.id).isActive
+        assert Offer.query.get(offer2.id).isActive
+        assert not Offer.query.get(offer3.id).isActive
         assert mocked_add_offer_id.call_count == 2
         mocked_add_offer_id.assert_has_calls(
             [
@@ -768,9 +769,9 @@ class UpdateOffersActiveStatusTest:
         offer2 = factories.OfferFactory()
         offer3 = factories.OfferFactory()
 
-        query = models.Offer.query.filter(models.Offer.id.in_({offer1.id, offer2.id}))
+        query = Offer.query.filter(Offer.id.in_({offer1.id, offer2.id}))
         api.update_offers_active_status(query, is_active=False)
 
-        assert not models.Offer.query.get(offer1.id).isActive
-        assert not models.Offer.query.get(offer2.id).isActive
-        assert models.Offer.query.get(offer3.id).isActive
+        assert not Offer.query.get(offer1.id).isActive
+        assert not Offer.query.get(offer2.id).isActive
+        assert Offer.query.get(offer3.id).isActive

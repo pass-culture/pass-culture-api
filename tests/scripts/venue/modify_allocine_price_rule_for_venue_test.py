@@ -8,7 +8,7 @@ from pcapi.model_creators.generic_creators import create_allocine_venue_provider
 from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_provider
 from pcapi.model_creators.generic_creators import create_venue
-from pcapi.models import AllocineVenueProviderPriceRule
+from pcapi.models.allocine_venue_provider_price_rule import AllocineVenueProviderPriceRule
 from pcapi.repository import repository
 from pcapi.scripts.venue.modify_allocine_price_rule_for_venue import modify_allocine_price_rule_for_venue_by_id
 from pcapi.scripts.venue.modify_allocine_price_rule_for_venue import modify_allocine_price_rule_for_venue_by_siret

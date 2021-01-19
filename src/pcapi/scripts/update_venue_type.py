@@ -1,9 +1,9 @@
 import csv
 from typing import List
 
-from pcapi.models import ApiErrors
-from pcapi.models import VenueSQLEntity
-from pcapi.models import VenueType
+from pcapi.models.api_errors import ApiErrors
+from pcapi.models.venue_sql_entity import VenueSQLEntity
+from pcapi.models.venue_type import VenueType
 from pcapi.repository import repository
 
 

@@ -1,9 +1,9 @@
 import typing
 
 from pcapi import settings
+from pcapi.core.bookings.models import Booking
 from pcapi.domain.postal_code.postal_code import PostalCode
-from pcapi.models import Booking
-from pcapi.models import Offerer
+from pcapi.models.offerer import Offerer
 from pcapi.repository.feature_queries import feature_send_mail_to_users_enabled
 from pcapi.utils.mailing import build_pc_pro_offer_link
 from pcapi.utils.mailing import format_environment_for_email

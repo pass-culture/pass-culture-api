@@ -1,7 +1,7 @@
 import pytest
 
 from pcapi.model_creators.generic_creators import create_user
-from pcapi.models import UserSession
+from pcapi.models.user_session import UserSession
 from pcapi.repository import repository
 
 from tests.conftest import TestClient

@@ -1,6 +1,6 @@
 from pcapi.infrastructure.container import api_fnac_stocks
 from pcapi.local_providers.generic_provider.generic_stocks import GenericStocks
-from pcapi.models import VenueProvider
+from pcapi.models.venue_provider import VenueProvider
 
 
 class FnacStocks(GenericStocks):

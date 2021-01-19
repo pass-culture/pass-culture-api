@@ -2,7 +2,7 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 from pcapi.admin.base_configuration import BaseAdminView
-from pcapi.models import Booking
+from pcapi.core.bookings.models import Booking
 
 
 fake_db_session = [Mock()]

@@ -1,9 +1,9 @@
 from datetime import datetime
 from datetime import timedelta
 
-from pcapi.models import LocalProviderEvent
-from pcapi.models import Provider
+from pcapi.models.local_provider_event import LocalProviderEvent
 from pcapi.models.local_provider_event import LocalProviderEventType
+from pcapi.models.provider import Provider
 
 
 def find_latest_sync_part_end_event(provider: Provider) -> LocalProviderEvent:

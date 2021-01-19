@@ -7,10 +7,10 @@ from pcapi.core.bookings import factories
 from pcapi.core.bookings import models
 from pcapi.core.offers.factories import MediationFactory
 import pcapi.core.users.factories as users_factories
-from pcapi.models import ApiErrors
-from pcapi.models import EventType
-from pcapi.models import ThingType
 from pcapi.models import db
+from pcapi.models.api_errors import ApiErrors
+from pcapi.models.offer_type import EventType
+from pcapi.models.offer_type import ThingType
 from pcapi.repository import repository
 from pcapi.utils.human_ids import humanize
 

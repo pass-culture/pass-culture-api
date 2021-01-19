@@ -3,7 +3,7 @@ from typing import List
 from pcapi.domain.venue.venue_label.venue_label import VenueLabel
 from pcapi.domain.venue.venue_label.venue_label_repository import VenueLabelRepository
 from pcapi.infrastructure.repository.venue.venue_label import venue_label_domain_converter
-from pcapi.models import VenueLabelSQLEntity
+from pcapi.models.venue_label_sql_entity import VenueLabelSQLEntity
 
 
 class VenueLabelSQLRepository(VenueLabelRepository):

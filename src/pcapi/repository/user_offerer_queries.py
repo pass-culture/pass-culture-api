@@ -1,5 +1,5 @@
 from pcapi.core.users.models import User
-from pcapi.models import UserOfferer
+from pcapi.models.user_offerer import UserOfferer
 
 
 def find_user_offerer_email(user_offerer_id):

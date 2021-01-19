@@ -3,10 +3,10 @@ from typing import Dict
 from typing import List
 
 from pcapi import settings
+from pcapi.core.offers.models import Offer
 from pcapi.core.users.models import User
-from pcapi.models import Offer
-from pcapi.models import Offerer
-from pcapi.models import UserOfferer
+from pcapi.models.offerer import Offerer
+from pcapi.models.user_offerer import UserOfferer
 from pcapi.utils.mailing import compute_email_html_part_and_recipients
 from pcapi.utils.mailing import make_offer_creation_notification_email
 from pcapi.utils.mailing import make_payment_details_email

@@ -8,10 +8,10 @@ from pcapi.core.bookings.models import Booking
 from pcapi.core.offers.models import Offer
 from pcapi.core.offers.models import Stock
 from pcapi.core.users.models import User
-from pcapi.models import Offerer
-from pcapi.models import PaymentStatus
-from pcapi.models import VenueSQLEntity
+from pcapi.models.offerer import Offerer
 from pcapi.models.payment import Payment
+from pcapi.models.payment_status import PaymentStatus
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 
 
 def find_all_offerer_payments(offerer_id: int) -> List[namedtuple]:

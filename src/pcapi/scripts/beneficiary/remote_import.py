@@ -12,9 +12,9 @@ from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_vali
 from pcapi.domain.demarches_simplifiees import get_closed_application_ids_for_demarche_simplifiee
 from pcapi.domain.user_activation import create_beneficiary_from_application
 from pcapi.domain.user_emails import send_activation_email
-from pcapi.models import ApiErrors
-from pcapi.models import ImportStatus
+from pcapi.models.api_errors import ApiErrors
 from pcapi.models.beneficiary_import import BeneficiaryImportSources
+from pcapi.models.beneficiary_import_status import ImportStatus
 from pcapi.repository import repository
 from pcapi.repository.beneficiary_import_queries import find_applications_ids_to_retry
 from pcapi.repository.beneficiary_import_queries import is_already_imported

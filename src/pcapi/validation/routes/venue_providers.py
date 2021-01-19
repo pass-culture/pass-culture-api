@@ -1,7 +1,7 @@
 import json
 
-from pcapi.models import ApiErrors
-from pcapi.models import Provider
+from pcapi.models.api_errors import ApiErrors
+from pcapi.models.provider import Provider
 
 
 def check_new_venue_provider_information(payload: json):

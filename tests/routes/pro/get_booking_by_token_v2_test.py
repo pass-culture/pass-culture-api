@@ -20,8 +20,8 @@ from pcapi.model_creators.specific_creators import create_offer_with_event_produ
 from pcapi.model_creators.specific_creators import create_stock_from_event_occurrence
 from pcapi.model_creators.specific_creators import create_stock_with_event_offer
 from pcapi.model_creators.specific_creators import create_stock_with_thing_offer
-from pcapi.models import EventType
 from pcapi.models import api_errors
+from pcapi.models.offer_type import EventType
 from pcapi.repository import repository
 from pcapi.utils.date import format_into_utc_date
 from pcapi.utils.human_ids import humanize

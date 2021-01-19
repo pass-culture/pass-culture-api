@@ -4,7 +4,7 @@ from flask import request
 from flask_login import current_user
 
 from pcapi.core.users.models import User
-from pcapi.models import ApiErrors
+from pcapi.models.api_errors import ApiErrors
 from pcapi.repository.api_key_queries import find_api_key_by_value
 
 

@@ -14,7 +14,7 @@ from pcapi.connectors.redis import add_to_indexed_offers
 from pcapi.connectors.redis import check_offer_exists
 from pcapi.connectors.redis import delete_indexed_offers
 from pcapi.connectors.redis import get_offer_details
-from pcapi.models import Offer
+from pcapi.core.offers.models import Offer
 from pcapi.repository import offer_queries
 from pcapi.utils.human_ids import humanize
 from pcapi.utils.logger import logger

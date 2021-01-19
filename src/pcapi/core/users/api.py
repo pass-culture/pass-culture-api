@@ -29,8 +29,8 @@ from pcapi.domain.password import generate_reset_token
 from pcapi.domain.password import random_password
 from pcapi.emails.beneficiary_email_change import build_beneficiary_confirmation_email_change_data
 from pcapi.emails.beneficiary_email_change import build_beneficiary_information_email_change_data
-from pcapi.models import BeneficiaryImport
-from pcapi.models import ImportStatus
+from pcapi.models.beneficiary_import import BeneficiaryImport
+from pcapi.models.beneficiary_import_status import ImportStatus
 from pcapi.models.db import db
 from pcapi.models.user_session import UserSession
 from pcapi.repository import repository

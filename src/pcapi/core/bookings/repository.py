@@ -13,7 +13,10 @@ from sqlalchemy.orm import Query
 from sqlalchemy.util._collections import AbstractKeyedTuple
 
 from pcapi.core.bookings import conf
+from pcapi.core.bookings.models import Booking
 from pcapi.core.bookings.models import BookingCancellationReasons
+from pcapi.core.offers.models import Offer
+from pcapi.core.offers.models import Stock
 from pcapi.core.users.models import User
 from pcapi.domain.booking_recap.booking_recap import BookBookingRecap
 from pcapi.domain.booking_recap.booking_recap import BookingRecap
@@ -21,17 +24,14 @@ from pcapi.domain.booking_recap.booking_recap import EventBookingRecap
 from pcapi.domain.booking_recap.booking_recap import ThingBookingRecap
 from pcapi.domain.booking_recap.bookings_recap_paginated import BookingsRecapPaginated
 from pcapi.domain.postal_code.postal_code import PostalCode
-from pcapi.models import Booking
-from pcapi.models import Offer
-from pcapi.models import Stock
-from pcapi.models import UserOfferer
-from pcapi.models import VenueSQLEntity
 from pcapi.models.api_errors import ResourceNotFoundError
 from pcapi.models.db import db
 from pcapi.models.offer_type import ThingType
 from pcapi.models.offerer import Offerer
 from pcapi.models.payment import Payment
 from pcapi.models.payment_status import TransactionStatus
+from pcapi.models.user_offerer import UserOfferer
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 from pcapi.utils.date import get_department_timezone
 from pcapi.utils.token import random_token
 

@@ -1,7 +1,7 @@
 from flask import current_app as app
 
 from pcapi.connectors import redis
-from pcapi.models import VenueSQLEntity
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 from pcapi.repository import repository
 
 

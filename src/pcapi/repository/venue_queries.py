@@ -1,4 +1,4 @@
-from pcapi.models import VenueSQLEntity
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 
 
 def find_by_id(venue_id: int) -> VenueSQLEntity:

@@ -4,10 +4,10 @@ from flask_login import login_required
 import pcapi.core.offers.api as offers_api
 from pcapi.core.offers.api import create_offer
 from pcapi.core.offers.api import list_offers_for_pro_user
+from pcapi.core.offers.models import Offer
 import pcapi.core.offers.repository as offers_repository
 from pcapi.flask_app import private_api
-from pcapi.models import Offer
-from pcapi.models import RightsType
+from pcapi.models.user_offerer import RightsType
 from pcapi.routes.serialization.dictifier import as_dict
 from pcapi.routes.serialization.offers_recap_serialize import serialize_offers_recap_paginated
 from pcapi.routes.serialization.offers_serialize import GetOfferResponseModel

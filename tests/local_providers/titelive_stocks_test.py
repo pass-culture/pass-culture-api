@@ -7,6 +7,8 @@ from unittest.mock import patch
 from freezegun import freeze_time
 import pytest
 
+from pcapi.core.offers.models import Offer
+from pcapi.core.offers.models import Stock
 from pcapi.local_providers import TiteLiveStocks
 from pcapi.model_creators.generic_creators import create_booking
 from pcapi.model_creators.generic_creators import create_offerer
@@ -17,8 +19,6 @@ from pcapi.model_creators.generic_creators import create_venue_provider
 from pcapi.model_creators.provider_creators import activate_provider
 from pcapi.model_creators.specific_creators import create_offer_with_thing_product
 from pcapi.model_creators.specific_creators import create_product_with_thing_type
-from pcapi.models import Offer
-from pcapi.models import Stock
 from pcapi.repository import repository
 
 

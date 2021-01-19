@@ -1,6 +1,6 @@
 from pcapi import settings
 from pcapi.connectors.api_recaptcha import get_token_validation_and_score
-from pcapi.models import ApiErrors
+from pcapi.models.api_errors import ApiErrors
 
 
 class ReCaptchaException(Exception):

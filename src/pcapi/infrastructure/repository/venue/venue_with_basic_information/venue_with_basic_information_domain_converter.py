@@ -1,5 +1,5 @@
 from pcapi.domain.venue.venue_with_basic_information.venue_with_basic_information import VenueWithBasicInformation
-from pcapi.models import VenueSQLEntity
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 
 
 def to_domain(venue_sql_entity: VenueSQLEntity) -> VenueWithBasicInformation:

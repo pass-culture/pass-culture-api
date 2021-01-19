@@ -7,7 +7,7 @@ import requests_mock
 
 import pcapi.core.offers.factories as offers_factories
 from pcapi.core.offers.models import Mediation
-from pcapi.models import ApiErrors
+from pcapi.models.api_errors import ApiErrors
 from pcapi.routes.serialization import mediations_serialize
 from pcapi.utils.human_ids import humanize
 

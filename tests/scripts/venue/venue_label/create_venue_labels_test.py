@@ -1,6 +1,6 @@
 import pytest
 
-from pcapi.models import VenueLabelSQLEntity
+from pcapi.models.venue_label_sql_entity import VenueLabelSQLEntity
 from pcapi.scripts.venue.venue_label.create_venue_labels import save_new_venue_labels
 
 

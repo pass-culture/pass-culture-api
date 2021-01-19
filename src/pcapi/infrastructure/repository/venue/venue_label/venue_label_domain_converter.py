@@ -1,5 +1,5 @@
 from pcapi.domain.venue.venue_label.venue_label import VenueLabel
-from pcapi.models import VenueLabelSQLEntity
+from pcapi.models.venue_label_sql_entity import VenueLabelSQLEntity
 
 
 def to_domain(venue_label_sql_entity: VenueLabelSQLEntity) -> VenueLabel:

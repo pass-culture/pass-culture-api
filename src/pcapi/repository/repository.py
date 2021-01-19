@@ -4,10 +4,10 @@ from sqlalchemy.exc import DataError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.exc import InternalError
 
-from pcapi.models import ApiErrors
-from pcapi.models import PcObject
+from pcapi.models.api_errors import ApiErrors
 from pcapi.models.db import Model
 from pcapi.models.db import db
+from pcapi.models.pc_object import PcObject
 from pcapi.validation.models import entity_validator
 
 

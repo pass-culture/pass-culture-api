@@ -1,11 +1,11 @@
 from typing import Dict
 from typing import List
 
+from pcapi.core.offers.models import Offer
+from pcapi.core.offers.models import Stock
 from pcapi.domain.identifier.identifier import Identifier
 from pcapi.domain.pro_offers.paginated_offers_recap import OfferRecap
 from pcapi.domain.pro_offers.paginated_offers_recap import PaginatedOffersRecap
-from pcapi.models import Offer
-from pcapi.models import Stock
 
 
 def to_domain(offers: List[Offer], current_page: int, total_pages: int, total_offers: int) -> PaginatedOffersRecap:

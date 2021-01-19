@@ -1,8 +1,8 @@
 import pytest
 
 from pcapi.model_creators.specific_creators import create_product_with_thing_type
-from pcapi.models import ApiErrors
-from pcapi.models import ThingType
+from pcapi.models.api_errors import ApiErrors
+from pcapi.models.offer_type import ThingType
 from pcapi.repository import repository
 
 

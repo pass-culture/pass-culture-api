@@ -1,7 +1,7 @@
 from typing import Dict
 from typing import List
 
-from pcapi.models import Offerer
+from pcapi.models.offerer import Offerer
 from pcapi.utils import requests
 
 

@@ -1,6 +1,6 @@
 import csv
 
-from pcapi.models import Booking
+from pcapi.core.bookings.models import Booking
 from pcapi.models.db import db
 from pcapi.repository import repository
 from pcapi.utils.logger import logger

@@ -2,14 +2,15 @@ import uuid
 
 import factory
 
-from pcapi import models
 from pcapi.core.offers.factories import VenueFactory
 from pcapi.core.testing import BaseFactory
+from pcapi.models.provider import Provider
+from pcapi.models.venue_provider import VenueProvider
 
 
 class ProviderFactory(BaseFactory):
     class Meta:
-        model = models.Provider
+        model = Provider
         sqlalchemy_get_or_create = ["localClass"]
 
     name = factory.Sequence("Provider {}".format)
@@ -26,7 +27,7 @@ class ProviderFactory(BaseFactory):
 
 class VenueProviderFactory(BaseFactory):
     class Meta:
-        model = models.VenueProvider
+        model = VenueProvider
 
     venue = factory.SubFactory(VenueFactory)
     provider = factory.SubFactory(ProviderFactory)

@@ -1,7 +1,7 @@
 from typing import Dict
 
 from pcapi import settings
-from pcapi.models import Offerer
+from pcapi.models.offerer import Offerer
 from pcapi.repository.feature_queries import feature_send_mail_to_users_enabled
 from pcapi.repository.offerer_queries import find_new_offerer_user_email
 from pcapi.utils.mailing import format_environment_for_email

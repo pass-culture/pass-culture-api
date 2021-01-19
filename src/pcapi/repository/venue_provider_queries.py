@@ -1,6 +1,6 @@
 from typing import List
 
-from pcapi.models import VenueProvider
+from pcapi.models.venue_provider import VenueProvider
 
 
 def get_active_venue_providers_for_specific_provider(provider_id: int) -> List[VenueProvider]:

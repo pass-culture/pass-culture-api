@@ -7,7 +7,7 @@ import pytest
 from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_venue
 from pcapi.model_creators.generic_creators import create_venue_type
-from pcapi.models import VenueSQLEntity
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 from pcapi.repository import repository
 from pcapi.scripts.update_venue_type import _read_venue_type_from_file
 from pcapi.scripts.update_venue_type import update_venue_type

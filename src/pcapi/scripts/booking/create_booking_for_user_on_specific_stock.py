@@ -3,8 +3,8 @@ from flask import current_app as app
 from pcapi.connectors import redis
 from pcapi.core.bookings import models
 from pcapi.core.bookings import validation
+from pcapi.core.offers.models import Stock
 from pcapi.core.users.models import User
-from pcapi.models import Stock
 from pcapi.repository import repository
 from pcapi.utils.token import random_token
 

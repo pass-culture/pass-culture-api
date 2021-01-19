@@ -13,9 +13,9 @@ from pcapi.domain.offers import update_is_active_status
 from pcapi.domain.venues import is_algolia_indexing
 from pcapi.flask_app import private_api
 from pcapi.infrastructure.container import get_all_venues_by_pro_user
-from pcapi.models import VenueSQLEntity
 from pcapi.models.feature import FeatureToggle
 from pcapi.models.user_offerer import RightsType
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 from pcapi.repository import feature_queries
 from pcapi.repository import repository
 from pcapi.repository.iris_venues_queries import delete_venue_from_iris_venues

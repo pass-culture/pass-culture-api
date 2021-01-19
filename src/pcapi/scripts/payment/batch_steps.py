@@ -26,9 +26,9 @@ from pcapi.domain.payments import validate_message_file_structure
 from pcapi.domain.reimbursement import CURRENT_RULES
 from pcapi.domain.reimbursement import NEW_RULES
 from pcapi.domain.reimbursement import find_all_booking_reimbursements
-from pcapi.models import Offerer
 from pcapi.models.db import db
 from pcapi.models.feature import FeatureToggle
+from pcapi.models.offerer import Offerer
 from pcapi.models.payment import Payment
 from pcapi.models.payment_status import TransactionStatus
 from pcapi.repository import payment_queries

@@ -3,7 +3,7 @@ from typing import Dict
 from babel.dates import format_date
 
 from pcapi import settings
-from pcapi.models import Booking
+from pcapi.core.bookings.models import Booking
 from pcapi.repository.feature_queries import feature_send_mail_to_users_enabled
 from pcapi.utils.mailing import format_booking_hours_for_email
 from pcapi.utils.mailing import get_event_datetime

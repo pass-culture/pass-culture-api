@@ -4,7 +4,7 @@ import requests
 
 from pcapi import settings
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription import BeneficiaryPreSubscription
-from pcapi.models import BeneficiaryImportSources
+from pcapi.models.beneficiary_import import BeneficiaryImportSources
 
 
 DEFAULT_JOUVE_SOURCE_ID = None

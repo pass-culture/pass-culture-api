@@ -40,8 +40,8 @@ from pcapi.emails.user_notification_after_stock_update import (
 )
 from pcapi.emails.user_reset_password import retrieve_data_for_reset_password_native_app_email
 from pcapi.emails.user_reset_password import retrieve_data_for_reset_password_user_email
-from pcapi.models import Offerer
-from pcapi.models import UserOfferer
+from pcapi.models.offerer import Offerer
+from pcapi.models.user_offerer import UserOfferer
 from pcapi.utils.mailing import compute_email_html_part_and_recipients
 from pcapi.utils.mailing import make_offerer_driven_cancellation_email_for_offerer
 from pcapi.utils.mailing import make_user_validation_email

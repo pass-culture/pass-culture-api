@@ -1,9 +1,9 @@
 from pathlib import Path
 
 from pcapi.local_providers.local_provider import LocalProvider
-from pcapi.models import ThingType
-from pcapi.models import VenueProvider
 from pcapi.models.db import Model
+from pcapi.models.offer_type import ThingType
+from pcapi.models.venue_provider import VenueProvider
 import pcapi.sandboxes
 
 

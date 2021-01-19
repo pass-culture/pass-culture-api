@@ -4,11 +4,11 @@ from typing import Optional
 
 from PIL import Image
 
-from pcapi.models import Offer
-from pcapi.models import Provider
-from pcapi.models import Stock
+from pcapi.core.offers.models import Offer
+from pcapi.core.offers.models import Stock
 from pcapi.models.api_errors import ApiErrors
 from pcapi.models.api_errors import ForbiddenError
+from pcapi.models.provider import Provider
 
 from . import exceptions
 

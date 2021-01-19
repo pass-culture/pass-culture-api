@@ -6,7 +6,7 @@ from pcapi.model_creators.generic_creators import create_iris
 from pcapi.model_creators.generic_creators import create_iris_venue
 from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_venue
-from pcapi.models import IrisVenues
+from pcapi.models.iris_venues import IrisVenues
 from pcapi.repository import repository
 from pcapi.repository.iris_venues_queries import delete_venue_from_iris_venues
 from pcapi.repository.iris_venues_queries import find_ids_of_irises_located_near_venue

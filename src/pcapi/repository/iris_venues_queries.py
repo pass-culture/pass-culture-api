@@ -1,8 +1,8 @@
 from typing import Dict
 from typing import List
 
-from pcapi.models import IrisVenues
 from pcapi.models.db import db
+from pcapi.models.iris_venues import IrisVenues
 from pcapi.repository import repository
 
 

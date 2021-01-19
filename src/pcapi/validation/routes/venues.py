@@ -1,8 +1,8 @@
 from decimal import Decimal
 from decimal import InvalidOperation
 
-from pcapi.models import ApiErrors
-from pcapi.models import VenueSQLEntity
+from pcapi.models.api_errors import ApiErrors
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 
 
 MAX_LONGITUDE = 180

@@ -4,6 +4,7 @@ from decimal import Decimal
 
 from freezegun import freeze_time
 
+from pcapi.core.bookings.models import Booking
 from pcapi.domain.reimbursement import CURRENT_RULES
 from pcapi.domain.reimbursement import NEW_RULES
 from pcapi.domain.reimbursement import ReimbursementRule
@@ -11,8 +12,7 @@ from pcapi.domain.reimbursement import ReimbursementRules
 from pcapi.domain.reimbursement import find_all_booking_reimbursements
 from pcapi.model_creators.specific_creators import create_booking_for_event
 from pcapi.model_creators.specific_creators import create_booking_for_thing
-from pcapi.models import Booking
-from pcapi.models import ThingType
+from pcapi.models.offer_type import ThingType
 
 
 class DigitalThingsReimbursementTest:

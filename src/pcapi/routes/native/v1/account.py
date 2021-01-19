@@ -5,7 +5,7 @@ from flask_jwt_extended import jwt_required
 from pcapi import settings
 from pcapi.core.users import api
 from pcapi.core.users import exceptions
-from pcapi.models import ApiErrors
+from pcapi.models.api_errors import ApiErrors
 from pcapi.repository.user_queries import find_user_by_email
 from pcapi.serialization.decorator import spectree_serialize
 from pcapi.validation.routes.captcha import ReCaptchaException

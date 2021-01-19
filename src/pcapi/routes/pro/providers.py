@@ -3,7 +3,7 @@ from flask_login import login_required
 
 from pcapi.flask_app import private_api
 from pcapi.local_providers import AllocineStocks
-from pcapi.models import VenueSQLEntity
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 from pcapi.repository.allocine_pivot_queries import has_allocine_pivot_for_venue
 from pcapi.repository.provider_queries import get_enabled_providers_for_pro
 from pcapi.repository.provider_queries import get_providers_enabled_for_pro_excluding_specific_provider

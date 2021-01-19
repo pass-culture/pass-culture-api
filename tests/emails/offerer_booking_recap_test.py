@@ -4,9 +4,10 @@ from unittest.mock import patch
 
 import pytest
 
-from pcapi import models
 import pcapi.core.bookings.factories as bookings_factories
 from pcapi.emails.offerer_booking_recap import retrieve_data_for_offerer_booking_recap_email
+from pcapi.models.offer_type import EventType
+from pcapi.models.offer_type import ThingType
 from pcapi.utils.human_ids import humanize
 
 
@@ -21,7 +22,7 @@ def make_booking(**kwargs):
         stock__price=0,
         stock__offer__name="Super événement",
         stock__offer__product__name="Super événement",
-        stock__offer__product__type=str(models.EventType.SPECTACLE_VIVANT),
+        stock__offer__product__type=str(EventType.SPECTACLE_VIVANT),
         stock__offer__venue__name="Lieu de l'offreur",
         stock__offer__venue__address="25 avenue du lieu",
         stock__offer__venue__postalCode="75010",
@@ -91,7 +92,7 @@ def test_with_book():
         stock__offer__name="Le récit de voyage",
         stock__offer__product__extraData={"isbn": "123456789"},
         stock__offer__product__name="Le récit de voyage",
-        stock__offer__product__type=str(models.ThingType.LIVRE_EDITION),
+        stock__offer__product__type=str(ThingType.LIVRE_EDITION),
         stock__offer__venue__address=None,
         stock__offer__venue__city=None,
         stock__offer__venue__departementCode=None,
@@ -121,7 +122,7 @@ def test_with_book_with_missing_isbn():
         stock__offer__name="Le récit de voyage",
         stock__offer__product__extraData={},  # no ISBN
         stock__offer__product__name="Le récit de voyage",
-        stock__offer__product__type=str(models.ThingType.LIVRE_EDITION),
+        stock__offer__product__type=str(ThingType.LIVRE_EDITION),
         stock__offer__venue__address=None,
         stock__offer__venue__city=None,
         stock__offer__venue__departementCode=None,

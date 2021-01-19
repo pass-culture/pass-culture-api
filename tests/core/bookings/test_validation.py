@@ -10,9 +10,9 @@ from pcapi.core.bookings import validation
 import pcapi.core.offers.factories as offers_factories
 import pcapi.core.payments.factories as payments_factories
 import pcapi.core.users.factories as users_factories
-from pcapi.models import ThingType
 from pcapi.models import api_errors
 from pcapi.models.feature import override_features
+from pcapi.models.offer_type import ThingType
 
 
 @pytest.mark.usefixtures("db_session")

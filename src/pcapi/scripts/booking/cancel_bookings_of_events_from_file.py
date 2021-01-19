@@ -2,10 +2,10 @@ import csv
 from typing import Iterable
 from typing import List
 
-from pcapi.models import ApiErrors
-from pcapi.models import Booking
-from pcapi.models import Offer
-from pcapi.models import Stock
+from pcapi.core.bookings.models import Booking
+from pcapi.core.offers.models import Offer
+from pcapi.core.offers.models import Stock
+from pcapi.models.api_errors import ApiErrors
 from pcapi.repository import repository
 from pcapi.utils.logger import logger
 

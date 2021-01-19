@@ -4,10 +4,11 @@ from unittest.mock import patch
 
 import pytest
 
-from pcapi import models
 import pcapi.core.bookings.factories as bookings_factories
 import pcapi.core.offers.factories as offers_factories
 from pcapi.emails.beneficiary_booking_confirmation import retrieve_data_for_beneficiary_booking_confirmation_email
+from pcapi.models.offer_type import EventType
+from pcapi.models.offer_type import ThingType
 from pcapi.utils.human_ids import humanize
 
 
@@ -19,7 +20,7 @@ def make_booking(**kwargs):
         stock__beginningDatetime=datetime(2019, 11, 6, 14, 59, 5, tzinfo=timezone.utc),
         stock__price=23.99,
         stock__offer__name="Super événement",
-        stock__offer__product__type=str(models.EventType.SPECTACLE_VIVANT),
+        stock__offer__product__type=str(EventType.SPECTACLE_VIVANT),
         stock__offer__venue__name="Lieu de l'offreur",
         stock__offer__venue__address="25 avenue du lieu",
         stock__offer__venue__postalCode="75010",
@@ -99,7 +100,7 @@ def test_should_return_event_specific_data_for_email_when_offer_is_a_duo_event(m
 @pytest.mark.usefixtures("db_session")
 def test_should_return_thing_specific_data_for_email_when_offer_is_a_thing(mock_format_environment_for_email):
     booking = make_booking(
-        stock__offer__product__type=str(models.ThingType.AUDIOVISUEL),
+        stock__offer__product__type=str(ThingType.AUDIOVISUEL),
         stock__offer__name="Super bien culturel",
     )
     mediation = offers_factories.MediationFactory(offer=booking.stock.offer)
@@ -128,7 +129,7 @@ def test_should_return_digital_thing_specific_data_for_email_when_offer_is_a_dig
     booking = make_booking(
         quantity=10,
         stock__price=0,
-        stock__offer__product__type=str(models.ThingType.AUDIOVISUEL),
+        stock__offer__product__type=str(ThingType.AUDIOVISUEL),
         stock__offer__product__url="http://example.com",
         stock__offer__name="Super offre numérique",
     )

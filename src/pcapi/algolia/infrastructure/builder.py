@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Dict
 
-from pcapi.models import Offer
+from pcapi.core.offers.models import Offer
 from pcapi.utils.date import get_time_in_seconds_from_datetime
 from pcapi.utils.human_ids import humanize
 

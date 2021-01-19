@@ -2,7 +2,7 @@ import pytest
 
 from pcapi.core.users.models import User
 from pcapi.model_creators.generic_creators import create_user
-from pcapi.models import Deposit
+from pcapi.models.deposit import Deposit
 from pcapi.repository import repository
 from pcapi.scripts.grant_wallet_to_existing_users import grant_wallet_to_existing_users
 

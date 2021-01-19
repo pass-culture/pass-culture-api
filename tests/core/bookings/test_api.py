@@ -6,10 +6,10 @@ from flask import current_app as app
 from freezegun import freeze_time
 import pytest
 
-from pcapi import models
 from pcapi.core.bookings import api
 from pcapi.core.bookings import exceptions
 from pcapi.core.bookings import factories
+from pcapi.core.bookings import models
 from pcapi.core.bookings.models import BookingCancellationReasons
 import pcapi.core.offers.factories as offers_factories
 import pcapi.core.payments.factories as payments_factories

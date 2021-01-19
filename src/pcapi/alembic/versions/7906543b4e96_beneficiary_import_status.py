@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy import ForeignKey
 from sqlalchemy import func
 
-from pcapi.models import ImportStatus
+from pcapi.models.beneficiary_import_status import ImportStatus
 
 
 revision = "7906543b4e96"

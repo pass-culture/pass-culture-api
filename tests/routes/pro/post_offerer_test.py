@@ -8,9 +8,9 @@ from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_user
 from pcapi.model_creators.generic_creators import create_user_offerer
 from pcapi.model_creators.generic_creators import create_venue_type
-from pcapi.models import Offerer
-from pcapi.models import RightsType
-from pcapi.models import UserOfferer
+from pcapi.models.offerer import Offerer
+from pcapi.models.user_offerer import RightsType
+from pcapi.models.user_offerer import UserOfferer
 from pcapi.repository import repository
 from pcapi.utils.human_ids import humanize
 

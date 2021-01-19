@@ -2,8 +2,8 @@ from datetime import datetime
 from datetime import timedelta
 
 from pcapi.core.payments.api import create_deposit
-from pcapi.models import EventType
-from pcapi.models import ThingType
+from pcapi.models.offer_type import EventType
+from pcapi.models.offer_type import ThingType
 from pcapi.models.payment_status import TransactionStatus
 from pcapi.repository import repository
 from pcapi.sandboxes.scripts.creators.helpers.sql_creators import create_booking

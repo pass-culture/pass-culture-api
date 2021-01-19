@@ -5,7 +5,7 @@ from geopandas import GeoSeries
 from shapely.geometry import Point
 from shapely.geometry import Polygon
 
-from pcapi.models import IrisFrance
+from pcapi.models.iris_france import IrisFrance
 from pcapi.repository import repository
 
 

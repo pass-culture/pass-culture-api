@@ -5,7 +5,7 @@ from typing import Dict
 
 from pcapi.core.users.models import User
 from pcapi.core.users.models import hash_password
-from pcapi.models import ApiErrors
+from pcapi.models.api_errors import ApiErrors
 from pcapi.repository import repository
 from pcapi.utils.token import random_token
 

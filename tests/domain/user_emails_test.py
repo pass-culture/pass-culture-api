@@ -37,8 +37,8 @@ from pcapi.model_creators.generic_creators import create_user
 from pcapi.model_creators.generic_creators import create_user_offerer
 from pcapi.model_creators.generic_creators import create_venue
 from pcapi.model_creators.specific_creators import create_stock_with_event_offer
-from pcapi.models import Offerer
 from pcapi.models import offer_type
+from pcapi.models.offerer import Offerer
 from pcapi.repository import repository
 
 from tests.domain_creators.generic_creators import create_domain_beneficiary_pre_subcription
