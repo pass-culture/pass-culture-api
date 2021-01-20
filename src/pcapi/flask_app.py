@@ -24,6 +24,7 @@ from werkzeug.middleware.profiler import ProfilerMiddleware
 
 from pcapi import settings
 from pcapi.models.db import db
+from pcapi.models.install import install_models
 from pcapi.serialization.utils import before_handler
 from pcapi.utils.health_checker import read_version_from_file
 from pcapi.utils.json_encoder import EnumJSONEncoder
@@ -123,6 +124,7 @@ def remove_db_session(
 
 admin.init_app(app)
 db.init_app(app)
+install_models()
 orm.configure_mappers()
 login_manager.init_app(app)
 
