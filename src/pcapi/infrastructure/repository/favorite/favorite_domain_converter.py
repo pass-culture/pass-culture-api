@@ -1,7 +1,7 @@
 from typing import Dict
 
 from pcapi.domain.favorite.favorite import Favorite
-from pcapi.models import FavoriteSQLEntity
+from pcapi.models.favorite_sql_entity import FavoriteSQLEntity
 
 
 def to_domain(favorite_sql_entity: FavoriteSQLEntity, booking: Dict = None) -> Favorite:

@@ -1,5 +1,5 @@
-from pcapi.models import AllocinePivot
-from pcapi.models import VenueSQLEntity
+from pcapi.models.allocine_pivot import AllocinePivot
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 
 
 def has_allocine_pivot_for_venue(venue: VenueSQLEntity) -> bool:

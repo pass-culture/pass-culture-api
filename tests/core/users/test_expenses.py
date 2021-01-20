@@ -6,8 +6,8 @@ from pcapi.core.bookings.factories import BookingFactory
 from pcapi.core.users.factories import UserFactory
 from pcapi.core.users.models import Expense
 from pcapi.core.users.models import ExpenseDomain
-from pcapi.models import EventType
-from pcapi.models import ThingType
+from pcapi.models.offer_type import EventType
+from pcapi.models.offer_type import ThingType
 
 
 @pytest.mark.usefixtures("db_session")

@@ -3,11 +3,11 @@ from typing import List
 import pytest
 from pytest import fixture
 
+from pcapi.core.bookings.models import Booking
+from pcapi.core.offers.models import Offer
+from pcapi.core.offers.models import Stock
 from pcapi.core.users.models import User
-from pcapi.models import Booking
-from pcapi.models import Offer
-from pcapi.models import Stock
-from pcapi.models import VenueSQLEntity
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 from pcapi.sandboxes.scripts.creators.bookings_recap.bookings_recap import save_bookings_recap_sandbox
 
 

@@ -2,8 +2,8 @@ from typing import List
 
 from pcapi.domain.bank_informations.bank_informations import BankInformations
 from pcapi.domain.venue.venue_with_basic_information.venue_with_basic_information import VenueWithBasicInformation
-from pcapi.models import Offerer
 from pcapi.models.bank_information import BankInformationStatus
+from pcapi.models.offerer import Offerer
 
 
 status_weight = {BankInformationStatus.ACCEPTED: 2, BankInformationStatus.DRAFT: 1, BankInformationStatus.REJECTED: 0}

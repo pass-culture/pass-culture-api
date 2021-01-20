@@ -1,6 +1,6 @@
 from typing import Union
 
-from pcapi.models import ApiErrors
+from pcapi.models.api_errors import ApiErrors
 
 
 def check_email_and_offer_id_for_anonymous_user(email: str, offer_id: int) -> None:

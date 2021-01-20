@@ -1,6 +1,6 @@
 from typing import List
 
-from pcapi.models import VenueLabelSQLEntity
+from pcapi.models.venue_label_sql_entity import VenueLabelSQLEntity
 from pcapi.repository import repository
 
 

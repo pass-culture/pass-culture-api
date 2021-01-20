@@ -1,5 +1,5 @@
-from pcapi.models import Criterion
-from pcapi.models import OfferCriterion
+from pcapi.models.criterion import Criterion
+from pcapi.models.offer_criterion import OfferCriterion
 from pcapi.repository import repository
 from pcapi.utils.logger import logger
 

@@ -6,8 +6,8 @@ from pcapi.core.users.models import User
 from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_user
 from pcapi.model_creators.generic_creators import create_user_offerer
-from pcapi.models import Offerer
-from pcapi.models import UserOfferer
+from pcapi.models.offerer import Offerer
+from pcapi.models.user_offerer import UserOfferer
 from pcapi.repository import repository
 
 from tests.conftest import TestClient

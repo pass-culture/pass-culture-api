@@ -3,12 +3,12 @@ from typing import Optional
 
 from pcapi.core.bookings.api import compute_confirmation_date
 from pcapi.core.offers.models import Mediation
+from pcapi.core.offers.models import Offer
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription import BeneficiaryPreSubscription
 from pcapi.domain.booking_recap.booking_recap import BookBookingRecap
 from pcapi.domain.booking_recap.booking_recap import EventBookingRecap
 from pcapi.domain.booking_recap.booking_recap import ThingBookingRecap
 from pcapi.domain.favorite.favorite import Favorite
-from pcapi.models import Offer
 
 
 def create_domain_beneficiary_pre_subcription(

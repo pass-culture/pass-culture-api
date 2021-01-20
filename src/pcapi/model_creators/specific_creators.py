@@ -8,17 +8,17 @@ from typing import Iterable
 from typing import List
 from typing import Optional
 
+from pcapi.core.bookings.models import Booking
+from pcapi.core.offers.models import Offer
+from pcapi.core.offers.models import Stock
 from pcapi.core.users.models import User
-from pcapi.models import Booking
-from pcapi.models import Criterion
-from pcapi.models import EventType
-from pcapi.models import Offer
-from pcapi.models import Offerer
-from pcapi.models import Product
-from pcapi.models import Provider
-from pcapi.models import Stock
-from pcapi.models import ThingType
-from pcapi.models import VenueSQLEntity
+from pcapi.models.criterion import Criterion
+from pcapi.models.offer_type import EventType
+from pcapi.models.offer_type import ThingType
+from pcapi.models.offerer import Offerer
+from pcapi.models.product import Product
+from pcapi.models.provider import Provider
+from pcapi.models.venue_sql_entity import VenueSQLEntity
 from pcapi.utils.token import random_token
 
 

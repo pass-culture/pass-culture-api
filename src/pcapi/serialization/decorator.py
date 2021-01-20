@@ -13,7 +13,7 @@ from spectree import Response as SpectreeResponse
 from spectree.spec import SpecTree
 
 from pcapi.flask_app import api as default_api
-from pcapi.models import ApiErrors
+from pcapi.models.api_errors import ApiErrors
 
 
 def _make_json_response(

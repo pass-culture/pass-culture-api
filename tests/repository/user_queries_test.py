@@ -9,8 +9,8 @@ import pcapi.core.offers.factories as offers_factories
 import pcapi.core.users.factories as users_factories
 from pcapi.model_creators.generic_creators import create_beneficiary_import
 from pcapi.model_creators.generic_creators import create_user
-from pcapi.models import BeneficiaryImportSources
-from pcapi.models import ImportStatus
+from pcapi.models.beneficiary_import import BeneficiaryImportSources
+from pcapi.models.beneficiary_import_status import ImportStatus
 from pcapi.repository import repository
 from pcapi.repository.user_queries import find_by_civility
 from pcapi.repository.user_queries import find_most_recent_beneficiary_creation_date_for_source

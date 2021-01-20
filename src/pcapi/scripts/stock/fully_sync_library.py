@@ -1,8 +1,8 @@
 from pcapi.core.bookings.repository import count_not_cancelled_bookings_quantity_by_stock_id
 from pcapi.core.offers.models import Offer
+from pcapi.core.offers.models import Stock
 from pcapi.local_providers.venue_provider_worker import do_sync_venue_provider
-from pcapi.models import Stock
-from pcapi.models import VenueProvider
+from pcapi.models.venue_provider import VenueProvider
 from pcapi.repository import repository
 
 

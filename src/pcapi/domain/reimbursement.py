@@ -5,8 +5,8 @@ from decimal import Decimal
 from enum import Enum
 from typing import List
 
-from pcapi.models import Booking
-from pcapi.models import ThingType
+from pcapi.core.bookings.models import Booking
+from pcapi.models.offer_type import ThingType
 
 
 MIN_DATETIME = datetime.datetime(datetime.MINYEAR, 1, 1)

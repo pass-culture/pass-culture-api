@@ -5,6 +5,8 @@ from unittest.mock import patch
 from freezegun import freeze_time
 import pytest
 
+from pcapi.core.offers.models import Offer
+from pcapi.core.offers.models import Stock
 from pcapi.local_providers import AllocineStocks
 from pcapi.model_creators.generic_creators import create_allocine_venue_provider
 from pcapi.model_creators.generic_creators import create_allocine_venue_provider_price_rule
@@ -13,10 +15,8 @@ from pcapi.model_creators.generic_creators import create_venue
 from pcapi.model_creators.provider_creators import activate_provider
 from pcapi.model_creators.specific_creators import create_offer_with_event_product
 from pcapi.model_creators.specific_creators import create_product_with_event_type
-from pcapi.models import EventType
-from pcapi.models import Offer
-from pcapi.models import Product
-from pcapi.models import Stock
+from pcapi.models.offer_type import EventType
+from pcapi.models.product import Product
 from pcapi.repository import repository
 from pcapi.repository.provider_queries import get_provider_by_local_class
 import pcapi.sandboxes

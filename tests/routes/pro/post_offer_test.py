@@ -1,10 +1,10 @@
 import pytest
 
 import pcapi.core.offers.factories as offers_factories
+from pcapi.core.offers.models import Offer
 import pcapi.core.users.factories as users_factories
-from pcapi.models import EventType
-from pcapi.models import Offer
-from pcapi.models import ThingType
+from pcapi.models.offer_type import EventType
+from pcapi.models.offer_type import ThingType
 from pcapi.utils.human_ids import dehumanize
 from pcapi.utils.human_ids import humanize
 

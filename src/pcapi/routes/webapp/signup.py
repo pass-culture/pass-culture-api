@@ -7,7 +7,7 @@ from pcapi.connectors.google_spreadsheet import get_authorized_emails_and_dept_c
 from pcapi.core.payments import api as payments_api
 from pcapi.core.users.models import User
 from pcapi.flask_app import private_api
-from pcapi.models import ApiErrors
+from pcapi.models.api_errors import ApiErrors
 from pcapi.models.feature import FeatureToggle
 from pcapi.repository import repository
 from pcapi.routes.serialization import as_dict

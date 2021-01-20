@@ -3,6 +3,7 @@ import urllib.parse
 import pytest
 
 from pcapi.core.bookings.factories import BookingFactory
+from pcapi.core.bookings.models import Booking
 import pcapi.core.offers.factories as offers_factories
 from pcapi.core.payments.factories import PaymentFactory
 from pcapi.core.users.factories import UserFactory
@@ -15,7 +16,6 @@ from pcapi.model_creators.specific_creators import create_event_occurrence
 from pcapi.model_creators.specific_creators import create_offer_with_event_product
 from pcapi.model_creators.specific_creators import create_stock_from_event_occurrence
 from pcapi.model_creators.specific_creators import create_stock_with_event_offer
-from pcapi.models import Booking
 from pcapi.repository import repository
 from pcapi.utils.human_ids import humanize
 

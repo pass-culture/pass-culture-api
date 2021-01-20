@@ -1,7 +1,7 @@
 from typing import Dict
 
 from pcapi import settings
-from pcapi.models import Booking
+from pcapi.core.bookings.models import Booking
 from pcapi.utils.date import get_date_formatted_for_email
 from pcapi.utils.date import get_time_formatted_for_email
 from pcapi.utils.date import utc_datetime_to_department_timezone

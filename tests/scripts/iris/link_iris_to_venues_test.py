@@ -7,7 +7,7 @@ from pcapi.domain.iris import MAXIMUM_DISTANCE_IN_METERS
 from pcapi.model_creators.generic_creators import create_iris
 from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_venue
-from pcapi.models import IrisVenues
+from pcapi.models.iris_venues import IrisVenues
 from pcapi.repository import repository
 from pcapi.scripts.iris.link_iris_to_venues import _find_all_venue_ids_to_link
 from pcapi.scripts.iris.link_iris_to_venues import link_irises_to_existing_physical_venues

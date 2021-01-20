@@ -3,10 +3,12 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
-from pcapi import models
 from pcapi.models.db import Model
 from pcapi.models.db import db
 from pcapi.utils.human_ids import humanize
+
+
+# A mapping of model class names-model that looks like: {"Product": Product, "Stock": Stock}
 
 
 def insert_chunk(chunk_to_insert: Dict):
@@ -15,12 +17,16 @@ def insert_chunk(chunk_to_insert: Dict):
 
 
 def update_chunk(chunk_to_update: Dict):
+    # Do it here, not at module-scope, because `Model._decl_class_registry` may not
+    # be populated yet if this module is imported too early.
+    MODELS = {klass.__name__: klass for klass in Model._decl_class_registry.values()}
+
     models_in_chunk = set(_extract_model_name_from_chunk_key(key) for key in chunk_to_update.keys())
 
     for model_in_chunk in models_in_chunk:
         matching_tuples_in_chunk = _filter_matching_pc_object_in_chunk(model_in_chunk, chunk_to_update)
         values_to_update_in_chunk = _extract_dict_values_from_chunk(matching_tuples_in_chunk)
-        model_to_update = getattr(models, model_in_chunk)
+        model_to_update = MODELS[model_in_chunk]
 
         db.session.bulk_update_mappings(model_to_update, values_to_update_in_chunk)
     db.session.commit()

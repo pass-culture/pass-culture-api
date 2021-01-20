@@ -5,8 +5,8 @@ from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_venue
 from pcapi.model_creators.generic_creators import create_venue_provider
 from pcapi.model_creators.provider_creators import activate_provider
-from pcapi.models import AllocineVenueProvider
-from pcapi.models import VenueProvider
+from pcapi.models.allocine_venue_provider import AllocineVenueProvider
+from pcapi.models.venue_provider import VenueProvider
 from pcapi.repository import repository
 from pcapi.repository.venue_provider_queries import get_active_venue_providers_for_specific_provider
 from pcapi.repository.venue_provider_queries import get_nb_containers_at_work

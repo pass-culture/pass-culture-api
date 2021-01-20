@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from pcapi.models import ApiErrors
+from pcapi.models.api_errors import ApiErrors
 from pcapi.utils.feature import feature_required
 
 

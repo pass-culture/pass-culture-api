@@ -1,7 +1,7 @@
-from pcapi.models import ApiErrors
-from pcapi.models import ApiKey
-from pcapi.models import RightsType
+from pcapi.models.api_errors import ApiErrors
 from pcapi.models.api_errors import ForbiddenError
+from pcapi.models.api_key import ApiKey
+from pcapi.models.user_offerer import RightsType
 
 
 def check_user_can_validate_bookings(self, offerer_id: int):

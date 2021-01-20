@@ -1,7 +1,7 @@
 import pytest
 
-from pcapi.models import Feature
 from pcapi.models.feature import FEATURES_DISABLED_BY_DEFAULT
+from pcapi.models.feature import Feature
 from pcapi.models.feature import FeatureToggle
 from pcapi.models.install import install_features
 

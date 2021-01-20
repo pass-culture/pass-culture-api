@@ -5,8 +5,8 @@ import pytest
 
 import pcapi.core.offerers.factories as offerers_factories
 import pcapi.core.offers.factories as offers_factories
+from pcapi.core.offers.models import Stock
 import pcapi.core.users.factories as users_factories
-from pcapi.models import Stock
 from pcapi.routes.serialization import serialize
 from pcapi.utils.human_ids import dehumanize
 from pcapi.utils.human_ids import humanize

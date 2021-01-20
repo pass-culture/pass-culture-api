@@ -10,9 +10,9 @@ from pcapi.domain.user_emails import send_pro_user_waiting_for_validation_by_adm
 from pcapi.domain.user_emails import send_validation_confirmation_email_to_pro
 from pcapi.flask_app import private_api
 from pcapi.flask_app import public_api
-from pcapi.models import Offerer
-from pcapi.models import UserOfferer
 from pcapi.models.feature import FeatureToggle
+from pcapi.models.offerer import Offerer
+from pcapi.models.user_offerer import UserOfferer
 from pcapi.repository import feature_queries
 from pcapi.repository import repository
 from pcapi.repository import user_offerer_queries

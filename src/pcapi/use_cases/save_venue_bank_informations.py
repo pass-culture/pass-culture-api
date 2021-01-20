@@ -13,8 +13,8 @@ from pcapi.domain.venue.venue_with_basic_information.venue_with_basic_informatio
 from pcapi.domain.venue.venue_with_basic_information.venue_with_basic_information_repository import (
     VenueWithBasicInformationRepository,
 )
-from pcapi.models import Offerer
 from pcapi.models.bank_information import BankInformationStatus
+from pcapi.models.offerer import Offerer
 
 
 class SaveVenueBankInformations:

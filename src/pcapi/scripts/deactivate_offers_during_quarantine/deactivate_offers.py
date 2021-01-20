@@ -5,9 +5,9 @@ from typing import List
 from sqlalchemy import func
 
 from pcapi.algolia.usecase.orchestrator import delete_expired_offers
+from pcapi.core.offers.models import Offer
+from pcapi.core.offers.models import Stock
 from pcapi.flask_app import app
-from pcapi.models import Offer
-from pcapi.models import Stock
 from pcapi.models.db import db
 from pcapi.repository import repository
 

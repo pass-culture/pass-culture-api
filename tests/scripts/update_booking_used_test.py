@@ -4,8 +4,8 @@ from freezegun import freeze_time
 import pytest
 
 import pcapi.core.bookings.factories as bookings_factories
+from pcapi.core.bookings.models import Booking
 import pcapi.core.offers.factories as offers_factories
-from pcapi.models import Booking
 from pcapi.scripts.update_booking_used import update_booking_used_after_stock_occurrence
 
 

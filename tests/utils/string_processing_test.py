@@ -1,5 +1,5 @@
 from pcapi.core.offers.models import Mediation
-from pcapi.models import Deposit
+from pcapi.models.deposit import Deposit
 from pcapi.utils.string_processing import get_model_plural_name
 from pcapi.utils.string_processing import remove_single_letters_for_search
 from pcapi.utils.string_processing import tokenize_for_search

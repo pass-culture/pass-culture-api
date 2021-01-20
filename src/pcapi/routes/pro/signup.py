@@ -6,7 +6,7 @@ from pcapi.core.users.models import User
 from pcapi.domain.postal_code.postal_code import PostalCode
 from pcapi.domain.user_emails import send_user_validation_email
 from pcapi.flask_app import private_api
-from pcapi.models import Offerer
+from pcapi.models.offerer import Offerer
 from pcapi.models.user_offerer import RightsType
 from pcapi.models.venue_sql_entity import create_digital_venue
 from pcapi.repository import repository
