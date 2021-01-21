@@ -10,6 +10,8 @@ ID_CHECK_TOKEN_LIFE_TIME = timedelta(days=1)
 ELIGIBILITY_AGE = 18
 ACCOUNT_CREATION_MINIMUM_AGE = 16
 
+TOKEN_PAYLOAD_TYPE_KEY = "type"
+
 
 class SuspensionReason(Enum):
     def __str__(self) -> str:

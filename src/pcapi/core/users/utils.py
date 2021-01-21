@@ -1,16 +1,22 @@
 from datetime import datetime
+from datetime import timedelta
 from typing import Optional
+from typing import Tuple
 
 import jwt
 
 from pcapi import settings
 from pcapi.core.users.models import ALGORITHM_HS_256
+from pcapi.core.users.models import TokenType
 
 
-def create_custom_jwt_token(user_id: int, token_type: str, expiration_date: Optional[datetime] = None) -> str:
-    payload = {"userId": user_id, "type": token_type}
+def create_jwt_token(
+    payload: dict, token_type: TokenType, life_time: Optional[timedelta] = None
+) -> Tuple[str, Optional[datetime]]:
+    payload["type"] = token_type.value
+    expiration_date = datetime.now() + life_time if life_time else None
 
-    return encode_jwt_payload(payload, expiration_date)
+    return encode_jwt_payload(payload, expiration_date), expiration_date
 
 
 def encode_jwt_payload(token_payload: dict, expiration_date: Optional[datetime] = None) -> str:

@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import Callable
 from typing import List
+from typing import Optional
 
 from pcapi import settings
 from pcapi.core.bookings.models import Booking
 from pcapi.core.bookings.models import BookingCancellationReasons
-from pcapi.core.users import models as users_models
 from pcapi.core.users.models import User
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription import BeneficiaryPreSubscription
 from pcapi.emails import beneficiary_activation
@@ -192,12 +192,15 @@ def send_activation_email(
     user: User,
     send_email: Callable[..., bool],
     native_version: bool = False,
-    token: users_models.Token = None,
+    token: str = None,
+    token_expiration_date: Optional[datetime] = None,
 ) -> bool:
     if not native_version:
         data = beneficiary_activation.get_activation_email_data(user=user)
     else:
-        data = beneficiary_activation.get_activation_email_data_for_native(user=user, token=token)
+        data = beneficiary_activation.get_activation_email_data_for_native(
+            user=user, token=token, token_expiration_date=token_expiration_date
+        )
     return send_email(data=data)
 
 

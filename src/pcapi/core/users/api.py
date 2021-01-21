@@ -1,8 +1,8 @@
 from datetime import date
 from datetime import datetime
-from datetime import timedelta
 import secrets
 from typing import Optional
+from typing import Tuple
 
 from jwt import DecodeError
 from jwt import ExpiredSignatureError
@@ -15,11 +15,10 @@ from pcapi.core.payments import api as payment_api
 from pcapi.core.users import exceptions
 from pcapi.core.users.models import Expense
 from pcapi.core.users.models import ExpenseDomain
-from pcapi.core.users.models import Token
 from pcapi.core.users.models import TokenType
 from pcapi.core.users.models import User
 from pcapi.core.users.models import VOID_FIRST_NAME
-from pcapi.core.users.utils import create_custom_jwt_token
+from pcapi.core.users.utils import create_jwt_token
 from pcapi.core.users.utils import decode_jwt_token
 from pcapi.core.users.utils import encode_jwt_payload
 from pcapi.core.users.utils import format_email
@@ -44,35 +43,19 @@ from . import constants
 from . import exceptions
 
 
-def create_email_validation_token(user: User) -> Token:
-    return generate_and_save_token(
-        user, TokenType.EMAIL_VALIDATION, life_time=constants.EMAIL_VALIDATION_TOKEN_LIFE_TIME
-    )
+def create_email_validation_token(user: User) -> Tuple[str, datetime]:
+    return create_jwt_token({"userId": user.id}, TokenType.EMAIL_VALIDATION, constants.EMAIL_VALIDATION_TOKEN_LIFE_TIME)
 
 
-def create_reset_password_token(user: User) -> Token:
-    return generate_and_save_token(user, TokenType.RESET_PASSWORD, life_time=constants.RESET_PASSWORD_TOKEN_LIFE_TIME)
+def create_reset_password_token(user: User) -> Tuple[str, datetime]:
+    return create_jwt_token({"userId": user.id}, TokenType.RESET_PASSWORD, constants.RESET_PASSWORD_TOKEN_LIFE_TIME)
 
 
-def create_id_check_token(user: User) -> Optional[Token]:
+def create_id_check_token(user: User) -> Optional[Tuple[str, datetime]]:
     if not is_user_eligible(user):
         return None
 
-    return generate_and_save_token(user, TokenType.ID_CHECK, constants.ID_CHECK_TOKEN_LIFE_TIME)
-
-
-def generate_and_save_token(user: User, token_type: TokenType, life_time: Optional[timedelta] = None) -> Token:
-    expiration_date = datetime.now() + life_time if life_time else None
-    token_value = create_custom_jwt_token(user.id, token_type.value, expiration_date)
-
-    token_with_same_value = Token.query.filter_by(value=token_value).first()
-    if token_with_same_value:
-        return token_with_same_value
-
-    token = Token(userId=user.id, value=token_value, type=token_type, expirationDate=expiration_date)
-    repository.save(token)
-
-    return token
+    return create_jwt_token({"userId": user.id}, TokenType.ID_CHECK, constants.ID_CHECK_TOKEN_LIFE_TIME)
 
 
 def create_account(
@@ -133,18 +116,20 @@ def attach_beneficiary_import_details(
 
 
 def request_email_confirmation(user: User) -> None:
-    token = create_email_validation_token(user)
-    user_emails.send_activation_email(user, mailing_utils.send_raw_email, native_version=True, token=token)
+    token, expiration_date = create_email_validation_token(user)
+    user_emails.send_activation_email(
+        user, mailing_utils.send_raw_email, native_version=True, token=token, token_expiration_date=expiration_date
+    )
 
 
 def request_password_reset(user: User) -> None:
     if not user or not user.isActive:
         return
 
-    reset_password_token = create_reset_password_token(user)
+    reset_password_token, expiration_date = create_reset_password_token(user)
 
     is_email_sent = user_emails.send_reset_password_email_to_native_app_user(
-        user.email, reset_password_token.value, reset_password_token.expirationDate, mailing_utils.send_raw_email
+        user.email, reset_password_token, expiration_date, mailing_utils.send_raw_email
     )
 
     if not is_email_sent:

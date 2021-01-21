@@ -380,16 +380,18 @@ class SendActivationEmailTest:
     def test_send_activation_email_for_native(self):
         # given
         beneficiary = users_factories.UserFactory.build()
-        token = users_factories.EmailValidationToken.build(user=beneficiary)
+        token = "jwt-token"
         mocked_send_email = Mock()
 
         # when
-        send_activation_email(beneficiary, mocked_send_email, native_version=True, token=token)
+        send_activation_email(
+            beneficiary, mocked_send_email, native_version=True, token=token, token_expiration_date=datetime.now()
+        )
 
         # then
         mocked_send_email.assert_called()
         native_app_link = mocked_send_email.call_args_list[0][1]["data"]["Vars"]["nativeAppLink"]
-        assert token.value in native_app_link
+        assert token in native_app_link
 
 
 class SendAttachmentValidationEmailToProOffererTest:

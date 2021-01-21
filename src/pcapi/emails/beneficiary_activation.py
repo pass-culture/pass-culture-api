@@ -27,10 +27,11 @@ def get_activation_email_data(user: users_models.User) -> Dict:
     }
 
 
-def get_activation_email_data_for_native(user: users_models.User, token: users_models.Token) -> Dict:
-    expiration_timestamp = int(token.expirationDate.timestamp())
-    query_string = urlencode({"token": token.value, "expiration_timestamp": expiration_timestamp, "email": user.email})
+def get_activation_email_data_for_native(user: users_models.User, token: str, token_expiration_date: datetime) -> Dict:
+    expiration_timestamp = int(token_expiration_date.timestamp())
+    query_string = urlencode({"token": token, "expiration_timestamp": expiration_timestamp, "email": user.email})
     email_confirmation_link = f"{settings.NATIVE_APP_URL}/signup-confirmation?{query_string}"
+
     return {
         "FromEmail": settings.SUPPORT_EMAIL_ADDRESS,
         "Mj-TemplateID": 2015423,

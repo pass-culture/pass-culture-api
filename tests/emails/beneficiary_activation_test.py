@@ -4,7 +4,6 @@ from unittest.mock import patch
 from freezegun import freeze_time
 
 from pcapi import settings
-from pcapi.core.users import factories as users_factories
 from pcapi.emails import beneficiary_activation
 from pcapi.model_creators.generic_creators import create_user
 
@@ -48,10 +47,11 @@ class GetActivationEmailTest:
     def test_return_dict_for_native_eligible_user(self):
         # Given
         user = create_user(email="fabien+test@example.net", date_of_birth=datetime(1995, 2, 5))
-        token = users_factories.EmailValidationToken.build(user=user)
 
         # When
-        activation_email_data = beneficiary_activation.get_activation_email_data_for_native(user, token)
+        activation_email_data = beneficiary_activation.get_activation_email_data_for_native(
+            user, "token-value", datetime.now()
+        )
 
         # Then
         assert activation_email_data["Vars"]["nativeAppLink"]
@@ -65,10 +65,11 @@ class GetActivationEmailTest:
     def test_return_dict_for_native_under_age_user(self):
         # Given
         user = create_user(email="fabien+test@example.net", date_of_birth=datetime(1995, 2, 5))
-        token = users_factories.EmailValidationToken.build(user=user)
 
         # When
-        activation_email_data = beneficiary_activation.get_activation_email_data_for_native(user, token)
+        activation_email_data = beneficiary_activation.get_activation_email_data_for_native(
+            user, "token-value", datetime.now()
+        )
 
         # Then
         assert activation_email_data["Vars"]["nativeAppLink"]

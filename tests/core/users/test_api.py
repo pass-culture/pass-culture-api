@@ -7,77 +7,25 @@ from freezegun import freeze_time
 import jwt
 import pytest
 
+from pcapi import settings
 from pcapi.core.users import api as users_api
 from pcapi.core.users import constants as users_constants
 from pcapi.core.users import exceptions as users_exceptions
 from pcapi.core.users import factories as users_factories
+from pcapi.core.users.api import create_email_validation_token
 from pcapi.core.users.api import create_id_check_token
-from pcapi.core.users.api import generate_and_save_token
+from pcapi.core.users.api import create_reset_password_token
+from pcapi.core.users.models import ALGORITHM_HS_256
 from pcapi.core.users.models import Token
 from pcapi.core.users.models import TokenType
 from pcapi.core.users.models import User
 from pcapi.core.users.repository import get_user_with_valid_token
-from pcapi.core.users.utils import decode_jwt_token
 from pcapi.core.users.utils import encode_jwt_payload
 from pcapi.models.user_session import UserSession
 from pcapi.repository import repository
 
-from tests.conftest import TestClient
-
 
 pytestmark = pytest.mark.usefixtures("db_session")
-
-
-class GenerateAndSaveTokenTest:
-    def test_generate_and_save_token(self, app):
-        user = users_factories.UserFactory(email="py@test.com")
-        token_type = TokenType.RESET_PASSWORD
-        life_time = timedelta(hours=24)
-
-        generated_token = generate_and_save_token(user, token_type, life_time)
-
-        saved_token = Token.query.filter_by(user=user).first()
-
-        assert generated_token.id == saved_token.id
-        assert saved_token.type == token_type
-        decoded = decode_jwt_token(saved_token.value)
-        assert decoded["userId"] == user.id
-        assert decoded["type"] == token_type.value
-        assert decoded["exp"] is not None
-
-        with freeze_time(datetime.now() + timedelta(hours=48)):
-            with pytest.raises(jwt.exceptions.ExpiredSignatureError):
-                decode_jwt_token(saved_token.value)
-
-        # ensure token is not valid for authentication
-        test_client = TestClient(app.test_client())
-        test_client.auth_header = {"Authorization": f"Bearer {saved_token.value}"}
-        response = test_client.get("/native/v1/protected")
-        assert response.status_code == 422
-
-    def test_generate_and_save_token_without_expiration_date(self):
-        user = users_factories.UserFactory(email="py@test.com")
-        token_type = TokenType.RESET_PASSWORD
-
-        generate_and_save_token(user, token_type)
-
-        generated_token = Token.query.filter_by(user=user).first()
-
-        assert generated_token.type == token_type
-        assert generated_token.expirationDate is None
-
-        decoded = decode_jwt_token(generated_token.value)
-
-        assert decoded["userId"] == user.id
-        assert decoded["type"] == token_type.value
-        assert "exp" not in decoded
-
-    def test_generate_and_save_token_with_wrong_type(self):
-        user = users_factories.UserFactory(email="py@test.com")
-        token_type = "not-enum-type"
-
-        with pytest.raises(AttributeError):
-            generate_and_save_token(user, token_type)
 
 
 class ValidateJwtTokenTest:
@@ -158,12 +106,44 @@ class ValidateJwtTokenTest:
         assert associated_user is None
 
 
+class CreateEmailValidationToken:
+    def test_create_email_validation_token(self):
+        user = users_factories.UserFactory(dateOfBirth=datetime(2000, 1, 1))
+
+        token, expiration_date = create_email_validation_token(user)
+
+        decoded = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=ALGORITHM_HS_256)
+        assert decoded["userId"] == user.id
+        assert decoded["type"] == TokenType.EMAIL_VALIDATION.value
+        assert decoded["exp"] == int(expiration_date.timestamp())
+        assert decoded["exp"] > datetime.utcnow().timestamp()
+
+
+class CreateResetPasswordToken:
+    def test_create_reset_password_token(self):
+        user = users_factories.UserFactory(dateOfBirth=datetime(2000, 1, 1))
+
+        token, expiration_date = create_reset_password_token(user)
+
+        decoded = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=ALGORITHM_HS_256)
+        assert decoded["userId"] == user.id
+        assert decoded["type"] == TokenType.RESET_PASSWORD.value
+        assert decoded["exp"] == int(expiration_date.timestamp())
+        assert decoded["exp"] > datetime.utcnow().timestamp()
+
+
 class GenerateIdCheckTokenIfEligibleTest:
     @freeze_time("2018-06-01")
     def test_when_elible(self):
         user = users_factories.UserFactory(dateOfBirth=datetime(2000, 1, 1))
-        token = create_id_check_token(user)
-        assert token
+
+        token, expiration_date = create_id_check_token(user)
+
+        decoded = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=ALGORITHM_HS_256)
+        assert decoded["userId"] == user.id
+        assert decoded["type"] == TokenType.ID_CHECK.value
+        assert decoded["exp"] == int(expiration_date.timestamp())
+        assert decoded["exp"] > datetime.utcnow().timestamp()
 
     @freeze_time("2018-06-01")
     def test_when_not_elible_under_age(self):

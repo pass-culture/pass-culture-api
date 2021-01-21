@@ -105,7 +105,7 @@ def validate_email(body: ValidateEmailRequest) -> ValidateEmailResponse:
     response = ValidateEmailResponse(
         access_token=create_access_token(identity=user.email),
         refresh_token=create_refresh_token(identity=user.email),
-        id_check_token=id_check_token.value if id_check_token else None,
+        id_check_token=id_check_token[0] if id_check_token else None,
     )
 
     return response
