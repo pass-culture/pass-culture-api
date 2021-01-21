@@ -28,3 +28,7 @@ class UnderAgeUserException(Exception):
 
 class EmailNotSent(Exception):
     pass
+
+
+class InvalidTokenType(Exception):
+    pass

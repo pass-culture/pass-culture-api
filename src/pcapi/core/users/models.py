@@ -44,9 +44,10 @@ VOID_FIRST_NAME = ""
 
 
 class TokenType(enum.Enum):
-    RESET_PASSWORD = "reset-password"
+    CHANGE_EMAIL = "change-email"
     EMAIL_VALIDATION = "email-validation"
     ID_CHECK = "id-check"
+    RESET_PASSWORD = "reset-password"
 
 
 class Token(PcObject, Model):

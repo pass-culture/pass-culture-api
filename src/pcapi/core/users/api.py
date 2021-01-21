@@ -1,6 +1,7 @@
 from datetime import date
 from datetime import datetime
 import secrets
+from typing import Dict
 from typing import Optional
 from typing import Tuple
 
@@ -20,7 +21,6 @@ from pcapi.core.users.models import User
 from pcapi.core.users.models import VOID_FIRST_NAME
 from pcapi.core.users.utils import create_jwt_token
 from pcapi.core.users.utils import decode_jwt_token
-from pcapi.core.users.utils import encode_jwt_payload
 from pcapi.core.users.utils import format_email
 from pcapi.domain import user_emails
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription import BeneficiaryPreSubscription
@@ -40,7 +40,6 @@ from pcapi.utils.logger import logger
 from pcapi.utils.mailing import MailServiceException
 
 from . import constants
-from . import exceptions
 
 
 def create_email_validation_token(user: User) -> Tuple[str, datetime]:
@@ -56,6 +55,10 @@ def create_id_check_token(user: User) -> Optional[Tuple[str, datetime]]:
         return None
 
     return create_jwt_token({"userId": user.id}, TokenType.ID_CHECK, constants.ID_CHECK_TOKEN_LIFE_TIME)
+
+
+def create_change_email_token(user: User) -> Tuple[str, datetime]:
+    return create_jwt_token({"userId": user.id}, TokenType.RESET_PASSWORD, constants.RESET_PASSWORD_TOKEN_LIFE_TIME)
 
 
 def create_account(
@@ -198,16 +201,11 @@ def send_user_emails_for_email_change(user: User, new_email: str) -> None:
 
 def change_user_email(token: str) -> None:
     try:
-        jwt_payload = decode_jwt_token(token)
-    except (
-        ExpiredSignatureError,
-        InvalidSignatureError,
-        DecodeError,
-        InvalidTokenError,
-    ) as error:
+        jwt_payload = get_payload_from_jwt_token(token, TokenType.CHANGE_EMAIL)
+    except (InvalidTokenError, exceptions.InvalidTokenType) as error:
         raise InvalidTokenError() from error
 
-    if not {"exp", "new_email", "current_email"} <= set(jwt_payload):
+    if not {"new_email", "current_email"} <= set(jwt_payload):
         raise InvalidTokenError()
 
     new_email = jwt_payload["new_email"]
@@ -228,8 +226,11 @@ def change_user_email(token: str) -> None:
 
 
 def _build_link_for_email_change(current_email: str, new_email: str) -> str:
-    expiration_date = datetime.now() + constants.EMAIL_CHANGE_TOKEN_LIFE_TIME
-    token = encode_jwt_payload(dict(current_email=current_email, new_email=new_email), expiration_date)
+    token, expiration_date = create_jwt_token(
+        dict(current_email=current_email, new_email=new_email),
+        TokenType.CHANGE_EMAIL,
+        constants.EMAIL_CHANGE_TOKEN_LIFE_TIME,
+    )
 
     return f"{settings.WEBAPP_URL}/email-change?token={token}&expiration_timestamp={int(expiration_date.timestamp())}"
 
@@ -270,24 +271,30 @@ def user_expenses(user: User):
     return limits
 
 
-def get_user_from_jwt_token(token: str, expected_token_type: TokenType) -> Optional[User]:
+def get_payload_from_jwt_token(token: str, expected_token_type: TokenType) -> Dict:
     try:
-        jwt_payload = decode_jwt_token(token)
+        token_payload = decode_jwt_token(token)
     except (
         ExpiredSignatureError,
         InvalidSignatureError,
         DecodeError,
         InvalidTokenError,
-    ):
+    ) as error:
+        raise InvalidTokenError() from error
+
+    if token_payload["type"] != expected_token_type.value:
+        raise exceptions.InvalidTokenType()
+
+    return token_payload
+
+
+def get_user_from_jwt_token(token: str, expected_token_type: TokenType) -> Optional[User]:
+    try:
+        token_payload = get_payload_from_jwt_token(token, expected_token_type)
+    except (InvalidTokenError, exceptions.InvalidTokenType):
         return None
 
-    if "exp" in jwt_payload and jwt_payload["exp"] < datetime.now().timestamp():
+    if not "userId" in token_payload:
         return None
 
-    if not {"type", "userId"} <= set(jwt_payload):
-        return None
-
-    if jwt_payload["type"] != expected_token_type.value:
-        return None
-
-    return User.query.get(jwt_payload["userId"])
+    return User.query.get(token_payload["userId"])

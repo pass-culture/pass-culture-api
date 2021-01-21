@@ -176,7 +176,9 @@ class ChangeUserEmailTest:
         user = users_factories.UserFactory(email="oldemail@mail.com", firstName="UniqueNameForEmailChangeTest")
         users_factories.UserSessionFactory(user=user)
         expiration_date = datetime.now() + timedelta(hours=1)
-        token_payload = dict(current_email="oldemail@mail.com", new_email="newemail@mail.com")
+        token_payload = dict(
+            current_email="oldemail@mail.com", new_email="newemail@mail.com", type=TokenType.CHANGE_EMAIL.value
+        )
         token = encode_jwt_payload(token_payload, expiration_date)
 
         # When
@@ -211,7 +213,9 @@ class ChangeUserEmailTest:
         # Given
         users_factories.UserFactory(email="oldemail@mail.com", firstName="UniqueNameForEmailChangeTest")
         expiration_date = datetime.now() - timedelta(hours=1)
-        token_payload = dict(current_email="oldemail@mail.com", new_email="newemail@mail.com")
+        token_payload = dict(
+            current_email="oldemail@mail.com", new_email="newemail@mail.com", type=TokenType.CHANGE_EMAIL.value
+        )
         token = encode_jwt_payload(token_payload, expiration_date)
 
         # When
@@ -229,20 +233,24 @@ class ChangeUserEmailTest:
         # Given
         users_factories.UserFactory(email="oldemail@mail.com", firstName="UniqueNameForEmailChangeTest")
         expiration_date = datetime.now() + timedelta(hours=1)
-        missing_current_email_token_payload = dict(new_email="newemail@mail.com")
+        missing_current_email_token_payload = dict(new_email="newemail@mail.com", type=TokenType.CHANGE_EMAIL.value)
         missing_current_email_token = encode_jwt_payload(missing_current_email_token_payload, expiration_date)
 
-        missing_new_email_token_payload = dict(current_email="oldemail@mail.com")
+        missing_new_email_token_payload = dict(current_email="oldemail@mail.com", type=TokenType.CHANGE_EMAIL.value)
         missing_new_email_token = encode_jwt_payload(missing_new_email_token_payload, expiration_date)
 
-        missing_exp_token_payload = dict(new_email="newemail@mail.com")
+        missing_exp_token_payload = dict(new_email="newemail@mail.com", type=TokenType.CHANGE_EMAIL.value)
         missing_exp_token = encode_jwt_payload(missing_exp_token_payload)
+
+        missing_type_token_payload = dict(new_email="newemail@mail.com", current_email="oldemail@mail.com")
+        missing_type_token = encode_jwt_payload(missing_type_token_payload, expiration_date)
 
         # When
         with pytest.raises(jwt.exceptions.InvalidTokenError):
             users_api.change_user_email(missing_current_email_token)
             users_api.change_user_email(missing_new_email_token)
             users_api.change_user_email(missing_exp_token)
+            users_api.change_user_email(missing_type_token)
 
         # Then
         old_user = User.query.filter_by(email="oldemail@mail.com").first()
@@ -255,7 +263,9 @@ class ChangeUserEmailTest:
         # Given
         users_factories.UserFactory(email="newemail@mail.com", firstName="UniqueNameForEmailChangeTest")
         expiration_date = datetime.now() + timedelta(hours=1)
-        token_payload = dict(current_email="oldemail@mail.com", new_email="newemail@mail.com")
+        token_payload = dict(
+            current_email="oldemail@mail.com", new_email="newemail@mail.com", type=TokenType.CHANGE_EMAIL.value
+        )
         token = encode_jwt_payload(token_payload, expiration_date)
 
         # When
@@ -271,7 +281,9 @@ class ChangeUserEmailTest:
     def test_change_user_email_current_email_not_existing_anymore(self):
         # Given
         expiration_date = datetime.now() + timedelta(hours=1)
-        token_payload = dict(current_email="oldemail@mail.com", new_email="newemail@mail.com")
+        token_payload = dict(
+            current_email="oldemail@mail.com", new_email="newemail@mail.com", type=TokenType.CHANGE_EMAIL.value
+        )
         token = encode_jwt_payload(token_payload, expiration_date)
 
         # When
