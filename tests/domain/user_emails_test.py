@@ -10,7 +10,6 @@ from pcapi.core.bookings.factories import BookingFactory
 from pcapi.core.offers.factories import OffererFactory
 from pcapi.core.offers.factories import ProductFactory
 import pcapi.core.users.factories as users_factories
-from pcapi.core.users.models import Token
 from pcapi.domain.user_emails import send_activation_email
 from pcapi.domain.user_emails import send_attachment_validation_email_to_pro_offerer
 from pcapi.domain.user_emails import send_batch_cancellation_emails_to_users
@@ -490,14 +489,15 @@ class SendResetPasswordUserEmailTest:
         # given
         user = create_user(email="bobby@example.com", first_name="Bobby", reset_password_token="AZ45KNB99H")
         mocked_send_email = Mock()
-        token = Token(value="token-value", expirationDate=datetime.now())
+        token_value = "token-value"
+        expiration_date = datetime.now()
 
         # when
-        send_reset_password_email_to_native_app_user(user.email, token.value, token.expirationDate, mocked_send_email)
+        send_reset_password_email_to_native_app_user(user.email, "token-value", expiration_date, mocked_send_email)
 
         # then
         retrieve_data_for_reset_password_native_app_email.assert_called_once_with(
-            user.email, token.value, token.expirationDate
+            user.email, token_value, expiration_date
         )
         mocked_send_email.assert_called_once_with(data={"MJ-TemplateID": 12345})
 

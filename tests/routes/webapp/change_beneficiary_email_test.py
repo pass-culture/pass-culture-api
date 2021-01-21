@@ -9,6 +9,7 @@ import pytest
 
 from pcapi import settings
 import pcapi.core.users.factories as users_factories
+from pcapi.core.users.models import TokenType
 from pcapi.core.users.models import User
 from pcapi.core.users.utils import ALGORITHM_HS_256
 
@@ -40,12 +41,7 @@ class Returns204:
             "To": user.email,
             "Vars": {"beneficiary_name": user.firstName},
         }
-        confirmation_data_token = (
-            "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjdXJyZW50X2VtYWlsIjo"
-            "idGVzdEBtYWlsLmNvbSIsIm5ld19lbWFpbCI6Im5ld0BlbWFpbC5jb20iLCJ"
-            "leHAiOjE2MDI4Mzg4MDB9.Q2-583JqPSfDjuMD6ZMhMnb07Rr47iBZFRwlFC"
-            "ymSf0"
-        )
+        confirmation_data_token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJjdXJyZW50X2VtYWlsIjoidGVzdEBtYWlsLmNvbSIsIm5ld19lbWFpbCI6Im5ld0BlbWFpbC5jb20iLCJ0eXBlIjoiY2hhbmdlLWVtYWlsIiwiZXhwIjoxNjAyODM4ODAwfQ.YaHw-3QpJM3m6oRf6bVsxnO51o0u9wPT6_1CtqgyCMU"
         confirmation_link = (
             f"{settings.WEBAPP_URL}/email-change?token={confirmation_data_token}&expiration_timestamp=1602838800"
         )
@@ -71,7 +67,10 @@ class Returns204:
 
         expiration_date = datetime.now() + timedelta(hours=1)
         token_payload = dict(
-            exp=int(expiration_date.timestamp()), current_email="oldemail@mail.com", new_email="newemail@mail.com"
+            exp=int(expiration_date.timestamp()),
+            current_email="oldemail@mail.com",
+            new_email="newemail@mail.com",
+            type=TokenType.CHANGE_EMAIL.value,
         )
         token = jwt.encode(
             token_payload,

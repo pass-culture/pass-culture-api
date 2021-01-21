@@ -2,7 +2,6 @@ from pcapi.core.bookings.models import Booking
 from pcapi.core.offers.models import Mediation
 from pcapi.core.offers.models import Offer
 from pcapi.core.offers.models import Stock
-from pcapi.core.users.models import Token
 from pcapi.core.users.models import User
 from pcapi.models.allocine_pivot import AllocinePivot
 from pcapi.models.allocine_venue_provider import AllocineVenueProvider
@@ -93,7 +92,6 @@ __all__ = (
     "Product",
     "RightsType",
     "ThingType",
-    "Token",
     "UserOfferer",
     "User",
     "UserSession",
@@ -137,5 +135,4 @@ models = (
     PaymentStatus,
     IrisFrance,
     IrisVenues,
-    Token,
 )

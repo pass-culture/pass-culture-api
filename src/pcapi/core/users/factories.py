@@ -7,9 +7,6 @@ from pcapi.core.testing import BaseFactory
 import pcapi.core.users.models
 from pcapi.models import user_session
 
-from . import constants
-from . import models
-
 
 DEFAULT_PASSWORD = "user@AZERTY123"
 
@@ -55,23 +52,6 @@ class UserFactory(BaseFactory):
         if obj.isAdmin or not obj.isBeneficiary:
             return None
         return DepositFactory(user=obj, **kwargs)
-
-
-class TokenFactory(BaseFactory):
-    class Meta:
-        model = models.Token
-
-    value = factory.Sequence("XYZ{0}".format)
-
-
-class ResetPasswordToken(TokenFactory):
-    type = models.TokenType.RESET_PASSWORD
-    expirationDate = factory.LazyFunction(lambda: datetime.datetime.now() + constants.RESET_PASSWORD_TOKEN_LIFE_TIME)
-
-
-class EmailValidationToken(TokenFactory):
-    type = models.TokenType.EMAIL_VALIDATION
-    expirationDate = factory.LazyFunction(lambda: datetime.datetime.now() + constants.EMAIL_VALIDATION_TOKEN_LIFE_TIME)
 
 
 class UserSessionFactory(BaseFactory):

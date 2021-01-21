@@ -9,13 +9,10 @@ from typing import Union
 
 import bcrypt
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import BigInteger
 from sqlalchemy import Boolean
 from sqlalchemy import CheckConstraint
 from sqlalchemy import Column
 from sqlalchemy import DateTime
-from sqlalchemy import Enum
-from sqlalchemy import ForeignKey
 from sqlalchemy import LargeBinary
 from sqlalchemy import String
 from sqlalchemy import Text
@@ -48,24 +45,6 @@ class TokenType(enum.Enum):
     EMAIL_VALIDATION = "email-validation"
     ID_CHECK = "id-check"
     RESET_PASSWORD = "reset-password"
-
-
-class Token(PcObject, Model):
-    __tablename__ = "token"
-
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
-
-    userId = Column(BigInteger, ForeignKey("user.id"), index=True, nullable=False)
-
-    user = relationship("User", foreign_keys=[userId], backref="tokens")
-
-    value = Column(String, index=True, unique=True, nullable=False)
-
-    type = Column(Enum(TokenType, create_constraint=False), nullable=False)
-
-    creationDate = Column(DateTime, nullable=False, server_default=func.now())
-
-    expirationDate = Column(DateTime, nullable=True)
 
 
 def _hash_password_with_bcrypt(clear_text: str) -> bytes:

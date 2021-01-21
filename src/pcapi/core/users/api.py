@@ -125,7 +125,7 @@ def request_email_confirmation(user: User) -> None:
     )
 
 
-def request_password_reset(user: User) -> None:
+def request_password_reset(user: Optional[User]) -> None:
     if not user or not user.isActive:
         return
 
