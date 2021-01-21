@@ -12,7 +12,7 @@ token_is_wrong_mock = MagicMock(side_effect=InvalidRecaptchaTokenException())
 
 class Post:
     class Returns200:
-        @patch("pcapi.core.users.repository.get_id_check_token", lambda x: None)
+        @patch("pcapi.core.users.api.get_user_from_jwt_token", lambda x: None)
         @patch("pcapi.routes.webapp.beneficiaries.check_recaptcha_token_is_valid", token_is_valid_mock)
         def when_has_the_exact_payload(self, app):
             # Given
@@ -24,7 +24,7 @@ class Post:
             # Then
             assert response.status_code == 200
 
-        @patch("pcapi.core.users.repository.get_id_check_token", lambda x: "authorized-token")
+        @patch("pcapi.core.users.api.get_user_from_jwt_token", lambda x: "authorized-token")
         def when_has_an_existing_JWT_token(self, app):
             # Given
             data = {"token": "authorized-token"}

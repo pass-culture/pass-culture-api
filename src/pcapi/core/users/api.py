@@ -268,3 +268,26 @@ def user_expenses(user: User):
         )
 
     return limits
+
+
+def get_user_from_jwt_token(token: str, expected_token_type: TokenType) -> Optional[User]:
+    try:
+        jwt_payload = decode_jwt_token(token)
+    except (
+        ExpiredSignatureError,
+        InvalidSignatureError,
+        DecodeError,
+        InvalidTokenError,
+    ):
+        return None
+
+    if "exp" in jwt_payload and jwt_payload["exp"] < datetime.now().timestamp():
+        return None
+
+    if not {"type", "userId"} <= set(jwt_payload):
+        return None
+
+    if jwt_payload["type"] != expected_token_type.value:
+        return None
+
+    return User.query.get(jwt_payload["userId"])

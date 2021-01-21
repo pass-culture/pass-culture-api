@@ -11,7 +11,9 @@ from pcapi import settings
 from pcapi.core.users import exceptions as users_exceptions
 from pcapi.core.users import repository as users_repo
 from pcapi.core.users.api import change_user_email
+from pcapi.core.users.api import get_user_from_jwt_token
 from pcapi.core.users.api import send_user_emails_for_email_change
+from pcapi.core.users.models import TokenType
 from pcapi.flask_app import private_api
 from pcapi.flask_app import public_api
 from pcapi.models.api_errors import ApiErrors
@@ -147,7 +149,7 @@ def signin_beneficiary() -> Tuple[str, int]:
 def verify_id_check_licence_token(
     body: serialization_beneficiaries.VerifyIdCheckLicenceRequest,
 ) -> serialization_beneficiaries.VerifyIdCheckLicenceResponse:
-    if users_repo.get_id_check_token(body.token):
+    if get_user_from_jwt_token(body.token, TokenType.ID_CHECK):
         return serialization_beneficiaries.VerifyIdCheckLicenceResponse()
 
     # Let's try with the legacy webapp tokens

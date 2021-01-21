@@ -78,7 +78,7 @@ def protected() -> any:  # type: ignore
 @blueprint.native_v1.route("/reset_password", methods=["POST"])
 @spectree_serialize(on_success_status=204, api=blueprint.api, on_error_statuses=[400])
 def reset_password(body: ResetPasswordRequest) -> None:
-    user = users_repo.get_user_with_valid_token(body.reset_password_token, [TokenType.RESET_PASSWORD])
+    user = users_api.get_user_from_jwt_token(body.reset_password_token, TokenType.RESET_PASSWORD)
 
     if not user:
         raise ApiErrors({"token": ["Le token de changement de mot de passe est invalide."]})
@@ -92,7 +92,7 @@ def reset_password(body: ResetPasswordRequest) -> None:
 @blueprint.native_v1.route("/validate_email", methods=["POST"])
 @spectree_serialize(on_success_status=200, api=blueprint.api, response_model=ValidateEmailResponse)
 def validate_email(body: ValidateEmailRequest) -> ValidateEmailResponse:
-    user = users_repo.get_user_with_valid_token(body.email_validation_token, [TokenType.EMAIL_VALIDATION])
+    user = users_api.get_user_from_jwt_token(body.email_validation_token, TokenType.EMAIL_VALIDATION)
 
     if not user:
         raise ApiErrors({"token": ["Le token de validation d'email est invalide."]})
@@ -100,12 +100,12 @@ def validate_email(body: ValidateEmailRequest) -> ValidateEmailResponse:
     user.isEmailValidated = True
     repository.save(user)
 
-    id_check_token = users_api.create_id_check_token(user)
+    id_check_token_with_date = users_api.create_id_check_token(user)
 
     response = ValidateEmailResponse(
         access_token=create_access_token(identity=user.email),
         refresh_token=create_refresh_token(identity=user.email),
-        id_check_token=id_check_token[0] if id_check_token else None,
+        id_check_token=id_check_token_with_date[0] if id_check_token_with_date else None,
     )
 
     return response

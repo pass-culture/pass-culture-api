@@ -15,11 +15,10 @@ from pcapi.core.users import factories as users_factories
 from pcapi.core.users.api import create_email_validation_token
 from pcapi.core.users.api import create_id_check_token
 from pcapi.core.users.api import create_reset_password_token
+from pcapi.core.users.api import get_user_from_jwt_token
 from pcapi.core.users.models import ALGORITHM_HS_256
-from pcapi.core.users.models import Token
 from pcapi.core.users.models import TokenType
 from pcapi.core.users.models import User
-from pcapi.core.users.repository import get_user_with_valid_token
 from pcapi.core.users.utils import encode_jwt_payload
 from pcapi.models.user_session import UserSession
 from pcapi.repository import repository
@@ -29,79 +28,61 @@ pytestmark = pytest.mark.usefixtures("db_session")
 
 
 class ValidateJwtTokenTest:
-    token_value = encode_jwt_payload({"pay": "load"})
-
     def test_get_user_with_valid_token(self):
         user = users_factories.UserFactory()
+        repository.save(user)
         token_type = TokenType.RESET_PASSWORD
         expiration_date = datetime.now() + timedelta(hours=24)
 
-        saved_token = Token(
-            from_dict={
-                "userId": user.id,
-                "value": self.token_value,
-                "type": token_type,
-                "expirationDate": expiration_date,
-            }
-        )
-        repository.save(saved_token)
+        token_payload = encode_jwt_payload({"type": token_type.value, "userId": user.id}, expiration_date)
 
-        associated_user = get_user_with_valid_token(self.token_value, [token_type, "other-allowed-type"])
+        associated_user = get_user_from_jwt_token(token_payload, token_type)
 
         assert associated_user.id == user.id
 
     def test_get_user_with_valid_token_without_expiration_date(self):
         user = users_factories.UserFactory()
-        token_type = TokenType.RESET_PASSWORD
+        repository.save(user)
+        token_type = TokenType.ID_CHECK
+        token_payload = encode_jwt_payload({"type": token_type.value, "userId": user.id})
 
-        saved_token = Token(from_dict={"userId": user.id, "value": self.token_value, "type": token_type})
-        repository.save(saved_token)
-
-        associated_user = get_user_with_valid_token(self.token_value, [token_type])
+        associated_user = get_user_from_jwt_token(token_payload, token_type)
 
         assert associated_user.id == user.id
 
-    def test_get_user_with_valid_token_wrong_token(self):
+    def test_get_user_with_valid_token_token_encoded_with_wrong_key(self):
         user = users_factories.UserFactory()
-        token_type = TokenType.RESET_PASSWORD
+        repository.save(user)
+        token_type = TokenType.ID_CHECK
+        token_payload = jwt.encode(
+            {"type": token_type.value, "userId": user.id},
+            "wrong-key",
+            algorithm=ALGORITHM_HS_256,
+        ).decode("ascii")
 
-        saved_token = Token(from_dict={"userId": user.id, "value": self.token_value, "type": token_type})
-        repository.save(saved_token)
+        associated_user = get_user_from_jwt_token(token_payload, token_type)
 
-        associated_user = get_user_with_valid_token("wrong-token-value", [token_type])
-
-        assert associated_user is None
+        assert not associated_user
 
     def test_get_user_with_valid_token_wrong_type(self):
         user = users_factories.UserFactory()
-        token_type = TokenType.RESET_PASSWORD
+        repository.save(user)
+        token_type = TokenType.ID_CHECK
+        token_payload = encode_jwt_payload({"type": "other-value", "userId": user.id})
 
-        saved_token = Token(from_dict={"userId": user.id, "value": self.token_value, "type": token_type})
-        repository.save(saved_token)
+        associated_user = get_user_from_jwt_token(token_payload, token_type)
 
-        assert Token.query.filter_by(value=self.token_value).first() is not None
-
-        associated_user = get_user_with_valid_token(self.token_value, ["other_type"])
-
-        assert associated_user is None
+        assert not associated_user
 
     def test_get_user_with_valid_token_with_expired_date(self):
         user = users_factories.UserFactory()
+        repository.save(user)
         token_type = TokenType.RESET_PASSWORD
+        expiration_date = datetime.now() - timedelta(hours=24)
 
-        saved_token = Token(
-            from_dict={
-                "userId": user.id,
-                "value": self.token_value,
-                "type": token_type,
-                "expirationDate": datetime.now() - timedelta(hours=24),
-            }
-        )
-        repository.save(saved_token)
+        token_payload = encode_jwt_payload({"type": token_type.value, "userId": user.id}, expiration_date)
 
-        assert Token.query.filter_by(value=self.token_value).first() is not None
-
-        associated_user = get_user_with_valid_token(self.token_value, [token_type])
+        associated_user = get_user_from_jwt_token(token_payload, token_type)
 
         assert associated_user is None
 

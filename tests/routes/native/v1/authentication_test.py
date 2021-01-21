@@ -6,10 +6,11 @@ from freezegun import freeze_time
 import pytest
 
 from pcapi.core.users import factories as users_factories
-from pcapi.core.users.models import Token
+from pcapi.core.users.api import create_email_validation_token
+from pcapi.core.users.api import create_reset_password_token
 from pcapi.core.users.models import TokenType
 from pcapi.core.users.models import hash_password
-from pcapi.repository import repository
+from pcapi.core.users.utils import decode_jwt_token
 from pcapi.repository.user_queries import find_user_by_id
 from pcapi.utils.token import random_token
 
@@ -101,11 +102,8 @@ def test_request_reset_password_for_unknown_email(app):
 @patch("pcapi.domain.user_emails.send_reset_password_email_to_native_app_user")
 def test_request_reset_password_for_existing_email(mock_send_reset_password_email_to_native_app_user, app):
     email = "existing_user@example.com"
+    users_factories.UserFactory(email=email)
     data = {"email": email}
-    user = users_factories.UserFactory(email=email)
-
-    saved_token = Token.query.filter_by(user=user).first()
-    assert saved_token is None
 
     mock_send_reset_password_email_to_native_app_user.return_value = True
 
@@ -113,9 +111,6 @@ def test_request_reset_password_for_existing_email(mock_send_reset_password_emai
 
     mock_send_reset_password_email_to_native_app_user.assert_called_once()
     assert response.status_code == 204
-
-    saved_token = Token.query.filter_by(user=user).first()
-    assert saved_token.type.value == "reset-password"
 
 
 @patch("pcapi.domain.user_emails.send_reset_password_email_to_native_app_user")
@@ -158,13 +153,10 @@ def test_reset_password_with_not_valid_token(app):
 
 def test_reset_password_success(app):
     new_password = "New_password1998!"
-
     user = users_factories.UserFactory()
+    token, _ = create_reset_password_token(user)
 
-    token = Token(from_dict={"userId": user.id, "value": "secret-value", "type": TokenType.RESET_PASSWORD})
-    repository.save(token)
-
-    data = {"reset_password_token": token.value, "new_password": new_password}
+    data = {"reset_password_token": token, "new_password": new_password}
     response = TestClient(app.test_client()).post("/native/v1/reset_password", json=data)
 
     user = find_user_by_id(user.id)
@@ -190,13 +182,13 @@ def test_reset_password_fail_for_password_strength(app):
     assert user.password == old_password
 
 
-@patch("pcapi.core.users.repository.get_user_with_valid_token", return_value=None)
-def test_validate_email_with_invalid_token(mock_get_user_with_valid_token, app):
+@patch("pcapi.core.users.api.get_user_from_jwt_token", return_value=None)
+def test_validate_email_with_invalid_token(mock_get_user_from_jwt_token, app):
     token = "email-validation-token"
 
     response = TestClient(app.test_client()).post("/native/v1/validate_email", json={"email_validation_token": token})
 
-    mock_get_user_with_valid_token.assert_called_once_with(token, [TokenType.EMAIL_VALIDATION])
+    mock_get_user_from_jwt_token.assert_called_once_with(token, TokenType.EMAIL_VALIDATION)
 
     assert response.status_code == 400
 
@@ -204,23 +196,18 @@ def test_validate_email_with_invalid_token(mock_get_user_with_valid_token, app):
 @freeze_time("2018-06-01")
 def test_validate_email_when_eligible(app):
     user = users_factories.UserFactory(isEmailValidated=False, dateOfBirth=datetime(2000, 6, 1))
-    token = users_factories.TokenFactory(userId=user.id, type=TokenType.EMAIL_VALIDATION)
+    validate_email_token, _ = create_email_validation_token(user)
 
     assert not user.isEmailValidated
 
     test_client = TestClient(app.test_client())
-    response = test_client.post("/native/v1/validate_email", json={"email_validation_token": token.value})
+    response = test_client.post("/native/v1/validate_email", json={"email_validation_token": validate_email_token})
 
     id_check_token = response.json["idCheckToken"]
 
     assert user.isEmailValidated
     assert response.status_code == 200
-    assert id_check_token
-
-    # Ensure the id_check_token generated is valid
-    saved_token = Token.query.filter_by(value=id_check_token).first()
-    assert saved_token.type == TokenType.ID_CHECK
-    assert saved_token.userId == user.id
+    assert decode_jwt_token(id_check_token)
 
     # Ensure the access token is valid
     access_token = response.json["accessToken"]
@@ -238,12 +225,12 @@ def test_validate_email_when_eligible(app):
 @freeze_time("2018-06-01")
 def test_validate_email_when_not_eligible(app):
     user = users_factories.UserFactory(isEmailValidated=False, dateOfBirth=datetime(2000, 7, 1))
-    token = users_factories.TokenFactory(userId=user.id, type=TokenType.EMAIL_VALIDATION)
+    validate_email_token, _ = create_email_validation_token(user)
 
     assert not user.isEmailValidated
 
     test_client = TestClient(app.test_client())
-    response = test_client.post("/native/v1/validate_email", json={"email_validation_token": token.value})
+    response = test_client.post("/native/v1/validate_email", json={"email_validation_token": validate_email_token})
 
     assert user.isEmailValidated
     assert response.status_code == 200
