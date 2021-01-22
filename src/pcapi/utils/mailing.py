@@ -4,6 +4,7 @@ import io
 from pprint import pformat
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Union
 import zipfile
 
@@ -60,8 +61,10 @@ def send_raw_email(data: Dict) -> bool:
     return successfully_sent_email
 
 
-def create_contact(email: str) -> Response:
+def create_contact(email: str, name: Optional[str] = None) -> Response:
     data = {"Email": email}
+    if name:
+        data["Name"] = name
 
     return app.mailjet_client.contact.create(data=data)
 
@@ -201,7 +204,7 @@ def make_user_validation_email(user: User, app_origin_url: str, is_webapp: bool)
     return data
 
 
-def get_contact(user: User) -> Union[str, None]:
+def get_contact(user: User) -> Optional[dict]:
     mailjet_json_response = app.mailjet_client.contact.get(user.email).json()
     return mailjet_json_response["Data"][0] if "Data" in mailjet_json_response else None
 
@@ -213,17 +216,25 @@ def subscribe_newsletter(user: User):
 
     try:
         contact = get_contact(user)
-    except Exception:  # pylint: disable=broad-except
-        contact_data = {"Email": user.email, "Name": user.publicName}
-        contact_json = app.mailjet_client.contact.create(data=contact_data).json()
-        contact = contact_json["Data"][0] if "Data" in contact_json else None
+    except Exception:
+        logger.logger.exception("Could not contact Mailjet to check if user=%s exists", user.id)
+        raise MailServiceException()
 
     if contact is None:
-        raise MailServiceException
+        try:
+            contact_response = create_contact(user.email, user.publicName).json()
+        except Exception:
+            logger.logger.exception("Could not contact Mailjet to add user=%s", user.id)
+            raise MailServiceException()
+        contact = contact_response["Data"][0] if "Data" in contact_response else None
+
+    if contact is None:
+        raise MailServiceException()
 
     # ('Pass Culture - Liste de diffusion', 1795144)
     contact_lists_data = {"ContactsLists": [{"Action": "addnoforce", "ListID": 1795144}]}
 
+    # FIXME (dbaty, 2020-01-22): why don't we use `add_contact_to_list()` instead?
     return app.mailjet_client.contact_managecontactslists.create(id=contact["ID"], data=contact_lists_data).json()
 
 
