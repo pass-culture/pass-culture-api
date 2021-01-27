@@ -5,7 +5,6 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
-from pydantic import BaseModel
 from pydantic.class_validators import validator
 from pydantic.fields import Field
 
@@ -16,6 +15,8 @@ from pcapi.domain.show_types import SHOW_TYPES_DICT
 from pcapi.models.offer_type import CategoryNameEnum
 from pcapi.models.offer_type import CategoryType
 from pcapi.utils.logger import logger
+
+from . import BaseModel
 
 
 class Coordinates(BaseModel):
