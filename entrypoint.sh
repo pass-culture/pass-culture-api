@@ -8,7 +8,7 @@ alembic upgrade head
 gunicorn \
     --preload \
     --workers 1 \
-    --threads 4 \
+    --threads 6 \
     --timeout 0 \
     --access-logformat '{"request_id":"%({X-Request-Id}i)s",\
                         "response_code":"%(s)s","request_method":"%(m)s",\
