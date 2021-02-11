@@ -1,13 +1,10 @@
 #!/bin/bash
 set -e
 
-python src/pcapi/scripts/pc.py install_data
-python src/pcapi/scripts/pc.py install_postgres_extension 
-alembic upgrade head
-
 gunicorn \
     --preload \
-    --workers 5 \
+    --workers 2 \
+    --threads 5 \
     --timeout 0 \
     --access-logformat '{"request_id":"%({X-Request-Id}i)s",\
                         "response_code":"%(s)s","request_method":"%(m)s",\
