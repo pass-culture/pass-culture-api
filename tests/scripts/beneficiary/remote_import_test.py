@@ -5,7 +5,6 @@ from unittest.mock import ANY
 from unittest.mock import Mock
 from unittest.mock import patch
 
-from mailjet_rest import Client
 import pytest
 
 import pcapi.core.mails.testing as mails_testing
@@ -250,8 +249,6 @@ class ProcessBeneficiaryApplicationTest:
     @pytest.mark.usefixtures("db_session")
     def test_new_beneficiaries_are_recorded_with_deposit(self, app):
         # given
-        app.mailjet_client = Mock(spec=Client)
-        app.mailjet_client.send = Mock()
         information = {
             "department": "93",
             "last_name": "Doe",
@@ -280,8 +277,6 @@ class ProcessBeneficiaryApplicationTest:
     @pytest.mark.usefixtures("db_session")
     def test_an_import_status_is_saved_if_beneficiary_is_created(self, app):
         # given
-        app.mailjet_client = Mock(spec=Client)
-        app.mailjet_client.send = Mock()
         information = {
             "department": "93",
             "last_name": "Doe",
