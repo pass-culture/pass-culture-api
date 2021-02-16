@@ -101,6 +101,7 @@ class AccountTest:
             "isEligible": True,
             "pseudo": "jdo",
             "showEligibleCard": False,
+            "walletBalance": 37655,
         }
         EXPECTED_DATA.update(USER_DATA)
 

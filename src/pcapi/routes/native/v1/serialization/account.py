@@ -66,6 +66,7 @@ class UserProfileResponse(BaseModel):
     publicName: Optional[str] = Field(None, alias="pseudo")
     needsToFillCulturalSurvey: bool
     show_eligible_card: bool
+    wallet_balance: int
 
     class Config:
         orm_mode = True
@@ -88,8 +89,10 @@ class UserProfileResponse(BaseModel):
             and user.is_eligible
         )
 
+    _convert_wallet_balance = validator("wallet_balance", pre=True, allow_reuse=True)(convert_to_cent)
+
     @classmethod
-    def from_orm(cls, user):
+    def from_orm(cls, user):  # type: ignore
         user.show_eligible_card = cls._show_eligible_card(user)
         return super().from_orm(user)
 
