@@ -197,8 +197,11 @@ class _CustomEndpoint(mailjet_rest.client.Endpoint):
         )
 
 
-# This is an exact copy of the original `mailjet_rest.client.api_call`,
-# but here `requests` is our wrapper, not the original `requests` package.
+# This is a copy of the original `mailjet_rest.client.api_call`, except:
+# - here `requests` is our wrapper, not the original `requests` package.
+# - the default value for `timeout` is None (instead of 60, which is
+#   too high), which means that we use the default timeout set by our
+#   `requests` wrapper.
 def _custom_api_call(
     auth,
     method,
@@ -207,7 +210,7 @@ def _custom_api_call(
     data=None,
     filters=None,
     resource_id=None,
-    timeout=60,
+    timeout=None,
     debug=False,
     action=None,
     action_id=None,
