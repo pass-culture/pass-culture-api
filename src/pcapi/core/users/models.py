@@ -248,6 +248,10 @@ class User(PcObject, Model, NeedsValidationMixin, VersionedMixin):
         return self.deposit.version if self.deposit else None
 
     @property
+    def has_active_deposit(self) -> bool:
+        return self.deposit_expiration_date >= datetime.now() if self.deposit_expiration_date else False
+
+    @property
     def real_wallet_balance(self):
         balance = db.session.query(func.get_wallet_balance(self.id, True)).scalar()
         # Balance can be negative if the user has booked in the past

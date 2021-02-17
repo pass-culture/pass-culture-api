@@ -256,19 +256,26 @@ def user_expenses(user: User):
 
     bookings = user.get_not_cancelled_bookings()
     config = LIMIT_CONFIGURATIONS[version]
+    bookings_total = sum(booking.total_amount for booking in bookings)
 
     limits = [
         Expense(
             domain=ExpenseDomain.ALL,
-            current=sum(booking.total_amount for booking in bookings),
-            limit=config.TOTAL_CAP,
+            current=bookings_total,
+            limit=config.TOTAL_CAP if user.has_active_deposit else bookings_total,
         )
     ]
     if config.DIGITAL_CAP:
         digital_bookings_total = sum(
             [booking.total_amount for booking in bookings if config.digital_cap_applies(booking.stock.offer)]
         )
-        limits.append(Expense(domain=ExpenseDomain.DIGITAL, current=digital_bookings_total, limit=config.DIGITAL_CAP))
+        limits.append(
+            Expense(
+                domain=ExpenseDomain.DIGITAL,
+                current=digital_bookings_total,
+                limit=config.DIGITAL_CAP if user.has_active_deposit else digital_bookings_total,
+            )
+        )
     if config.PHYSICAL_CAP:
         physical_bookings_total = sum(
             [booking.total_amount for booking in bookings if config.physical_cap_applies(booking.stock.offer)]
@@ -277,7 +284,7 @@ def user_expenses(user: User):
             Expense(
                 domain=ExpenseDomain.PHYSICAL,
                 current=physical_bookings_total,
-                limit=config.PHYSICAL_CAP,
+                limit=config.PHYSICAL_CAP if user.has_active_deposit else physical_bookings_total,
             )
         )
 

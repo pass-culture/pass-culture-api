@@ -60,7 +60,7 @@ def check_expenses_limits(user: User, requested_amount: Decimal, offer: Offer):
     deposit = user.deposit
     if not deposit:
         raise exceptions.UserHasInsufficientFunds()
-    if deposit.expirationDate and deposit.expirationDate < datetime.datetime.now():
+    if not user.has_active_deposit:
         if requested_amount:
             raise exceptions.UserHasInsufficientFunds()
 
