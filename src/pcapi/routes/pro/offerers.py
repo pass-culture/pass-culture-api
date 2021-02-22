@@ -146,10 +146,3 @@ def _send_to_pro_offer_validation_in_progress_email(user: User, offerer: Offerer
         app.logger.exception(
             "[send_pro_user_waiting_for_validation_by_admin_email] " "Mail service failure", mail_service_exception
         )
-
-
-def _send_to_pc_admin_offerer_to_validate_email(offerer: Offerer, user_offerer: UserOfferer) -> None:
-    try:
-        maybe_send_offerer_validation_email(offerer, user_offerer)
-    except MailServiceException as mail_service_exception:
-        app.logger.exception("[maybe_send_offerer_validation_email] " "Mail service failure", mail_service_exception)
