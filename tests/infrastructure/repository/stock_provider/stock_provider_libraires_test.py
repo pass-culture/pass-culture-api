@@ -1,5 +1,6 @@
 from datetime import datetime
 from unittest.mock import MagicMock
+from unittest.mock import patch
 
 from pcapi.infrastructure.repository.stock_provider.stock_provider_libraires import StockProviderLibrairesRepository
 
@@ -10,6 +11,7 @@ class StockProviderLibrairesRepositoryTest:
         self.stock_provider_libraires_repository.libraires_api.stocks = MagicMock()
         self.stock_provider_libraires_repository.libraires_api.is_siret_registered = MagicMock()
 
+    @patch("pcapi.settings.LESLIBRAIRES_API_URL", "https://passculture.leslibraires.fr/stocks")
     def should_instanciate_provider_api_with_correct_params(self):
         # Then
         assert (

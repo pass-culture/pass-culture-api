@@ -145,6 +145,10 @@ TITELIVE_FTP_USER = os.environ.get("FTP_TITELIVE_USER")
 TITELIVE_FTP_PWD = os.environ.get("FTP_TITELIVE_PWD")
 
 
+# LesLibraires
+LESLIBRAIRES_API_URL = os.environ.get("LESLIBRAIRES_API_URL")
+
+
 # JOUVE
 JOUVE_API_DOMAIN = os.environ.get("JOUVE_API_DOMAIN")
 JOUVE_API_USERNAME = os.environ.get("JOUVE_USERNAME")

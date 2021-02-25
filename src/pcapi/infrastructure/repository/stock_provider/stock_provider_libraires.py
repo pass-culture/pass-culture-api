@@ -2,13 +2,14 @@ from datetime import datetime
 from typing import Dict
 from typing import Iterator
 
+from pcapi import settings
 from pcapi.domain.stock_provider.stock_provider_repository import StockProviderRepository
 from pcapi.infrastructure.repository.stock_provider.provider_api import ProviderAPI
 
 
 class StockProviderLibrairesRepository(StockProviderRepository):
     def __init__(self):
-        self.libraires_api = ProviderAPI(api_url="https://passculture.leslibraires.fr/stocks", name="Libraires")
+        self.libraires_api = ProviderAPI(api_url=settings.LESLIBRAIRES_API_URL, name="Libraires")
 
     def stocks_information(
         self, siret: str, last_processed_reference: str = "", modified_since: datetime = None
