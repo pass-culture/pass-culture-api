@@ -99,6 +99,8 @@ def spectree_serialize(  # pylint: disable=dangerous-default-value
             query_params = request.args
             form = request.form
             if body_in_kwargs:
+                if body_params == None:
+                    return Response("Missing json body in request", status=400)
                 kwargs["body"] = body_in_kwargs(**body_params)
             if query_in_kwargs:
                 kwargs["query"] = query_in_kwargs(**query_params)
