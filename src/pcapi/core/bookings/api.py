@@ -1,5 +1,6 @@
 import base64
 import datetime
+from decimal import Decimal
 import io
 import typing
 
@@ -11,9 +12,11 @@ import qrcode.image.svg
 
 from pcapi.connectors import redis
 from pcapi.core.bookings import conf
+from pcapi.core.bookings import exceptions
 from pcapi.core.bookings.models import Booking
 from pcapi.core.bookings.models import BookingCancellationReasons
 from pcapi.core.bookings.repository import generate_booking_token
+from pcapi.core.offers.models import Offer
 from pcapi.core.offers.models import Stock
 from pcapi.core.users.models import User
 from pcapi.domain import user_emails
@@ -187,3 +190,11 @@ def update_confirmation_dates(
         )
     repository.save(*bookings_to_update)
     return bookings_to_update
+
+
+def has_user_enough_credit_book(user: User, requested_amount: Decimal, offer: Offer) -> bool:
+    try:
+        validation.check_expenses_limits(user, requested_amount, offer)
+        return True
+    except exceptions.UserHasInsufficientFunds:
+        return False

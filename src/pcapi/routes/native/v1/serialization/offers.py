@@ -48,6 +48,7 @@ class OfferStockResponse(BaseModel):
     cancellation_limit_datetime: Optional[datetime]
     isBookable: bool
     price: int
+    hasUserEnoughCreditToBook: bool = False
 
     _convert_price = validator("price", pre=True, allow_reuse=True)(convert_to_cent)
 

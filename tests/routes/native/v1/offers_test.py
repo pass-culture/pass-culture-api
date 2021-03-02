@@ -1,13 +1,16 @@
 from datetime import datetime
 from datetime import timedelta
 
+from flask_jwt_extended.utils import create_access_token
 from freezegun import freeze_time
 import pytest
 
 from pcapi.core.offers.factories import EventStockFactory
 from pcapi.core.offers.factories import MediationFactory
 from pcapi.core.offers.factories import OfferFactory
+from pcapi.core.offers.factories import StockFactory
 from pcapi.core.offers.factories import ThingStockFactory
+from pcapi.core.users.factories import UserFactory
 from pcapi.models.offer_type import EventType
 from pcapi.models.offer_type import ThingType
 
@@ -70,6 +73,7 @@ class OffersTest:
                     "beginningDatetime": "2020-01-06T00:00:00",
                     "bookingLimitDatetime": "2020-01-05T23:00:00",
                     "cancellationLimitDatetime": "2020-01-03T00:00:00",
+                    "hasUserEnoughCreditToBook": False,
                     "isBookable": True,
                 },
                 {
@@ -79,6 +83,7 @@ class OffersTest:
                     "beginningDatetime": "2019-12-31T00:00:00",
                     "bookingLimitDatetime": "2019-12-30T23:00:00",
                     "cancellationLimitDatetime": "2020-01-01T00:00:00",
+                    "hasUserEnoughCreditToBook": False,
                 },
             ],
             "category": {"categoryType": "Event", "label": "Cinéma", "name": "CINEMA"},
@@ -139,3 +144,36 @@ class OffersTest:
         response = TestClient(app.test_client()).get("/native/v1/offer/1")
 
         assert response.status_code == 404
+
+    def test_get_offer_authenticated(self, app):
+        UserFactory(email="pctest@example.com")
+        access_token = create_access_token(identity="pctest@example.com")
+        test_client = TestClient(app.test_client())
+        test_client.auth_header = {"Authorization": f"Bearer {access_token}"}
+
+        offer = OfferFactory()
+        expensive_stock = StockFactory(offer=offer, price=600)
+        cheap_stock = StockFactory(offer=offer, price=200)
+
+        response = test_client.get(f"/native/v1/offer/{offer.id}")
+
+        assert response.json["stocks"] == [
+            {
+                "beginningDatetime": None,
+                "bookingLimitDatetime": None,
+                "cancellationLimitDatetime": None,
+                "hasUserEnoughCreditToBook": False,
+                "id": expensive_stock.id,
+                "isBookable": True,
+                "price": 60000,
+            },
+            {
+                "beginningDatetime": None,
+                "bookingLimitDatetime": None,
+                "cancellationLimitDatetime": None,
+                "hasUserEnoughCreditToBook": True,
+                "id": cheap_stock.id,
+                "isBookable": True,
+                "price": 20000,
+            },
+        ]

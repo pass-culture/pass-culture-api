@@ -1,6 +1,7 @@
 from functools import wraps
 
 from flask_jwt_extended.utils import get_jwt_identity
+from flask_jwt_extended.view_decorators import jwt_optional
 from flask_jwt_extended.view_decorators import jwt_required
 
 from pcapi.models.api_errors import ForbiddenError
@@ -24,6 +25,23 @@ def authenticated_user_required(route_function):  # type: ignore
         if user is None or not user.isActive:
             logger.error("Authenticated user with email %s not found or inactive", email)
             raise ForbiddenError({"email": ["Utilisateur introuvable"]})
+
+        return route_function(user, *args, **kwargs)
+
+    return retrieve_authenticated_user
+
+
+def authenticated_user_optional(route_function):  # type: ignore
+    @wraps(route_function)
+    @jwt_optional
+    def retrieve_authenticated_user(*args, **kwargs):  # type: ignore
+        email = get_jwt_identity()
+        if not email:
+            return route_function(None, *args, **kwargs)
+
+        user = find_user_by_email(email)
+        if user is None or not user.isActive:
+            return route_function(None, *args, **kwargs)
 
         return route_function(user, *args, **kwargs)
 
