@@ -395,7 +395,7 @@ jobs:
       - run:
           name: Initialize api environment
           command: |
-            git clone --single-branch --branch $CIRCLE_BRANCH https://github.com/betagouv/pass-culture-api.git || git clone https://github.com/betagouv/pass-culture-api.git;
+            git clone --single-branch --branch $CIRCLE_BRANCH https://github.com/pass-culture/pass-culture-api.git || git clone https://github.com/pass-culture/pass-culture-api.git;
             cd pass-culture-api;
             python3 -m venv venv
             . venv/bin/activate
@@ -408,7 +408,7 @@ jobs:
       - run:
           name: Run data-analytics tests
           command: |
-            git clone https://github.com/betagouv/pass-culture-data-analytics.git
+            git clone https://github.com/pass-culture/pass-culture-data-analytics.git
             cd pass-culture-data-analytics
             pipenv install -e .
             pipenv run pytest
@@ -427,10 +427,10 @@ jobs:
       - run:
           name: Initialize environment
           command: |
-            git clone https://github.com/betagouv/pass-culture-main.git
+            git clone https://github.com/pass-culture/pass-culture-main.git
             cd pass-culture-main
             rm -rf shared
-            git clone https://github.com/betagouv/pass-culture-browser.git webapp
+            git clone https://github.com/pass-culture/pass-culture-browser.git webapp
             ./install_lib_ci.sh
       - checkout:
           path: ~/pass-culture-main/api
@@ -493,10 +493,10 @@ jobs:
       - run:
           name: Init env
           command: |
-            git clone https://github.com/betagouv/pass-culture-main.git
+            git clone https://github.com/pass-culture/pass-culture-main.git
             cd pass-culture-main
             rm -rf shared
-            git clone https://github.com/betagouv/pass-culture-pro.git pro
+            git clone https://github.com/pass-culture/pass-culture-pro.git pro
             ./install_lib_ci.sh
       - checkout:
           path: ~/pass-culture-main/api
