@@ -10,7 +10,7 @@ from pcapi.local_providers.fnac import synchronize_fnac_stocks
 @app.manager.option("-u", "--url", help="Endpoint url")
 @app.manager.option("-s", "--siret", help="A working siren")
 @app.manager.option("-t", "--token", help="(Optionnal) Basic authentication token")
-def check_provider_api(url, siret, token):
+def check_provider_api(url: str, siret: str, token: str) -> None:
     provider_api = ProviderAPI(
         api_url=url,
         name="TestApi",
@@ -50,7 +50,7 @@ def check_provider_api(url, siret, token):
     stock_count = 0
     batch_count = 0
     start_time = time.time()
-    for raw_stocks in synchronize_fnac_stocks._get_stocks_by_batch(siret, provider_api):
+    for raw_stocks in synchronize_fnac_stocks._get_stocks_by_batch(siret, provider_api, None):
         stock_count += len(raw_stocks)
         batch_count += 1
     duration = time.time() - start_time
