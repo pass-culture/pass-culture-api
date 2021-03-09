@@ -4,7 +4,7 @@
 
 C'est le backend de l'application Pass Culture.
 
-Il faut aller voir le README dans https://github.com/betagouv/pass-culture-main
+Il faut aller voir le README dans https://github.com/pass-culture/pass-culture-main
 pour être informé des différentes lignes de commande associées à ce repo.
 
 ## Lancement des tests dans un environement virtuel:

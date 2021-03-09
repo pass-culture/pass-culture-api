@@ -1,7 +1,7 @@
 {
   "name": "Pass Culture API",
   "description": "Serveur API du Pass Culture",
-  "repository": "https://github.com/betagouv/pass-culture-api",
+  "repository": "https://github.com/pass-culture/pass-culture-api",
   "addons": [
     "postgresql:postgresql-starter-512",
     "redis:redis-sandbox"
