@@ -424,3 +424,37 @@ class SetNotProcessablePaymentsWithBankInformationToRetryTest:
         queried_not_processable_payment = Payment.query.filter_by(id=not_processable_payment.id).one()
         assert queried_not_processable_payment.iban == "FR7611808009101234567890147"
         assert queried_not_processable_payment.bic == "CCBPFRPPVER"
+
+    @pytest.mark.usefixtures("db_session")
+    def test_should_not_set_not_processable_payments_to_retry_when_booking_is_cancelled(self):
+        # Given
+        offerer = create_offerer(name="first offerer")
+        user = create_user()
+        venue = create_venue(offerer)
+        offer = create_offer_with_thing_product(venue)
+        stock = create_stock_from_offer(offer, price=0)
+        booking = create_booking(user=user, stock=stock)
+        cancelled_booking = create_booking(user=user, stock=stock, is_cancelled=True)
+        bank_information = create_bank_information(
+            offerer=offerer, iban="FR7611808009101234567890147", bic="CCBPFRPPVER"
+        )
+        not_processable_payment_cancelled_booking = create_payment(
+            cancelled_booking, offerer, 10, status=TransactionStatus.NOT_PROCESSABLE, iban=None, bic=None
+        )
+        not_processable_payment = create_payment(
+            booking, offerer, 10, status=TransactionStatus.NOT_PROCESSABLE, iban=None, bic=None
+        )
+        repository.save(bank_information, not_processable_payment_cancelled_booking, not_processable_payment)
+
+        # When
+        set_not_processable_payments_with_bank_information_to_retry()
+
+        # Then
+        queried_not_processable_payment = Payment.query.filter_by(id=not_processable_payment_cancelled_booking.id).one()
+        queried_retried_payment = Payment.query.filter_by(id=not_processable_payment.id).one()
+        assert queried_not_processable_payment.currentStatus.status == TransactionStatus.NOT_PROCESSABLE
+        assert queried_not_processable_payment.iban == None
+        assert queried_not_processable_payment.bic == None
+        assert queried_retried_payment.currentStatus.status == TransactionStatus.RETRY
+        assert queried_retried_payment.iban == "FR7611808009101234567890147"
+        assert queried_retried_payment.bic == "CCBPFRPPVER"

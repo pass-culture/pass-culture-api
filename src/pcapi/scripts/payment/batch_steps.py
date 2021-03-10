@@ -188,6 +188,8 @@ def send_payments_report(payments: List[Payment], recipients: List[str]) -> None
 def set_not_processable_payments_with_bank_information_to_retry() -> None:
     payments_to_retry = payment_queries.find_not_processable_with_bank_information()
     for payment in payments_to_retry:
+        if payment.booking.isCancelled:
+            continue
         payment_bank_information_is_on_venue = (
             payment.booking.stock.offer.venue.bic and payment.booking.stock.offer.venue.bic
         )
