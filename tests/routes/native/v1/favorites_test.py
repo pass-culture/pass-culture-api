@@ -3,6 +3,7 @@ from datetime import timedelta
 
 import pytest
 
+from pcapi.core.bookings import factories as bookings_factories
 from pcapi.core.offers import factories as offers_factories
 from pcapi.core.testing import assert_num_queries
 from pcapi.core.users import factories as users_factories
@@ -201,6 +202,43 @@ class Get:
             assert favorites[1]["offer"]["isExpired"] is True
             assert favorites[0]["id"] == favorite4.id
             assert favorites[0]["offer"]["isExpired"] is True
+
+        def test_booked_offer(self, app):
+            # Given
+            today = datetime.now() + timedelta(hours=3)  # offset a bit to make sure it's > now()
+            tomorow = today + timedelta(days=1)
+            user, test_client = utils.create_user_and_test_client(app)
+            offerer = offers_factories.OffererFactory()
+            venue = offers_factories.VenueFactory(managingOfferer=offerer)
+
+            # Event offer booked by current user
+            offer1 = offers_factories.EventOfferFactory(venue=venue)
+            favorite1 = create_favorite(offer=offer1, user=user)
+            stock1 = offers_factories.EventStockFactory(offer=offer1, beginningDatetime=tomorow, price=10)
+            bookings_factories.BookingFactory(stock=stock1, user=user)
+
+            # Event offer booked by someone else
+            offer2 = offers_factories.EventOfferFactory(venue=venue)
+            favorite2 = create_favorite(offer=offer2, user=user)
+            stock2 = offers_factories.EventStockFactory(offer=offer2, beginningDatetime=tomorow, price=10)
+            bookings_factories.BookingFactory(stock=stock2)
+
+            # When
+            # QUERY_COUNT:
+            # 1: Fetch the user for auth
+            # 1: Fetch the favorites
+            with assert_num_queries(2):
+                response = test_client.get(FAVORITES_URL)
+
+            # Then
+            assert response.status_code == 200
+            favorites = response.json["favorites"]
+            assert len(favorites) == 2
+
+            assert favorites[1]["id"] == favorite1.id
+            assert favorites[1]["offer"]["isBooked"] is True
+            assert favorites[0]["id"] == favorite2.id
+            assert favorites[0]["offer"]["isBooked"] is False
 
     class Returns401:
         def when_user_is_not_logged_in(self, app):

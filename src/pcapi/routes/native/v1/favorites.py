@@ -3,6 +3,7 @@ from sqlalchemy import not_
 from sqlalchemy.orm import Load
 from sqlalchemy.orm import joinedload
 
+from pcapi.core.bookings.models import Booking
 from pcapi.core.offers.models import Offer
 from pcapi.core.users.models import User
 from pcapi.models import FavoriteSQLEntity
@@ -47,11 +48,17 @@ def get_favorites(user: User) -> serializers.PaginatedFavoritesResponse:
             .filter(not_(Stock.isEventExpired), not_(Stock.hasBookingLimitDatetimePassed))
             .over(partition_by=Stock.offerId)
             .label("not_expired"),
+            # has the user booked the offer ?
+            func.count(Booking.id)
+            .filter(Booking.userId == user.id)
+            .over(partition_by=Stock.offerId)
+            .label("is_booked"),
         )
         .options(Load(FavoriteSQLEntity).load_only("id"))
         .join(FavoriteSQLEntity.offer)
         .join(Offer.venue)
         .outerjoin(Offer.stocks)
+        .outerjoin(Stock.bookings)
         .filter(
             FavoriteSQLEntity.userId == user.id,
             Stock.isSoftDeleted == False,
@@ -72,7 +79,7 @@ def get_favorites(user: User) -> serializers.PaginatedFavoritesResponse:
         .all()
     )
 
-    for fav, min_price, max_price, min_beginning_datetime, max_beginning_datetime, not_expired in favorites:
+    for fav, min_price, max_price, min_beginning_datetime, max_beginning_datetime, not_expired, booked in favorites:
         fav.offer.price = None
         fav.offer.startPrice = None
         if min_price == max_price:
@@ -86,6 +93,7 @@ def get_favorites(user: User) -> serializers.PaginatedFavoritesResponse:
         else:
             fav.offer.startDate = min_beginning_datetime
         fav.offer.isExpired = not not_expired
+        fav.offer.isBooked = booked
     favorites = [fav for (fav, *_) in favorites]
 
     paginated_favorites = {
