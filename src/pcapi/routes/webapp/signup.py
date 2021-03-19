@@ -35,6 +35,7 @@ def signup_webapp():
         departement_code = _get_departement_code_when_authorized_or_error(authorized_emails, departement_codes)
         new_user.departementCode = departement_code
 
+    new_user.postalCode = new_user.departementCode.ljust(5, "0")
     new_user.isBeneficiary = False
     new_user.isAdmin = False
     new_user.isEmailValidated = True

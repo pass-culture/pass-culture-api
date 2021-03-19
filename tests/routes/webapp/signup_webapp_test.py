@@ -1,4 +1,3 @@
-from datetime import datetime
 from unittest.mock import patch
 
 from freezegun import freeze_time
@@ -6,21 +5,15 @@ import pytest
 
 from pcapi.core.testing import override_features
 from pcapi.core.users.models import User
-from pcapi.routes.serialization import serialize
 
 from tests.conftest import TestClient
 
 
 BASE_DATA = {
     "email": "toto@example.com",
-    "firstName": "Toto",
-    "lastName": "Martin",
-    "postalCode": "93100",
     "publicName": "Toto",
     "password": "__v4l1d_P455sw0rd__",
     "contact_ok": "true",
-    "phoneNumber": "0612345678",
-    "dateOfBirth": serialize(datetime(2001, 1, 1)),
 }
 
 
@@ -36,13 +29,13 @@ class Post:
                 "isBeneficiary": False,
                 "departementCode": "93",
                 "email": "toto@example.com",
-                "firstName": "Toto",
+                "firstName": None,
                 "isAdmin": False,
-                "lastName": "Martin",
-                "phoneNumber": "0612345678",
-                "postalCode": "93100",
+                "lastName": None,
+                "phoneNumber": None,
+                "postalCode": "93000",
                 "publicName": "Toto",
-                "dateOfBirth": "2001-01-01T00:00:00Z",
+                "dateOfBirth": None,
             }
             other_expected_keys = {"id", "dateCreated"}
             get_authorized_emails_and_dept_codes.return_value = (["toto@example.com"], ["93"])
@@ -79,6 +72,25 @@ class Post:
             created_user = User.query.filter_by(email="toto@example.com").first()
             assert created_user.validationToken is None
             assert not created_user.isBeneficiary
+
+        @patch("pcapi.routes.webapp.signup.get_authorized_emails_and_dept_codes")
+        @pytest.mark.usefixtures("db_session")
+        def test_created_user_has_departement_code_padded_with_0_as_postal_code(
+            self, get_authorized_emails_and_dept_codes, app
+        ):
+            data = BASE_DATA.copy()
+            get_authorized_emails_and_dept_codes.return_value = (["toto@example.com"], ["973"])
+
+            # When
+            response = TestClient(app.test_client()).post(
+                "/users/signup/webapp", json=data, headers={"origin": "http://localhost:3000"}
+            )
+
+            # Then
+            assert response.status_code == 201
+            assert "validationToken" not in response.json
+            created_user = User.query.filter_by(email="toto@example.com").first()
+            assert created_user.postalCode == "97300"
 
         @patch("pcapi.routes.webapp.signup.get_authorized_emails_and_dept_codes")
         @pytest.mark.usefixtures("db_session")
