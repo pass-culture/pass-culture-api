@@ -157,7 +157,7 @@ class User(PcObject, Model, NeedsValidationMixin, VersionedMixin):
 
     phoneNumber = Column(String(20), nullable=True)
 
-    postalCode = Column(String(5), nullable=True)
+    postalCode = Column(String(5), nullable=False)
 
     publicName = Column(String(255), nullable=False)
 

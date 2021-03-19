@@ -23,6 +23,7 @@ class UserFactory(BaseFactory):
     city = "Paris"
     dateOfBirth = datetime.datetime(2000, 1, 1)
     departementCode = "75"
+    postalCode = "75000"
     firstName = "Jeanne"
     lastName = "Doux"
     publicName = "Jeanne Doux"

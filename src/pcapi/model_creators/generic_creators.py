@@ -411,7 +411,7 @@ def create_user(
     needs_to_fill_cultural_survey: bool = False,
     password: str = None,
     phone_number: str = None,
-    postal_code: str = None,
+    postal_code: str = "93000",
     public_name: str = "John Doe",
     reset_password_token: str = None,
     reset_password_token_validity_limit: datetime = None,
