@@ -133,7 +133,7 @@ class IsValidatedTest:
     def test_is_validated_property(self, app):
         # Given
         offerer = create_offerer(siren="123456789")
-        user = create_user(postal_code=None)
+        user = create_user()
         user_offerer = create_user_offerer(user, offerer, validation_token=None)
         repository.save(user_offerer)
 
@@ -147,7 +147,7 @@ class IsValidatedTest:
     def test_is_validated_property_when_still_offerer_has_validation_token(self, app):
         # Given
         offerer = create_offerer(siren="123456789", validation_token="AAZRER")
-        user = create_user(postal_code=None)
+        user = create_user()
         user_offerer = create_user_offerer(user, offerer)
         repository.save(user_offerer)
 
@@ -184,7 +184,7 @@ class AppendUserHasAccessAttributeTest:
     @pytest.mark.usefixtures("db_session")
     def test_should_return_true_when_current_user_access_to_offerer_is_validated(self, app):
         # Given
-        current_user = create_user(postal_code=None)
+        current_user = create_user()
         offerer = create_offerer()
         user_offerer = create_user_offerer(current_user, offerer, validation_token=None)
         repository.save(user_offerer)
@@ -198,7 +198,7 @@ class AppendUserHasAccessAttributeTest:
     @pytest.mark.usefixtures("db_session")
     def test_should_return_false_when_current_user_access_to_offerer_is_not_validated(self, app):
         # Given
-        current_user = create_user(postal_code=None)
+        current_user = create_user()
         offerer = create_offerer()
         user_offerer = create_user_offerer(current_user, offerer, validation_token="TOKEN")
         repository.save(user_offerer)
@@ -212,8 +212,8 @@ class AppendUserHasAccessAttributeTest:
     @pytest.mark.usefixtures("db_session")
     def test_should_return_false_when_current_user_has_no_access(self, app):
         # Given
-        current_user = create_user(email="current@example.net", postal_code=None)
-        user = create_user(postal_code=None)
+        current_user = create_user(email="current@example.net")
+        user = create_user()
         offerer = create_offerer()
         user_offerer = create_user_offerer(user, offerer, validation_token=None)
         repository.save(user_offerer)
@@ -227,8 +227,8 @@ class AppendUserHasAccessAttributeTest:
     @pytest.mark.usefixtures("db_session")
     def test_should_return_true_when_current_user_is_admin(self, app):
         # Given
-        current_user = create_user(email="current@example.net", is_admin=True, postal_code=None)
-        user = create_user(postal_code=None)
+        current_user = create_user(email="current@example.net", is_admin=True)
+        user = create_user()
         offerer = create_offerer()
         user_offerer = create_user_offerer(user, offerer, validation_token=None)
         repository.save(user_offerer)
