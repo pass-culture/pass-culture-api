@@ -31,6 +31,7 @@ class BookingCancellationReasons(enum.Enum):
     OFFERER = "OFFERER"
     BENEFICIARY = "BENEFICIARY"
     EXPIRED = "EXPIRED"
+    FRAUD = "FRAUD"
 
 
 class Booking(PcObject, Model, VersionedMixin):
