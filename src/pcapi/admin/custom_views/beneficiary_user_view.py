@@ -32,7 +32,6 @@ class BeneficiaryUserView(SuspensionMixin, BaseAdminView):
         "departementCode",
         "phoneNumber",
         "postalCode",
-        "resetPasswordToken",
         "validationToken",
         "deposit_version",
         "actions",
@@ -47,7 +46,6 @@ class BeneficiaryUserView(SuspensionMixin, BaseAdminView):
         departementCode="Département",
         phoneNumber="Numéro de téléphone",
         postalCode="Code postal",
-        resetPasswordToken="Jeton d'activation et réinitialisation de mot de passe",
         validationToken="Jeton de validation d'adresse email",
         deposit_version="Version du dépot",
     )

@@ -314,14 +314,28 @@ class SendActivationEmailTest:
     @patch("pcapi.emails.beneficiary_activation.get_activation_email_data")
     def test_send_activation_email(self, mocked_get_activation_email_data):
         # given
-        beneficiary = users_factories.UserFactory.build()
+        beneficiary = users_factories.UserFactory()
         mocked_get_activation_email_data.return_value = {"Html-part": ""}
 
         # when
         send_activation_email(beneficiary)
 
         # then
-        mocked_get_activation_email_data.assert_called_once_with(user=beneficiary)
+        mocked_get_activation_email_data.assert_called_once_with(user=beneficiary, token=beneficiary.tokens[0])
+        assert mails_testing.outbox[0].sent_data["Html-part"] == ""
+
+    @patch("pcapi.emails.beneficiary_activation.get_activation_email_data")
+    def test_send_activation_email_with_existing_token(self, mocked_get_activation_email_data):
+        # given
+        beneficiary = users_factories.UserFactory.build()
+        token = users_factories.ResetPasswordToken.build(user=beneficiary)
+        mocked_get_activation_email_data.return_value = {"Html-part": ""}
+
+        # when
+        send_activation_email(beneficiary, token)
+
+        # then
+        mocked_get_activation_email_data.assert_called_once_with(user=beneficiary, token=token)
         assert mails_testing.outbox[0].sent_data["Html-part"] == ""
 
     def test_send_activation_email_for_native(self):

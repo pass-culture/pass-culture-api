@@ -18,6 +18,7 @@ class PostNewPassword:
             user = create_user(
                 reset_password_token="KL89PBNG51",
                 reset_password_token_validity_limit=datetime.utcnow() - timedelta(days=2),
+                is_beneficiary=False,
             )
             repository.save(user)
 
@@ -37,7 +38,7 @@ class PostNewPassword:
         @pytest.mark.usefixtures("db_session")
         def when_the_token_is_unknown(self, app):
             # given
-            user = create_user(reset_password_token="KL89PBNG51")
+            user = create_user(reset_password_token="KL89PBNG51", is_beneficiary=False)
             repository.save(user)
 
             data = {"token": "AZER1QSDF2", "newPassword": "N3W_p4ssw0rd"}
@@ -54,7 +55,7 @@ class PostNewPassword:
         @pytest.mark.usefixtures("db_session")
         def when_the_token_is_missing(self, app):
             # given
-            user = create_user(reset_password_token="KL89PBNG51")
+            user = create_user(reset_password_token="KL89PBNG51", is_beneficiary=False)
             repository.save(user)
 
             data = {"newPassword": "N3W_p4ssw0rd"}
@@ -71,7 +72,7 @@ class PostNewPassword:
         @pytest.mark.usefixtures("db_session")
         def when_new_password_is_missing(self, app):
             # given
-            user = create_user(reset_password_token="KL89PBNG51")
+            user = create_user(reset_password_token="KL89PBNG51", is_beneficiary=False)
             repository.save(user)
 
             data = {"token": "KL89PBNG51"}
@@ -91,6 +92,7 @@ class PostNewPassword:
             user = create_user(
                 reset_password_token="KL89PBNG51",
                 reset_password_token_validity_limit=datetime.utcnow() + timedelta(hours=24),
+                is_beneficiary=False,
             )
             repository.save(user)
 
@@ -118,6 +120,7 @@ class PostNewPassword:
             user = create_user(
                 reset_password_token="KL89PBNG51",
                 reset_password_token_validity_limit=datetime.utcnow() + timedelta(hours=24),
+                is_beneficiary=False,
             )
             repository.save(user)
             user_id = user.id

@@ -173,12 +173,16 @@ def send_soon_to_be_expired_bookings_recap_email_to_beneficiary(beneficiary: Use
 
 def send_activation_email(
     user: User,
-    native_version: bool = False,
     token: users_models.Token = None,
+    native_version: bool = False,
 ) -> bool:
     if not native_version:
-        data = beneficiary_activation.get_activation_email_data(user=user)
+        if not token:
+            token = users_api.create_reset_password_token(user)
+        data = beneficiary_activation.get_activation_email_data(user=user, token=token)
     else:
+        if not token:
+            token = users_api.create_email_validation_token(user)
         data = beneficiary_activation.get_activation_email_data_for_native(user=user, token=token)
     return mails.send(recipients=[user.email], data=data)
 

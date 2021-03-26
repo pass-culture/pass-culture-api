@@ -12,7 +12,7 @@ class Get:
         def when_activation_token_exists(self, app):
             # given
             token = "U2NCXTNB2"
-            user = create_user(reset_password_token=token)
+            user = create_user(reset_password_token=token, is_beneficiary=False)
             repository.save(user)
 
             # when
