@@ -1,4 +1,5 @@
 import logging
+import math
 from typing import Optional
 
 from pcapi.core.object_storage import BACKENDS_MAPPING
@@ -14,42 +15,59 @@ logger = logging.getLogger(__name__)
 from pcapi.utils.module_loading import import_string
 
 
-# OK
 def _update_favorites_mediations(favorites: set, dry_run: bool = True) -> None:
     """
     This function will :
         - Update Favorites Mediations before deleting Mediations
     """
-    logger.info("[_update_favorites_mediations()] START")
-    total = len(favorites)
+    BATCH_FAVORITES_SIZE = 800
+    favorites_count = len(favorites)
+    number_of_pages = math.ceil(favorites_count / BATCH_FAVORITES_SIZE)
+    ordonned_favorites_list = list(favorites)
+    ordonned_favorites_list.sort(key=lambda x: x.id)
+
     count = 1
-    for favorite in favorites:
-        logger.info("Favorite %d / %d", count, total)
-        current_mediation = favorite.mediation
-        current_offer = current_mediation.offer
-        offer_active_mediation = (
-            Mediation.query.join(Offer)
-            .filter(Offer.id == current_offer.id)
-            .filter(Mediation.isActive.is_(True))
-            .filter(Mediation.thumbCount > 0)
-            .order_by(Mediation.dateCreated.desc())
-        ).first()
-        if offer_active_mediation is not None:
-            favorite.mediation = offer_active_mediation
+    page = 0
+    logger.info("[_update_favorites_mediations()] START, dry run : %s", dry_run)
+
+    while page < number_of_pages:
+        print("Page %d", page)
+        start_index = page * BATCH_FAVORITES_SIZE
+
+        if page == number_of_pages - 1:
+            end_index = favorites_count
         else:
-            favorite.mediation = None
-        db.session.add(favorite)
-        count += 1
-    if dry_run:
-        logger.info("rollback !!")
-        db.session.rollback()
-    else:
-        logger.info("commit !!")
-        db.session.commit()
+            end_index = start_index + BATCH_FAVORITES_SIZE - 1
+
+        current_element_favorites = ordonned_favorites_list[start_index:end_index]
+
+        for favorite in current_element_favorites:
+            print("Favorite %d / %d", count, favorites_count)
+            current_mediation = favorite.mediation
+            current_offer = current_mediation.offer
+            offer_active_mediation = (
+                Mediation.query.join(Offer)
+                .filter(Offer.id == current_offer.id)
+                .filter(Mediation.isActive.is_(True))
+                .filter(Mediation.thumbCount > 0)
+                .order_by(Mediation.dateCreated.desc())
+            ).first()
+            if offer_active_mediation is not None:
+                favorite.mediation = offer_active_mediation
+            else:
+                favorite.mediation = None
+            db.session.add(favorite)
+            count += 1
+        if dry_run:
+            db.session.rollback()
+        else:
+            db.session.commit()
+
+        page += 1
     logger.info("[_update_favorites_mediations()] END")
 
 
-# OK
+# devnote : not executed in prod
 def delete_obsolete_mediations(dry_run: bool = True) -> None:
     """
     This function will delete:
@@ -65,6 +83,7 @@ def delete_obsolete_mediations(dry_run: bool = True) -> None:
     # Mediations which are inactives
     inactive_mediations_to_delete = Mediation.query.filter(Mediation.isActive.is_(False)).with_entities(Mediation.id)
     inactive_mediations_ids_to_delete = set(mediation_id for mediation_id, in inactive_mediations_to_delete.all())
+
     favorites_to_update = set(
         favorite
         for favorite in Favorite.query.filter(Favorite.mediationId.in_(inactive_mediations_ids_to_delete)).all()
@@ -93,63 +112,7 @@ def delete_obsolete_mediations(dry_run: bool = True) -> None:
     logger.info("There are now %d Mediations without thumb", no_thumb_count)  # should be 0
 
 
-# OK
-def delete_assets_tied_to_mediationsqlentities(
-    backend_name: str = "local",
-    dry_run: bool = True,
-    container_name: Optional[str] = None,
-    folder_name: str = "thumbs",
-    marker: str = "thumbs/mediations",
-    end_marker: str = "thumbs/mf",
-    full_listing: bool = True,
-) -> None:
-    backend_path = BACKENDS_MAPPING[backend_name]
-    if backend_name in ("OVH", "local"):
-        backend = import_string(backend_path)
-    else:
-        raise ImportError("backend must be 'OVH' or 'local'")
-
-    if dry_run:
-        logger.info("This a dry run; if you are sure about the changes, call this function with dry_run=False")
-
-    db.session.commit()
-
-    old_mediationsqlentities_asset_names = set()
-
-    # get_container() returns a tuple of (dict of headers, list(dict of asset properties))
-    mediation_assets = backend().get_container(
-        container_name=container_name,
-        marker=marker,
-        end_marker=end_marker,
-        full_listing=full_listing,
-    )[1]
-
-    for mediation_asset in mediation_assets:
-        asset_name = mediation_asset["name"]
-
-        if backend_name == "local" and asset_name.endswith(".type"):
-            continue
-
-        if asset_name.startswith(f"{folder_name}/mediationsqlentities/"):
-            old_mediationsqlentities_asset_names.add(asset_name.replace(f"{folder_name}/", ""))
-
-    # MediationSQLEntities assets
-    logger.info(
-        "%d assets that are related to a former MediationSQLEntity are about to be deleted",
-        len(old_mediationsqlentities_asset_names),
-    )
-    if dry_run:
-        pass
-    else:
-        for asset_name in old_mediationsqlentities_asset_names:
-            logger.info("deleting asset: %s", asset_name)
-            try:
-                backend().delete_public_object(bucket=folder_name, object_id=asset_name)
-            except Exception as exc:  # pylint: disable=broad-except
-                logger.exception("An unexpected error was encountered during deletion: %s", exc)
-
-
-# OK
+# devnote : not executed in prod
 def delete_assets_without_mediation(
     backend_name: str = "local",
     dry_run: bool = True,
@@ -217,7 +180,63 @@ def delete_assets_without_mediation(
                 logger.exception("An unexpected error was encountered during deletion: %s", exc)
 
 
-# EN COURS
+# devnote : executed in prod
+def delete_assets_tied_to_mediationsqlentities(
+    backend_name: str = "local",
+    dry_run: bool = True,
+    container_name: Optional[str] = None,
+    folder_name: str = "thumbs",
+    marker: str = "thumbs/mediations",
+    end_marker: str = "thumbs/mf",
+    full_listing: bool = True,
+) -> None:
+    backend_path = BACKENDS_MAPPING[backend_name]
+    if backend_name in ("OVH", "local"):
+        backend = import_string(backend_path)
+    else:
+        raise ImportError("backend must be 'OVH' or 'local'")
+
+    if dry_run:
+        logger.info("This a dry run; if you are sure about the changes, call this function with dry_run=False")
+
+    db.session.commit()
+
+    old_mediationsqlentities_asset_names = set()
+
+    # get_container() returns a tuple of (dict of headers, list(dict of asset properties))
+    mediation_assets = backend().get_container(
+        container_name=container_name,
+        marker=marker,
+        end_marker=end_marker,
+        full_listing=full_listing,
+    )[1]
+
+    for mediation_asset in mediation_assets:
+        asset_name = mediation_asset["name"]
+
+        if backend_name == "local" and asset_name.endswith(".type"):
+            continue
+
+        if asset_name.startswith(f"{folder_name}/mediationsqlentities/"):
+            old_mediationsqlentities_asset_names.add(asset_name.replace(f"{folder_name}/", ""))
+
+    # MediationSQLEntities assets
+    logger.info(
+        "%d assets that are related to a former MediationSQLEntity are about to be deleted",
+        len(old_mediationsqlentities_asset_names),
+    )
+    if dry_run:
+        pass
+    else:
+        for asset_name in old_mediationsqlentities_asset_names:
+            logger.info("deleting asset: %s", asset_name)
+            try:
+                backend().delete_public_object(bucket=folder_name, object_id=asset_name)
+            except Exception as exc:  # pylint: disable=broad-except
+                logger.exception("An unexpected error was encountered during deletion: %s", exc)
+
+
+# devnote : executed in prod
 def delete_mediations_without_uploaded_assets(
     backend_name: str = "local",
     dry_run: bool = True,
