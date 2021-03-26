@@ -21,13 +21,13 @@ class MakeUserResetPasswordEmailDataTest:
         repository.save(user_offerer)
 
         # When
-        reset_password_email_data = retrieve_data_for_reset_password_user_email(user=user)
+        reset_password_email_data = retrieve_data_for_reset_password_user_email(user=user, token=user.tokens[0])
 
         # Then
         assert reset_password_email_data == {
             "MJ-TemplateID": 912168,
             "MJ-TemplateLanguage": True,
-            "Vars": {"prenom_user": "Bobby", "token": user.resetPasswordToken},
+            "Vars": {"prenom_user": "Bobby", "token": user.tokens[0].value},
         }
 
 

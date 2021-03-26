@@ -93,7 +93,8 @@ def send_warning_to_beneficiary_after_pro_booking_cancellation(booking: Booking)
 
 
 def send_reset_password_email_to_user(user: User) -> bool:
-    data = retrieve_data_for_reset_password_user_email(user)
+    token = users_api.create_reset_password_token(user)
+    data = retrieve_data_for_reset_password_user_email(user, token)
     return mails.send(recipients=[user.email], data=data)
 
 

@@ -40,6 +40,7 @@ from pcapi.model_creators.generic_creators import create_user
 from pcapi.model_creators.generic_creators import create_venue
 from pcapi.model_creators.specific_creators import create_stock_with_event_offer
 from pcapi.models import offer_type
+from pcapi.repository import repository
 
 from tests.domain_creators.generic_creators import create_domain_beneficiary_pre_subcription
 from tests.test_utils import create_mocked_bookings
@@ -397,13 +398,16 @@ class SendResetPasswordUserEmailTest:
         self, mock_retrieve_data_for_reset_password_user_email, app
     ):
         # given
-        user = create_user(email="bobby@example.com", first_name="Bobby", reset_password_token="AZ45KNB99H")
+        user = create_user(
+            email="bobby@example.com", first_name="Bobby", reset_password_token="AZ45KNB99H", is_beneficiary=True
+        )
+        repository.save(user)
 
         # when
         send_reset_password_email_to_user(user)
 
         # then
-        mock_retrieve_data_for_reset_password_user_email.assert_called_once_with(user)
+        mock_retrieve_data_for_reset_password_user_email.assert_called_once_with(user, user.tokens[-1])
         assert mails_testing.outbox[0].sent_data["MJ-TemplateID"] == 912168
 
     @patch(

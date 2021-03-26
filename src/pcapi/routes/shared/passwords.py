@@ -60,12 +60,11 @@ def post_for_password_token(body: ResetPasswordBodyModel) -> None:
         # Here we also return a 204 to prevent attacker from discovering which email exists in db
         return
 
-    generate_reset_token(user)
-    repository.save(user)
-
     if user.isBeneficiary:
         send_email = send_reset_password_email_to_user
     else:
+        generate_reset_token(user)
+        repository.save(user)
         send_email = send_reset_password_email_to_pro
 
     try:
