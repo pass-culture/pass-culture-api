@@ -76,7 +76,7 @@ def patch_beneficiary() -> BeneficiaryAccountResponse:
 
 @private_api.route("/beneficiaries/change_email_request", methods=["PUT"])
 @login_or_api_key_required
-@spectree_serialize(on_success_status=204, on_error_statuses=[401, 503])
+@spectree_serialize(on_success_status=204, on_error_statuses=[401, 504])
 def change_beneficiary_email_request(body: ChangeBeneficiaryEmailRequestBody) -> None:
     errors = ApiErrors()
     errors.status_code = 401
@@ -93,7 +93,7 @@ def change_beneficiary_email_request(body: ChangeBeneficiaryEmailRequestBody) ->
     try:
         send_user_emails_for_email_change(user, body.new_email)
     except MailServiceException as mail_service_exception:
-        errors.status_code = 503
+        errors.status_code = 504
         errors.add_error("email", "L'envoi d'email a échoué")
         raise errors from mail_service_exception
 
