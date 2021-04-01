@@ -43,6 +43,7 @@ class FeatureToggle(enum.Enum):
     ENABLE_NATIVE_APP_RECAPTCHA = "Active le reCaptacha sur l'API native"
     FNAC_SYNCHRONIZATION_V2 = "Active la synchronisation FNAC v2 : synchronisation par batch"
     OFFER_VALIDATION_MOCK_COMPUTATION = "Active le calcul automatique de validation d'offre depuis le nom de l'offre"
+    MOBILE_APP_UP = "Permettre la désactivation de l application mobile pour cause de maintenance"
 
 
 class Feature(PcObject, Model, DeactivableMixin):
