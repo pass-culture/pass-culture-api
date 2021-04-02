@@ -59,22 +59,32 @@ def get_logged_in_user_id():
         return None
 
 
-class Logger(logging.Logger):
-    def makeRecord(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None):
-        """Make a record (as the parent class does), but store ``extra``
-        arguments in an ``extra`` attribute, not as direct attributes
-        of the object itself.
+# `Logger.makeRecord()` does not pass extra arguments to the log
+# record factory. So, for our own logs, we need to pass a custom
+# object instead of a regular string and extra arguments. We use
+# a shorter alias for StructuredJsonMessage:
+#
+#     from pcapi.core.logging import M
+#     logger.info(M("Frobulated a blob", blob=blob.id, reason=reason))
+class StructuredJsonMessage:
+    def __init__(self, message, *args, **extra):
+        self.message = message
+        self.args = args
+        self.extra = extra
 
-        Otherwise, JsonFormatter cannot distinguish ``extra``
-        arguments from regular record attributes (most of which we
-        don't use).
 
-        Note that we cannot customize the record factory because it
-        does not handle the ``extra`` arguments.
-        """
-        record = logging._logRecordFactory(name, level, fn, lno, msg, args, exc_info, func, sinfo)
-        record.extra = extra or {}
-        return record
+# Shorter alias to use in our code, see comment above.
+M = StructuredJsonMessage
+
+
+class CustomLogRecord(logging.LogRecord):
+    def __init__(self, name, level, pathname, lineno, msg, args, exc_info, func=None, sinfo=None, **kwargs):
+        self.extra = {}
+        if isinstance(msg, StructuredJsonMessage):
+            self.extra = msg.extra
+            args = msg.args
+            msg = msg.message
+        super().__init__(name, level, pathname, lineno, msg, args, exc_info, func, sinfo, **kwargs)
 
 
 class JsonFormatter(logging.Formatter):
@@ -84,15 +94,8 @@ class JsonFormatter(logging.Formatter):
             "module": record.name,
             "severity": record.levelname,
             "user_id": get_logged_in_user_id(),
-            "message": record.msg % record.args,
-            # `getattr()` is necessary for log records that have not
-            # been created by our `Logger.makeRecord()` defined above.
-            # It's possible if a logger was created *before* we have
-            # called `install_logging()`. It should not happen in
-            # `pcapi`, but does happen for external libraries (e.g. in
-            # `rq` which is imported by `pcapi.workers.worker` before
-            # we call `install_logging()`).
-            "extra": getattr(record, "extra", {}),
+            "message": record.getMessage(),
+            "extra": record.extra,
         }
         try:
             return json.dumps(json_record)
@@ -121,7 +124,7 @@ def install_logging():
     if _internal_logger is not None:
         return
 
-    logging.setLoggerClass(Logger)
+    logging.setLogRecordFactory(CustomLogRecord)
     handler = logging.StreamHandler(stream=sys.stdout)
     handler.setFormatter(JsonFormatter())
     handlers = [handler]
