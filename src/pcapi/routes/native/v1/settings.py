@@ -1,4 +1,6 @@
 from pcapi.core.bookings import conf
+from pcapi.models.feature import FeatureToggle
+from pcapi.repository import feature_queries
 from pcapi.serialization.decorator import spectree_serialize
 
 from . import blueprint
@@ -11,4 +13,7 @@ def get_settings() -> serializers.SettingsResponse:
     current_deposit_version = conf.get_current_deposit_version()
     booking_configuration = conf.LIMIT_CONFIGURATIONS[current_deposit_version]
 
-    return serializers.SettingsResponse(deposit_amount=booking_configuration.TOTAL_CAP)
+    return serializers.SettingsResponse(
+        deposit_amount=booking_configuration.TOTAL_CAP,
+        is_api_available=feature_queries.is_active(FeatureToggle.ENABLE_CLIENT_APPS),
+    )
