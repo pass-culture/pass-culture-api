@@ -8,7 +8,7 @@ from . import BaseModel
 
 class SettingsResponse(BaseModel):
     deposit_amount: int
-    mobile_app_up: bool
+    is_api_available: bool
 
     _convert_deposit_amount = validator("deposit_amount", pre=True, allow_reuse=True)(convert_to_cent)
 

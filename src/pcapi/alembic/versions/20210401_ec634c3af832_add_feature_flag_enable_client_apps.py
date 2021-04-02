@@ -1,4 +1,4 @@
-"""add_feature_flag_mobile_app_up
+"""add_feature_flag_enable_client_apps
 
 Revision ID: ec634c3af832
 Revises: 202ae94f2c8f
@@ -19,7 +19,7 @@ depends_on = None
 
 
 def upgrade() -> None:
-    feature = FeatureToggle.MOBILE_APP_UP
+    feature = FeatureToggle.ENABLE_CLIENT_APPS
     op.execute(
         text("""INSERT INTO feature (name, description, "isActive") VALUES (:name, :value, true)""").bindparams(
             name=feature.name, value=feature.value
@@ -28,5 +28,5 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    feature = FeatureToggle.MOBILE_APP_UP
+    feature = FeatureToggle.ENABLE_CLIENT_APPS
     op.execute(text("""DELETE FROM feature WHERE name = :name""").bindparams(name=feature.name))

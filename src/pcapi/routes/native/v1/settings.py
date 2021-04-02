@@ -15,5 +15,5 @@ def get_settings() -> serializers.SettingsResponse:
 
     return serializers.SettingsResponse(
         deposit_amount=booking_configuration.TOTAL_CAP,
-        mobile_app_up=feature_queries.is_active(FeatureToggle.MOBILE_APP_UP),
+        is_api_available=feature_queries.is_active(FeatureToggle.ENABLE_CLIENT_APPS),
     )

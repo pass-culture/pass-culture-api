@@ -9,7 +9,7 @@ class SettingsTest:
         response = TestClient(app.test_client()).get("/native/v1/settings")
 
         assert response.status_code == 200
-        assert response.json == {"depositAmount": 50000, "mobileAppUp": True}
+        assert response.json == {"depositAmount": 50000, "isApiAvailable": True}
 
     @override_features(APPLY_BOOKING_LIMITS_V2=False)
     def test_get_settings_before_generalization(self, app):
@@ -25,16 +25,16 @@ class SettingsTest:
         assert response.status_code == 200
         assert response.json["depositAmount"] == 30000
 
-    @override_features(MOBILE_APP_UP=False)
+    @override_features(ENABLE_CLIENT_APPS=False)
     def test_get_settings_app_up(self, app):
         response = TestClient(app.test_client()).get("/native/v1/settings")
 
         assert response.status_code == 200
-        assert not response.json["mobileAppUp"]
+        assert not response.json["isApiAvailable"]
 
-    @override_features(MOBILE_APP_UP=True)
+    @override_features(ENABLE_CLIENT_APPS=True)
     def test_get_settings_app_down(self, app):
         response = TestClient(app.test_client()).get("/native/v1/settings")
 
         assert response.status_code == 200
-        assert response.json["mobileAppUp"]
+        assert response.json["isApiAvailable"]
