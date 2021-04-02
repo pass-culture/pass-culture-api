@@ -18,6 +18,10 @@ import requests.exceptions as exceptions
 # isort: on
 # fmt: on
 
+print("creating logger in utils.requests")
+from pcapi.core.logging import M
+
+
 logger = logging.getLogger(__name__)
 
 REQUEST_TIMEOUT_IN_SECOND = 10
@@ -28,15 +32,15 @@ def _wrapper(request_func: Callable, method: str, url: str, **kwargs: Any) -> Re
         timeout = kwargs.pop("timeout", REQUEST_TIMEOUT_IN_SECOND)
         response = request_func(method=method, url=url, timeout=timeout, **kwargs)
         logger.info(
-            "External service called",
-            extra={
-                "url": response.url,
-                "statusCode": response.status_code,
-                "duration": response.elapsed.total_seconds(),
-            },
+            M(
+                "External service called",
+                url=response.url,
+                statusCode=response.status_code,
+                duration=response.elapsed.total_seconds(),
+            )
         )
     except Exception as exc:
-        logger.exception("Call to external service failed with %s", exc, extra={"method": method, "url": url})
+        logger.exception(M("Call to external service failed with %s", exc, method=method, url=url))
         raise exc
 
     return response

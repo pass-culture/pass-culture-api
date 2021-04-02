@@ -24,6 +24,7 @@ from sqlalchemy import orm
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
 from pcapi import settings
+from pcapi.core.logging import M
 from pcapi.core.logging import install_logging
 from pcapi.models.db import db
 from pcapi.serialization.utils import before_handler
@@ -111,7 +112,7 @@ def log_request_details(response: flask.wrappers.Response) -> flask.wrappers.Res
         "size": response.headers.get("Content-Length", type=int),
     }
 
-    logger.info("HTTP request at %s", request.path, extra=extra)
+    logger.info(M("HTTP request at %s", request.path, **extra))
 
     return response
 
