@@ -22,11 +22,7 @@ class OffererFactory(BaseFactory):
     name = factory.Sequence("Le Petit Rintintin Management {}".format)
     postalCode = "75000"
     city = "Paris"
-
-    @factory.iterator
-    def siren():  # pylint: disable=no-method-argument
-        for i in range(10 ** 9):
-            yield f"{i:09}"
+    siren = factory.Sequence(lambda n: f"{n:09}")
 
 
 class UserOffererFactory(BaseFactory):
@@ -50,20 +46,16 @@ class VenueFactory(BaseFactory):
         model = models.Venue
 
     name = factory.Sequence("Le Petit Rintintin {}".format)
-    departementCode = "75"
+    departementCode = factory.LazyAttribute(lambda o: None if o.isVirtual else "75")
     latitude = 48.87004
     longitude = 2.37850
     managingOfferer = factory.SubFactory(OffererFactory)
-    address = "1 boulevard Poissonnière"
-    postalCode = "75000"
-    city = "Paris"
+    address = factory.LazyAttribute(lambda o: None if o.isVirtual else "1 boulevard Poissonnière")
+    postalCode = factory.LazyAttribute(lambda o: None if o.isVirtual else "75000")
+    city = factory.LazyAttribute(lambda o: None if o.isVirtual else "Paris")
     publicName = factory.SelfAttribute("name")
-
-    # FIXME: should depend on self.offerer.siret
-    @factory.iterator
-    def siret():  # pylint: disable=no-method-argument
-        for i in range(10 ** 14):
-            yield f"{i:014}"
+    siret = factory.LazyAttributeSequence(lambda o, n: "%s%s" % (o.managingOfferer.siren, f"{n:05}"))
+    isVirtual = False
 
 
 class VirtualVenueFactory(VenueFactory):
@@ -87,6 +79,13 @@ class VenueTypeFactory(BaseFactory):
         model = models.VenueType
 
     label = "Librairie"
+
+
+class VenueLabelFactory(BaseFactory):
+    class Meta:
+        model = models.VenueLabelSQLEntity
+
+    label = "Cinéma d'art et d'essai"
 
 
 class ProductFactory(BaseFactory):

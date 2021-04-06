@@ -1,10 +1,13 @@
 from datetime import datetime
 from typing import Optional
+from typing import Union
 
 from pydantic import BaseModel
 
 from pcapi.domain.venue.venue_with_offerer_name.venue_with_offerer_name import VenueWithOffererName
+from pcapi.serialization.utils import dehumanize_field
 from pcapi.serialization.utils import humanize_field
+from pcapi.serialization.utils import to_camel
 from pcapi.utils.date import format_into_utc_date
 from pcapi.utils.human_ids import humanize
 
@@ -93,3 +96,30 @@ class GetVenueResponseModel(BaseModel):
     class Config:
         orm_mode = True
         json_encoders = {datetime: format_into_utc_date}
+
+
+class EditVenueBodyModel(BaseModel):
+    name: Optional[str]
+    siret: Optional[str]
+    departementCode: Optional[str]
+    latitude: Optional[Union[float, str]]
+    longitude: Optional[Union[float, str]]
+    venueProviderIds: Optional[List[str]]
+    managingOffererId: Optional[int]
+    bookingEmail: Optional[str]
+    postalCode: Optional[str]
+    city: Optional[str]
+    publicName: Optional[str]
+    isVirtual: Optional[bool]
+    isPermanent: Optional[bool]
+    comment: Optional[str]
+    venueTypeId: Optional[int]
+    venueLabelId: Optional[int]
+
+    _dehumanize_venue_label_id = dehumanize_field("venueLabelId")
+    _dehumanize_managing_offerer_id = dehumanize_field("managingOffererId")
+    _dehumanize_venue_type_id = dehumanize_field("venueTypeId")
+
+    class Config:
+        alias_generator = to_camel
+        extra = "forbid"
