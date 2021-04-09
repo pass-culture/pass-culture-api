@@ -10,6 +10,7 @@ import pytest
 
 from pcapi.core.bookings.factories import BookingFactory
 import pcapi.core.mails.testing as mails_testing
+from pcapi.core.testing import override_features
 from pcapi.core.users import factories as users_factories
 from pcapi.core.users.models import User
 from pcapi.core.users.models import VOID_PUBLIC_NAME
@@ -146,6 +147,11 @@ class AccountTest:
         assert response.json["pseudo"] is None
         assert not response.json["isBeneficiary"]
 
+
+class AccountCreationTest:
+    identifier = "email@example.com"
+
+    @override_features(WHOLE_FRANCE_OPENING=True)
     @patch("pcapi.connectors.api_recaptcha.check_recaptcha_token_is_valid")
     def test_account_creation(self, mocked_check_recaptcha_token_is_valid, app):
         test_client = TestClient(app.test_client())
@@ -185,6 +191,7 @@ class AccountTest:
             }
         ]
 
+    @override_features(WHOLE_FRANCE_OPENING=True)
     @patch("pcapi.connectors.api_recaptcha.check_recaptcha_token_is_valid")
     def test_account_creation_with_existing_email_sends_email(self, mocked_check_recaptcha_token_is_valid, app):
         test_client = TestClient(app.test_client())
@@ -206,6 +213,7 @@ class AccountTest:
         assert mails_testing.outbox[0].sent_data["MJ-TemplateID"] == 1838526
         assert push_testing.requests == []
 
+    @override_features(WHOLE_FRANCE_OPENING=True)
     @patch("pcapi.connectors.api_recaptcha.check_recaptcha_token_is_valid")
     def test_too_young_account_creation(self, mocked_check_recaptcha_token_is_valid, app):
         test_client = TestClient(app.test_client())
@@ -222,6 +230,88 @@ class AccountTest:
         response = test_client.post("/native/v1/account", json=data)
         assert response.status_code == 400
         assert push_testing.requests == []
+
+
+class AccountCreationBeforeGrandOpeningTest:
+    @override_features(WHOLE_FRANCE_OPENING=False)
+    @patch("pcapi.connectors.api_recaptcha.check_recaptcha_token_is_valid")
+    def test_account_creation(self, mocked_check_recaptcha_token_is_valid, app):
+        test_client = TestClient(app.test_client())
+        assert User.query.first() is None
+        data = {
+            "email": "John.doe@example.com",
+            "password": "Aazflrifaoi6@",
+            "birthdate": "1960-12-31",
+            "notifications": True,
+            "token": "gnagna",
+            "marketingEmailSubscription": True,
+            "postalCode": "93000",
+        }
+
+        response = test_client.post("/native/v1/account", json=data)
+        assert response.status_code == 204, response.json
+
+        user = User.query.first()
+        assert user is not None
+        assert user.email == "john.doe@example.com"
+        assert user.get_notification_subscriptions().marketing_email
+        assert user.isEmailValidated is False
+        mocked_check_recaptcha_token_is_valid.assert_called()
+        assert user.departementCode == "93"
+        assert user.postalCode == "93000"
+        assert len(mails_testing.outbox) == 1
+        assert mails_testing.outbox[0].sent_data["Mj-TemplateID"] == 2015423
+        assert push_testing.requests == [
+            {
+                "attribute_values": {
+                    "date(u.date_created)": user.dateCreated.strftime("%Y-%m-%dT%H:%M:%S"),
+                    "date(u.date_of_birth)": "1960-12-31T00:00:00",
+                    "date(u.deposit_expiration_date)": None,
+                    "u.credit": 0,
+                    "u.is_beneficiary": False,
+                    "u.marketing_push_subscription": True,
+                    "u.postal_code": "93000",
+                },
+                "user_id": user.id,
+            }
+        ]
+
+    @override_features(WHOLE_FRANCE_OPENING=False)
+    @patch("pcapi.connectors.api_recaptcha.check_recaptcha_token_is_valid")
+    def test_account_creation_with_empty_postal_code(self, mocked_check_recaptcha_token_is_valid, app):
+        test_client = TestClient(app.test_client())
+        assert User.query.first() is None
+        data = {
+            "email": "John.doe@example.com",
+            "password": "Aazflrifaoi6@",
+            "birthdate": "1960-12-31",
+            "notifications": True,
+            "token": "gnagna",
+            "marketingEmailSubscription": True,
+            "postalCode": "",
+        }
+
+        response = test_client.post("/native/v1/account", json=data)
+        assert response.status_code == 400
+        assert response.json == {"postalCode": ["Ce champ est obligatoire"]}
+
+    @override_features(WHOLE_FRANCE_OPENING=False)
+    @patch("pcapi.connectors.api_recaptcha.check_recaptcha_token_is_valid")
+    def test_account_creation_without_postal_code(self, mocked_check_recaptcha_token_is_valid, app):
+        test_client = TestClient(app.test_client())
+        assert User.query.first() is None
+        data = {
+            "email": "John.doe@example.com",
+            "password": "Aazflrifaoi6@",
+            "birthdate": "1960-12-31",
+            "notifications": True,
+            "token": "gnagna",
+            "marketingEmailSubscription": True,
+        }
+
+        response = test_client.post("/native/v1/account", json=data)
+        assert response.status_code == 400
+        assert response.json == {"postalCode": ["Ce champ est obligatoire"]}
 
 
 class UserProfileUpdateTest:
