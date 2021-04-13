@@ -5,7 +5,7 @@ from decimal import Decimal
 from freezegun import freeze_time
 import pytest
 
-from pcapi.algolia.infrastructure.builder import build_object
+from pcapi.algolia.infrastructure.algolia.builder import build_object
 from pcapi.model_creators.generic_creators import create_criterion
 from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_stock
