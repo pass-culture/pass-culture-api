@@ -5,7 +5,7 @@ from decimal import Decimal
 from freezegun import freeze_time
 import pytest
 
-from pcapi.algolia.infrastructure.algolia.builder import build_object
+from pcapi.algolia.infrastructure.algolia.builder_algolia import build_algolia_object
 from pcapi.model_creators.generic_creators import create_criterion
 from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_stock
@@ -85,7 +85,7 @@ class BuildObjectTest:
         humanized_product_id = humanize(offer.product.id)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         assert result == {
@@ -146,7 +146,7 @@ class BuildObjectTest:
         repository.save(stock)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         assert result["offer"]["author"] == "MEFA"
@@ -162,7 +162,7 @@ class BuildObjectTest:
         repository.save(stock)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         assert result["offer"]["stageDirector"] == "MEFA"
@@ -178,7 +178,7 @@ class BuildObjectTest:
         repository.save(stock)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         assert result["offer"]["visa"] == "123456789"
@@ -194,7 +194,7 @@ class BuildObjectTest:
         repository.save(stock)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         assert result["offer"]["isbn"] == "123456789"
@@ -210,7 +210,7 @@ class BuildObjectTest:
         repository.save(stock)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         assert result["offer"]["speaker"] == "MEFA"
@@ -226,7 +226,7 @@ class BuildObjectTest:
         repository.save(stock)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         assert result["offer"]["performer"] == "MEFA"
@@ -242,7 +242,7 @@ class BuildObjectTest:
         repository.save(stock)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         assert result["offer"]["showType"] == "dance"
@@ -258,7 +258,7 @@ class BuildObjectTest:
         repository.save(stock)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         assert result["offer"]["showSubType"] == "urbaine"
@@ -274,7 +274,7 @@ class BuildObjectTest:
         repository.save(stock)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         assert result["offer"]["musicType"] == "jazz"
@@ -290,7 +290,7 @@ class BuildObjectTest:
         repository.save(stock)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         assert result["offer"]["musicSubType"] == "fusion"
@@ -307,7 +307,7 @@ class BuildObjectTest:
         repository.save(stock1, stock2, stock3)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         assert result["offer"]["prices"] == [Decimal("5.00"), Decimal("7.00"), Decimal("10.30")]
@@ -322,7 +322,7 @@ class BuildObjectTest:
         repository.save(stock)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         assert result["_geoloc"]["lat"] == 47.158459
@@ -346,7 +346,7 @@ class BuildObjectTest:
         repository.save(stock1, stock2, stock3, stock4)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         assert result["offer"]["dates"] == [1603011600.0, 1603098000.0, 1603184400.0, 1603616400.0]
@@ -362,7 +362,7 @@ class BuildObjectTest:
         repository.save(stock1, stock2)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         assert result["offer"]["dates"] == []
@@ -383,7 +383,7 @@ class BuildObjectTest:
         repository.save(stock1, stock2, stock3)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         eighteen_thirty_in_seconds = 66600
@@ -400,7 +400,7 @@ class BuildObjectTest:
         repository.save(stock)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         assert result["_geoloc"]["lat"] == 47.158459
@@ -445,7 +445,7 @@ class BuildObjectTest:
         humanized_product_id = humanize(offer.product.id)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         assert result == {
@@ -535,7 +535,7 @@ class BuildObjectTest:
         humanized_product_id = humanize(offer.product.id)
 
         # When
-        result = build_object(offer)
+        result = build_algolia_object(offer)
 
         # Then
         result["offer"]["tags"] = set(result["offer"]["tags"])

@@ -7,8 +7,8 @@ from redis import Redis
 from redis.client import Pipeline
 
 from pcapi.algolia.domain.rules_engine import is_eligible_for_reindexing
-from pcapi.algolia.infrastructure.algolia.builder import build_object
 from pcapi.algolia.infrastructure.api import add_objects
+from pcapi.algolia.infrastructure.api import build_object
 from pcapi.algolia.infrastructure.api import delete_objects
 from pcapi.connectors.redis import add_offer_ids_in_error
 from pcapi.connectors.redis import add_to_indexed_offers

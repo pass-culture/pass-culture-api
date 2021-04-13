@@ -10,7 +10,7 @@ DEFAULT_LONGITUDE_FOR_NUMERIC_OFFER = 2.409289
 DEFAULT_LATITUDE_FOR_NUMERIC_OFFER = 47.158459
 
 
-def build_object(offer: Offer) -> Dict:
+def build_algolia_object(offer: Offer) -> Dict:
     venue = offer.venue
     offerer = venue.managingOfferer
     humanize_offer_id = humanize(offer.id)
