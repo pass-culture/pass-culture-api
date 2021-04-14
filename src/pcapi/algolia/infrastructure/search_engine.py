@@ -10,7 +10,7 @@ class SearchEngine(ABC):
         pass
 
     @abstractmethod
-    def delete_objects(self, objects: List[Dict]) -> None:
+    def delete_objects(self, object_ids: List[int]) -> None:
         pass
 
     def clear_index(self) -> None:
