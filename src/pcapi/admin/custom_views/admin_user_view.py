@@ -5,6 +5,7 @@ from sqlalchemy.sql.functions import func
 from wtforms import Form
 from wtforms.validators import DataRequired
 from wtforms.validators import Length
+from wtforms.validators import ValidationError
 
 from pcapi.admin.base_configuration import BaseAdminView
 from pcapi.core.users import api as users_api
@@ -14,12 +15,31 @@ from pcapi.utils.mailing import build_pc_webapp_reset_password_link
 
 
 class AdminUserView(BaseAdminView):
-    can_edit = False
     can_delete = False
 
     @property
     def can_create(self) -> bool:
         return self.check_super_admins()
+
+    @property
+    def can_edit(self) -> bool:
+        return self.check_super_admins()
+
+    def create_form(self):
+        form = super().create_form()
+        # When creating a user from the admin view, we force isAdmin field to True
+        form.isAdmin.data = True
+        form.isAdmin.render_kw = {"disabled": True}
+        return form
+
+    # on_form_prefill() is executed on object edition only
+    def on_form_prefill(self, form, id):
+        # Make some fields readonly, only when modifying a user
+        form.email.render_kw = {"readonly": True}
+        form.firstName.render_kw = {"readonly": True}
+        form.lastName.render_kw = {"readonly": True}
+        form.departementCode.render_kw = {"readonly": True}
+        form.postalCode.render_kw = {"readonly": True}
 
     column_list = [
         "id",
@@ -42,9 +62,11 @@ class AdminUserView(BaseAdminView):
     column_searchable_list = ["id", "publicName", "email", "firstName", "lastName"]
     column_filters = ["email", "isEmailValidated"]
 
-    form_columns = ["email", "firstName", "lastName", "departementCode", "postalCode"]
-
+    form_columns = ["isAdmin", "email", "firstName", "lastName", "departementCode", "postalCode"]
     form_args = dict(
+        isAdmin=dict(
+            label="Admin",
+        ),
         departementCode=dict(
             label="Département",
             validators=[DataRequired(), Length(min=2, max=3, message="Mauvais format de département")],
@@ -69,8 +91,14 @@ class AdminUserView(BaseAdminView):
         # This is to prevent a circulary import dependency
         from pcapi.core.users.api import fulfill_account_password
 
+        # Forbid making a user an admin when modifying a user
+        if not is_created:
+            previous_isAdmin = form.isAdmin.object_data
+            new_isAdmin = form.isAdmin.data
+            if previous_isAdmin == False and new_isAdmin == True:
+                raise ValidationError("Once disabled, the admin field cannot be enabled.")
+
         model.publicName = f"{model.firstName} {model.lastName}"
-        model.isAdmin = True
         model.hasSeenProTutorials = True
         model.needsToFillCulturalSurvey = False
 
