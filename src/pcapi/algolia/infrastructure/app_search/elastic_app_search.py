@@ -17,7 +17,8 @@ class ElasticAppSearch(SearchEngine):
 
     def add_objects(self, objects: List[Dict]) -> None:
         # TODO (asaunier, 2021-04-13): We should handle query errors
-        self.client.index_documents(engine_name=ENGINE_NAME, documents=objects)
+        client = self.client.index_documents(engine_name=ENGINE_NAME, documents=objects)
+        print(client)
 
     def delete_objects(self, object_ids: List[int]) -> None:
         self.client.delete_documents(engine_name=ENGINE_NAME, document_ids=object_ids)

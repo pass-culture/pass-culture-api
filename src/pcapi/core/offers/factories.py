@@ -9,7 +9,6 @@ from pcapi.core.testing import BaseFactory
 import pcapi.core.users.factories as users_factories
 from pcapi.models import offer_type
 
-
 ALL_TYPES = {
     name for name in offer_type.ALL_OFFER_TYPES_DICT if name not in ("ThingType.ACTIVATION", "EventType.ACTIVATION")
 }  # {"EventType.Musique", "ThingType.Musique"...}
