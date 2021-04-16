@@ -107,7 +107,10 @@ else:
     raise RuntimeError("Unknown environment")
 PUSH_NOTIFICATION_BACKEND = os.environ.get("PUSH_NOTIFICATION_BACKEND", _default_push_notification_backend)
 
-# ALGOLIA
+# SEARCH ENGINE
+APPSEARCH_API_KEY = os.environ.get("APPSEARCH_API_KEY")
+APPSEARCH_SERVER_URL = os.environ.get("APPSEARCH_SERVER_URL")
+IS_ALGOLIA_REPLACED_BY_APPSEARCH = os.environ.get("IS_ALGOLIA_REPLACED_BY_APPSEARCH")
 ALGOLIA_API_KEY = os.environ.get("ALGOLIA_API_KEY")
 ALGOLIA_APPLICATION_ID = os.environ.get("ALGOLIA_APPLICATION_ID")
 ALGOLIA_INDEX_NAME = os.environ.get("ALGOLIA_INDEX_NAME")

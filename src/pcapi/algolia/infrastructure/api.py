@@ -1,24 +1,36 @@
 from typing import Dict
 from typing import List
 
-from algoliasearch.search_client import SearchClient
-from algoliasearch.search_index import SearchIndex
+from pcapi.algolia.infrastructure.algolia.algolia import AlgoliaSearch
+from pcapi.algolia.infrastructure.algolia.builder_algolia import build_algolia_object
+from pcapi.algolia.infrastructure.app_search.builder_appsearch import build_appsearch_object
+from pcapi.algolia.infrastructure.app_search.elastic_app_search import ElasticAppSearch
+from pcapi.algolia.infrastructure.search_engine import SearchEngine
+from pcapi.core.offers.models import Offer
+from pcapi.settings import IS_ALGOLIA_REPLACED_BY_APPSEARCH
 
-from pcapi import settings
+
+def _get_client() -> SearchEngine:
+    if IS_ALGOLIA_REPLACED_BY_APPSEARCH:
+        return ElasticAppSearch()
+
+    return AlgoliaSearch()
 
 
-def init_connection() -> SearchIndex:
-    client = SearchClient.create(settings.ALGOLIA_APPLICATION_ID, settings.ALGOLIA_API_KEY)
-    return client.init_index(settings.ALGOLIA_INDEX_NAME)
+def build_object(offer: Offer) -> Dict:
+    if IS_ALGOLIA_REPLACED_BY_APPSEARCH:
+        return build_appsearch_object(offer)
+
+    return build_algolia_object(offer)
 
 
 def add_objects(objects: List[Dict]) -> None:
-    init_connection().save_objects(objects)
+    _get_client().add_objects(objects)
 
 
 def delete_objects(object_ids: List[int]) -> None:
-    init_connection().delete_objects(object_ids)
+    _get_client().delete_objects(object_ids)
 
 
 def clear_index() -> None:
-    init_connection().clear_objects()
+    _get_client().clear_index()
