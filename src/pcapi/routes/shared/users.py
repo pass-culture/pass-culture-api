@@ -1,5 +1,4 @@
 from flask import jsonify
-from flask_login import current_user
 from flask_login import login_required
 from flask_login import login_user
 from flask_login import logout_user
@@ -19,13 +18,13 @@ from pcapi.utils.login_manager import discard_session
 from pcapi.utils.login_manager import stamp_session
 from pcapi.utils.rate_limiting import email_rate_limiter
 from pcapi.utils.rate_limiting import ip_rate_limiter
+from pcapi.utils.rest import authenticated_user
 
 
 # @debt api-migration
 @private_api.route("/users/current", methods=["GET"])
-@login_required
-def get_profile():
-    user = current_user._get_current_object()  # get underlying User object from proxy
+@authenticated_user()
+def get_profile(user):
     return jsonify(as_dict(user, includes=USER_INCLUDES)), 200
 
 

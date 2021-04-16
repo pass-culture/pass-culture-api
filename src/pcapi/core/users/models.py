@@ -111,6 +111,13 @@ class NotificationSubscriptions:
     marketing_email: bool = True
 
 
+class UserRole(enum.Enum):
+    ADMIN = "admin"
+    BENEFICIARY = "beneficiary"
+    PRO = "pro"
+    SUPER_ADMIN = "super-admin"
+
+
 class User(PcObject, Model, NeedsValidationMixin, VersionedMixin):
     __tablename__ = "user"
 
@@ -333,6 +340,17 @@ class User(PcObject, Model, NeedsValidationMixin, VersionedMixin):
 
     def get_notification_subscriptions(self) -> NotificationSubscriptions:
         return NotificationSubscriptions(**self.notificationSubscriptions or {})
+
+    def has_role(self, role: UserRole) -> bool:
+        if role == UserRole.ADMIN:
+            return self.isAdmin
+        if role == UserRole.BENEFICIARY:
+            return self.isBeneficiary
+        if role == UserRole.PRO:
+            return bool(self.UserOfferers)
+        if role == UserRole.SUPER_ADMIN:
+            return self.isAdmin and self.email in settings.SUPER_ADMIN_EMAIL_ADDRESSES
+        return True
 
 
 class ExpenseDomain(enum.Enum):
