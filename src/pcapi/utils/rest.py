@@ -13,6 +13,22 @@ from pcapi.models.api_errors import ApiErrors
 from pcapi.utils.human_ids import dehumanize
 
 
+def authenticated_user(roles_whitelist=None):  # type: ignore
+    def decorate(route_function):
+        @wraps(route_function)
+        def retrieve_authenticated_user(*args, **kwargs):  # type: ignore
+            if not current_user.is_authenticated:
+                return "API key or login required", 401
+            if roles_whitelist and not any(current_user.has_role(role) for role in roles_whitelist):
+                return "Forbidden", 403
+
+            return route_function(current_user._get_current_object(), *args, **kwargs)
+
+        return retrieve_authenticated_user
+
+    return decorate
+
+
 def login_or_api_key_required(f):
     @wraps(f)
     def wrapper(*args, **kwds):

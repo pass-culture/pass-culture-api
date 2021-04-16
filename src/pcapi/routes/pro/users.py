@@ -1,14 +1,15 @@
-from flask import abort
 from flask_login import current_user
 
 from pcapi.core.users import api as users_api
 from pcapi.core.users.models import User
+from pcapi.core.users.models import UserRole
 from pcapi.flask_app import private_api
 from pcapi.models import ApiErrors
 from pcapi.routes.serialization.users import PatchProUserBodyModel
 from pcapi.routes.serialization.users import PatchProUserResponseModel
 from pcapi.serialization.decorator import spectree_serialize
 from pcapi.utils.human_ids import dehumanize
+from pcapi.utils.rest import authenticated_user
 from pcapi.utils.rest import load_or_404
 from pcapi.utils.rest import login_or_api_key_required
 
@@ -23,14 +24,9 @@ def patch_user_tuto_seen(user_id: str) -> None:
 
 
 @private_api.route("/users/current", methods=["PATCH"])
-@login_or_api_key_required
+@authenticated_user(roles_whitelist=[UserRole.PRO, UserRole.ADMIN])
 @spectree_serialize(response_model=PatchProUserResponseModel)  # type: ignore
-def patch_profile(body: PatchProUserBodyModel) -> PatchProUserResponseModel:
-    user = current_user._get_current_object()  # get underlying User object from proxy
-    # This route should ony be used by "pro" users because it allows
-    # to update different infos from `/beneficiaries/current`.
-    if not user.UserOfferers and not user.isAdmin:
-        abort(400)
+def patch_profile(user, body: PatchProUserBodyModel) -> PatchProUserResponseModel:
     attributes = body.dict()
     # FIXME (dbaty, 2021-04-07): remove this hack once when we remove
     # PRO_HOMEPAGE (since the new profile update form does not allow

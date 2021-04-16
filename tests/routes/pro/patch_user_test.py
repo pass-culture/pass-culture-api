@@ -39,7 +39,7 @@ def test_reject_beneficiary(app):
     client = TestClient(app.test_client()).with_auth(email=beneficiary.email)
     response = client.patch("/users/current", json=data)
 
-    assert response.status_code == 400
+    assert response.status_code == 403
     beneficiary = User.query.get(beneficiary.id)
     assert beneficiary.email == initial["email"]
     assert beneficiary.publicName == initial["publicName"]
