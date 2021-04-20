@@ -16,10 +16,10 @@ def create_beneficiary_from_application(application_detail: dict, user: Optional
         beneficiary = User()
         beneficiary.password = random_hashed_password()
         beneficiary.email = application_detail["email"]
-        beneficiary.dateOfBirth = application_detail["birth_date"]
     else:
         beneficiary = user
 
+    beneficiary.dateOfBirth = application_detail["birth_date"]
     beneficiary.lastName = application_detail["last_name"]
     beneficiary.firstName = application_detail["first_name"]
     beneficiary.publicName = "%s %s" % (application_detail["first_name"], application_detail["last_name"])
