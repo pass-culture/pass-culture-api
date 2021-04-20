@@ -6,6 +6,7 @@ from pcapi.core.users.models import User
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription import BeneficiaryPreSubscription
 from pcapi.models import BeneficiaryImport
 from pcapi.models import ImportStatus
+from pcapi.repository import repository
 
 
 def to_model(beneficiary_pre_subscription: BeneficiaryPreSubscription, user: Optional[User] = None) -> User:
@@ -29,6 +30,8 @@ def to_model(beneficiary_pre_subscription: BeneficiaryPreSubscription, user: Opt
     beneficiary.phoneNumber = beneficiary_pre_subscription.phone_number
     beneficiary.postalCode = beneficiary_pre_subscription.postal_code
     beneficiary.publicName = beneficiary_pre_subscription.public_name
+
+    repository.save(beneficiary)
 
     beneficiary = users_api.activate_beneficiary(beneficiary, beneficiary_pre_subscription.deposit_source)
     users_api.attach_beneficiary_import_details(beneficiary, beneficiary_pre_subscription)

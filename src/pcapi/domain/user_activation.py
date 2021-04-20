@@ -1,9 +1,10 @@
 from typing import Optional
 
-from pcapi.core.payments import api as payments_api
+from pcapi.core.users import api as users_api
 from pcapi.core.users.models import User
 from pcapi.domain.password import random_hashed_password
 from pcapi.models.beneficiary_import_status import ImportStatus
+from pcapi.repository import repository
 
 
 IMPORT_STATUS_MODIFICATION_RULE = (
@@ -31,10 +32,10 @@ def create_beneficiary_from_application(application_detail: dict, user: Optional
     beneficiary.isAdmin = False
     beneficiary.hasSeenTutorials = False
 
-    beneficiary.isBeneficiary = True
+    repository.save(beneficiary)
+
     application_id = application_detail["application_id"]
-    deposit = payments_api.create_deposit(beneficiary, f"démarches simplifiées dossier [{application_id}]")
-    beneficiary.deposits = [deposit]
+    beneficiary = users_api.activate_beneficiary(beneficiary, f"démarches simplifiées dossier [{application_id}]")
 
     return beneficiary
 

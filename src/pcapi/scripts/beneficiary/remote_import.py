@@ -17,7 +17,6 @@ from pcapi.domain.user_emails import send_activation_email
 from pcapi.models import ApiErrors
 from pcapi.models import ImportStatus
 from pcapi.models.beneficiary_import import BeneficiaryImportSources
-from pcapi.repository import repository
 from pcapi.repository.beneficiary_import_queries import find_applications_ids_to_retry
 from pcapi.repository.beneficiary_import_queries import is_already_imported
 from pcapi.repository.beneficiary_import_queries import save_beneficiary_import_with_status
@@ -160,9 +159,8 @@ def _process_creation(
     procedure_id: int,
     user: Optional[User] = None,
 ) -> None:
-    new_beneficiary = create_beneficiary_from_application(information, user=user)
     try:
-        repository.save(new_beneficiary)
+        new_beneficiary = create_beneficiary_from_application(information, user=user)
     except ApiErrors as api_errors:
         logger.warning(
             "[BATCH][REMOTE IMPORT BENEFICIARIES] Could not save application %s, because of error: %s - Procedure %s",

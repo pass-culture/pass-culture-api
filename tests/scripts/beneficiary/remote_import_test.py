@@ -12,7 +12,6 @@ import pcapi.core.mails.testing as mails_testing
 from pcapi.core.users import api as users_api
 from pcapi.core.users.models import User
 from pcapi.model_creators.generic_creators import create_user
-from pcapi.models import ApiErrors
 from pcapi.models import BeneficiaryImport
 from pcapi.models import ImportStatus
 import pcapi.notifications.push.testing as push_testing
@@ -323,12 +322,9 @@ class ProcessBeneficiaryApplicationTest:
         assert beneficiary_import.applicationId == 123
 
     @patch("pcapi.scripts.beneficiary.remote_import.create_beneficiary_from_application")
-    @patch("pcapi.scripts.beneficiary.remote_import.repository")
     @patch("pcapi.scripts.beneficiary.remote_import.send_activation_email")
     @pytest.mark.usefixtures("db_session")
-    def test_account_activation_email_is_sent(
-        self, send_activation_email, mock_repository, create_beneficiary_from_application, app
-    ):
+    def test_account_activation_email_is_sent(self, send_activation_email, create_beneficiary_from_application, app):
         # given
         information = {
             "department": "93",
@@ -353,13 +349,9 @@ class ProcessBeneficiaryApplicationTest:
         # then
         send_activation_email.assert_called()
 
-    @patch("pcapi.scripts.beneficiary.remote_import.create_beneficiary_from_application")
-    @patch("pcapi.scripts.beneficiary.remote_import.repository")
     @patch("pcapi.scripts.beneficiary.remote_import.send_activation_email")
     @pytest.mark.usefixtures("db_session")
-    def test_error_is_collected_if_beneficiary_could_not_be_saved(
-        self, send_activation_email, mock_repository, create_beneficiary_from_application, app
-    ):
+    def test_error_is_collected_if_beneficiary_could_not_be_saved(self, send_activation_email, app):
         # given
         information = {
             "department": "93",
@@ -368,13 +360,11 @@ class ProcessBeneficiaryApplicationTest:
             "birth_date": datetime(2000, 5, 1),
             "email": "jane.doe@example.com",
             "phone": "0612345678",
-            "postal_code": "93130",
+            "postal_code": "baaaaad value",
             "application_id": 123,
             "civility": "Mme",
             "activity": "Étudiant",
         }
-        create_beneficiary_from_application.side_effect = [User()]
-        mock_repository.save.side_effect = [ApiErrors({"postalCode": ["baaaaad value"]})]
         new_beneficiaries = []
         error_messages = []
 
@@ -386,13 +376,12 @@ class ProcessBeneficiaryApplicationTest:
         # then
         send_activation_email.assert_not_called()
         assert len(push_testing.requests) == 0
-        assert error_messages == ['{\n  "postalCode": [\n    "baaaaad value"\n  ]\n}']
+        assert error_messages == ['{\n  "postalCode": [\n    "Vous devez saisir moins de 5 caract\\u00e8res"\n  ]\n}']
         assert not new_beneficiaries
 
-    @patch("pcapi.scripts.beneficiary.remote_import.repository")
     @patch("pcapi.scripts.beneficiary.remote_import.send_activation_email")
     @pytest.mark.usefixtures("db_session")
-    def test_beneficiary_is_not_created_if_duplicates_are_found(self, send_activation_email, mock_repository, app):
+    def test_beneficiary_is_not_created_if_duplicates_are_found(self, send_activation_email, app):
         # given
         information = {
             "department": "93",
@@ -417,7 +406,7 @@ class ProcessBeneficiaryApplicationTest:
         # then
         send_activation_email.assert_not_called()
         assert len(push_testing.requests) == 0
-        mock_repository.save.assert_not_called()
+        assert User.query.count() == 1  # no other user than the one we created initially
         beneficiary_import = BeneficiaryImport.query.filter_by(applicationId=123).first()
         assert beneficiary_import.currentStatus == ImportStatus.DUPLICATE
 
