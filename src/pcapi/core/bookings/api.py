@@ -28,6 +28,7 @@ from pcapi.utils.mailing import MailServiceException
 from pcapi.workers.push_notification_job import send_cancel_booking_notification
 
 from . import validation
+from .validation import check_activation_is_bookable
 
 
 logger = logging.getLogger(__name__)
@@ -81,6 +82,14 @@ def book_offer(
             booking.dateUsed = datetime.datetime.utcnow()
 
         stock.dnBookedQuantity += booking.quantity
+
+        if feature_queries.is_active(FeatureToggle.ENABLE_ACTIVATION_CODES) and stock.activationCodes:
+            validation.check_has_available_activation_code(stock.activationCodes)
+            booking.activationCode = next(
+                activationCode
+                for activationCode in stock.activationCodes
+                if check_activation_is_bookable(activationCode)
+            )
 
         repository.save(booking, stock)
 
