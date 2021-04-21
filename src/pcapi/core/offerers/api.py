@@ -1,5 +1,3 @@
-from typing import List
-
 from flask import current_app as app
 
 from pcapi.connectors import redis
@@ -35,17 +33,12 @@ def update_venue(
     venue: Venue,
     name: str = UNCHANGED,
     siret: str = UNCHANGED,
-    departementCode: str = UNCHANGED,
     latitude: float = UNCHANGED,
     longitude: float = UNCHANGED,
-    venueProviderIds: List[str] = UNCHANGED,
-    managingOffererId: int = UNCHANGED,
     bookingEmail: str = UNCHANGED,
     postalCode: str = UNCHANGED,
     city: str = UNCHANGED,
     publicName: str = UNCHANGED,
-    isVirtual: bool = UNCHANGED,
-    isPermanent: bool = UNCHANGED,
     comment: str = UNCHANGED,
     venueTypeId: int = UNCHANGED,
     venueLabelId: int = UNCHANGED,
@@ -67,7 +60,7 @@ def update_venue(
     if not modifications:
         return venue
 
-    validation.check_valid_edition(modifications, venue)
+    validation.check_venue_edition(modifications, venue)
     venue.populate_from_dict(modifications)
 
     if not venue.isVirtual:
@@ -77,7 +70,7 @@ def update_venue(
 
     link_valid_venue_to_irises(venue)
 
-    indexing_modifications_fields = set.intersection(set(modifications.keys()), set(VENUE_ALGOLIA_INDEXED_FIELDS))
+    indexing_modifications_fields = set(modifications.keys()) & set(VENUE_ALGOLIA_INDEXED_FIELDS)
 
     if indexing_modifications_fields:
         if feature_queries.is_active(FeatureToggle.SYNCHRONIZE_ALGOLIA):

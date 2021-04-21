@@ -12,10 +12,43 @@ from tests.conftest import TestClient
 
 class Returns200:
     @pytest.mark.usefixtures("db_session")
+    def test_should_update_venue(self, app):
+        # given
+        user_offerer = offers_factories.UserOffererFactory()
+        venue = offers_factories.VenueFactory(
+            managingOfferer=user_offerer.offerer,
+        )
+
+        venue_type = offers_factories.VenueTypeFactory(label="Musée")
+        venue_label = offers_factories.VenueLabelFactory(label="CAC - Centre d'art contemporain d'intérêt national")
+
+        auth_request = TestClient(app.test_client()).with_auth(email=user_offerer.user.email)
+        venue_id = venue.id
+
+        # when
+        response = auth_request.patch(
+            "/venues/%s" % humanize(venue.id),
+            json={
+                "name": "Ma librairie",
+                "venueTypeId": humanize(venue_type.id),
+                "venueLabelId": humanize(venue_label.id),
+            },
+        )
+
+        # then
+        assert response.status_code == 200
+        venue = Venue.query.get(venue_id)
+        assert venue.name == "Ma librairie"
+        assert venue.venueTypeId == venue_type.id
+        json = response.json
+        assert json["isValidated"] is True
+        assert "validationToken" not in json
+        assert venue.isValidated
+
+    @pytest.mark.usefixtures("db_session")
     def when_there_is_no_siret_yet(self, app):
         # Given
         user_offerer = offers_factories.UserOffererFactory()
-        siret = user_offerer.offerer.siren + "11111"
         venue = offers_factories.VenueFactory(
             comment="Pas de siret",
             managingOfferer=user_offerer.offerer,
@@ -23,7 +56,7 @@ class Returns200:
         )
 
         venue_data = {
-            "siret": siret,
+            "siret": user_offerer.offerer.siren + "11111",
         }
 
         auth_request = TestClient(app.test_client()).with_auth(email=user_offerer.user.email)
@@ -33,7 +66,7 @@ class Returns200:
 
         # Then
         assert response.status_code == 200
-        assert response.json["siret"] == siret
+        assert response.json["siret"] == venue_data.siret
 
     @pytest.mark.usefixtures("db_session")
     @patch("pcapi.core.offerers.api.delete_venue_from_iris_venues")
@@ -130,7 +163,7 @@ class Returns200:
         mock_redis.assert_not_called()
 
     @pytest.mark.usefixtures("db_session")
-    def when_there_is_already_one_equal_siret(self, app):
+    def when_siret_does_not_change(self, app):
         # Given
         user_offerer = offers_factories.UserOffererFactory()
         venue = offers_factories.VenueFactory(
@@ -147,40 +180,6 @@ class Returns200:
         # Then
         assert response.status_code == 200
         assert response.json["siret"] == venue.siret
-
-    @pytest.mark.usefixtures("db_session")
-    def test_should_update_venue(self, app):
-        # given
-        user_offerer = offers_factories.UserOffererFactory()
-        venue = offers_factories.VenueFactory(
-            managingOfferer=user_offerer.offerer,
-        )
-
-        venue_type = offers_factories.VenueTypeFactory(label="Musée")
-        venue_label = offers_factories.VenueLabelFactory(label="CAC - Centre d'art contemporain d'intérêt national")
-
-        auth_request = TestClient(app.test_client()).with_auth(email=user_offerer.user.email)
-        venue_id = venue.id
-
-        # when
-        response = auth_request.patch(
-            "/venues/%s" % humanize(venue.id),
-            json={
-                "name": "Ma librairie",
-                "venueTypeId": humanize(venue_type.id),
-                "venueLabelId": humanize(venue_label.id),
-            },
-        )
-
-        # then
-        assert response.status_code == 200
-        venue = Venue.query.get(venue_id)
-        assert venue.name == "Ma librairie"
-        assert venue.venueTypeId == venue_type.id
-        json = response.json
-        assert json["isValidated"] is True
-        assert "validationToken" not in json
-        assert venue.isValidated
 
 
 class Returns400:
@@ -248,26 +247,3 @@ class Returns400:
         assert response.status_code == 400
         assert response.json["latitude"] == ["La latitude doit être comprise entre -90.0 et +90.0"]
         assert response.json["longitude"] == ["Format incorrect"]
-
-    @pytest.mark.usefixtures("db_session")
-    def when_trying_to_edit_managing_offerer(self, app):
-        # Given
-        offerer = offers_factories.OffererFactory(siren="123456789")
-        other_offerer = offers_factories.OffererFactory(siren="987654321")
-
-        user_offerer = offers_factories.UserOffererFactory(offerer=offerer)
-        venue = offers_factories.VenueFactory(
-            isVirtual=False,
-            managingOfferer=user_offerer.offerer,
-        )
-
-        auth_request = TestClient(app.test_client()).with_auth(email=user_offerer.user.email)
-
-        # When
-        response = auth_request.patch(
-            "/venues/%s" % humanize(venue.id), json={"managingOffererId": humanize(other_offerer.id)}
-        )
-
-        # Then
-        assert response.status_code == 400
-        assert response.json["managingOffererId"] == ["Vous ne pouvez pas changer la structure d'un lieu"]

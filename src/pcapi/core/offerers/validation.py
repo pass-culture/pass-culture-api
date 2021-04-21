@@ -30,7 +30,7 @@ def validate_coordinates(raw_latitude, raw_longitude):
         raise api_errors
 
 
-def check_valid_edition(modifications, venue):
+def check_venue_edition(modifications, venue):
     managing_offerer_id = modifications.get("managingOffererId")
     siret = modifications.get("siret")
     if managing_offerer_id:

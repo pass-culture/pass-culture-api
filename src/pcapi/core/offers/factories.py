@@ -54,7 +54,7 @@ class VenueFactory(BaseFactory):
     postalCode = factory.LazyAttribute(lambda o: None if o.isVirtual else "75000")
     city = factory.LazyAttribute(lambda o: None if o.isVirtual else "Paris")
     publicName = factory.SelfAttribute("name")
-    siret = factory.LazyAttributeSequence(lambda o, n: "%s%s" % (o.managingOfferer.siren, f"{n:05}"))
+    siret = factory.LazyAttributeSequence(lambda o, n: f"{o.managingOfferer.siren}{n:05}")
     isVirtual = False
 
 

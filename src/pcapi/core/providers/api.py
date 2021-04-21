@@ -12,12 +12,12 @@ from flask import current_app as app
 
 from pcapi.connectors import redis
 from pcapi.core.offerers.models import Venue
+from pcapi.core.offerers.validation import check_existing_venue
 from pcapi.core.offers.models import Offer
 from pcapi.core.offers.models import Stock
 from pcapi.core.offers.repository import get_offers_map_by_id_at_providers
 from pcapi.core.offers.repository import get_products_map_by_id_at_providers
 from pcapi.core.offers.repository import get_stocks_by_id_at_providers
-from pcapi.core.offerers.validation import check_existing_venue
 from pcapi.core.providers.models import Provider
 from pcapi.core.providers.models import VenueProvider
 from pcapi.core.providers.repository import get_provider_enabled_for_pro_by_id
@@ -36,7 +36,6 @@ from pcapi.routes.serialization.venue_provider_serialize import PostVenueProvide
 from pcapi.use_cases.connect_venue_to_allocine import connect_venue_to_allocine
 from pcapi.utils.human_ids import dehumanize
 from pcapi.validation.models.entity_validator import validate
-from pcapi.validation.routes.venues import check_existing_venue
 
 
 logger = logging.getLogger(__name__)

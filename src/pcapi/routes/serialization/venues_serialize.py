@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 from typing import Optional
 from typing import Union
 
@@ -12,7 +13,7 @@ from pcapi.utils.date import format_into_utc_date
 from pcapi.utils.human_ids import humanize
 
 
-def serialize_venues_with_offerer_name(venues: list[VenueWithOffererName]) -> list[dict]:
+def serialize_venues_with_offerer_name(venues: List[VenueWithOffererName]) -> List[dict]:
     return [serialize_venue_with_offerer_name(venue) for venue in venues]
 
 
@@ -42,7 +43,7 @@ class GetVenueManagingOffererResponseModel(BaseModel):
     dateCreated: datetime
     dateModifiedAtLastProvider: Optional[datetime]
     demarchesSimplifieesApplicationId: Optional[str]
-    fieldsUpdated: list[str]
+    fieldsUpdated: List[str]
     iban: Optional[str]
     id: str
     idAtProviders: Optional[str]
@@ -70,7 +71,7 @@ class GetVenueResponseModel(BaseModel):
     dateModifiedAtLastProvider: Optional[datetime]
     demarchesSimplifieesApplicationId: Optional[str]
     departementCode: Optional[str]
-    fieldsUpdated: list[str]
+    fieldsUpdated: List[str]
     iban: Optional[str]
     id: str
     idAtProviders: Optional[str]
@@ -101,17 +102,12 @@ class GetVenueResponseModel(BaseModel):
 class EditVenueBodyModel(BaseModel):
     name: Optional[str]
     siret: Optional[str]
-    departementCode: Optional[str]
     latitude: Optional[Union[float, str]]
     longitude: Optional[Union[float, str]]
-    venueProviderIds: Optional[List[str]]
-    managingOffererId: Optional[int]
     bookingEmail: Optional[str]
     postalCode: Optional[str]
     city: Optional[str]
     publicName: Optional[str]
-    isVirtual: Optional[bool]
-    isPermanent: Optional[bool]
     comment: Optional[str]
     venueTypeId: Optional[int]
     venueLabelId: Optional[int]
