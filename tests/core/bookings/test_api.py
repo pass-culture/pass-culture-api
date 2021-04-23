@@ -96,6 +96,7 @@ class BookOfferTest:
 
         data = push_testing.requests[0]
         assert data["attribute_values"]["u.credit"] == 49_000  # values in cents
+        assert data["attribute_values"]["u.lastBooking"] == booking.dateCreated
 
         assert booking.quantity == 1
         assert booking.amount == 10
@@ -128,6 +129,7 @@ class BookOfferTest:
 
         data = push_testing.requests[0]
         assert data["attribute_values"]["u.credit"] == 49_000  # values in cents
+        assert data["attribute_values"]["u.lastBooking"] == booking.dateCreated
 
         assert booking.isUsed
 
@@ -144,6 +146,7 @@ class BookOfferTest:
 
         data = push_testing.requests[0]
         assert data["attribute_values"]["u.credit"] == 49_000  # values in cents
+        assert data["attribute_values"]["u.lastBooking"] == booking.dateCreated
 
         two_days_after_booking = booking.dateCreated + timedelta(days=2)
         assert booking.quantity == 1

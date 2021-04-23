@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from rq.decorators import job
 
@@ -19,13 +20,16 @@ logger = logging.getLogger(__name__)
 @job(worker.default_queue, connection=worker.conn)
 @job_context
 @log_job
-def update_user_attributes_job(user_id: int) -> None:
+def update_user_attributes_job(user_id: int, **extra_data: Any) -> None:
     user = User.query.get(user_id)
     if not user:
         logger.error("No user with id=%s found to send push attributes updates requests", user_id)
         return
 
-    update_user_attributes(user.id, get_user_attributes(user))
+    attributes = get_user_attributes(user)
+    attributes.update(extra_data)
+
+    update_user_attributes(user.id, attributes)
 
 
 @job(worker.default_queue, connection=worker.conn)

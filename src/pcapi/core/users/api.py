@@ -35,6 +35,7 @@ from pcapi.domain.postal_code.postal_code import PostalCode
 from pcapi.emails.beneficiary_email_change import build_beneficiary_confirmation_email_change_data
 from pcapi.emails.beneficiary_email_change import build_beneficiary_information_email_change_data
 from pcapi.models import BeneficiaryImport
+from pcapi.models import Booking
 from pcapi.models import ImportStatus
 from pcapi.models.db import db
 from pcapi.models.user_offerer import UserOfferer
@@ -321,6 +322,10 @@ def _build_link_for_email_change(current_email: str, new_email: str) -> str:
     return (
         f"{settings.WEBAPP_URL}/changement-email?token={token}&expiration_timestamp={int(expiration_date.timestamp())}"
     )
+
+
+def get_last_booking_date(user: User) -> datetime:
+    return Booking.query.filter(Booking.userId == user.id).order_by(db.desc(Booking.dateCreated)).first().dateCreated
 
 
 def get_domains_credit(user: User) -> Optional[DomainsCredit]:

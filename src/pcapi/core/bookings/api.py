@@ -21,6 +21,7 @@ from pcapi.core.users.models import User
 from pcapi.domain import user_emails
 from pcapi.flask_app import db
 from pcapi.models.feature import FeatureToggle
+from pcapi.notifications.push.user_attributes_updates import get_user_booking_attributes
 from pcapi.repository import feature_queries
 from pcapi.repository import repository
 from pcapi.repository import transaction
@@ -111,7 +112,8 @@ def book_offer(
     if feature_queries.is_active(FeatureToggle.SYNCHRONIZE_ALGOLIA):
         redis.add_offer_id(client=app.redis_client, offer_id=stock.offerId)
 
-    update_user_attributes_job.delay(beneficiary.id)
+    last_booking_attributes = get_user_booking_attributes(beneficiary)
+    update_user_attributes_job.delay(beneficiary.id, **last_booking_attributes)
 
     return booking
 

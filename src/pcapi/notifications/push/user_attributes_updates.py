@@ -27,3 +27,9 @@ def get_user_attributes(user: User) -> dict:
         if user.deposit_expiration_date
         else None,
     }
+
+
+def get_user_booking_attributes(user: User) -> dict:
+    from pcapi.core.users.api import get_last_booking_date
+
+    return {"u.lastBooking": get_last_booking_date(user)}
