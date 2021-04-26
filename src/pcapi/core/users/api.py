@@ -325,7 +325,8 @@ def _build_link_for_email_change(current_email: str, new_email: str) -> str:
 
 
 def get_last_booking_date(user: User) -> datetime:
-    return Booking.query.filter(Booking.userId == user.id).order_by(db.desc(Booking.dateCreated)).first().dateCreated
+    booking = Booking.query.filter(Booking.userId == user.id).order_by(db.desc(Booking.dateCreated)).first()
+    return booking.dateCreated if booking else None
 
 
 def get_domains_credit(user: User) -> Optional[DomainsCredit]:
