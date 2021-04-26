@@ -30,13 +30,16 @@ def get_user_attributes(user: User) -> dict:
 
 
 def get_user_booking_attributes(user: User) -> dict:
+    from pcapi.core.users.api import get_booking_categories
     from pcapi.core.users.api import get_domains_credit
     from pcapi.core.users.api import get_last_booking_date
 
     credit = get_domains_credit(user)
     last_booking_date = get_last_booking_date(user)
+    booking_categories = get_booking_categories(user)
 
     return {
         "date(u.lastBookingDate)": last_booking_date.strftime(BATCH_DATETIME_FORMAT) if last_booking_date else None,
         "u.credit": int(credit.all.remaining * 100) if credit else 0,
+        "ut.bookingCategories": booking_categories if booking_categories else [],
     }

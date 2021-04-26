@@ -11,6 +11,7 @@ from jwt import DecodeError
 from jwt import ExpiredSignatureError
 from jwt import InvalidSignatureError
 from jwt import InvalidTokenError
+from sqlalchemy.orm import load_only
 
 # TODO (viconnex): fix circular import of pcapi/models/__init__.py
 from pcapi import models  # pylint: disable=unused-import
@@ -37,6 +38,8 @@ from pcapi.emails.beneficiary_email_change import build_beneficiary_information_
 from pcapi.models import BeneficiaryImport
 from pcapi.models import Booking
 from pcapi.models import ImportStatus
+from pcapi.models import Offer
+from pcapi.models import Stock
 from pcapi.models.db import db
 from pcapi.models.user_offerer import UserOfferer
 from pcapi.models.user_session import UserSession
@@ -327,6 +330,12 @@ def _build_link_for_email_change(current_email: str, new_email: str) -> str:
 def get_last_booking_date(user: User) -> datetime:
     booking = Booking.query.filter(Booking.userId == user.id).order_by(db.desc(Booking.dateCreated)).first()
     return booking.dateCreated if booking else None
+
+
+def get_booking_categories(user: User) -> list:
+    """Get a list of a user's (unique) categories"""
+    offers = Offer.query.join(Stock).join(Booking).filter(Booking.userId == user.id).options(load_only(Offer.type))
+    return list(set(offer.type for offer in offers))
 
 
 def get_domains_credit(user: User) -> Optional[DomainsCredit]:
