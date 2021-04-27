@@ -16,6 +16,7 @@ from pcapi.core.bookings.models import Booking
 from pcapi.core.bookings.models import BookingCancellationReasons
 from pcapi.core.bookings.repository import generate_booking_token
 from pcapi.core.offers import repository as offers_repository
+from pcapi.core.offers.models import ActivationCode
 from pcapi.core.offers.models import Stock
 from pcapi.core.users.models import User
 from pcapi.domain import user_emails
@@ -28,6 +29,7 @@ from pcapi.utils.mailing import MailServiceException
 from pcapi.workers.push_notification_job import send_cancel_booking_notification
 
 from . import validation
+from .exceptions import NoActivationCodeAvailable
 from .validation import check_activation_is_bookable
 
 
@@ -37,6 +39,13 @@ QR_CODE_PASS_CULTURE_VERSION = "v3"
 QR_CODE_VERSION = 2
 QR_CODE_BOX_SIZE = 5
 QR_CODE_BOX_BORDER = 1
+
+
+def get_available_activation_code(stock: Stock) -> typing.Union[ActivationCode]:
+    return next(
+        (activationCode for activationCode in stock.activationCodes if check_activation_is_bookable(activationCode)),
+        None,
+    )
 
 
 def book_offer(
@@ -81,15 +90,14 @@ def book_offer(
             booking.isUsed = True
             booking.dateUsed = datetime.datetime.utcnow()
 
-        stock.dnBookedQuantity += booking.quantity
+        if stock.activationCodes:
+            activation_code = get_available_activation_code(stock)
+            if activation_code is None:
+                raise NoActivationCodeAvailable()
 
-        if feature_queries.is_active(FeatureToggle.ENABLE_ACTIVATION_CODES) and stock.activationCodes:
-            validation.check_has_available_activation_code(stock.activationCodes)
-            booking.activationCode = next(
-                activationCode
-                for activationCode in stock.activationCodes
-                if check_activation_is_bookable(activationCode)
-            )
+            booking.activationCode = activation_code
+
+        stock.dnBookedQuantity += booking.quantity
 
         repository.save(booking, stock)
 
