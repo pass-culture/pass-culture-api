@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 from typing import Optional
 
 from sqlalchemy.orm import joinedload
@@ -11,7 +12,33 @@ from pcapi.core.offers.offer_view_model import OfferViewModel
 from pcapi.repository import repository
 
 
+logger = logging.getLogger(__name__)
+
+
 def import_to_offers_view_model(offerer_id: int) -> None:
+    offers_to_import_count = (
+        Offer.query.filter(Offer.validation != OfferValidationStatus.DRAFT)
+        .join(Venue)
+        .filter(Venue.managingOffererId == offerer_id)
+        .count()
+    )
+    current_page = 0
+    offers_per_page = 1000
+
+    while offers_to_import_count > current_page * offers_per_page:
+        current_page += 1
+        logger.info(
+            "Import next page",
+            extra={
+                "current_page": current_page,
+                "offers_per_page": offers_per_page,
+                "offers_to_import_count": offers_to_import_count,
+            },
+        )
+        _batch_import(offerer_id, current_page, offers_per_page)
+
+
+def _batch_import(offerer_id: int, page: int, offers_per_page: int) -> None:
     offers_to_import = (
         Offer.query.filter(Offer.validation != OfferValidationStatus.DRAFT)
         .options(joinedload(Offer.venue).joinedload(Venue.managingOfferer))
@@ -20,18 +47,19 @@ def import_to_offers_view_model(offerer_id: int) -> None:
         .options(joinedload(Offer.product))
         .join(Venue)
         .filter(Venue.managingOffererId == offerer_id)
-        .all()
+        .order_by(Offer.id.desc())
+        .paginate(page, per_page=offers_per_page, error_out=False)
     )
 
     offer_view_models = []
 
-    for offer in offers_to_import:
+    for offer in offers_to_import.items:
         offer_view_models.append(_build_offer_view_model(offer))
 
     repository.save(*offer_view_models)
 
 
-def _build_offer_view_model(offer) -> OfferViewModel:
+def _build_offer_view_model(offer: Offer) -> OfferViewModel:
     offer_stocks = offer.activeStocks
 
     offer_view_model = OfferViewModel()
@@ -64,19 +92,19 @@ def _build_offer_view_model(offer) -> OfferViewModel:
     return offer_view_model
 
 
-def _get_first_event_datetime(stocks: [Stock]) -> Optional[datetime]:
+def _get_first_event_datetime(stocks: list[Stock]) -> Optional[datetime]:
     if len(stocks) == 0:
         return None
     return min([stock.beginningDatetime for stock in stocks])
 
 
-def _get_last_event_datetime(stocks: [Stock]) -> Optional[datetime]:
+def _get_last_event_datetime(stocks: list[Stock]) -> Optional[datetime]:
     if len(stocks) == 0:
         return None
     return max([stock.beginningDatetime for stock in stocks])
 
 
-def _compute_remaining_stock_quantity(stocks: [Stock]):
+def _compute_remaining_stock_quantity(stocks: list[Stock]):
     stocks_remaining_quantities = [stock.remainingQuantity for stock in stocks]
     if "unlimited" in stocks_remaining_quantities:
         return "unlimited"
@@ -84,5 +112,5 @@ def _compute_remaining_stock_quantity(stocks: [Stock]):
     return sum(stocks_remaining_quantities)
 
 
-def _compute_sold_out_stocks(stocks: [Stock]) -> int:
+def _compute_sold_out_stocks(stocks: list[Stock]) -> int:
     return len([stock.remainingQuantity for stock in stocks if stock.remainingQuantity == 0])
