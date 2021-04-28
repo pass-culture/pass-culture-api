@@ -57,6 +57,7 @@ class Get:
                 "isAdmin": False,
                 "isBeneficiary": True,
                 "isEmailValidated": True,
+                "isPhoneValidated": False,
                 "lastConnectionDate": None,
                 "lastName": "Smisse",
                 "needsToFillCulturalSurvey": False,
