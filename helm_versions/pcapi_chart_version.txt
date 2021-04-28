@@ -1,5 +1,1 @@
-<<<<<<< HEAD
 0.2.10
-=======
-0.2.9
->>>>>>> Update pcapi_chart_version.txt
