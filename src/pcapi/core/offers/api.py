@@ -20,6 +20,7 @@ import pcapi.core.bookings.repository as bookings_repository
 from pcapi.core.offers.models import OfferValidationStatus
 from pcapi.core.offers.models import Stock
 import pcapi.core.offers.repository as offers_repository
+import pcapi.core.offers.view_model_repository as offer_view_model_repository
 from pcapi.core.users.models import ExpenseDomain
 from pcapi.core.users.models import User
 from pcapi.domain import admin_emails
@@ -77,6 +78,21 @@ def list_offers_for_pro_user(
     period_beginning_date: Optional[str] = None,
     period_ending_date: Optional[str] = None,
 ) -> PaginatedOffersRecap:
+    if feature_queries.is_active(FeatureToggle.OFFER_VIEW_MODEL):
+        return offer_view_model_repository.get_paginated_offers_for_filters(
+            user_id=user_id,
+            user_is_admin=user_is_admin,
+            offerer_id=offerer_id,
+            offers_per_page=offers_per_page or DEFAULT_OFFERS_PER_PAGE,
+            venue_id=venue_id,
+            type_id=type_id,
+            page=page or DEFAULT_PAGE,
+            name_keywords=name_keywords,
+            status=status,
+            creation_mode=creation_mode,
+            period_beginning_date=period_beginning_date,
+            period_ending_date=period_ending_date,
+        )
     return offers_repository.get_paginated_offers_for_filters(
         user_id=user_id,
         user_is_admin=user_is_admin,

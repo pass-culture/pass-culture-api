@@ -49,6 +49,7 @@ class FeatureToggle(enum.Enum):
     )
     ENABLE_ACTIVATION_CODES = "Permet la création de codes d'activation"
     ENABLE_PHONE_VALIDATION = "Active la validation du numéro de téléphone"
+    OFFER_VIEW_MODEL = "Activer l'utilisation du view model de l'offre pour tester les performances"
 
 
 class Feature(PcObject, Model, DeactivableMixin):
