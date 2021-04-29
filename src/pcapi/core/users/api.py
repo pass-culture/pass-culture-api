@@ -43,7 +43,6 @@ from pcapi.models import Booking
 from pcapi.models import ImportStatus
 from pcapi.models.db import db
 from pcapi.models.feature import FeatureToggle
-from pcapi.models.user_offerer import UserOfferer
 from pcapi.models.user_session import UserSession
 from pcapi.notifications.sms import send_transactional_sms
 from pcapi.repository import feature_queries
@@ -419,13 +418,16 @@ def create_pro_user_and_offerer(pro_user: ProUserCreationBodyModel) -> User:
     existing_offerer = Offerer.query.filter_by(siren=pro_user.siren).one_or_none()
 
     if existing_offerer:
-        user_offerer = _generate_user_offerer_when_existing_offerer(new_pro_user, existing_offerer)
         offerer = existing_offerer
     else:
-        offerer = _generate_offerer(pro_user.dict(by_alias=True))
-        user_offerer = offerer.grant_access(new_pro_user)
+        offerer = Offerer()
+        offerer.populate_from_dict(pro_user.dict(by_alias=True))
+        offerer.generate_validation_token()
         digital_venue = create_digital_venue(offerer)
         objects_to_save.extend([digital_venue, offerer])
+    user_offerer = offerer.grant_access(new_pro_user)
+    if existing_offerer:
+        user_offerer.generate_validation_token()
     objects_to_save.append(user_offerer)
     new_pro_user = _set_offerer_departement_code(new_pro_user, offerer)
 
@@ -453,22 +455,6 @@ def create_pro_user(pro_user: ProUserCreationBodyModel) -> User:
         new_pro_user.departementCode = PostalCode(pro_user.postal_code).get_departement_code()
 
     return new_pro_user
-
-
-def _generate_user_offerer_when_existing_offerer(new_user: User, offerer: Offerer) -> UserOfferer:
-    user_offerer = offerer.grant_access(new_user)
-    if not settings.IS_INTEGRATION:
-        user_offerer.generate_validation_token()
-    return user_offerer
-
-
-def _generate_offerer(data: dict) -> Offerer:
-    offerer = Offerer()
-    offerer.populate_from_dict(data)
-
-    if not settings.IS_INTEGRATION:
-        offerer.generate_validation_token()
-    return offerer
 
 
 def _set_offerer_departement_code(new_user: User, offerer: Offerer) -> User:
