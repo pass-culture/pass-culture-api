@@ -100,7 +100,7 @@ class BookOfferTest:
         assert data["attribute_values"]["u.credit"] == 49_000  # values in cents
 
         expected_date = booking.dateCreated.strftime(BATCH_DATETIME_FORMAT)
-        assert data["attribute_values"]["date(u.lastBookingDate)"] == expected_date
+        assert data["attribute_values"]["date(u.last_booking_date)"] == expected_date
 
         assert booking.quantity == 1
         assert booking.amount == 10
@@ -134,7 +134,7 @@ class BookOfferTest:
 
         data = push_testing.requests[0]
         expected_date = booking.dateCreated.strftime(BATCH_DATETIME_FORMAT)
-        assert data["attribute_values"]["date(u.lastBookingDate)"] == expected_date
+        assert data["attribute_values"]["date(u.last_booking_date)"] == expected_date
 
     @override_features(AUTO_ACTIVATE_DIGITAL_BOOKINGS=True)
     def test_create_booking_on_digital_offer(self):
@@ -152,7 +152,7 @@ class BookOfferTest:
         assert data["attribute_values"]["u.credit"] == 49_000  # values in cents
 
         expected_date = booking.dateCreated.strftime(BATCH_DATETIME_FORMAT)
-        assert data["attribute_values"]["date(u.lastBookingDate)"] == expected_date
+        assert data["attribute_values"]["date(u.last_booking_date)"] == expected_date
 
         assert booking.isUsed
 
@@ -171,7 +171,7 @@ class BookOfferTest:
         assert data["attribute_values"]["u.credit"] == 49_000  # values in cents
 
         expected_date = booking.dateCreated.strftime(BATCH_DATETIME_FORMAT)
-        assert data["attribute_values"]["date(u.lastBookingDate)"] == expected_date
+        assert data["attribute_values"]["date(u.last_booking_date)"] == expected_date
 
         two_days_after_booking = booking.dateCreated + timedelta(days=2)
         assert booking.quantity == 1
