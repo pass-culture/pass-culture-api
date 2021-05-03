@@ -37,6 +37,6 @@ def get_user_booking_attributes(user: User) -> dict:
     last_booking_date = get_last_booking_date(user)
 
     return {
-        "date(u.lastBookingDate)": last_booking_date.strftime(BATCH_DATETIME_FORMAT) if last_booking_date else None,
+        "date(u.last_booking_date)": last_booking_date.strftime(BATCH_DATETIME_FORMAT) if last_booking_date else None,
         "u.credit": int(credit.all.remaining * 100) if credit else 0,
     }
