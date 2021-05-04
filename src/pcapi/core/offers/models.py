@@ -342,17 +342,15 @@ class Offer(PcObject, Model, ExtraDataMixin, DeactivableMixin, ProvidableMixin):
         nullable=True,
     )
 
-    rankingWeight = Column(Integer, nullable=True)
-
-    # This field will replace the idAtProviders coming from ProvidableMixin
-    idAtProvider = Column(
-        Text,
-        CheckConstraint(
-            '"lastProviderId" IS NULL OR "idAtProvider" IS NOT NULL',
-            name="check_providable_with_provider_has_idatprovider",
+    __table_args__ = (
+        UniqueConstraint(
+            "venueId",
+            "idAtProvider",
+            name="unique_idAtOfferProvider_and_venueId",
         ),
-        nullable=True,
     )
+
+    rankingWeight = Column(Integer, nullable=True)
 
     isEducational = Column(Boolean, server_default=false(), default=False, nullable=False)
 
