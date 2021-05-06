@@ -332,6 +332,7 @@ class Offer(PcObject, Model, ExtraDataMixin, DeactivableMixin, ProvidableMixin):
 
     author = relationship("User", foreign_keys=[authorId], backref="offers")
 
+    # This field will replace the idAtProviders coming from ProvidableMixin
     idAtProvider = Column(
         Text,
         CheckConstraint(
