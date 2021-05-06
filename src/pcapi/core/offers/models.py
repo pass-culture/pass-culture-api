@@ -324,6 +324,7 @@ class Offer(PcObject, Model, ExtraDataMixin, DeactivableMixin, ProvidableMixin, 
         server_default="APPROVED",
     )
 
+    # This field will replace the idAtProviders coming from ProvidableMixin
     idAtProvider = Column(
         Text,
         CheckConstraint(
