@@ -23,6 +23,7 @@ def suspend_fraudulent_beneficiary_users_by_email_providers(
 
     if not dry_run:
         suspend_fraudulent_beneficiary_users(fraudulent_users, admin_user)
+        cancel_bookings_by_fraudulent_beneficiary_users(fraudulent_users)
     else:
         logger.info("Suspension of users from fraudulent email providers %s", len(fraudulent_users))
 
