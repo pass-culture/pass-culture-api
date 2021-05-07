@@ -24,7 +24,6 @@ from pcapi.routes.native.v1.serialization.authentication import ValidateEmailReq
 from pcapi.routes.native.v1.serialization.authentication import ValidateEmailResponse
 from pcapi.serialization.decorator import spectree_serialize
 from pcapi.utils.rate_limiting import email_rate_limiter
-from pcapi.utils.rate_limiting import ip_rate_limiter
 
 from . import blueprint
 from .serialization import authentication
@@ -41,7 +40,6 @@ def create_user_access_token(user: User) -> str:
     api=blueprint.api,
 )  # type: ignore
 @email_rate_limiter
-@ip_rate_limiter
 def signin(body: authentication.SigninRequest) -> authentication.SigninResponse:
     try:
         user = users_repo.get_user_with_credentials(body.identifier, body.password)
