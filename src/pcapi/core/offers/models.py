@@ -324,6 +324,19 @@ class Offer(PcObject, Model, ExtraDataMixin, DeactivableMixin, ProvidableMixin, 
         server_default="APPROVED",
     )
 
+    idAtProvider = Column(
+        Text,
+        CheckConstraint(
+            '"lastProviderId" IS NULL OR "idAtProvider" IS NOT NULL',
+            name="check_providable_with_provider_has_idatprovider",
+        ),
+        nullable=True,
+    )
+
+    # FIXME: We shoud be able to remove the index on `venueId`, since this composite index
+    #  can be used by PostgreSQL when filtering on the `venueId` column only.
+    Index("venueId_idAtProvider_index", venueId, idAtProvider, unique=True)
+
     @hybrid_property
     def isSoldOut(self):
         for stock in self.stocks:
