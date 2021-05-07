@@ -26,7 +26,6 @@ from pcapi.serialization.decorator import spectree_serialize
 from pcapi.utils.login_manager import stamp_session
 from pcapi.utils.mailing import MailServiceException
 from pcapi.utils.rate_limiting import email_rate_limiter
-from pcapi.utils.rate_limiting import ip_rate_limiter
 from pcapi.validation.routes.users import check_valid_signin
 from pcapi.workers.beneficiary_job import beneficiary_job
 
@@ -95,7 +94,6 @@ def change_beneficiary_email(body: ChangeBeneficiaryEmailBody) -> None:
 # @debt api-migration
 @private_api.route("/beneficiaries/signin", methods=["POST"])
 @email_rate_limiter
-@ip_rate_limiter
 def signin_beneficiary() -> tuple[str, int]:
     json = request.get_json()
     identifier = json.get("identifier")
