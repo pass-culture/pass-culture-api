@@ -253,7 +253,7 @@ GCP_BUCKET_NAME = os.environ.get("GCP_BUCKET_NAME", "")
 
 # RATE LIMITER
 RATE_LIMIT_BY_EMAIL = os.environ.get("RATE_LIMIT_BY_EMAIL", "10/minute")
-RATE_LIMIT_BY_IP = os.environ.get("RATE_LIMIT_BY_IP", "10/minute")
+RATE_LIMIT_BY_IP = os.environ.get("RATE_LIMIT_BY_IP", "10000/minute")
 
 # DEBUG
 DEBUG_ACTIVATED = os.environ.get("DEBUG_ACTIVATED") == "True"
