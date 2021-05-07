@@ -256,6 +256,32 @@ jobs:
       - store_artifacts:
           path: htmlcov
 
+  create_release_candidate_tag:
+    working_directory: ~/pass-culture-api-ci
+    docker:
+      - image: cimg/go:1.16
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "96:8a:e0:a3:5b:af:47:c1:73:37:f7:b1:cd:ce:a2:89"
+      - run:
+          name: Add and push the tag
+          command: |
+            ssh-add -D
+            ssh-add ~/.ssh/id_rsa_968ae0a35baf47c17337f7b1cdcea289
+
+            git config --global user.name "CircleCI - Auto release tag"
+            git config --global user.email "bot@passculture.app"
+
+            SHORT_GIT_HASH=$(echo $CIRCLE_SHA1 | cut -c -7)
+
+            rc_tag_name="RC-$SHORT_GIT_HASH"
+            git tag -a -m "New release candidate pushed into master" $rc_tag_name --force
+            git --no-pager log -n2
+
+            git push origin $rc_tag_name
+
   quality:
     working_directory: ~/pass-culture-api-ci
     docker:
@@ -455,6 +481,7 @@ jobs:
             export BOT_MESSAGE="'Build *$CIRCLE_JOB* fail : $CIRCLE_BUILD_URL'"
             curl -X POST -H 'Content-type: application/json' --data "{'text': $BOT_MESSAGE}" $SLACK_OPS_BOT_URL
 
+
   functional-tests-pro:
     machine:
       image: ubuntu-2004:202101-01
@@ -555,6 +582,9 @@ workflows:
             - GCP
             - GCP_EHP
             - Slack
+      - create_release_candidate_tag:
+          requires:
+            - deploy-pcapi
 
   nightly:
     triggers:
