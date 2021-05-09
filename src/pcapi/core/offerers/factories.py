@@ -7,15 +7,6 @@ from pcapi.core.providers.models import AllocineVenueProviderPriceRule
 from pcapi.core.testing import BaseFactory
 
 
-class ProviderFactory(BaseFactory):
-    class Meta:
-        model = pcapi.core.providers.models.Provider
-        sqlalchemy_get_or_create = ["localClass"]
-
-    name = factory.Sequence("Provider {}".format)
-    localClass = factory.Sequence("{}Stocks".format)
-
-
 class APIProviderFactory(BaseFactory):
     class Meta:
         model = pcapi.core.providers.models.Provider
@@ -29,9 +20,18 @@ class VenueProviderFactory(BaseFactory):
         model = pcapi.core.providers.models.VenueProvider
 
     venue = factory.SubFactory(VenueFactory)
-    provider = factory.SubFactory(ProviderFactory)
+    provider = factory.SubFactory(APIProviderFactory)
 
     venueIdAtOfferProvider = factory.SelfAttribute("venue.siret")
+
+
+class AllocineProviderFactory(BaseFactory):
+    class Meta:
+        model = pcapi.core.providers.models.Provider
+        sqlalchemy_get_or_create = ["localClass"]
+
+    name = factory.Sequence("Provider {}".format)
+    localClass = "AllocineStocks"
 
 
 class AllocineVenueProviderFactory(BaseFactory):
@@ -39,7 +39,7 @@ class AllocineVenueProviderFactory(BaseFactory):
         model = AllocineVenueProvider
 
     venue = factory.SubFactory(VenueFactory)
-    provider = factory.SubFactory(ProviderFactory)
+    provider = factory.SubFactory(AllocineProviderFactory)
     venueIdAtOfferProvider = factory.SelfAttribute("venue.siret")
     internalId = factory.Sequence("P{}".format)
     isDuo = True

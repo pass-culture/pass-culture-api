@@ -23,7 +23,9 @@ class FeatureToggle(enum.Enum):
     SYNCHRONIZE_BANK_INFORMATION = (
         "Permettre la synchronisation journalière avec DMS pour récupérer les informations bancaires des acteurs"
     )
+    # FIXME (apibrac, 2021/05/10): Deprecated:
     SYNCHRONIZE_LIBRAIRES = "Permettre la synchronisation journalière avec leslibraires.fr"
+    # FIXME (apibrac, 2021/05/10): Deprecated:
     SYNCHRONIZE_TITELIVE = "Permettre la synchronisation journalière avec TiteLive / Epagine"
     SYNCHRONIZE_TITELIVE_PRODUCTS = "Permettre limport journalier du référentiel des livres"
     SYNCHRONIZE_TITELIVE_PRODUCTS_DESCRIPTION = "Permettre limport journalier des résumés des livres"

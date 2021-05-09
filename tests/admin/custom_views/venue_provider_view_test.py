@@ -1,13 +1,14 @@
+from unittest.mock import MagicMock
 from unittest.mock import patch
 
 import pytest
 
 from pcapi.admin.custom_views.venue_provider_view import VenueProviderView
 from pcapi.admin.custom_views.venue_view import _get_venue_provider_link
+from pcapi.core.offerers.factories import APIProviderFactory
 from pcapi.core.offerers.factories import VenueProviderFactory
 from pcapi.core.offers.factories import VenueFactory
 from pcapi.core.providers.models import VenueProvider
-from pcapi.model_creators.provider_creators import activate_provider
 from pcapi.routes.serialization.venue_provider_serialize import PostVenueProviderBody
 from pcapi.utils.human_ids import humanize
 
@@ -35,12 +36,16 @@ class VenueProviderViewTest:
 
 class CreateModelTest:
     @patch("pcapi.admin.custom_views.venue_provider_view.api.create_venue_provider")
-    def test_use_api_method_to_create_venue_provider(self, create_venue_provider, app, db_session):
+    @patch("pcapi.admin.custom_views.venue_provider_view.venue_provider_job.delay")
+    def test_use_api_method_to_create_venue_provider(
+        self, synchronize_venue_provider, create_venue_provider, app, db_session
+    ):
         # Given
         venue = VenueFactory()
-        provider = activate_provider("TiteLiveStocks")
+        provider = APIProviderFactory()
         view = VenueProviderView(VenueProvider, db_session)
         VenueProviderForm = view.scaffold_form()
+        create_venue_provider.return_value = MagicMock(id=12)
 
         data = dict(
             isDuo=True, price=23.5, provider=provider, venueId=venue.id, venueIdAtOfferProvider="hsf4uiagèy12386dq"
@@ -51,7 +56,6 @@ class CreateModelTest:
         view.create_model(form)
 
         # Then
-        create_venue_provider.assert_called_once()
         create_venue_provider.assert_called_once_with(
             PostVenueProviderBody(
                 venueId=humanize(venue.id),
@@ -61,6 +65,7 @@ class CreateModelTest:
                 venueIdAtOfferProvider="hsf4uiagèy12386dq",
             )
         )
+        synchronize_venue_provider.assert_called_once_with(12)
 
 
 class GetVenueProviderLinkTest:
