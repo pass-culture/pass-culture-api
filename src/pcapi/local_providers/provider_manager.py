@@ -54,17 +54,14 @@ def synchronize_venue_provider(venue_provider: VenueProvider, limit: Optional[in
         synchronize_provider_api.synchronize_venue_provider(venue_provider)
 
     else:
-        provider_class = get_local_provider_class_by_name(venue_provider.provider.localClass)
+        assert venue_provider.provider.localClass == "AllocineStocks", "Only AllocineStocks should reach this code"
+
         logger.info(
             "Starting synchronization of venue_provider=%s with provider=%s",
             venue_provider.id,
             venue_provider.provider.localClass,
         )
-        try:
-            provider = provider_class(venue_provider)
-            do_update(provider, limit)
-        except Exception:  # pylint: disable=broad-except
-            logger.exception(build_cron_log_message(name=provider_class.__name__, status=CronStatus.FAILED))
+        synchronize_data_for_provider(venue_provider.provider.localClass)
         logger.info(
             "Ended synchronization of venue_provider=%s with provider=%s",
             venue_provider.id,
