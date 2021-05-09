@@ -15,6 +15,7 @@ from pcapi.routes.serialization.venue_provider_serialize import VenueProviderRes
 from pcapi.serialization.decorator import spectree_serialize
 from pcapi.utils.human_ids import dehumanize
 from pcapi.utils.includes import VENUE_PROVIDER_INCLUDES
+from pcapi.workers.venue_provider_job import venue_provider_job
 
 
 # @debt api-migration
@@ -38,5 +39,6 @@ def create_venue_provider(body: PostVenueProviderBody) -> VenueProviderResponse:
     body.venueIdAtOfferProvider = None
 
     new_venue_provider = api.create_venue_provider(body)
+    venue_provider_job.delay(new_venue_provider.id)
 
     return VenueProviderResponse.from_orm(new_venue_provider)

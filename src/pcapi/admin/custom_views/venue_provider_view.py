@@ -21,6 +21,7 @@ from pcapi.core.providers.repository import get_enabled_providers_for_pro_query
 from pcapi.models import ApiErrors
 from pcapi.routes.serialization.venue_provider_serialize import PostVenueProviderBody
 from pcapi.utils.human_ids import humanize
+from pcapi.workers.venue_provider_job import venue_provider_job
 
 
 def _venue_link(view, context, model, name) -> Markup:
@@ -94,6 +95,7 @@ class VenueProviderView(BaseAdminView):
 
         try:
             venue_provider = api.create_venue_provider(venue_provider_body)
+            venue_provider_job.delay(venue_provider.id)
         except ApiErrors as e:
             for key in e.errors:
                 flash(gettext(f"{key} : {e.errors[key].pop()}"), "error")
