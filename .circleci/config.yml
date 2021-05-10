@@ -388,6 +388,12 @@ jobs:
           kubernetes_namespace: testing
           helm_values_file: ./helm/pcapi/values.testing.yaml
           app_version: ${CIRCLE_SHA1}
+      - deploy-helm-chart:
+          helm_chart_name: pcapi
+          helm_release_name: perf
+          kubernetes_namespace: perf
+          helm_values_file: ./helm/pcapi/values.perf.yaml
+          app_version: ${CIRCLE_SHA1}
       - <<: *slack-send-deployment-notification
 
   functional-tests-webapp:
@@ -537,6 +543,7 @@ workflows:
             branches:
               only:
                 - master
+                - perf-pro
       - build-and-push-image:
           requires:
             - "Run tests after commit"
@@ -545,6 +552,7 @@ workflows:
             branches:
               only:
                 - master
+                - perf-pro
           context:
             - GCP
             - GCP_EHP
