@@ -3,6 +3,7 @@ from datetime import datetime
 from pcapi.models.db import Model
 
 
+# TODO (asaunier) Should be removed from code base
 class ProvidableInfo:
     type = Model
     id_at_providers = ""

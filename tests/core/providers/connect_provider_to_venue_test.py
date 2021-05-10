@@ -24,7 +24,7 @@ def test_when_venue_id_at_offer_provider_is_given(can_be_synchronized, app):
     # Given
     venue_id_at_offer_provider = "id_for_remote_system"
     venue = VenueFactory(siret="12345678912345")
-    provider = activate_provider("LibrairesStocks")
+    provider = offerers_factories.APIProviderFactory()
 
     # When
     connect_venue_to_provider(venue, provider, venue_id_at_offer_provider)
