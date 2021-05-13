@@ -15,6 +15,7 @@ from pcapi.core.offers.factories import StockWithActivationCodesFactory
 from pcapi.core.testing import assert_num_queries
 from pcapi.core.users import factories as users_factories
 from pcapi.models.offer_type import ThingType
+from pcapi.utils.human_ids import humanize
 
 from tests.conftest import TestClient
 
@@ -84,7 +85,7 @@ class GetBookingsTest:
 
     @freeze_time("2021-03-12")
     def test_get_bookings(self, app):
-        OFFER_URL = "https://demo.pass/some/path"
+        OFFER_URL = "https://demo.pass/some/path?token={token}&email={email}&offerId={offerId}"
         user = users_factories.UserFactory(email=self.identifier)
 
         permanent_booking = BookingFactory(
@@ -149,6 +150,7 @@ class GetBookingsTest:
             "activationCode": None,
             "cancellationDate": None,
             "cancellationReason": None,
+            "completedUrl": f"https://demo.pass/some/path?token={used2.token}&email=pascal.ture@example.com&offerId={humanize(used2.stock.offer.id)}",
             "confirmationDate": None,
             "dateUsed": "2021-03-02T00:00:00Z",
             "expirationDate": None,
@@ -166,7 +168,7 @@ class GetBookingsTest:
                     "isDigital": True,
                     "isPermanent": False,
                     "name": used2.stock.offer.name,
-                    "url": OFFER_URL,
+                    "url": f"https://demo.pass/some/path?token={used2.token}&email=pascal.ture@example.com&offerId={humanize(used2.stock.offer.id)}",
                     "venue": {
                         "city": "Paris",
                         "coordinates": {"latitude": 48.87004, "longitude": 2.3785},
