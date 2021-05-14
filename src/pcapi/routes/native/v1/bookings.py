@@ -12,6 +12,7 @@ from pcapi.core.offers.models import Offer
 from pcapi.core.offers.models import Stock
 from pcapi.core.users.models import User
 from pcapi.models.api_errors import ApiErrors
+from pcapi.models.db import db
 from pcapi.models.product import Product
 from pcapi.routes.native.security import authenticated_user_required
 from pcapi.routes.native.v1.serialization.bookings import BookOfferRequest
@@ -104,7 +105,7 @@ def get_bookings(user: User) -> BookingsResponse:
             ongoing_bookings.append(booking)
             booking.qrCodeData = bookings_api.get_qr_code_data(booking.token)
 
-    return BookingsResponse(
+    result = BookingsResponse(
         ended_bookings=[
             BookingReponse.from_orm(booking)
             for booking in sorted(
@@ -121,6 +122,9 @@ def get_bookings(user: User) -> BookingsResponse:
             )
         ],
     )
+    # TODO: remove this once the booking.stock.offer.url = booking.completedUrl hack in serialization is removed
+    db.session.rollback()
+    return result
 
 
 def is_ended_booking(booking: Booking) -> bool:

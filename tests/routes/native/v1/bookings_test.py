@@ -126,7 +126,10 @@ class GetBookingsTest:
         test_client = TestClient(app.test_client())
         test_client.auth_header = {"Authorization": f"Bearer {access_token}"}
 
-        with assert_num_queries(2):
+        # 1: get the user
+        # 1: get the bookings
+        # 1: rollback
+        with assert_num_queries(3):
             response = test_client.get("/native/v1/bookings")
 
         assert [b["id"] for b in response.json["ongoing_bookings"]] == [
