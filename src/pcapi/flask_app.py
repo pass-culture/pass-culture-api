@@ -107,7 +107,12 @@ def before_request() -> None:
 
 @app.after_request
 def log_request_details(response: flask.wrappers.Response) -> flask.wrappers.Response:
-    duration = round((time.perf_counter() - g.request_start) * 1000)  # milliseconds
+    if "request_start" in g:
+        duration = round((time.perf_counter() - g.request_start) * 1000)  # milliseconds
+    else:
+        logger.warning("No request_start in flask context", extra={"route": str(request.url_rule)})
+        duration = 0
+
     extra = {
         "statusCode": response.status_code,
         "method": request.method,
