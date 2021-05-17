@@ -318,7 +318,7 @@ class PostTest:
             assert Favorite.query.count() == 1
 
 
-class Delete:
+class DeleteTest:
     class Returns204:
         def when_user_delete_its_favorite(self, app):
             # Given
