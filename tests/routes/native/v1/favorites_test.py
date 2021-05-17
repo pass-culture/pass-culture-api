@@ -277,7 +277,7 @@ class Get:
             assert response.status_code == 401
 
 
-class Post:
+class PostTest:
     class Returns200:
         def when_user_creates_a_favorite(self, app):
             # Given
