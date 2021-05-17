@@ -22,7 +22,7 @@ FAVORITES_URL = "/native/v1/me/favorites"
 FAVORITES_COUNT_URL = "/native/v1/me/favorites/count"
 
 
-class Get:
+class GetTest:
     class Returns200:
         def when_user_is_logged_in_but_has_no_favorites(self, app):
             # Given
