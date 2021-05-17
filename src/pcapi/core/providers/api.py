@@ -126,7 +126,7 @@ def synchronize_stocks(stock_details, venue: Venue, provider_id: Optional[int] =
     new_offers = _build_new_offers_from_stock_details(
         stock_details, offers_by_provider_reference, products_by_provider_reference, venue, provider_id
     )
-    new_offers_references = [new_offer.idAtProviders for new_offer in new_offers]
+    new_offers_references = [new_offer.idAtProvider for new_offer in new_offers]
 
     db.session.bulk_save_objects(new_offers)
 
@@ -284,7 +284,6 @@ def _build_new_offer(
         bookingEmail=venue.bookingEmail,
         description=product.description,
         extraData=product.extraData,
-        idAtProviders=id_at_providers,
         idAtProvider=id_at_provider,
         lastProviderId=provider_id,
         name=product.name,

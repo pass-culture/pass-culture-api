@@ -375,7 +375,7 @@ class GetOfferManagingOffererResponseModel(BaseModel):
     dateModifiedAtLastProvider: Optional[datetime]
     fieldsUpdated: list[str]
     id: str
-    idAtProviders: Optional[str]
+    idAtProvider: Optional[str]
     isActive: bool
     isValidated: bool
     lastProviderId: Optional[str]
@@ -482,7 +482,7 @@ class GetOfferResponseModel(BaseModel):
     fieldsUpdated: list[str]
     hasBookingLimitDatetimesPassed: bool
     id: str
-    idAtProviders: Optional[str]
+    idAtProvider: Optional[str]
     isActive: bool
     isBookable: bool
     isDigital: bool

@@ -557,12 +557,6 @@ def create_mediation(
 def update_offer_and_stock_id_at_providers(venue: Venue, old_siret: str) -> None:
     current_siret = venue.siret
 
-    offer_ids = (
-        Offer.query.filter(Offer.venueId == venue.id)
-        .filter(Offer.idAtProviders.endswith(old_siret))
-        .with_entities(Offer.id)
-        .all()
-    )
     stock_ids = (
         Stock.query.join(Offer)
         .filter(Offer.venueId == venue.id)
@@ -572,14 +566,6 @@ def update_offer_and_stock_id_at_providers(venue: Venue, old_siret: str) -> None
     )
 
     batch_size = 100
-
-    for offer_index in range(0, len(offer_ids), batch_size):
-        Offer.query.filter(Offer.id.in_(offer_ids[offer_index : offer_index + batch_size])).update(
-            {Offer.idAtProviders: func.replace(Offer.idAtProviders, old_siret, current_siret)},
-            synchronize_session=False,
-        )
-        db.session.commit()
-        offer_index = offer_index + batch_size
 
     for stock_index in range(0, len(stock_ids), batch_size):
         Stock.query.filter(Stock.id.in_(stock_ids[stock_index : stock_index + batch_size])).update(

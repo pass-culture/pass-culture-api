@@ -264,7 +264,7 @@ class OfferValidationStatus(enum.Enum):
     REJECTED = "REJECTED"
 
 
-class Offer(PcObject, Model, ExtraDataMixin, DeactivableMixin, ProvidableMixin):
+class Offer(PcObject, Model, ExtraDataMixin, DeactivableMixin):
     __tablename__ = "offer"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
@@ -359,6 +359,14 @@ class Offer(PcObject, Model, ExtraDataMixin, DeactivableMixin, ProvidableMixin):
     # FIXME: We shoud be able to remove the index on `venueId`, since this composite index
     #  can be used by PostgreSQL when filtering on the `venueId` column only.
     Index("venueId_idAtProvider_index", venueId, idAtProvider, unique=True)
+
+    lastProviderId = Column(BigInteger, ForeignKey("provider.id"), nullable=True)
+
+    lastProvider = relationship("Provider", foreign_keys=[lastProviderId])
+
+    dateModifiedAtLastProvider = Column(DateTime, nullable=True, default=datetime.utcnow)
+
+    fieldsUpdated = Column(ARRAY(String(100)), nullable=False, default=[], server_default="{}")
 
     @hybrid_property
     def isSoldOut(self):

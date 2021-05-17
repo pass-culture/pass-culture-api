@@ -195,7 +195,7 @@ def get_products_map_by_id_at_providers(id_at_providers: list[str]) -> dict[str,
 def get_offers_map_by_id_at_providers(id_at_providers: list[str]) -> dict[str, int]:
     offers_map = {}
     for offer_id, offer_id_at_providers in (
-        db.session.query(Offer.id, Offer.idAtProviders).filter(Offer.idAtProviders.in_(id_at_providers)).all()
+        db.session.query(Offer.id, Offer.idAtProvider).filter(Offer.idAtProvider.in_(id_at_providers)).all()
     ):
         offers_map[offer_id_at_providers] = offer_id
 

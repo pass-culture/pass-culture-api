@@ -18,7 +18,7 @@ def _reset_stock_quantity(venue: Venue) -> None:
       SET quantity = "dnBookedQuantity"
       FROM offer
       WHERE
-          offer."idAtProviders" IS NOT NULL
+          offer."idAtProvider" IS NOT NULL
           AND offer.id = stock."offerId"
           AND offer."venueId" = :venue_id
     """
@@ -32,7 +32,7 @@ def _update_last_provider_id(venue: Venue, provider_id: int) -> None:
       UPDATE "offer"
       SET "lastProviderId" = :provider_id
       WHERE
-          offer."idAtProviders" IS NOT NULL
+          offer."idAtProvider" IS NOT NULL
           AND offer."venueId" = :venue_id
     """
     db.session.execute(query, {"venue_id": venue.id, "provider_id": provider_id})

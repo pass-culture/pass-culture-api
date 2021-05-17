@@ -62,7 +62,7 @@ WEBAPP_GET_BOOKING_INCLUDES = [
                     "isBookable",
                     "isDigital",
                     "isEvent",
-                    "-idAtProvider",
+                    "idAtProvider",
                     "offerType",
                     "-authorId",
                     "-lastValidationDate",

@@ -15,7 +15,7 @@ def test_fully_sync_venue():
     provider = offerers_factories.APIProviderFactory(apiUrl=api_url)
     venue_provider = offerers_factories.VenueProviderFactory(provider=provider)
     venue = venue_provider.venue
-    stock = offers_factories.StockFactory(quantity=10, offer__venue=venue, offer__idAtProviders="1")
+    stock = offers_factories.StockFactory(quantity=10, offer__venue=venue, offer__idAtProvider="1")
     bookings_factories.BookingFactory(stock=stock)
     product2 = offers_factories.ProductFactory(
         idAtProviders="1234",
@@ -44,7 +44,7 @@ def test_fully_sync_venue_with_new_provider():
     provider = offerers_factories.APIProviderFactory()
     venue_provider = offerers_factories.VenueProviderFactory(provider=provider)
     venue = venue_provider.venue
-    stock = offers_factories.StockFactory(quantity=10, offer__venue=venue, offer__idAtProviders="1")
+    stock = offers_factories.StockFactory(quantity=10, offer__venue=venue, offer__idAtProvider="1")
     bookings_factories.BookingFactory(stock=stock)
     product2 = offers_factories.ProductFactory(
         idAtProviders="1234",
@@ -75,7 +75,7 @@ def test_fully_sync_venue_with_new_provider():
 
 @pytest.mark.usefixtures("db_session")
 def test_reset_stock_quantity():
-    offer = offers_factories.OfferFactory(idAtProviders="1")
+    offer = offers_factories.OfferFactory(idAtProvider="1")
     venue = offer.venue
     stock1_no_bookings = offers_factories.StockFactory(offer=offer, quantity=10)
     stock2_only_cancelled_bookings = offers_factories.StockFactory(offer=offer, quantity=10)

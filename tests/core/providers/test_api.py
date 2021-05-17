@@ -43,7 +43,7 @@ def create_product(isbn, **kwargs):
 
 
 def create_offer(isbn, siret):
-    return factories.OfferFactory(product=create_product(isbn), idAtProviders=f"{isbn}@{siret}")
+    return factories.OfferFactory(product=create_product(isbn), idAtProvider=f"{isbn}")
 
 
 def create_stock(isbn, siret, **kwargs):
@@ -51,6 +51,129 @@ def create_stock(isbn, siret, **kwargs):
 
 
 class SynchronizeStocksTest:
+    already_created_stock = {"ref": "3010000101789", "available": 6}
+    non_cgu_compatible_stock = {"ref": "3010000108125", "available": 17}
+    previously_booked_stock = {"ref": "3010000108124", "available": 17}
+    stock_to_be_imported = {"ref": "3010000101797", "available": 4}
+    spec = [
+        already_created_stock,
+        stock_to_be_imported,
+        {"ref": "3010000103769", "available": 18},
+        {"ref": "3010000107163", "available": 12},
+        {"ref": "3010000108123", "available": 17},
+        previously_booked_stock,
+        non_cgu_compatible_stock,
+    ]
+
+    @pytest.mark.usefixtures("db_session")
+    @freeze_time("2020-10-15 09:00:00")
+    @override_features(SYNCHRONIZE_ALGOLIA=True)
+    @mock.patch("pcapi.connectors.redis.add_offer_id")
+    def test_update_existing_stocks(self, mocked_add_offer_id):
+        # Given
+        provider = offerers_factories.APIProviderFactory(apiUrl="https://provider_url", authToken="fake_token")
+        venue = VenueFactory()
+        siret = venue.siret
+        stock_details = synchronize_provider_api._build_stock_details_from_raw_stocks(self.spec, siret)
+        stock = create_stock(
+            self.already_created_stock["ref"],
+            siret,
+            quantity=20,
+        )
+
+        # When
+        api.synchronize_stocks(stock_details, venue, provider_id=provider.id)
+
+        # Then
+        assert stock.quantity == 6
+        assert stock.rawProviderQuantity == 6
+
+    @pytest.mark.usefixtures("db_session")
+    @freeze_time("2020-10-15 09:00:00")
+    @override_features(SYNCHRONIZE_ALGOLIA=True)
+    @mock.patch("pcapi.connectors.redis.add_offer_id")
+    def test_add_bookings_to_stock_quantity(self, mocked_add_offer_id):
+        # Given
+        provider = offerers_factories.APIProviderFactory(apiUrl="https://provider_url", authToken="fake_token")
+        venue = VenueFactory()
+        siret = venue.siret
+        stock_details = synchronize_provider_api._build_stock_details_from_raw_stocks(self.spec, siret)
+
+        stock_with_booking = create_stock(self.previously_booked_stock["ref"], siret, quantity=20)
+        BookingFactory(stock=stock_with_booking)
+        BookingFactory(stock=stock_with_booking, quantity=2)
+
+        # When
+        api.synchronize_stocks(stock_details, venue, provider_id=provider.id)
+
+        # Then
+        assert stock_with_booking.quantity == 17 + 1 + 2
+        assert stock_with_booking.rawProviderQuantity == 17
+
+    @pytest.mark.usefixtures("db_session")
+    @freeze_time("2020-10-15 09:00:00")
+    @override_features(SYNCHRONIZE_ALGOLIA=True)
+    @mock.patch("pcapi.connectors.redis.add_offer_id")
+    def test_create_new_stocks(self, mocked_add_offer_id):
+        # Given
+        provider = offerers_factories.APIProviderFactory(apiUrl="https://provider_url", authToken="fake_token")
+        venue = VenueFactory()
+        siret = venue.siret
+        stock_details = synchronize_provider_api._build_stock_details_from_raw_stocks(self.spec, siret)
+        offer = create_offer(self.stock_to_be_imported["ref"], siret)
+
+        # When
+        api.synchronize_stocks(stock_details, venue, provider_id=provider.id)
+
+        # Then
+        assert len(offer.stocks) == 1
+        created_stock = offer.stocks[0]
+        assert created_stock.quantity == 4
+        assert created_stock.rawProviderQuantity == 4
+        assert created_stock.price == Decimal("12.00")
+        assert created_stock.idAtProviders == f"{self.stock_to_be_imported['ref']}@{siret}"
+
+    @pytest.mark.usefixtures("db_session")
+    @freeze_time("2020-10-15 09:00:00")
+    @override_features(SYNCHRONIZE_ALGOLIA=True)
+    @mock.patch("pcapi.connectors.redis.add_offer_id")
+    def test_create_new_offers(self, mocked_add_offer_id):
+        # Given
+        provider = offerers_factories.APIProviderFactory(apiUrl="https://provider_url", authToken="fake_token")
+        venue = VenueFactory()
+        siret = venue.siret
+        stock_details = synchronize_provider_api._build_stock_details_from_raw_stocks(self.spec, siret)
+
+        create_stock(
+            self.already_created_stock["ref"],
+            siret,
+            quantity=20,
+        )
+        create_offer(self.stock_to_be_imported["ref"], siret)
+        product = create_product(self.spec[2]["ref"])
+        create_product(self.spec[4]["ref"])
+        create_product(self.non_cgu_compatible_stock["ref"], isGcuCompatible=False)
+
+        stock_with_booking = create_stock(self.previously_booked_stock["ref"], siret, quantity=20)
+        BookingFactory(stock=stock_with_booking)
+        BookingFactory(stock=stock_with_booking, quantity=2)
+
+        # When
+        api.synchronize_stocks(stock_details, venue, provider_id=provider.id)
+
+        # Then
+        created_offer = Offer.query.filter_by(idAtProvider=f"{self.spec[2]['ref']}").one()
+        assert created_offer.stocks[0].quantity == 18
+        assert created_offer.bookingEmail == venue.bookingEmail
+        assert created_offer.description == product.description
+        assert created_offer.extraData == product.extraData
+        assert created_offer.name == product.name
+        assert created_offer.productId == product.id
+        assert created_offer.venueId == venue.id
+        assert created_offer.type == product.type
+        assert created_offer.idAtProvider == f"{self.spec[2]['ref']}"
+        assert created_offer.lastProviderId == provider.id
+
     @pytest.mark.usefixtures("db_session")
     @freeze_time("2020-10-15 09:00:00")
     @mock.patch("pcapi.core.search.async_index_offer_ids")
@@ -100,15 +223,15 @@ class SynchronizeStocksTest:
         assert created_stock.rawProviderQuantity == 4
 
         # Test creates offer if does not exist
-        created_offer = Offer.query.filter_by(idAtProviders=f"{spec[2]['ref']}@{siret}").one()
+        created_offer = Offer.query.filter_by(idAtProvider=f"{spec[2]['ref']}").one()
         assert created_offer.stocks[0].quantity == 18
 
         # Test doesn't create offer if product does not exist or not gcu compatible
-        assert Offer.query.filter_by(idAtProviders=f"{spec[3]['ref']}@{siret}").count() == 0
-        assert Offer.query.filter_by(idAtProviders=f"{spec[6]['ref']}@{siret}").count() == 0
+        assert Offer.query.filter_by(idAtProvider=f"{spec[3]['ref']}").count() == 0
+        assert Offer.query.filter_by(idAtProvider=f"{spec[6]['ref']}").count() == 0
 
         # Test second page is actually processed
-        second_created_offer = Offer.query.filter_by(idAtProviders=f"{spec[4]['ref']}@{siret}").one()
+        second_created_offer = Offer.query.filter_by(idAtProvider=f"{spec[4]['ref']}").one()
         assert second_created_offer.stocks[0].quantity == 17
 
         # Test existing bookings are added to quantity
@@ -127,7 +250,7 @@ class SynchronizeStocksTest:
         assert created_offer.productId == product.id
         assert created_offer.venueId == venue.id
         assert created_offer.type == product.type
-        assert created_offer.idAtProviders == f"{spec[2]['ref']}@{siret}"
+        assert created_offer.idAtProvider == f"{spec[2]['ref']}"
         assert created_offer.lastProviderId == provider.id
 
         # Test offer reindexation
@@ -180,7 +303,7 @@ class SynchronizeStocksTest:
                 bookingEmail="booking_email",
                 description="product_desc",
                 extraData="extra",
-                idAtProviders="offer_ref_2",
+                idAtProvider="offer_ref_2",
                 lastProviderId=provider.id,
                 name="product_name",
                 productId=456,
@@ -192,7 +315,6 @@ class SynchronizeStocksTest:
         assert new_offer.bookingEmail == "booking_email"
         assert new_offer.description == "product_desc"
         assert new_offer.extraData == "extra"
-        assert new_offer.idAtProviders == "offer_ref_2"
         assert new_offer.idAtProvider == "isbn_product_ref"
         assert new_offer.lastProviderId == provider.id
         assert new_offer.name == "product_name"

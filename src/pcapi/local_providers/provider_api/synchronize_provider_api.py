@@ -81,7 +81,7 @@ def _build_stock_details_from_raw_stocks(raw_stocks: list[dict], venue_siret: st
                 price /= 100
         stock_details[stock["ref"]] = {
             "products_provider_reference": stock["ref"],
-            "offers_provider_reference": stock["ref"] + "@" + venue_siret,
+            "offers_provider_reference": stock["ref"],
             "stocks_provider_reference": stock["ref"] + "@" + venue_siret,
             "available_quantity": stock["available"],
             "price": price,

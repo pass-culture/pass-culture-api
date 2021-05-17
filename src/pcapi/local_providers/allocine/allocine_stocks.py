@@ -161,7 +161,7 @@ class AllocineStocks(LocalProvider):
 
         movie_version = (
             ORIGINAL_VERSION_SUFFIX
-            if _is_original_version_offer(allocine_offer.idAtProviders)
+            if _is_original_version_offer(allocine_offer.idAtProvider)
             else FRENCH_VERSION_SUFFIX
         )
 

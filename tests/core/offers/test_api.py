@@ -581,7 +581,7 @@ class DeleteStockTest:
 
     def test_can_delete_if_stock_from_allocine(self):
         provider = offerers_factories.AllocineProviderFactory(localClass="AllocineStocks")
-        offer = factories.OfferFactory(lastProvider=provider, idAtProviders="1")
+        offer = factories.OfferFactory(lastProvider=provider, idAtProvider="1")
         stock = factories.StockFactory(offer=offer)
 
         api.delete_stock(stock)
@@ -591,7 +591,7 @@ class DeleteStockTest:
 
     def test_cannot_delete_if_stock_from_titelive(self):
         provider = offerers_factories.AllocineProviderFactory(localClass="TiteLiveStocks")
-        offer = factories.OfferFactory(lastProvider=provider, idAtProviders="1")
+        offer = factories.OfferFactory(lastProvider=provider, idAtProvider="1")
         stock = factories.StockFactory(offer=offer)
 
         with pytest.raises(api_errors.ApiErrors) as error:
@@ -1202,17 +1202,17 @@ class UpdateOfferAndStockIdAtProvidersTest:
         # Given
         current_siret = "88888888888888"
         venue = VenueFactory(siret=current_siret)
-        offer = OfferFactory(venue=venue, idAtProviders="1111111111111@22222222222222")
-        other_venue_offer = OfferFactory(venue=venue, idAtProviders="3333333333333@12222222222222")
+        offer = OfferFactory(venue=venue, idAtProvider="1111111111111")
+        other_venue_offer = OfferFactory(venue=venue, idAtProvider="3333333333333")
         stock = StockFactory(offer=offer, idAtProviders="1111111111111@22222222222222")
 
         # When
         update_offer_and_stock_id_at_providers(venue, "22222222222222")
 
         # Then
-        assert offer.idAtProviders == "1111111111111@88888888888888"
+        assert offer.idAtProvider == "1111111111111"
         assert stock.idAtProviders == "1111111111111@88888888888888"
-        assert other_venue_offer.idAtProviders == "3333333333333@12222222222222"
+        assert other_venue_offer.idAtProvider == "3333333333333"
 
 
 class OfferExpenseDomainsTest:

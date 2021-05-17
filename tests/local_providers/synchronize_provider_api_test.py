@@ -60,16 +60,12 @@ def create_product(isbn, product_price, **kwargs):
     )
 
 
-def create_offer(isbn, siret, product_price):
-    return factories.OfferFactory(
-        product=create_product(isbn, product_price), idAtProviders=f"{isbn}@{siret}", idAtProvider=isbn
-    )
+def create_offer(isbn, product_price):
+    return factories.OfferFactory(product=create_product(isbn, product_price), idAtProvider=isbn)
 
 
 def create_stock(isbn, siret, product_price, **kwargs):
-    return factories.StockFactory(
-        offer=create_offer(isbn, siret, product_price), idAtProviders=f"{isbn}@{siret}", **kwargs
-    )
+    return factories.StockFactory(offer=create_offer(isbn, product_price), idAtProviders=f"{isbn}@{siret}", **kwargs)
 
 
 class ProviderAPICronTest:
@@ -91,7 +87,7 @@ class ProviderAPICronTest:
             quantity=20,
             product_price="5.01",
         )
-        offer = create_offer(ISBNs[1], siret, product_price="5.02")
+        offer = create_offer(ISBNs[1], product_price="5.02")
         product = create_product(ISBNs[2], product_price="8.01")
         create_product(ISBNs[4], product_price="10.02")
         create_product(ISBNs[6], isGcuCompatible=False, product_price="10.04")
@@ -125,15 +121,15 @@ class ProviderAPICronTest:
         assert created_stock.lastProviderId == provider.id
 
         # Test creates offer if does not exist
-        created_offer = Offer.query.filter_by(idAtProviders=f"{ISBNs[2]}@{siret}").one()
+        created_offer = Offer.query.filter_by(idAtProvider=f"{ISBNs[2]}").one()
         assert created_offer.stocks[0].quantity == 18
 
         # Test doesn't create offer if product does not exist or not gcu compatible
-        assert Offer.query.filter_by(idAtProviders=f"{ISBNs[3]}@{siret}").count() == 0
-        assert Offer.query.filter_by(idAtProviders=f"{ISBNs[6]}@{siret}").count() == 0
+        assert Offer.query.filter_by(idAtProvider=f"{ISBNs[3]}").count() == 0
+        assert Offer.query.filter_by(idAtProvider=f"{ISBNs[6]}").count() == 0
 
         # Test second page is actually processed
-        second_created_offer = Offer.query.filter_by(idAtProviders=f"{ISBNs[4]}@{siret}").one()
+        second_created_offer = Offer.query.filter_by(idAtProvider=f"{ISBNs[4]}").one()
         assert second_created_offer.stocks[0].quantity == 17
 
         # Test existing bookings are added to quantity
@@ -155,7 +151,6 @@ class ProviderAPICronTest:
         assert created_offer.productId == product.id
         assert created_offer.venueId == venue_provider.venue.id
         assert created_offer.type == product.type
-        assert created_offer.idAtProviders == f"{ISBNs[2]}@{siret}"
         assert created_offer.idAtProvider == ISBNs[2]
         assert created_offer.lastProviderId == provider.id
 
@@ -196,14 +191,14 @@ class ProviderAPICronTest:
             assert result == [
                 {
                     "available_quantity": 17,
-                    "offers_provider_reference": "3010000108123@siret",
+                    "offers_provider_reference": "3010000108123",
                     "price": Decimal("23.99"),
                     "products_provider_reference": "3010000108123",
                     "stocks_provider_reference": "3010000108123@siret",
                 },
                 {
                     "available_quantity": 17,
-                    "offers_provider_reference": "3010000108124@siret",
+                    "offers_provider_reference": "3010000108124",
                     "price": Decimal("28.99"),
                     "products_provider_reference": "3010000108124",
                     "stocks_provider_reference": "3010000108124@siret",
@@ -226,7 +221,7 @@ class ProviderAPICronTest:
                 {
                     "available_quantity": 17,
                     "price": Decimal("28.99"),  # latest wins
-                    "offers_provider_reference": "3010000108123@siret",
+                    "offers_provider_reference": "3010000108123",
                     "products_provider_reference": "3010000108123",
                     "stocks_provider_reference": "3010000108123@siret",
                 },
@@ -248,7 +243,7 @@ class ProviderAPICronTest:
                 {
                     "available_quantity": 17,
                     "price": Decimal("12.34"),  # latest wins
-                    "offers_provider_reference": "3010000108123@siret",
+                    "offers_provider_reference": "3010000108123",
                     "products_provider_reference": "3010000108123",
                     "stocks_provider_reference": "3010000108123@siret",
                 },

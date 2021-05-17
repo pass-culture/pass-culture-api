@@ -179,7 +179,7 @@ class LocalProvider(Iterator):
                 continue
 
             for providable_info in providable_infos:
-                chunk_key = providable_info.id_at_providers + "|" + str(providable_info.type.__name__)
+                chunk_key = providable_info.new_id_at_provider + "|" + str(providable_info.type.__name__)
                 pc_object = get_existing_pc_obj(providable_info, chunk_to_insert, chunk_to_update)
 
                 if pc_object is None:
