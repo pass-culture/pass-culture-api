@@ -94,5 +94,10 @@ LIMIT_CONFIGURATIONS = {
 }
 
 
-def get_current_deposit_version():
-    return 2 if feature_queries.is_active(FeatureToggle.APPLY_BOOKING_LIMITS_V2) else 1
+def get_current_deposit_version(is_apply_booking_limits_v2_active=None):
+    is_apply_booking_limits_v2_active = (
+        is_apply_booking_limits_v2_active
+        if is_apply_booking_limits_v2_active != None
+        else feature_queries.is_active(FeatureToggle.APPLY_BOOKING_LIMITS_V2)
+    )
+    return 2 if is_apply_booking_limits_v2_active else 1

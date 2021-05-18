@@ -98,3 +98,14 @@ def remove_feature_from_database(feature: FeatureToggle) -> None:
     """
     statement = text("DELETE FROM feature WHERE name = :name").bindparams(name=feature.name)
     op.execute(statement)
+
+
+def get_features_dict(feature_names: list[FeatureToggle]) -> dict:
+    features = Feature.query.filter(Feature.name.in_(feature_names)).with_entities(Feature.name, Feature.isActive).all()
+
+    feature_dict = {}
+
+    for feature in features:
+        feature_dict[feature[0]] = feature[1]
+
+    return feature_dict

@@ -1,5 +1,6 @@
 import pytest
 
+from pcapi.core.testing import assert_num_queries
 from pcapi.core.testing import override_features
 
 from tests.conftest import TestClient
@@ -18,7 +19,8 @@ class SettingsTest:
         ENABLE_PHONE_VALIDATION=True,
     )
     def test_get_settings_feature_combination_1(self, app):
-        response = TestClient(app.test_client()).get("/native/v1/settings")
+        with assert_num_queries(1):
+            response = TestClient(app.test_client()).get("/native/v1/settings")
         assert response.status_code == 200
         assert response.json == {
             "allowIdCheckRegistration": True,
