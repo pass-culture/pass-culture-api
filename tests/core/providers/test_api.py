@@ -7,6 +7,7 @@ import pytest
 from pcapi.core.bookings.factories import BookingFactory
 import pcapi.core.offerers.factories as offerers_factories
 from pcapi.core.offers import factories
+from pcapi.core.offers.factories import StockFactory
 from pcapi.core.offers.factories import VenueFactory
 from pcapi.core.offers.models import Offer
 from pcapi.core.providers import api
@@ -42,12 +43,12 @@ def create_product(isbn, **kwargs):
     )
 
 
-def create_offer(isbn, siret):
+def create_offer(isbn):
     return factories.OfferFactory(product=create_product(isbn), idAtProvider=f"{isbn}")
 
 
 def create_stock(isbn, siret, **kwargs):
-    return factories.StockFactory(offer=create_offer(isbn, siret), idAtProviders=f"{isbn}@{siret}", **kwargs)
+    return factories.StockFactory(offer=create_offer(isbn), idAtProviders=f"{isbn}@{siret}", **kwargs)
 
 
 class SynchronizeStocksTest:
@@ -120,7 +121,8 @@ class SynchronizeStocksTest:
         venue = VenueFactory()
         siret = venue.siret
         stock_details = synchronize_provider_api._build_stock_details_from_raw_stocks(self.spec, siret)
-        offer = create_offer(self.stock_to_be_imported["ref"], siret)
+        offer = create_offer(self.stock_to_be_imported["ref"])
+        offer.venue = venue
 
         # When
         api.synchronize_stocks(stock_details, venue, provider_id=provider.id)
@@ -149,7 +151,7 @@ class SynchronizeStocksTest:
             siret,
             quantity=20,
         )
-        create_offer(self.stock_to_be_imported["ref"], siret)
+        create_offer(self.stock_to_be_imported["ref"])
         product = create_product(self.spec[2]["ref"])
         create_product(self.spec[4]["ref"])
         create_product(self.non_cgu_compatible_stock["ref"], isGcuCompatible=False)
@@ -176,6 +178,45 @@ class SynchronizeStocksTest:
 
     @pytest.mark.usefixtures("db_session")
     @freeze_time("2020-10-15 09:00:00")
+    @override_features(SYNCHRONIZE_ALGOLIA=True)
+    @mock.patch("pcapi.connectors.redis.add_offer_id")
+    def test_new_condition(self, mocked_add_offer_id):
+        # Given
+        book_isbn = "3010000101789"
+        stocks_status_from_api = [{"ref": book_isbn, "available": 6}]
+        new_library = VenueFactory(siret="12345678912345")
+        provider = offerers_factories.APIProviderFactory(apiUrl="https://provider_url", authToken="fake_token")
+
+        same_book_offer = factories.OfferFactory(
+            venue__siret="111111111111",
+            product=create_product(book_isbn),
+            idAtProvider=f"{book_isbn}",
+            stocks=[
+                StockFactory(price=10, quantity=12, idAtProviders="3010000101789@111111111111"),
+            ],
+        )
+        existing_library = same_book_offer.venue
+
+        # When
+        stock_details = synchronize_provider_api._build_stock_details_from_raw_stocks(
+            stocks_status_from_api, "12345678912345"
+        )
+        api.synchronize_stocks(stock_details, new_library, provider_id=provider.id)
+
+        # Then
+        assert Offer.query.filter_by(idAtProvider=book_isbn, venueId=existing_library.id).count() == 1
+        assert same_book_offer.stocks[0].remainingQuantity == 12
+
+        assert Offer.query.filter_by(idAtProvider=book_isbn, venueId=new_library.id).count() == 1
+        new_offer = Offer.query.filter_by(idAtProvider=book_isbn, venueId=new_library.id).first()
+        assert new_offer.stocks[0].remainingQuantity == 6
+
+        assert Offer.query.filter(Offer.idAtProvider == book_isbn).count() == 2
+
+    # FIXME (asaunier, 2021-05-18): This test should be replaced by more specific tests
+    #  since it does not help to easily identify the regression source
+    @pytest.mark.usefixtures("db_session")
+    @freeze_time("2020-10-15 09:00:00")
     @mock.patch("pcapi.core.search.async_index_offer_ids")
     def test_execution(self, mock_async_index_offer_ids):
         # Given
@@ -199,12 +240,16 @@ class SynchronizeStocksTest:
             siret,
             quantity=20,
         )
-        offer = create_offer(spec[1]["ref"], siret)
+        stock.offer.venue = venue
+        offer = create_offer(spec[1]["ref"])
+        offer.venue = venue
+
         product = create_product(spec[2]["ref"])
         create_product(spec[4]["ref"])
         create_product(spec[6]["ref"], isGcuCompatible=False)
 
         stock_with_booking = create_stock(spec[5]["ref"], siret, quantity=20)
+        stock_with_booking.offer.venue = venue
         BookingFactory(stock=stock_with_booking)
         BookingFactory(stock=stock_with_booking, quantity=2)
 

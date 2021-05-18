@@ -79,7 +79,8 @@ class ProviderAPICronTest:
             isActive=True,
             provider=provider,
         )
-        siret = venue_provider.venue.siret
+        venue = venue_provider.venue
+        siret = venue.siret
 
         stock = create_stock(
             ISBNs[0],
@@ -87,12 +88,15 @@ class ProviderAPICronTest:
             quantity=20,
             product_price="5.01",
         )
+        stock.offer.venue = venue
         offer = create_offer(ISBNs[1], product_price="5.02")
+        offer.venue = venue
         product = create_product(ISBNs[2], product_price="8.01")
         create_product(ISBNs[4], product_price="10.02")
         create_product(ISBNs[6], isGcuCompatible=False, product_price="10.04")
 
         stock_with_booking = create_stock(ISBNs[5], siret, quantity=20, product_price="18.01")
+        stock_with_booking.offer.venue = venue
         BookingFactory(stock=stock_with_booking)
         BookingFactory(stock=stock_with_booking, quantity=2)
 

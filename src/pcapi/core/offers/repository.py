@@ -192,10 +192,12 @@ def get_products_map_by_id_at_providers(id_at_providers: list[str]) -> dict[str,
     return {product.idAtProviders: product for product in products}
 
 
-def get_offers_map_by_id_at_providers(id_at_providers: list[str]) -> dict[str, int]:
+def get_offers_map_by_id_at_providers(id_at_providers: list[str], venueId: int) -> dict[str, int]:
     offers_map = {}
     for offer_id, offer_id_at_providers in (
-        db.session.query(Offer.id, Offer.idAtProvider).filter(Offer.idAtProvider.in_(id_at_providers)).all()
+        db.session.query(Offer.id, Offer.idAtProvider)
+        .filter(and_(Offer.idAtProvider.in_(id_at_providers), Offer.venueId == venueId))
+        .all()
     ):
         offers_map[offer_id_at_providers] = offer_id
 

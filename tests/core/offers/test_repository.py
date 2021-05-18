@@ -20,6 +20,8 @@ from pcapi.core.offers.repository import get_available_activation_code
 from pcapi.core.offers.repository import get_capped_offers_for_filters
 from pcapi.core.offers.repository import get_expired_offers
 from pcapi.core.offers.repository import get_offers_by_ids
+from pcapi.core.offers.repository import get_offers_map_by_id_at_providers
+from pcapi.core.offers.repository import get_paginated_offers_for_filters
 from pcapi.core.offers.repository import get_sold_out_offers_count_for_venue
 from pcapi.core.users import factories as users_factories
 from pcapi.domain.pro_offers.offers_recap import OffersRecap
@@ -1239,3 +1241,31 @@ class AvailableActivationCodeTest:
         ActivationCodeFactory(stock=stock2)
 
         assert not get_available_activation_code(stock)
+
+
+class GetOffersMapByIdAtProvidersAndVenueTest:
+    @pytest.mark.usefixtures("db_session")
+    def test_map_ids_of_offers_from_list_of_id_at_provider(self, app):
+        # Given
+        library = offers_factories.VenueFactory()
+        offer = offers_factories.OfferFactory(idAtProvider="123456789", venue=library)
+
+        # When
+        mapped_offers = get_offers_map_by_id_at_providers(["123456789"], library.id)
+
+        # Then
+        assert mapped_offers == {"123456789": offer.id}
+
+    @pytest.mark.usefixtures("db_session")
+    def test_map_ids_of_offers_filtering_by_venue(self, app):
+        # Given
+        library = offers_factories.VenueFactory()
+        offers_factories.OfferFactory(idAtProvider="123456789", venue=library)
+
+        other_library = offers_factories.VenueFactory()
+
+        # When
+        mapped_offers = get_offers_map_by_id_at_providers(["123456789"], other_library.id)
+
+        # Then
+        assert mapped_offers == {}
