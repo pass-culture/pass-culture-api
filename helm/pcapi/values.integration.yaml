@@ -319,3 +319,5 @@ secrets:
     version: 2
   - name: SUPPORT_EMAIL_ADDRESS
     version: 2
+  - name: BLOCKED_PHONE_NUMBERS
+    version: 1

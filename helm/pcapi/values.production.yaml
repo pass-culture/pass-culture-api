@@ -384,3 +384,5 @@ secrets:
     version: 2
   - name: WALLET_BALANCES_RECIPIENTS
     version: 2
+  - name: BLOCKED_PHONE_NUMBERS
+    version: 1

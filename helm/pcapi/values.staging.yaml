@@ -369,3 +369,5 @@ secrets:
     version: 3
   - name: WHITELISTED_SMS_RECIPIENTS
     version: 1
+  - name: BLOCKED_PHONE_NUMBERS
+    version: 1
