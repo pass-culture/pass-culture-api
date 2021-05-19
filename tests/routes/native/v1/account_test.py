@@ -674,7 +674,7 @@ class ShowEligibleCardTest:
 
 class SendPhoneValidationCodeTest:
     def test_send_phone_validation_code(self, app):
-        user = users_factories.UserFactory(departementCode="93", isBeneficiary=False, phoneNumber="060102030405")
+        user = users_factories.UserFactory(departementCode="93", isBeneficiary=False, phoneNumber="0601020304")
         access_token = create_access_token(identity=user.email)
 
         test_client = TestClient(app.test_client())
@@ -692,7 +692,7 @@ class SendPhoneValidationCodeTest:
         assert token.expirationDate < datetime.now() + timedelta(minutes=30)
 
         assert sms_testing.requests == [
-            {"recipient": "3360102030405", "content": f"{token.value} est ton code de confirmation pass Culture"}
+            {"recipient": "33601020304", "content": f"{token.value} est ton code de confirmation pass Culture"}
         ]
         assert len(token.value) == 6
         assert 0 <= int(token.value) < 1000000
@@ -706,7 +706,7 @@ class SendPhoneValidationCodeTest:
 
     @override_settings(MAX_SMS_SENT_FOR_PHONE_VALIDATION=1)
     def test_send_phone_validation_code_too_many_attempts(self, app):
-        user = users_factories.UserFactory(departementCode="93", isBeneficiary=False, phoneNumber="060102030405")
+        user = users_factories.UserFactory(departementCode="93", isBeneficiary=False, phoneNumber="0601020304")
         access_token = create_access_token(identity=user.email)
 
         test_client = TestClient(app.test_client())
@@ -720,7 +720,7 @@ class SendPhoneValidationCodeTest:
         assert response.json["code"] == "TOO_MANY_SMS_SENT"
 
     def test_send_phone_validation_code_already_beneficiary(self, app):
-        user = users_factories.UserFactory(isEmailValidated=True, isBeneficiary=True, phoneNumber="060102030405")
+        user = users_factories.UserFactory(isEmailValidated=True, isBeneficiary=True, phoneNumber="0601020304")
         access_token = create_access_token(identity=user.email)
 
         test_client = TestClient(app.test_client())
@@ -733,7 +733,7 @@ class SendPhoneValidationCodeTest:
         assert not Token.query.filter_by(userId=user.id).first()
 
     def test_send_phone_validation_code_for_new_phone_with_already_beneficiary(self, app):
-        user = users_factories.UserFactory(isEmailValidated=True, isBeneficiary=True, phoneNumber="060102030405")
+        user = users_factories.UserFactory(isEmailValidated=True, isBeneficiary=True, phoneNumber="0601020304")
         access_token = create_access_token(identity=user.email)
 
         test_client = TestClient(app.test_client())
@@ -745,10 +745,10 @@ class SendPhoneValidationCodeTest:
 
         assert not Token.query.filter_by(userId=user.id).first()
         db.session.refresh(user)
-        assert user.phoneNumber == "060102030405"
+        assert user.phoneNumber == "0601020304"
 
     def test_send_phone_validation_code_for_new_phone_updates_phone(self, app):
-        user = users_factories.UserFactory(isEmailValidated=True, isBeneficiary=False, phoneNumber="060102030405")
+        user = users_factories.UserFactory(isEmailValidated=True, isBeneficiary=False, phoneNumber="0601020304")
         access_token = create_access_token(identity=user.email)
 
         test_client = TestClient(app.test_client())
@@ -765,7 +765,7 @@ class SendPhoneValidationCodeTest:
 
 class ValidatePhoneNumberTest:
     def test_validate_phone_number(self, app):
-        user = users_factories.UserFactory(isBeneficiary=False)
+        user = users_factories.UserFactory(isBeneficiary=False, phoneNumber="0607080900")
         access_token = create_access_token(identity=user.email)
         token = create_phone_validation_token(user)
 
@@ -788,7 +788,7 @@ class ValidatePhoneNumberTest:
 
     @override_settings(MAX_PHONE_VALIDATION_ATTEMPTS=1)
     def test_validate_phone_number_too_many_attempts(self, app):
-        user = users_factories.UserFactory(isBeneficiary=False)
+        user = users_factories.UserFactory(isBeneficiary=False, phoneNumber="0607080900")
         access_token = create_access_token(identity=user.email)
         token = create_phone_validation_token(user)
 
@@ -807,7 +807,7 @@ class ValidatePhoneNumberTest:
         assert int(app.redis_client.get(f"phone_validation_attempts_user_{user.id}")) == 1
 
     def test_wrong_code(self, app):
-        user = users_factories.UserFactory(isBeneficiary=False)
+        user = users_factories.UserFactory(isBeneficiary=False, phoneNumber="0607080900")
         access_token = create_access_token(identity=user.email)
         create_phone_validation_token(user)
 
@@ -823,7 +823,7 @@ class ValidatePhoneNumberTest:
         assert Token.query.filter_by(userId=user.id, type=TokenType.PHONE_VALIDATION).first()
 
     def test_expired_code(self, app):
-        user = users_factories.UserFactory(isBeneficiary=False)
+        user = users_factories.UserFactory(isBeneficiary=False, phoneNumber="0607080900")
         token = create_phone_validation_token(user)
 
         with freeze_time(datetime.now() + timedelta(minutes=20)):

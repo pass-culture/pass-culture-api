@@ -12,7 +12,7 @@ from tests.conftest import TestClient
 @pytest.mark.usefixtures("db_session")
 def test_send_phone_validation(app):
     app.redis_client = redis.Redis()
-    user = UserFactory(isBeneficiary=False, isEmailValidated=True, phoneNumber="060102030405")
+    user = UserFactory(isBeneficiary=False, isEmailValidated=True, phoneNumber="0601020304")
 
     client = TestClient(app.test_client()).with_auth(email=user.email)
 
