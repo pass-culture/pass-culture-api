@@ -12,8 +12,10 @@ import pytest
 from pcapi.core.bookings import factories as booking_factories
 from pcapi.core.payments.api import DEPOSIT_VALIDITY_IN_YEARS
 from pcapi.core.testing import override_features
+from pcapi.core.testing import override_settings
 from pcapi.core.users import api as users_api
 from pcapi.core.users import constants as users_constants
+from pcapi.core.users import exceptions as users_exceptions
 from pcapi.core.users import factories as users_factories
 from pcapi.core.users.api import BeneficiaryValidationStep
 from pcapi.core.users.api import _set_offerer_departement_code
@@ -622,3 +624,38 @@ class DomainsCreditTest:
         user = users_factories.UserFactory(isBeneficiary=False)
 
         assert not get_domains_credit(user)
+
+
+class PhoneNumberIsLegitTest:
+    def test_metropolitan_legit_number(self):
+        user = users_factories.UserFactory(departementCode=93)
+        assert users_api._check_phone_number_is_legit(user, "0607080900") == "+33607080900"
+        assert users_api._check_phone_number_is_legit(user, "+33607080900") == "+33607080900"
+
+    def test_non_metropolitan_legit_number(self):
+        user = users_factories.UserFactory(departementCode=971)
+        assert users_api._check_phone_number_is_legit(user, "+590690080900") == "+590690080900"
+        assert users_api._check_phone_number_is_legit(user, "0691350000") == "+590691350000"
+
+    def test_invalid_number(self):
+        user = users_factories.UserFactory(departementCode=93)
+        with pytest.raises(users_exceptions.InvalidPhoneNumber):
+            assert users_api._check_phone_number_is_legit(user, "nope")
+
+        with pytest.raises(users_exceptions.InvalidPhoneNumber):
+            assert users_api._check_phone_number_is_legit(user, None)
+
+        with pytest.raises(users_exceptions.InvalidPhoneNumber):
+            assert users_api._check_phone_number_is_legit(user, "")
+
+    @override_settings(BLOCKED_PHONE_NUMBERS={"+33607080900"})
+    def test_blocked_number(self):
+        user = users_factories.UserFactory(departementCode=93)
+        with pytest.raises(users_exceptions.BlockedPhoneNumber):
+            assert users_api._check_phone_number_is_legit(user, "+33607080900")
+
+        with pytest.raises(users_exceptions.BlockedPhoneNumber):
+            assert users_api._check_phone_number_is_legit(user, "0033607080900")
+
+        with pytest.raises(users_exceptions.BlockedPhoneNumber):
+            assert users_api._check_phone_number_is_legit(user, "0607080900")
