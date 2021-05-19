@@ -14,6 +14,8 @@ from jwt import DecodeError
 from jwt import ExpiredSignatureError
 from jwt import InvalidSignatureError
 from jwt import InvalidTokenError
+import phonenumbers
+from phonenumbers import NumberParseException
 from redis import Redis
 
 # TODO (viconnex): fix circular import of pcapi/models/__init__.py
@@ -22,6 +24,8 @@ from pcapi import settings
 from pcapi.core import mails
 from pcapi.core.bookings.conf import LIMIT_CONFIGURATIONS
 from pcapi.core.payments import api as payment_api
+from pcapi.core.users.constants import METROPOLE_PHONE_PREFIX
+from pcapi.core.users.constants import PHONE_PREFIX_BY_DEPARTEMENT_CODE
 from pcapi.core.users.models import Credit
 from pcapi.core.users.models import DomainsCredit
 from pcapi.core.users.models import NotificationSubscriptions
@@ -492,7 +496,7 @@ def set_pro_tuto_as_seen(user: User) -> None:
 
 
 def change_user_phone_number(user: User, phone_number: str):
-    _check_phone_number_validation_is_authorized(user)
+    _phone_number_validation_checks(user, phone_number)
 
     user.phoneNumber = phone_number
     Token.query.filter(Token.user == user, Token.type == TokenType.PHONE_VALIDATION).delete()
@@ -504,7 +508,7 @@ def needs_to_validate_phone(user: User) -> bool:
 
 
 def send_phone_validation_code(user: User) -> None:
-    _check_phone_number_validation_is_authorized(user)
+    _phone_number_validation_checks(user, user.phoneNumber)
 
     if not is_SMS_sending_allowed(app.redis_client, user):
         raise exceptions.SMSSendingLimitReached()
@@ -519,7 +523,7 @@ def send_phone_validation_code(user: User) -> None:
 
 
 def validate_phone_number(user: User, code: str) -> None:
-    _check_phone_number_validation_is_authorized(user)
+    _phone_number_validation_checks(user, user.phoneNumber)
     _check_and_update_phone_validation_attempts(app.redis_client, user)
 
     token = Token.query.filter(
@@ -564,3 +568,34 @@ def _check_and_update_phone_validation_attempts(redis: Redis, user: User) -> Non
     count = redis.incr(phone_validation_attempts_key)
     if count == 1:
         redis.expire(phone_validation_attempts_key, settings.PHONE_VALIDATION_ATTEMPTS_TTL)
+
+
+def _check_phone_number_is_legit(user: User, phone_number: str) -> str:
+    """
+    A phone number is legit if it can be parsed and is not part of the
+    blacklisted phone numbers.
+    """
+    try:
+        # Parse 'phone_number' with a default region in case it does not start
+        # with an internatioonal code, this should be enough most of the time
+        parsed = phonenumbers.parse(phone_number, "FR")
+    except NumberParseException as error:
+        raise exceptions.InvalidPhoneNumber(phone_number) from error
+
+    if not phonenumbers.is_valid_number(parsed):
+        # For non-metropolitan France phone numbers, fix the country code and
+        # try validation again
+        parsed.country_code = int(PHONE_PREFIX_BY_DEPARTEMENT_CODE.get(user.departementCode, METROPOLE_PHONE_PREFIX))
+        if not phonenumbers.is_valid_number(parsed):
+            raise exceptions.InvalidPhoneNumber(phone_number)
+
+    normalized_number = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
+    if normalized_number in settings.BLOCKED_PHONE_NUMBERS:
+        raise exceptions.BlockedPhoneNumber(phone_number)
+
+    return normalized_number
+
+
+def _phone_number_validation_checks(user: User, phone_number: str) -> None:
+    _check_phone_number_validation_is_authorized(user)
+    _check_phone_number_is_legit(user, phone_number)

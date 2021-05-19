@@ -263,3 +263,6 @@ RATE_LIMIT_BY_IP = os.environ.get("RATE_LIMIT_BY_IP", "10/minute")
 
 # DEBUG
 DEBUG_ACTIVATED = os.environ.get("DEBUG_ACTIVATED") == "True"
+
+# PHONE NUMBERS
+BLOCKED_PHONE_NUMBERS = set(os.environ.get("BLOCKED_PHONE_NUMBERS", []))

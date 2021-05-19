@@ -64,3 +64,11 @@ class NotValidCode(PhoneVerificationException):
 
 class ExpiredCode(NotValidCode):
     pass
+
+
+class BlockedPhoneNumber(PhoneVerificationException):
+    pass
+
+
+class InvalidPhoneNumber(PhoneVerificationException):
+    pass
