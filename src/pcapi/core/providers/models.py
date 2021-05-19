@@ -118,7 +118,6 @@ class VenueProvider(PcObject, Model, ProvidableMixin, DeactivableMixin):
 
     @property
     def nOffers(self):
-        # pylint: disable=comparison-with-callable
         return Offer.query.filter(Offer.venueId == self.venueId).filter(Offer.lastProviderId == self.providerId).count()
 
 

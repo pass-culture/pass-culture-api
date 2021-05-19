@@ -75,7 +75,7 @@ class SynchronizeStocksTest:
         provider = offerers_factories.APIProviderFactory(apiUrl="https://provider_url", authToken="fake_token")
         venue = VenueFactory()
         siret = venue.siret
-        stock_details = synchronize_provider_api._build_stock_details_from_raw_stocks(self.spec, siret)
+        stock_details = synchronize_provider_api._build_stock_details_from_raw_stocks(self.spec, siret, provider)
         stock = create_stock(
             self.already_created_stock["ref"],
             siret,
@@ -98,7 +98,7 @@ class SynchronizeStocksTest:
         provider = offerers_factories.APIProviderFactory(apiUrl="https://provider_url", authToken="fake_token")
         venue = VenueFactory()
         siret = venue.siret
-        stock_details = synchronize_provider_api._build_stock_details_from_raw_stocks(self.spec, siret)
+        stock_details = synchronize_provider_api._build_stock_details_from_raw_stocks(self.spec, siret, provider)
 
         stock_with_booking = create_stock(self.previously_booked_stock["ref"], siret, quantity=20)
         BookingFactory(stock=stock_with_booking)
@@ -120,7 +120,7 @@ class SynchronizeStocksTest:
         provider = offerers_factories.APIProviderFactory(apiUrl="https://provider_url", authToken="fake_token")
         venue = VenueFactory()
         siret = venue.siret
-        stock_details = synchronize_provider_api._build_stock_details_from_raw_stocks(self.spec, siret)
+        stock_details = synchronize_provider_api._build_stock_details_from_raw_stocks(self.spec, siret, provider)
         offer = create_offer(self.stock_to_be_imported["ref"])
         offer.venue = venue
 
@@ -144,7 +144,7 @@ class SynchronizeStocksTest:
         provider = offerers_factories.APIProviderFactory(apiUrl="https://provider_url", authToken="fake_token")
         venue = VenueFactory()
         siret = venue.siret
-        stock_details = synchronize_provider_api._build_stock_details_from_raw_stocks(self.spec, siret)
+        stock_details = synchronize_provider_api._build_stock_details_from_raw_stocks(self.spec, siret, provider)
 
         create_stock(
             self.already_created_stock["ref"],
@@ -199,7 +199,7 @@ class SynchronizeStocksTest:
 
         # When
         stock_details = synchronize_provider_api._build_stock_details_from_raw_stocks(
-            stocks_status_from_api, "12345678912345"
+            stocks_status_from_api, "12345678912345", provider
         )
         api.synchronize_stocks(stock_details, new_library, provider_id=provider.id)
 
