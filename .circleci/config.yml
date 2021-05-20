@@ -191,10 +191,6 @@ jobs:
           POSTGRES_USER: pytest
           POSTGRES_PASSWORD: pytest
           POSTGRES_DB: pass_culture
-      - image: redis
-        auth:
-          username: $DOCKERHUB_USER
-          password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
       - unless:
