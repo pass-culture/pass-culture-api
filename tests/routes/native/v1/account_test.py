@@ -15,6 +15,7 @@ from pcapi.core.testing import override_features
 from pcapi.core.testing import override_settings
 from pcapi.core.users import factories as users_factories
 from pcapi.core.users.api import create_phone_validation_token
+from pcapi.core.users.factories import IdCheckToken
 from pcapi.core.users.models import Token
 from pcapi.core.users.models import TokenType
 from pcapi.core.users.models import User
@@ -116,11 +117,28 @@ class AccountTest:
             "showEligibleCard": False,
             "subscriptions": {"marketingPush": True, "marketingEmail": True},
             "needsToValidatePhone": False,
+            "lastIdcheckCreateDate": None,
         }
         EXPECTED_DATA.update(USER_DATA)
 
         assert response.status_code == 200
         assert response.json == EXPECTED_DATA
+
+    @freeze_time("2018-06-01")
+    def test_get_user_last_idcheck_create_date(self, app):
+        user = users_factories.UserFactory(
+            email=self.identifier, dateOfBirth=datetime(2000, 1, 1), departementCode="93"
+        )
+        IdCheckToken(user=user, creationDate=datetime(2018, 6, 1))
+
+        access_token = create_access_token(identity=self.identifier)
+        test_client = TestClient(app.test_client())
+        test_client.auth_header = {"Authorization": f"Bearer {access_token}"}
+
+        response = test_client.get("/native/v1/me")
+
+        assert response.status_code == 200
+        assert response.json["lastIdcheckCreateDate"] == "2018-06-01T00:00:00Z"
 
     @override_features(WHOLE_FRANCE_OPENING=False)
     @freeze_time("2018-06-01")
@@ -167,6 +185,7 @@ class AccountTest:
             "showEligibleCard": False,
             "subscriptions": {"marketingPush": True, "marketingEmail": True},
             "needsToValidatePhone": False,
+            "lastIdcheckCreateDate": None,
         }
         EXPECTED_DATA.update(USER_DATA)
 
@@ -218,6 +237,7 @@ class AccountTest:
             "showEligibleCard": False,
             "subscriptions": {"marketingPush": True, "marketingEmail": True},
             "needsToValidatePhone": False,
+            "lastIdcheckCreateDate": None,
         }
         EXPECTED_DATA.update(USER_DATA)
 

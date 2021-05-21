@@ -13,6 +13,7 @@ from pcapi.core.offers.models import Offer
 from pcapi.core.offers.models import Stock
 from pcapi.core.users import constants as users_constants
 from pcapi.core.users.api import get_domains_credit
+from pcapi.core.users.api import get_last_idcheck_creation_date
 from pcapi.core.users.api import needs_to_validate_phone
 from pcapi.core.users.models import ExpenseDomain
 from pcapi.core.users.models import User
@@ -106,6 +107,7 @@ class UserProfileResponse(BaseModel):
     needsToFillCulturalSurvey: bool
     show_eligible_card: bool
     needs_to_validate_phone: bool
+    last_idcheck_create_date: Optional[datetime.datetime]
 
     class Config:
         orm_mode = True
@@ -144,6 +146,7 @@ class UserProfileResponse(BaseModel):
         user.domains_credit = get_domains_credit(user)
         user.booked_offers = cls._get_booked_offers(user)
         user.needs_to_validate_phone = needs_to_validate_phone(user)
+        user.last_idcheck_create_date = get_last_idcheck_creation_date(user)
         return super().from_orm(user)
 
 

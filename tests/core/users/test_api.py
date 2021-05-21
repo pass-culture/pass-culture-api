@@ -26,6 +26,7 @@ from pcapi.core.users.api import get_domains_credit
 from pcapi.core.users.api import set_pro_tuto_as_seen
 from pcapi.core.users.api import steps_to_become_beneficiary
 from pcapi.core.users.factories import BeneficiaryImportFactory
+from pcapi.core.users.factories import IdCheckToken
 from pcapi.core.users.models import Credit
 from pcapi.core.users.models import DomainsCredit
 from pcapi.core.users.models import PhoneValidationStatusType
@@ -199,6 +200,30 @@ class GenerateIdCheckTokenIfEligibleTest:
         user = users_factories.UserFactory(dateOfBirth=datetime(1999, 5, 1))
         token = create_id_check_token(user)
         assert not token
+
+
+class GetLastIdCheckTokenTest:
+    def test_user_with_no_token(self):
+        user = users_factories.UserFactory(dateOfBirth=datetime(1999, 5, 1))
+        assert not users_api.get_last_idcheck_creation_date(user)
+
+    @freeze_time("2018-06-01")
+    def test_user_with_one_token(self):
+        user = users_factories.UserFactory(dateOfBirth=datetime(2000, 1, 1), departementCode="93")
+        token = IdCheckToken(user=user)
+
+        creation_date = users_api.get_last_idcheck_creation_date(user)
+        assert token.creationDate == creation_date
+
+    @freeze_time("2018-06-01")
+    def test_user_with_multiple_token(self):
+        user = users_factories.UserFactory(dateOfBirth=datetime(2000, 1, 1), departementCode="93")
+        IdCheckToken(user=user, creationDate=datetime(2018, 6, 1))
+        IdCheckToken(user=user, creationDate=datetime(2018, 6, 2))
+        latest_token = IdCheckToken(user=user, creationDate=datetime(2018, 6, 3))
+
+        creation_date = users_api.get_last_idcheck_creation_date(user)
+        assert latest_token.creationDate == creation_date
 
 
 class DeleteExpiredTokensTest:

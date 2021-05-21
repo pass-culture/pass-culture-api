@@ -15,6 +15,7 @@ from jwt import ExpiredSignatureError
 from jwt import InvalidSignatureError
 from jwt import InvalidTokenError
 from redis import Redis
+from sqlalchemy import desc
 
 # TODO (viconnex): fix circular import of pcapi/models/__init__.py
 from pcapi import models  # pylint: disable=unused-import
@@ -94,6 +95,19 @@ def create_id_check_token(user: User) -> Optional[Token]:
         return None
 
     return generate_and_save_token(user, TokenType.ID_CHECK, constants.ID_CHECK_TOKEN_LIFE_TIME)
+
+
+def get_last_idcheck_creation_date(user: User) -> Optional[datetime]:
+    token = (
+        Token.query.filter(Token.userId == user.id)
+        .filter(Token.type == TokenType.ID_CHECK)
+        .order_by(desc(Token.creationDate))
+        .first()
+    )
+
+    if not token:
+        return None
+    return token.creationDate
 
 
 def create_phone_validation_token(user: User) -> Optional[Token]:
