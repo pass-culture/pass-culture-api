@@ -56,3 +56,7 @@ class NotValidCode(PhoneVerificationException):
 
 class ExpiredCode(NotValidCode):
     pass
+
+
+class IdCheckTokenLimitReached(Exception):
+    pass
