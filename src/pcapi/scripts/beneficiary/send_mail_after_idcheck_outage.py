@@ -49,6 +49,7 @@ def get_newly_eligible_user_email_data(user: User, token: Token, is_native_app_l
             "nativeAppLink": email_link,
             "depositAmount": int(deposit_amount),
         },
+        "Mj-campaign": "backup-id-check-campaign",
     }
 
 
