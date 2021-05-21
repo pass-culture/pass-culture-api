@@ -14,6 +14,5 @@ def save_mailing_contact():
     validate_save_mailing_contact_request(json)
     contact_email = json["email"]
     contact_date_of_birth = json["dateOfBirth"]
-    contact_department_code = json["departmentCode"]
-    mailing_contacts_job.delay(contact_email, contact_date_of_birth, contact_department_code)
+    mailing_contacts_job.delay(contact_email, contact_date_of_birth)
     return "", 201
