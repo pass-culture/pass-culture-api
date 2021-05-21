@@ -1,7 +1,7 @@
 """feature_disable_booking_recap
 
 Revision ID: e442fb5ac4e6
-Revises: 58df8264fe50
+Revises: 8824ce692699
 Create Date: 2021-05-21 09:33:28.418695
 
 """
@@ -10,7 +10,7 @@ from pcapi.models import feature
 
 # revision identifiers, used by Alembic.
 revision = "e442fb5ac4e6"
-down_revision = "58df8264fe50"
+down_revision = "8824ce692699"
 branch_labels = None
 depends_on = None
 
