@@ -23,7 +23,21 @@ from pcapi.utils.urls import generate_firebase_dynamic_link
 logger = logging.getLogger(__name__)
 
 
-def get_newly_eligible_user_email_data(user: User, token: Token, is_native_app_link=True) -> dict:
+from rq.decorators import job
+
+from pcapi.workers import worker
+from pcapi.workers.decorators import job_context
+from pcapi.workers.decorators import log_job
+
+
+@job(worker.default_queue, connection=worker.conn)
+@job_context
+@log_job
+def mail_job(email, data) -> None:
+    mails.send(recipients=[email], data=data)
+
+
+def get_newly_eligible_user_email_data(user: User, token: Token, is_native_app_link=False) -> dict:
     expiration_timestamp = int(token.expirationDate.timestamp())
     if is_native_app_link:
         email_link = generate_firebase_dynamic_link(
@@ -45,13 +59,15 @@ def get_newly_eligible_user_email_data(user: User, token: Token, is_native_app_l
     }
 
 
-def send_newly_eligible_user_email(user: User, is_native_app_link=True) -> bool:
+def send_newly_eligible_user_email(user: User, is_native_app_link=False) -> bool:
     token = create_id_check_token(user)
     if not token:
         logger.warning("Could not create token for user %s to notify its elibility", user.id)
         return False
     data = get_newly_eligible_user_email_data(user, token, is_native_app_link=is_native_app_link)
-    return mails.send(recipients=[user.email], data=data)
+    mail_job.delay(user.email, data)
+    return True
+    # return mails.send(recipients=[user.email], data=data)
 
 
 # Basically, this is _is_postal_code_eligible refactored for queries
@@ -83,7 +99,7 @@ def _get_eligible_users_created_between(
 
 
 def send_mail_to_potential_beneficiaries(
-    start_date: datetime, end_date: datetime, max_number: Optional[int] = None, is_native_app_link=True
+    start_date: datetime, end_date: datetime, max_number: Optional[int] = None, is_native_app_link=False
 ) -> None:
     # BEWARE: start_date and end_date are expected to be in UTC
     logger.info(
