@@ -14,6 +14,7 @@ from pcapi.scheduled_tasks import utils
 from pcapi.scheduled_tasks.decorators import cron_context
 from pcapi.scheduled_tasks.decorators import cron_require_feature
 from pcapi.scheduled_tasks.decorators import log_cron
+from pcapi.scripts.beneficiary.send_mail_after_idcheck_outage import send_mail_to_next_benefiairies
 
 
 install_logging()
@@ -49,6 +50,13 @@ def synchronize_titelive_stocks(app):
         update_venues_for_specific_provider(titelive_stocks_provider.id)
 
 
+@log_cron
+@cron_context
+@cron_require_feature(FeatureToggle.AUTOMATICALLY_SEND_ID_CHECK_INVITES)
+def send_id_check_invites(app):
+    send_mail_to_next_benefiairies()
+
+
 def main():
     from pcapi.flask_app import app
 
@@ -62,6 +70,8 @@ def main():
     scheduler.add_job(synchronize_titelive_thing_thumbs, "cron", [app], day="*", hour="3")
 
     scheduler.add_job(synchronize_titelive_stocks, "cron", [app], day="*", hour="2", minute="30")
+
+    scheduler.add_job(send_id_check_invites, "cron", [app], day="*", hour="*", minute="5,15,25,35,45,55")
 
     scheduler.start()
 

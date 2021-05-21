@@ -55,6 +55,8 @@ class FeatureToggle(enum.Enum):
     USE_NEW_BATCH_INDEX_OFFERS_BEHAVIOUR = "Utilise une boucle dans le cron de réindexation Algolia"
     ENABLE_NATIVE_ID_CHECK_VERSION = "Utilise la version d'ID-Check intégrée à l'application native"
     ENABLE_NEW_VENUE_PAGES = "Utiliser la nouvelle version des pages d'edition et de creation de lieux"
+    AUTOMATICALLY_SEND_ID_CHECK_INVITES = "Envoie automatiquement des emails toutes les heures"
+    USE_NATIVE_EMAILS_IN_ID_CHECK_INVITES = "Utilise le lien natif pour les invitations id-check"
 
 
 class Feature(PcObject, Model, DeactivableMixin):

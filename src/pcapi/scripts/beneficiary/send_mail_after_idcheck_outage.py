@@ -15,6 +15,7 @@ from pcapi.core.users.models import Token
 from pcapi.core.users.models import User
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_validator import ELIGIBLE_DEPARTMENTS
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_validator import EXCLUDED_DEPARTMENTS
+from pcapi.flask_app import app
 from pcapi.models import UserOfferer
 from pcapi.models.feature import FeatureToggle
 from pcapi.repository import feature_queries
@@ -120,7 +121,20 @@ def send_mail_to_potential_beneficiaries(
         print("error when sending bulk emails", e)
     finally:
         if user:
-            print("Last user creation datetime: %s" % user.dateCreated)
+            logger.info("Last user creation datetime: %s", user.dateCreated)
+            returned_date = user.dateCreated
         else:
-            print("No user found within the timeframe")
-    return response
+            logger.info("No user found within the timeframe")
+            returned_date = start_date
+    return returned_date
+
+
+REDIS_KEY_FOR_ID_CHECK_INVITATION = "REGISTRATION_END_DATE"
+
+
+def send_mail_to_next_benefiairies() -> None:
+    start_date = app.redis_client.get(REDIS_KEY_FOR_ID_CHECK_INVITATION) or datetime(2021, 5, 20, 20)
+    end_date = send_mail_to_potential_beneficiaries(
+        start_date, datetime.now(), 1600, feature_queries.is_active(FeatureToggle.USE_NEW_BATCH_INDEX_OFFERS_BEHAVIOUR)
+    )
+    app.redis_client.set(REDIS_KEY_FOR_ID_CHECK_INVITATION, str(end_date))
