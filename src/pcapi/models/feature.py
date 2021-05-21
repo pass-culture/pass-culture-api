@@ -26,6 +26,9 @@ class FeatureToggle(enum.Enum):
     SYNCHRONIZE_LIBRAIRES = "Permettre la synchronisation journalière avec leslibraires.fr"
     SYNCHRONIZE_TITELIVE = "Permettre la synchronisation journalière avec TiteLive / Epagine"
     SYNCHRONIZE_TITELIVE_PRODUCTS = "Permettre limport journalier du référentiel des livres"
+    DISABLE_BOOKINGS_RECAP_FOR_SOME_PROS = (
+        "Désactivation de l'appel qui est fait sur la route mes réservations pour certains acteurs"
+    )
     SYNCHRONIZE_TITELIVE_PRODUCTS_DESCRIPTION = "Permettre limport journalier des résumés des livres"
     SYNCHRONIZE_TITELIVE_PRODUCTS_THUMBS = "Permettre limport journalier des couvertures de livres"
     UPDATE_BOOKING_USED = "Permettre la validation automatique des contremarques 48h après la fin de lévènement"
@@ -67,6 +70,7 @@ FEATURES_DISABLED_BY_DEFAULT = (
     FeatureToggle.WHOLE_FRANCE_OPENING,
     FeatureToggle.AUTO_ACTIVATE_DIGITAL_BOOKINGS,
     FeatureToggle.ENABLE_ACTIVATION_CODES,
+    FeatureToggle.DISABLE_BOOKINGS_RECAP_FOR_SOME_PROS,
     FeatureToggle.USE_NEW_BATCH_INDEX_OFFERS_BEHAVIOUR,
     FeatureToggle.ENABLE_NATIVE_ID_CHECK_VERSION,
 )
