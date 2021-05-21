@@ -3,10 +3,11 @@ import logging
 from typing import Optional
 
 from dateutil.relativedelta import relativedelta
+import mailjet_rest
 from sqlalchemy import not_
 from sqlalchemy.orm import Query
 
-from pcapi.core import mails
+from pcapi import settings
 from pcapi.core.bookings import conf
 from pcapi.core.users import constants
 from pcapi.core.users.api import create_id_check_token
@@ -23,18 +24,8 @@ from pcapi.utils.urls import generate_firebase_dynamic_link
 logger = logging.getLogger(__name__)
 
 
-from rq.decorators import job
-
-from pcapi.workers import worker
-from pcapi.workers.decorators import job_context
-from pcapi.workers.decorators import log_job
-
-
-@job(worker.default_queue, connection=worker.conn)
-@job_context
-@log_job
-def mail_job(email, data) -> None:
-    mails.send(recipients=[email], data=data)
+auth = (settings.MAILJET_API_KEY, settings.MAILJET_API_SECRET)
+mailjet_client = mailjet_rest.Client(auth=auth, version="v3")
 
 
 def get_newly_eligible_user_email_data(user: User, token: Token, is_native_app_link=False) -> dict:
@@ -49,6 +40,8 @@ def get_newly_eligible_user_email_data(user: User, token: Token, is_native_app_l
     limit_configuration = conf.LIMIT_CONFIGURATIONS[conf.get_current_deposit_version()]
     deposit_amount = limit_configuration.TOTAL_CAP
     return {
+        "FromEmail": settings.SUPPORT_EMAIL_ADDRESS,
+        "To": user.email,
         "Mj-TemplateID": 2902675,
         "Mj-TemplateLanguage": True,
         "Mj-trackclick": 1,
@@ -59,15 +52,12 @@ def get_newly_eligible_user_email_data(user: User, token: Token, is_native_app_l
     }
 
 
-def send_newly_eligible_user_email(user: User, is_native_app_link=False) -> bool:
+def get_newly_eligible_user_message(user: User, is_native_app_link=False) -> bool:
     token = create_id_check_token(user)
     if not token:
         logger.warning("Could not create token for user %s to notify its elibility", user.id)
-        return False
-    data = get_newly_eligible_user_email_data(user, token, is_native_app_link=is_native_app_link)
-    mail_job.delay(user.email, data)
-    return True
-    # return mails.send(recipients=[user.email], data=data)
+        return None
+    return get_newly_eligible_user_email_data(user, token, is_native_app_link=is_native_app_link)
 
 
 # Basically, this is _is_postal_code_eligible refactored for queries
@@ -92,14 +82,14 @@ def _get_eligible_users_created_between(
         User.dateOfBirth > today - relativedelta(years=(constants.ELIGIBILITY_AGE + 1)),  # less than 19yo
         User.dateOfBirth <= today - relativedelta(years=constants.ELIGIBILITY_AGE),  # more than or 18yo
     )
-    query = _filter_by_eligible_postal_code(query)
+    query = _filter_by_eligible_postal_code(query).order_by(User.dateCreated)
     if max_number:
         query = query.limit(max_number)
-    return query.order_by(User.dateCreated).all()
+    return query.all()
 
 
 def send_mail_to_potential_beneficiaries(
-    start_date: datetime, end_date: datetime, max_number: Optional[int] = None, is_native_app_link=False
+    start_date: datetime, end_date: datetime, max_number: Optional[int] = 1000, is_native_app_link=False
 ) -> None:
     # BEWARE: start_date and end_date are expected to be in UTC
     logger.info(
@@ -112,15 +102,24 @@ def send_mail_to_potential_beneficiaries(
         end_date,
     )
     user = None
+    messages = []
+    for i, user in enumerate(_get_eligible_users_created_between(start_date, end_date, max_number)):
+        if user.is_eligible:
+            data = get_newly_eligible_user_message(user, is_native_app_link=is_native_app_link)
+            if data:
+                messages.append(data)
+        if i % 100 == 0:
+            print(f"Processed {i} users")
+    request_data = {"Messages": messages}
+    print("len messages", len(messages))
     try:
-        for i, user in enumerate(_get_eligible_users_created_between(start_date, end_date, max_number)):
-            if user.is_eligible:
-                if not send_newly_eligible_user_email(user, is_native_app_link=is_native_app_link):
-                    print(f"Could not send mail to user {user.id}")
-            if i % 100:
-                print(f"Processed {i} users")
+        response = mailjet_client.send.create(data=request_data)
+        print("response.status", response.status_code)
+    except Exception as e:
+        print("error when sending bulk emails", e)
     finally:
         if user:
             print("Last user creation datetime: %s" % user.dateCreated)
         else:
             print("No user found within the timeframe")
+    return response
