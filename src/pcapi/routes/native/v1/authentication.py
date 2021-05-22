@@ -134,7 +134,11 @@ def validate_email(body: ValidateEmailRequest) -> ValidateEmailResponse:
     user.isEmailValidated = True
     repository.save(user)
 
-    id_check_token = users_api.create_id_check_token(user)
+    id_check_token = (
+        users_api.create_id_check_token(user)
+        if feature_queries.is_active(FeatureToggle.ALLOW_IDCHECK_REGISTRATION)
+        else None
+    )
 
     response = ValidateEmailResponse(
         access_token=create_user_access_token(user),
