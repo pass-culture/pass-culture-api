@@ -37,12 +37,17 @@ def to_model(beneficiary_pre_subscription: BeneficiaryPreSubscription, user: Opt
     return beneficiary
 
 
-def to_rejected_model(beneficiary_pre_subscription: BeneficiaryPreSubscription, detail: str) -> BeneficiaryImport:
+def to_rejected_model(
+    beneficiary_pre_subscription: BeneficiaryPreSubscription, detail: str, user: Optional[User]
+) -> BeneficiaryImport:
     beneficiary_import = BeneficiaryImport()
 
     beneficiary_import.applicationId = beneficiary_pre_subscription.application_id
     beneficiary_import.sourceId = beneficiary_pre_subscription.source_id
     beneficiary_import.source = beneficiary_pre_subscription.source
     beneficiary_import.setStatus(status=ImportStatus.REJECTED, detail=detail)
+
+    if user:
+        user.beneficiaryImports.append(beneficiary_import)
 
     return beneficiary_import
