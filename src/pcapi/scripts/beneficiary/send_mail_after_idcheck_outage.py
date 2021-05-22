@@ -10,8 +10,9 @@ from sqlalchemy.orm import Query
 from pcapi import settings
 from pcapi.core.bookings import conf
 from pcapi.core.users import constants
-from pcapi.core.users.api import create_id_check_token
+from pcapi.core.users.api import generate_and_save_token
 from pcapi.core.users.models import Token
+from pcapi.core.users.models import TokenType
 from pcapi.core.users.models import User
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_validator import ELIGIBLE_DEPARTMENTS
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_validator import EXCLUDED_DEPARTMENTS
@@ -52,6 +53,12 @@ def get_newly_eligible_user_email_data(user: User, token: Token, is_native_app_l
         },
         "Mj-campaign": "backup-id-check-campaign",
     }
+
+
+def create_id_check_token(user: User) -> Optional[Token]:
+    if not user.is_eligible:
+        return None
+    return generate_and_save_token(user, TokenType.ID_CHECK, constants.ID_CHECK_TOKEN_LIFE_TIME)
 
 
 def get_newly_eligible_user_message(user: User, is_native_app_link=False) -> bool:
@@ -105,7 +112,9 @@ def send_mail_to_potential_beneficiaries(
     )
     user = None
     messages = []
-    for i, user in enumerate(_get_eligible_users_created_between(start_date, end_date, max_number)):
+    users = _get_eligible_users_created_between(start_date, end_date, max_number)
+    print(f"concerned users : {len(users)}")
+    for i, user in enumerate(users):
         if user.is_eligible:
             data = get_newly_eligible_user_message(user, is_native_app_link=is_native_app_link)
             if data:
