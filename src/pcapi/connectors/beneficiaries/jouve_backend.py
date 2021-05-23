@@ -6,6 +6,8 @@ import requests
 from pcapi import settings
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription import BeneficiaryPreSubscription
 from pcapi.models import BeneficiaryImportSources
+from pcapi.models.feature import FeatureToggle
+from pcapi.repository import feature_queries
 
 
 logger = logging.getLogger(__name__)
@@ -85,6 +87,8 @@ class BeneficiaryJouveBackend:
         )
 
     def _fraud_validation(self, content, application_id):
+        if not feature_queries.is_active(FeatureToggle.ENABLE_IDCHECK_FRAUD_CONTROLS):
+            return
         controls = {
             "poste_code_ok": content.get("posteCodeCtrl", "OK").upper() != "KO",
             "service_code_ok": content.get("serviceCodeCtrl", "OK").upper() != "KO",
