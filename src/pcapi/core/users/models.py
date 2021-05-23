@@ -205,6 +205,8 @@ class User(PcObject, Model, NeedsValidationMixin, VersionedMixin):
     # NOT NULL constraint.
     isActive = Column(Boolean, nullable=True, server_default=expression.true(), default=True)
 
+    hasCompletedIdCheck = Column(Boolean, nullable=True)
+
     def checkPassword(self, passwordToCheck):
         return check_password(passwordToCheck, self.password)
 

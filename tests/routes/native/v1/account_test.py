@@ -20,6 +20,7 @@ from pcapi.core.users.models import TokenType
 from pcapi.core.users.models import User
 from pcapi.core.users.models import VOID_PUBLIC_NAME
 from pcapi.core.users.repository import get_id_check_token
+from pcapi.models import db
 from pcapi.notifications.push import testing as push_testing
 from pcapi.notifications.sms import testing as sms_testing
 from pcapi.routes.native.v1.serialization import account as account_serializers
@@ -111,6 +112,7 @@ class AccountTest:
             "eligibilityEndDatetime": "2019-01-01T00:00:00Z",
             "eligibilityStartDatetime": "2018-01-01T00:00:00Z",
             "isBeneficiary": True,
+            "hasCompletedIdCheck": None,
             "pseudo": "jdo",
             "showEligibleCard": False,
             "subscriptions": {"marketingPush": True, "marketingEmail": True},
@@ -160,6 +162,7 @@ class AccountTest:
             "depositExpirationDate": None,
             "eligibilityEndDatetime": None,
             "eligibilityStartDatetime": None,
+            "hasCompletedIdCheck": None,
             "isBeneficiary": False,
             "pseudo": "jdo",
             "showEligibleCard": False,
@@ -210,6 +213,7 @@ class AccountTest:
             "depositExpirationDate": None,
             "eligibilityEndDatetime": "2019-01-01T00:00:00Z",
             "eligibilityStartDatetime": "2018-01-01T00:00:00Z",
+            "hasCompletedIdCheck": None,
             "isBeneficiary": False,
             "pseudo": "jdo",
             "showEligibleCard": False,
@@ -248,6 +252,23 @@ class AccountTest:
         assert response.json["firstName"] is None
         assert response.json["pseudo"] is None
         assert not response.json["isBeneficiary"]
+
+    def test_has_completed_id_check(self, app):
+        user = users_factories.UserFactory(email=self.identifier, deposit=None, isBeneficiary=False)
+
+        access_token = create_access_token(identity=self.identifier)
+        test_client = TestClient(app.test_client())
+        test_client.auth_header = {"Authorization": f"Bearer {access_token}"}
+
+        response = test_client.post("/native/v1/account/has_completed_id_check")
+
+        assert response.status_code == 204
+
+        db.session.refresh(user)
+        assert user.hasCompletedIdCheck
+
+        me_response = test_client.get("/native/v1/me")
+        assert me_response.json["hasCompletedIdCheck"]
 
 
 class AccountCreationTest:
