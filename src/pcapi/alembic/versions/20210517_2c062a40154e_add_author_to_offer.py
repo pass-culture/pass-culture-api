@@ -18,7 +18,7 @@ depends_on = None
 
 def upgrade():
     op.add_column("offer", sa.Column("authorId", sa.BigInteger(), nullable=True))
-    op.create_foreign_key(None, "offer", "user", ["authorId"], ["id"])
+    op.execute('ALTER TABLE offer ADD FOREIGN KEY("authorId") REFERENCES "user" (id) NOT VALID')
 
 
 def downgrade():
