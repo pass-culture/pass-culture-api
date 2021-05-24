@@ -119,6 +119,9 @@ class AccountTest:
         }
         EXPECTED_DATA.update(USER_DATA)
 
+        # TODO: revert this when the typeform is fixed
+        EXPECTED_DATA["needsToFillCulturalSurvey"] = False
+
         assert response.status_code == 200
         assert response.json == EXPECTED_DATA
 
@@ -170,6 +173,9 @@ class AccountTest:
         }
         EXPECTED_DATA.update(USER_DATA)
 
+        # TODO: revert this when the typeform is fixed
+        EXPECTED_DATA["needsToFillCulturalSurvey"] = False
+
         assert response.status_code == 200
         assert response.json == EXPECTED_DATA
 
@@ -220,6 +226,9 @@ class AccountTest:
             "subscriptions": {"marketingPush": True, "marketingEmail": True},
         }
         EXPECTED_DATA.update(USER_DATA)
+
+        # TODO: revert this when the typeform is fixed
+        EXPECTED_DATA["needsToFillCulturalSurvey"] = False
 
         assert response.status_code == 200
         assert response.json == EXPECTED_DATA

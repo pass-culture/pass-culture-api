@@ -142,7 +142,9 @@ class UserProfileResponse(BaseModel):
         user.subscriptions = user.get_notification_subscriptions()
         user.domains_credit = get_domains_credit(user)
         user.booked_offers = cls._get_booked_offers(user)
-        return super().from_orm(user)
+        result = super().from_orm(user)
+        result.needsToFillCulturalSurvey = False
+        return result
 
 
 class UserProfileUpdateRequest(BaseModel):
