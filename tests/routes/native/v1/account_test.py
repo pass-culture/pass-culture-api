@@ -750,7 +750,7 @@ class SendPhoneValidationCodeTest:
         # validate phone number with generated code
         response = test_client.post("/native/v1/validate_phone_number", json={"code": token.value})
 
-        assert response.status_code == 204
+        assert response.status_code == 200
         user = User.query.get(user.id)
         assert user.is_phone_validated
 
@@ -843,7 +843,8 @@ class ValidatePhoneNumberTest:
         response = test_client.post("/native/v1/validate_phone_number", {"code": "wrong code"})
         response = test_client.post("/native/v1/validate_phone_number", {"code": token.value})
 
-        assert response.status_code == 204
+        assert response.status_code == 200
+        assert response.json == {"beneficiary_validation_missing_steps": ["id-check"]}
         user = User.query.get(user.id)
         assert user.is_phone_validated
         assert not user.isBeneficiary
@@ -868,7 +869,8 @@ class ValidatePhoneNumberTest:
 
         response = test_client.post("/native/v1/validate_phone_number", {"code": token.value})
 
-        assert response.status_code == 204
+        assert response.status_code == 200
+        assert response.json == {"beneficiary_validation_missing_steps": []}
         user = User.query.get(user.id)
         assert user.is_phone_validated
         assert user.isBeneficiary

@@ -70,6 +70,13 @@ class ExpiredCode(NotValidCode):
     pass
 
 
+# When a user can not yet be activated because of missing validation steps
+class BeneficiaryActivationStepMissing(Exception):
+    def __init__(self, missing_steps):
+        self.missing_steps = missing_steps
+        super().__init__()
+
+
 class IdCheckTokenLimitReached(Exception):
     pass
 

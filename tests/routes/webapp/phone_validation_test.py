@@ -32,7 +32,7 @@ def test_send_phone_validation(app):
 
     response = client.post("/validate_phone_number", {"code": token.value})
 
-    assert response.status_code == 204
+    assert response.status_code == 200
 
     user = User.query.get(user.id)
     assert user.is_phone_validated
@@ -60,7 +60,7 @@ def test_send_phone_validation_and_become_beneficiary(app):
 
     response = client.post("/validate_phone_number", {"code": token.value})
 
-    assert response.status_code == 204
+    assert response.status_code == 200
 
     user = User.query.get(user.id)
     assert user.is_phone_validated

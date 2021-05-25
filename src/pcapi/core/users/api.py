@@ -199,8 +199,11 @@ def steps_to_become_beneficiary(user: User) -> list[BeneficiaryValidationStep]:
 def validate_phone_number_and_activate_user(user: User, code: str) -> User:
     validate_phone_number(user, code)
 
-    if not steps_to_become_beneficiary(user):
+    missing_steps = steps_to_become_beneficiary(user)
+    if not missing_steps:
         activate_beneficiary(user)
+        return
+    raise exceptions.BeneficiaryActivationStepMissing(missing_steps=missing_steps)
 
 
 def activate_beneficiary(user: User, deposit_source: str = None) -> User:

@@ -183,9 +183,11 @@ def send_phone_validation_code(user: User, body: serializers.SendPhoneValidation
 
 
 @blueprint.native_v1.route("/validate_phone_number", methods=["POST"])
-@spectree_serialize(api=blueprint.api, on_success_status=204)
+@spectree_serialize(api=blueprint.api, response_model=serializers.ValidatePhoneNumberResponse)
 @authenticated_user_required
-def validate_phone_number(user: User, body: serializers.ValidatePhoneNumberRequest) -> None:
+def validate_phone_number(
+    user: User, body: serializers.ValidatePhoneNumberRequest
+) -> serializers.ValidatePhoneNumberResponse:
     with transaction():
         try:
             api.validate_phone_number_and_activate_user(user, body.code)
@@ -198,6 +200,11 @@ def validate_phone_number(user: User, body: serializers.ValidatePhoneNumberReque
             raise ApiErrors({"message": "Le code saisi a expiré", "code": "EXPIRED_VALIDATION_CODE"}, status_code=400)
         except exceptions.NotValidCode:
             raise ApiErrors({"message": "Le code est invalide", "code": "INVALID_VALIDATION_CODE"}, status_code=400)
+        except exceptions.BeneficiaryActivationStepMissing as missing_steps_exception:
+            return serializers.ValidatePhoneNumberResponse(
+                beneficiary_validation_missing_steps=missing_steps_exception.missing_steps
+            )
+    return serializers.ValidatePhoneNumberResponse(beneficiary_validation_missing_steps=[])
 
 
 @blueprint.native_v1.route("/account/suspend", methods=["POST"])

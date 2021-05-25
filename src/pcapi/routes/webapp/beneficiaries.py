@@ -182,8 +182,10 @@ def send_phone_validation_code(body: serialization_beneficiaries.SendPhoneValida
 
 @private_api.route("/validate_phone_number", methods=["POST"])
 @login_required
-@spectree_serialize(on_success_status=204)
-def validate_phone_number(body: serialization_beneficiaries.ValidatePhoneNumberRequest) -> None:
+@spectree_serialize(response_model=serialization_beneficiaries.ValidatePhoneNumberResponse)
+def validate_phone_number(
+    body: serialization_beneficiaries.ValidatePhoneNumberRequest,
+) -> serialization_beneficiaries.ValidatePhoneNumberResponse:
     user = current_user._get_current_object()
 
     with transaction():
@@ -193,3 +195,8 @@ def validate_phone_number(body: serialization_beneficiaries.ValidatePhoneNumberR
             raise ApiErrors({"message": "Le code saisi a expiré", "code": "EXPIRED_VALIDATION_CODE"}, status_code=400)
         except users_exceptions.NotValidCode:
             raise ApiErrors({"message": "Le code est invalide", "code": "INVALID_VALIDATION_CODE"}, status_code=400)
+        except users_exceptions.BeneficiaryActivationStepMissing as missing_steps_exception:
+            return serialization_beneficiaries.ValidatePhoneNumberResponse(
+                beneficiary_validation_missing_steps=missing_steps_exception.missing_steps
+            )
+    return serialization_beneficiaries.ValidatePhoneNumberResponse(beneficiary_validation_missing_steps=[])

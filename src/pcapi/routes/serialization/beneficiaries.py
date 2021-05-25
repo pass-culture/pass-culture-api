@@ -4,6 +4,7 @@ from typing import Optional
 from pydantic import BaseModel
 from pydantic.class_validators import validator
 
+from pcapi.core.users.api import BeneficiaryValidationStep
 from pcapi.core.users.api import get_domains_credit
 from pcapi.core.users.models import ExpenseDomain
 from pcapi.core.users.models import User
@@ -140,3 +141,7 @@ class SendPhoneValidationRequest(BaseModel):
 
 class ValidatePhoneNumberRequest(BaseModel):
     code: str
+
+
+class ValidatePhoneNumberResponse(BaseModel):
+    beneficiary_validation_missing_steps: list[BeneficiaryValidationStep]
