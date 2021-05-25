@@ -1,4 +1,5 @@
 from datetime import datetime
+from datetime import timedelta
 import logging
 from typing import Optional
 
@@ -16,7 +17,6 @@ from pcapi.core.users.models import TokenType
 from pcapi.core.users.models import User
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_validator import ELIGIBLE_DEPARTMENTS
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_validator import EXCLUDED_DEPARTMENTS
-from pcapi.flask_app import app
 from pcapi.models import UserOfferer
 from pcapi.models.feature import FeatureToggle
 from pcapi.repository import feature_queries
@@ -58,7 +58,7 @@ def get_newly_eligible_user_email_data(user: User, token: Token, is_native_app_l
 def create_id_check_token(user: User) -> Optional[Token]:
     if not user.is_eligible:
         return None
-    return generate_and_save_token(user, TokenType.ID_CHECK, constants.ID_CHECK_TOKEN_LIFE_TIME)
+    return generate_and_save_token(user, TokenType.ID_CHECK, timedelta(days=5))
 
 
 def get_newly_eligible_user_message(user: User, is_native_app_link=False) -> bool:
