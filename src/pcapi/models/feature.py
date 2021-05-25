@@ -55,6 +55,7 @@ class FeatureToggle(enum.Enum):
     USE_NEW_BATCH_INDEX_OFFERS_BEHAVIOUR = "Utilise une boucle dans le cron de réindexation Algolia"
     ENABLE_NATIVE_ID_CHECK_VERSION = "Utilise la version d'ID-Check intégrée à l'application native"
     ENABLE_IDCHECK_FRAUD_CONTROLS = "Active les contrôles de sécurité en sortie du process ID Check"
+    DISPLAY_DMS_REDIRECTION = "Affiche une redirection vers DMS si ID Check est KO"
 
 
 class Feature(PcObject, Model, DeactivableMixin):
