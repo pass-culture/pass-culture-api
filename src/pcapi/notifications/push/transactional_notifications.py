@@ -13,6 +13,7 @@ class GroupId(Enum):
     CANCEL_BOOKING = "Cancel_booking"
     TOMORROW_STOCK = "Tomorrow_stock"
     OFFER_LINK = "Offer_link"
+    ACCOUNT_ACTIVATION = "Account_activation"
 
 
 @dataclass
@@ -74,4 +75,15 @@ def get_offer_notification_data(user_id: int, offer: Offer) -> TransactionalNoti
             body="Pour réserver, c'est par ici !",
         ),
         extra={"deeplink": offer_webapp_link(offer)},
+    )
+
+
+def get_account_activation_notification_data(user_id: int) -> TransactionalNotificationData:
+    return TransactionalNotificationData(
+        group_id=GroupId.ACCOUNT_ACTIVATION.value,
+        user_ids=[user_id],
+        message=TransactionalNotificationMessage(
+            title="Ton compte est créé !",
+            body="Clique ici pour découvrir le pass Culture !",
+        ),
     )

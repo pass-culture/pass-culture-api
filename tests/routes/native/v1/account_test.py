@@ -350,20 +350,30 @@ class AccountCreationTest:
         mocked_check_recaptcha_token_is_valid.assert_called()
         assert len(mails_testing.outbox) == 1
         assert mails_testing.outbox[0].sent_data["Mj-TemplateID"] == 2015423
-        assert push_testing.requests == [
-            {
-                "attribute_values": {
-                    "date(u.date_created)": user.dateCreated.strftime("%Y-%m-%dT%H:%M:%S"),
-                    "date(u.date_of_birth)": "1960-12-31T00:00:00",
-                    "date(u.deposit_expiration_date)": None,
-                    "u.credit": 0,
-                    "u.is_beneficiary": False,
-                    "u.marketing_push_subscription": True,
-                    "u.postal_code": None,
-                },
-                "user_id": user.id,
-            }
-        ]
+
+        assert len(push_testing.requests) == 2
+
+        update_notification = next(request for request in push_testing.requests if "user_id" in request)
+        activation_notification = next(request for request in push_testing.requests if "group_id" in request)
+
+        assert update_notification == {
+            "attribute_values": {
+                "date(u.date_created)": user.dateCreated.strftime("%Y-%m-%dT%H:%M:%S"),
+                "date(u.date_of_birth)": "1960-12-31T00:00:00",
+                "date(u.deposit_expiration_date)": None,
+                "u.credit": 0,
+                "u.is_beneficiary": False,
+                "u.marketing_push_subscription": True,
+                "u.postal_code": None,
+            },
+            "user_id": user.id,
+        }
+
+        assert activation_notification == {
+            "group_id": "Account_activation",
+            "message": {"body": "Clique ici pour découvrir le pass Culture !", "title": "Ton compte est créé !"},
+            "user_ids": [user.id],
+        }
 
     @override_features(WHOLE_FRANCE_OPENING=True)
     @patch("pcapi.connectors.api_recaptcha.check_recaptcha_token_is_valid")
@@ -435,20 +445,30 @@ class AccountCreationBeforeGrandOpeningTest:
         assert user.postalCode == "93000"
         assert len(mails_testing.outbox) == 1
         assert mails_testing.outbox[0].sent_data["Mj-TemplateID"] == 2015423
-        assert push_testing.requests == [
-            {
-                "attribute_values": {
-                    "date(u.date_created)": user.dateCreated.strftime("%Y-%m-%dT%H:%M:%S"),
-                    "date(u.date_of_birth)": "1960-12-31T00:00:00",
-                    "date(u.deposit_expiration_date)": None,
-                    "u.credit": 0,
-                    "u.is_beneficiary": False,
-                    "u.marketing_push_subscription": True,
-                    "u.postal_code": "93000",
-                },
-                "user_id": user.id,
-            }
-        ]
+
+        assert len(push_testing.requests) == 2
+
+        update_notification = next(request for request in push_testing.requests if "user_id" in request)
+        activation_notification = next(request for request in push_testing.requests if "group_id" in request)
+
+        assert update_notification == {
+            "attribute_values": {
+                "date(u.date_created)": user.dateCreated.strftime("%Y-%m-%dT%H:%M:%S"),
+                "date(u.date_of_birth)": "1960-12-31T00:00:00",
+                "date(u.deposit_expiration_date)": None,
+                "u.credit": 0,
+                "u.is_beneficiary": False,
+                "u.marketing_push_subscription": True,
+                "u.postal_code": "93000",
+            },
+            "user_id": user.id,
+        }
+
+        assert activation_notification == {
+            "group_id": "Account_activation",
+            "message": {"body": "Clique ici pour découvrir le pass Culture !", "title": "Ton compte est créé !"},
+            "user_ids": [user.id],
+        }
 
     @override_features(WHOLE_FRANCE_OPENING=False)
     @patch("pcapi.connectors.api_recaptcha.check_recaptcha_token_is_valid")
@@ -615,6 +635,12 @@ class ResendEmailValidationTest:
         assert response.status_code == 204
         assert len(mails_testing.outbox) == 1
         assert mails_testing.outbox[0].sent_data["Mj-TemplateID"] == 2015423
+
+        assert len(push_testing.requests) == 1
+        notification = push_testing.requests[0]
+
+        assert notification["user_ids"] == [user.id]
+        assert notification["message"]["title"] == "Ton compte est créé !"
 
     def test_for_already_validated_email_does_sent_passsword_reset(self, app):
         user = users_factories.UserFactory(isEmailValidated=True)

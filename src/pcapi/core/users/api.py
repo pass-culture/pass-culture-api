@@ -62,6 +62,7 @@ from pcapi.routes.serialization.users import ProUserCreationBodyModel
 logger = logging.getLogger(__name__)
 
 from pcapi.utils.mailing import MailServiceException
+from pcapi.workers.push_notification_job import send_account_activation_notification_job
 from pcapi.workers.push_notification_job import update_user_attributes_job
 
 from . import constants
@@ -239,6 +240,8 @@ def attach_beneficiary_import_details(
 def request_email_confirmation(user: User) -> None:
     token = create_email_validation_token(user)
     user_emails.send_activation_email(user, native_version=True, token=token)
+
+    send_account_activation_notification_job.delay(user.id)
 
 
 def request_password_reset(user: User) -> None:
