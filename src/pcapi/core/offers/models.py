@@ -33,6 +33,7 @@ from sqlalchemy.event import listens_for
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
+from pcapi.models.bank_information import BankInformationStatus
 from pcapi.models.db import Model
 from pcapi.models.db import db
 from pcapi.models.deactivable_mixin import DeactivableMixin
@@ -566,6 +567,17 @@ class Offer(PcObject, Model, ExtraDataMixin, DeactivableMixin, ProvidableMixin):
     @property
     def max_price(self) -> float:
         return max(stock.price for stock in self.stocks if not stock.isSoftDeleted)
+
+    @hybrid_property
+    def has_bank_information(self):
+        if self.venue.bankInformation and self.venue.bankInformation.status == BankInformationStatus.ACCEPTED:
+            return True
+        if (
+            self.venue.managingOfferer.bankInformation
+            and self.venue.managingOfferer.bankInformation.status == BankInformationStatus.ACCEPTED
+        ):
+            return True
+        return False
 
 
 class ActivationCode(PcObject, Model):

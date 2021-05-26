@@ -424,3 +424,53 @@ class StockRemainingQuantityTest:
 
         assert stock.remainingQuantity == 5
         assert Offer.query.filter(Stock.remainingQuantity == 5).one() == offer
+
+
+@pytest.mark.usefixtures("db_session")
+class HasBankInformationTest:
+    def test_return_true_when_venue_has_bank_informations(self):
+        venue = factories.VenueFactory()
+        offer = factories.OfferFactory(venue=venue)
+        factories.BankInformationFactory(venue=venue, status="ACCEPTED")
+
+        assert offer.has_bank_information
+
+    def test_return_true_when_offerer_has_bank_informations(self):
+        venue = factories.VenueFactory()
+        offer = factories.OfferFactory(venue=venue)
+        factories.BankInformationFactory(offerer=venue.managingOfferer, status="ACCEPTED")
+
+        assert offer.has_bank_information
+
+    def test_return_false_when_there_is_no_bank_information(self):
+        offer = factories.OfferFactory()
+
+        assert offer.has_bank_information == False
+
+    def test_return_false_when_venue_has_rejected_bank_informations(self):
+        venue = factories.VenueFactory()
+        offer = factories.OfferFactory(venue=venue)
+        factories.BankInformationFactory(venue=venue, status="REJECTED")
+
+        assert offer.has_bank_information == False
+
+    def test_return_false_when_offerer_has_rejected_bank_informations(self):
+        venue = factories.VenueFactory()
+        offer = factories.OfferFactory(venue=venue)
+        factories.BankInformationFactory(offerer=venue.managingOfferer, status="REJECTED")
+
+        assert offer.has_bank_information == False
+
+    def test_return_false_when_venue_has_draft_bank_informations(self):
+        venue = factories.VenueFactory()
+        offer = factories.OfferFactory(venue=venue)
+        factories.BankInformationFactory(venue=venue, status="DRAFT")
+
+        assert offer.has_bank_information == False
+
+    def test_return_false_when_offerer_has_draft_bank_informations(self):
+        venue = factories.VenueFactory()
+        offer = factories.OfferFactory(venue=venue)
+        factories.BankInformationFactory(offerer=venue.managingOfferer, status="DRAFT")
+
+        assert offer.has_bank_information == False
