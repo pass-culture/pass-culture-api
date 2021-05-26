@@ -170,6 +170,8 @@ class User(PcObject, Model, NeedsValidationMixin):
 
     password = Column(LargeBinary(60), nullable=False)
 
+    phonePrefix = Column(String(10), nullable=True)
+
     phoneNumber = Column(String(20), nullable=True)
 
     postalCode = Column(String(5), nullable=True)
