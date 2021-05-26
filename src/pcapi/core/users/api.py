@@ -552,13 +552,15 @@ def set_pro_tuto_as_seen(user: User) -> None:
     repository.save(user)
 
 
-def change_user_phone_number(user: User, phone_number: str):
+def change_user_phone_number(user: User, phone_number: str, phone_prefix: str):
     _check_phone_number_validation_is_authorized(user)
 
     if does_phone_exists(phone_number):
         raise exceptions.PhoneAlreadyExists()
 
+    user.phonePrefix = phone_prefix
     user.phoneNumber = phone_number
+
     Token.query.filter(Token.user == user, Token.type == TokenType.PHONE_VALIDATION).delete()
     repository.save(user)
 

@@ -50,6 +50,8 @@ def format_phone_number_with_country_code(user: User) -> str:
             extra={"departementCode": user.departementCode, "postalCode": user.postalCode},
         )
 
-    phone_prefix = PHONE_PREFIX_BY_DEPARTEMENT_CODE.get(user.departementCode, METROPOLE_PHONE_PREFIX)
+    if user.phonePrefix:
+        return user.phonePrefix + user.phoneNumber[1:]
 
+    phone_prefix = PHONE_PREFIX_BY_DEPARTEMENT_CODE.get(user.departementCode, METROPOLE_PHONE_PREFIX)
     return phone_prefix + user.phoneNumber[1:]

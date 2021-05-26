@@ -168,4 +168,5 @@ class ValidatePhoneNumberRequest(BaseModel):
 
 
 class SendPhoneValidationRequest(BaseModel):
+    phonePrefix: Optional[str]
     phoneNumber: Optional[str]

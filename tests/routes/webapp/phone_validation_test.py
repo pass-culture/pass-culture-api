@@ -65,3 +65,21 @@ def test_send_phone_validation_and_become_beneficiary(app):
     user = User.query.get(user.id)
     assert user.is_phone_validated
     assert user.isBeneficiary
+
+
+@pytest.mark.usefixtures("db_session")
+def test_send_phone_validation_updates_phone_information(app):
+    app.redis_client = redis.Redis()
+    user = UserFactory(isBeneficiary=False, isEmailValidated=True, phoneNumber="060102030405")
+
+    client = TestClient(app.test_client()).with_auth(email=user.email)
+
+    phone_number_data = {"phoneNumber": "102030405", "phonePrefix": "+33"}
+    response = client.post("/send_phone_validation_code", json=phone_number_data)
+
+    assert response.status_code == 204
+    assert len(sms_testing.requests) == 1
+
+    user = User.query.get(user.id)
+    assert user.phonePrefix == "+33"
+    assert user.phoneNumber == "102030405"

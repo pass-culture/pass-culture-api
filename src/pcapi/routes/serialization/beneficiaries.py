@@ -132,7 +132,8 @@ class PatchBeneficiaryBodyModel(BaseModel):
 
 
 class SendPhoneValidationRequest(BaseModel):
-    phone_number: Optional[str]
+    phonePrefix: Optional[str]
+    phoneNumber: Optional[str]
 
     class Config:
         alias_generator = to_camel

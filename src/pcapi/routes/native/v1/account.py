@@ -160,7 +160,7 @@ def get_id_check_token(user: User) -> serializers.GetIdCheckTokenResponse:
 def send_phone_validation_code(user: User, body: serializers.SendPhoneValidationRequest) -> None:
     try:
         if body.phoneNumber:
-            api.change_user_phone_number(user, body.phoneNumber)
+            api.change_user_phone_number(user, body.phoneNumber, body.phonePrefix)
 
         api.send_phone_validation_code(user)
 

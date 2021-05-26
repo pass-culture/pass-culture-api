@@ -62,6 +62,7 @@ class Get:
                 "lastName": "Smisse",
                 "needsToFillCulturalSurvey": False,
                 "notificationSubscriptions": {"marketing_email": True, "marketing_push": True},
+                "phonePrefix": None,
                 "phoneNumber": "0612345678",
                 "phoneValidationStatus": None,
                 "postalCode": "93020",
