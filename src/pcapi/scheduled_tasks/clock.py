@@ -29,6 +29,7 @@ from pcapi.scheduled_tasks.decorators import cron_context
 from pcapi.scheduled_tasks.decorators import cron_require_feature
 from pcapi.scheduled_tasks.decorators import log_cron
 from pcapi.scripts.beneficiary import remote_import
+from pcapi.scripts.beneficiary import remote_tag_has_completed
 from pcapi.scripts.booking.handle_expired_bookings import handle_expired_bookings
 from pcapi.scripts.booking.notify_soon_to_be_expired_bookings import notify_soon_to_be_expired_bookings
 from pcapi.scripts.update_booking_used import update_booking_used_after_stock_occurrence
@@ -92,6 +93,7 @@ def pc_remote_import_beneficiaries(app: Flask) -> None:
         BeneficiaryImportSources.demarches_simplifiees, procedure_id
     )
     remote_import.run(import_from_date, procedure_id)
+    remote_tag_has_completed.run(import_from_date, procedure_id)
 
 
 @log_cron
@@ -102,6 +104,7 @@ def pc_import_beneficiaries_from_dms(app: Flask) -> None:
         BeneficiaryImportSources.demarches_simplifiees, procedure_id
     )
     remote_import.run(import_from_date, procedure_id)
+    remote_tag_has_completed.run(import_from_date, procedure_id)
 
 
 @log_cron

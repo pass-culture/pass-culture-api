@@ -82,6 +82,14 @@ def get_closed_application_ids_for_demarche_simplifiee(
     )
 
 
+def get_received_application_ids_for_demarche_simplifiee(
+    procedure_id: str, token: str, last_update: datetime
+) -> list[int]:
+    return get_all_application_ids_for_demarche_simplifiee(
+        procedure_id, token, last_update, accepted_states=[DmsApplicationStates.received]
+    )
+
+
 def get_offerer_bank_information_application_details_by_application_id(application_id: str) -> ApplicationDetail:
     response_application_details = get_application_details(
         application_id, procedure_id=settings.DMS_OFFERER_PROCEDURE_ID, token=settings.DMS_TOKEN
