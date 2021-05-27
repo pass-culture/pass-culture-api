@@ -1,4 +1,5 @@
 import datetime
+from unittest import mock
 
 import pytest
 
@@ -474,3 +475,22 @@ class HasBankInformationTest:
         factories.BankInformationFactory(offerer=venue.managingOfferer, status="DRAFT")
 
         assert offer.has_bank_information == False
+
+
+@pytest.mark.usefixtures("db_session")
+class IsReleasedTest:
+    @mock.patch("pcapi.core.offers.models.Offer.has_bank_information", new_callable=mock.PropertyMock)
+    def test_return_true_with_valid_bank_information(self, mock_has_bank_information):
+        offer = factories.OfferFactory()
+        mock_has_bank_information.return_value = True
+
+        assert offer.isReleased
+        mock_has_bank_information.assert_called_once()
+
+    @mock.patch("pcapi.core.offers.models.Offer.has_bank_information", new_callable=mock.PropertyMock)
+    def test_return_false_with_false_bank_information(self, mock_has_bank_information):
+        offer = factories.OfferFactory()
+        mock_has_bank_information.return_value = False
+
+        assert not offer.isReleased
+        mock_has_bank_information.assert_called_once()

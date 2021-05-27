@@ -388,6 +388,7 @@ class Offer(PcObject, Model, ExtraDataMixin, DeactivableMixin, ProvidableMixin):
             and self.venue.isValidated
             and self.venue.managingOfferer.isActive
             and self.venue.managingOfferer.isValidated
+            and self.has_bank_information
         )
 
     @hybrid_property
