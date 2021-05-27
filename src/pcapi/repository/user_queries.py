@@ -131,3 +131,13 @@ def _sanitized_string(value: str) -> Function:
     sanitized = func.unaccent(sanitized)
     sanitized = func.lower(sanitized)
     return sanitized
+
+
+def find_beneficiaries_with_dms_account() -> list[User]:
+    return (
+        User.query.filter(User.hasCompletedIdCheck != True)
+        .join(BeneficiaryImport)
+        .join(BeneficiaryImportStatus)
+        .filter(BeneficiaryImportStatus.status == ImportStatus.CREATED)
+        .all()
+    )
