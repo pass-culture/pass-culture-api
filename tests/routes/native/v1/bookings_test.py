@@ -8,6 +8,7 @@ import pytest
 from pcapi.core.bookings.factories import BookingFactory
 from pcapi.core.bookings.models import Booking
 from pcapi.core.bookings.models import BookingCancellationReasons
+from pcapi.core.offers.factories import BankInformationFactory
 from pcapi.core.offers.factories import EventStockFactory
 from pcapi.core.offers.factories import MediationFactory
 from pcapi.core.offers.factories import StockFactory
@@ -31,7 +32,7 @@ class PostBookingTest:
     def test_post_bookings(self, app):
         stock = StockFactory()
         user = users_factories.UserFactory(email=self.identifier)
-
+        BankInformationFactory(venue=stock.offer.venue)
         access_token = create_access_token(identity=self.identifier)
         test_client = TestClient(app.test_client())
         test_client.auth_header = {"Authorization": f"Bearer {access_token}"}
@@ -58,6 +59,7 @@ class PostBookingTest:
     def test_insufficient_credit(self, app):
         users_factories.UserFactory(email=self.identifier)
         stock = StockFactory(price=501)
+        BankInformationFactory(venue=stock.offer.venue)
 
         access_token = create_access_token(identity=self.identifier)
         test_client = TestClient(app.test_client())

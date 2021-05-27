@@ -238,6 +238,7 @@ class IsBookableTest:
     def test_should_return_true_when_stock_is_unlimited(self):
         # When
         stock = offers_factories.ThingStockFactory(price=0, quantity=None)
+        offers_factories.BankInformationFactory(venue=stock.offer.venue)
 
         # Then
         assert stock.isBookable
@@ -246,6 +247,7 @@ class IsBookableTest:
     def test_should_return_true_when_stock_requirements_are_fulfilled(self):
         # When
         stock = offers_factories.ThingStockFactory()
+        offers_factories.BankInformationFactory(venue=stock.offer.venue)
 
         # Then
         assert stock.isBookable

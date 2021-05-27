@@ -316,6 +316,7 @@ class IsOfferActiveForRecapTest:
         stock = offers_factories.EventStockFactory(
             offer__isActive=True, quantity=2, bookingLimitDatetime=event_date, beginningDatetime=event_date
         )
+        offers_factories.BankInformationFactory(venue=stock.offer.venue)
 
         # When
         is_active = _is_offer_active_for_recap(stock)
@@ -374,6 +375,7 @@ class IsOfferActiveForRecapTest:
         user = users_factories.UserFactory()
         stock = offers_factories.ThingStockFactory(offer__isActive=True, price=0, quantity=None)
         bookings_factories.BookingFactory(user=user, stock=stock, quantity=2)
+        offers_factories.BankInformationFactory(venue=stock.offer.venue)
 
         # When
         is_active = _is_offer_active_for_recap(stock)

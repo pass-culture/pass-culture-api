@@ -6,6 +6,7 @@ import pytest
 
 from pcapi.core.bookings.factories import BookingFactory
 import pcapi.core.mails.testing as mails_testing
+from pcapi.core.offers.factories import BankInformationFactory
 from pcapi.core.offers.factories import EventStockFactory
 from pcapi.core.offers.factories import MediationFactory
 from pcapi.core.offers.factories import OfferFactory
@@ -55,7 +56,7 @@ class OffersTest:
             venue__name="il est venu le temps des names",
         )
         MediationFactory(id=111, offer=offer, thumbCount=1, credit="street credit")
-
+        BankInformationFactory(venue=offer.venue)
         bookableStock = EventStockFactory(offer=offer, price=12.34, quantity=2)
         expiredStock = EventStockFactory(
             offer=offer, price=45.68, beginningDatetime=datetime.utcnow() - timedelta(days=1)

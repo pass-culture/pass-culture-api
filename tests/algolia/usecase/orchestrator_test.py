@@ -12,6 +12,7 @@ from pcapi.algolia.usecase.orchestrator import _build_offer_details_to_be_indexe
 from pcapi.algolia.usecase.orchestrator import delete_expired_offers
 from pcapi.algolia.usecase.orchestrator import process_eligible_offers
 from pcapi.core.offers import factories as offers_factories
+from pcapi.model_creators.generic_creators import create_bank_information
 from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_stock
 from pcapi.model_creators.generic_creators import create_venue
@@ -51,6 +52,7 @@ class ProcessEligibleOffersTest:
         mock_pipeline.execute = MagicMock()
         mock_pipeline.reset = MagicMock()
         offerer = create_offerer(is_active=True, validation_token=None)
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer, validation_token=None)
         offer1 = create_offer_with_thing_product(venue=venue, is_active=True)
         stock1 = create_stock(booking_limit_datetime=TOMORROW, offer=offer1, quantity=10)
@@ -102,7 +104,7 @@ class ProcessEligibleOffersTest:
             offer=offer,
             quantity=1,
         )
-
+        offers_factories.BankInformationFactory(venue=offer.venue)
         data = _build_offer_details_to_be_indexed(offer)
         assert data["dates"] == [datetime.timestamp(bookable_stock.beginningDatetime)]
 
@@ -276,6 +278,7 @@ class ProcessEligibleOffersTest:
         mock_pipeline.execute = MagicMock()
         mock_pipeline.reset = MagicMock()
         offerer = create_offerer(is_active=True, validation_token=None)
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer, validation_token=None)
         offer1 = create_offer_with_thing_product(thing_name="super offre 1", venue=venue, is_active=True)
         stock1 = create_stock(booking_limit_datetime=TOMORROW, offer=offer1, quantity=1)
@@ -437,6 +440,7 @@ class ProcessEligibleOffersTest:
         mock_pipeline.execute = MagicMock()
         mock_pipeline.reset = MagicMock()
         offerer = create_offerer(is_active=True, validation_token=None)
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer, validation_token=None)
         offer1 = create_offer_with_thing_product(thing_name="super offre 1", venue=venue, is_active=True)
         stock1 = create_stock(booking_limit_datetime=TOMORROW, offer=offer1, quantity=1)
@@ -493,6 +497,7 @@ class ProcessEligibleOffersTest:
         mock_pipeline.execute = MagicMock()
         mock_pipeline.reset = MagicMock()
         offerer = create_offerer(is_active=True, validation_token=None)
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer, validation_token=None)
         offer1 = create_offer_with_thing_product(thing_name="super offre 1", venue=venue, is_active=True)
         stock1 = create_stock(booking_limit_datetime=TOMORROW, offer=offer1, quantity=1)
@@ -542,6 +547,7 @@ class ProcessEligibleOffersTest:
         mock_pipeline.execute = MagicMock()
         mock_pipeline.reset = MagicMock()
         offerer = create_offerer(is_active=True, validation_token=None)
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer, validation_token=None)
         offer = create_offer_with_event_product(
             date_created=datetime(2019, 1, 1), event_name="super offre 1", venue=venue, is_active=True
@@ -607,6 +613,7 @@ class ProcessEligibleOffersTest:
         mock_pipeline.execute = MagicMock()
         mock_pipeline.reset = MagicMock()
         offerer = create_offerer(is_active=True, validation_token=None)
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer, validation_token=None)
         offer1 = create_offer_with_thing_product(venue=venue, is_active=True)
         stock1 = create_stock(booking_limit_datetime=TOMORROW, offer=offer1, quantity=10)

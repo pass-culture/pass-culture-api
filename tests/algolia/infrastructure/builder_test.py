@@ -6,6 +6,7 @@ from freezegun import freeze_time
 import pytest
 
 from pcapi.algolia.infrastructure.builder import build_object
+from pcapi.model_creators.generic_creators import create_bank_information
 from pcapi.model_creators.generic_creators import create_criterion
 from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_stock
@@ -25,6 +26,7 @@ class BuildObjectTest:
         in_four_days = datetime.utcnow() + timedelta(days=4)
         three_days_ago = datetime.utcnow() + timedelta(days=-3)
         offerer = create_offerer(name="Offerer name", idx=1)
+        create_bank_information(offerer=offerer)
         venue = create_venue(
             offerer=offerer,
             city="Paris",
@@ -142,6 +144,7 @@ class BuildObjectTest:
         # Given
         offerer = create_offerer()
         venue = create_venue(offerer=offerer)
+        create_bank_information(offerer=offerer)
         offer = create_offer_with_thing_product(venue=venue)
         offer.extraData = {"author": "MEFA"}
         stock = create_stock(offer=offer)
@@ -157,6 +160,7 @@ class BuildObjectTest:
     def test_should_return_a_stage_director_when_exists(self, app):
         # Given
         offerer = create_offerer()
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer)
         offer = create_offer_with_thing_product(venue=venue)
         offer.extraData = {"stageDirector": "MEFA"}
@@ -173,6 +177,7 @@ class BuildObjectTest:
     def test_should_return_a_visa_when_exists(self, app):
         # Given
         offerer = create_offerer()
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer)
         offer = create_offer_with_thing_product(venue=venue)
         offer.extraData = {"visa": "123456"}
@@ -190,6 +195,7 @@ class BuildObjectTest:
     def test_should_return_an_isbn_when_exists(self, app):
         # Given
         offerer = create_offerer()
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer)
         offer = create_offer_with_thing_product(venue=venue)
         offer.extraData = {"isbn": "123456987", "visa": "123654"}
@@ -207,6 +213,7 @@ class BuildObjectTest:
     def test_should_return_a_speaker_when_exists(self, app):
         # Given
         offerer = create_offerer()
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer)
         offer = create_offer_with_thing_product(venue=venue)
         offer.extraData = {"speaker": "MEFA"}
@@ -223,6 +230,7 @@ class BuildObjectTest:
     def test_should_return_a_performer_when_exists(self, app):
         # Given
         offerer = create_offerer()
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer)
         offer = create_offer_with_thing_product(venue=venue)
         offer.extraData = {"performer": "MEFA"}
@@ -239,6 +247,7 @@ class BuildObjectTest:
     def test_should_return_a_show_type_when_exists(self, app):
         # Given
         offerer = create_offerer()
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer)
         offer = create_offer_with_thing_product(venue=venue)
         offer.extraData = {"showType": "dance"}
@@ -255,6 +264,7 @@ class BuildObjectTest:
     def test_should_return_a_show_sub_type_when_exists(self, app):
         # Given
         offerer = create_offerer()
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer)
         offer = create_offer_with_thing_product(venue=venue)
         offer.extraData = {"showSubType": "urbaine"}
@@ -271,6 +281,7 @@ class BuildObjectTest:
     def test_should_return_a_music_type_when_exists(self, app):
         # Given
         offerer = create_offerer()
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer)
         offer = create_offer_with_thing_product(venue=venue)
         offer.extraData = {"musicType": "jazz"}
@@ -287,6 +298,7 @@ class BuildObjectTest:
     def test_should_return_a_music_sub_type_when_exists(self, app):
         # Given
         offerer = create_offerer()
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer)
         offer = create_offer_with_thing_product(venue=venue)
         offer.extraData = {"musicSubType": "fusion"}
@@ -303,6 +315,7 @@ class BuildObjectTest:
     def test_should_return_the_first_stock_price(self, app):
         # Given
         offerer = create_offerer()
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer)
         offer = create_offer_with_thing_product(venue=venue)
         stock1 = create_stock(offer=offer, price=7)
@@ -320,6 +333,7 @@ class BuildObjectTest:
     def test_should_return_default_coordinates_when_one_coordinate_is_missing(self, app):
         # Given
         offerer = create_offerer()
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer, latitude=None, longitude=12.13)
         offer = create_offer_with_thing_product(venue=venue)
         stock = create_stock(offer=offer)
@@ -341,6 +355,7 @@ class BuildObjectTest:
         in_five_days = datetime.utcnow() + timedelta(days=5)
         in_ten_days = datetime.utcnow() + timedelta(days=10)
         offerer = create_offerer()
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer)
         offer = create_offer_with_event_product(venue=venue)
         stock1 = create_stock(beginning_datetime=in_four_days, offer=offer)
@@ -359,6 +374,7 @@ class BuildObjectTest:
     def test_should_not_return_event_beginning_datetimes_as_timestamp_when_thing(self, app):
         # Given
         offerer = create_offerer()
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer)
         offer = create_offer_with_thing_product(venue=venue)
         stock1 = create_stock(offer=offer)
@@ -379,6 +395,7 @@ class BuildObjectTest:
         in_four_days_at_eighteen_thirty = datetime.utcnow() + timedelta(days=4)
         in_five_days_at_twenty_one_thirty = datetime.utcnow() + timedelta(days=5, hours=3, seconds=18)
         offerer = create_offerer()
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer)
         offer = create_offer_with_event_product(venue=venue)
         stock1 = create_stock(beginning_datetime=in_three_days_at_eighteen_thirty, offer=offer)
@@ -398,6 +415,7 @@ class BuildObjectTest:
     def test_should_default_coordinates_when_offer_is_numeric(self, app):
         # Given
         offerer = create_offerer()
+        create_bank_information(offerer=offerer)
         venue = create_venue(offerer=offerer, latitude=None, longitude=None)
         offer = create_offer_with_thing_product(venue=venue, is_digital=True)
         stock = create_stock(offer=offer)
@@ -416,6 +434,7 @@ class BuildObjectTest:
         # Given
         in_four_days = datetime.utcnow() + timedelta(days=4)
         offerer = create_offerer(name="Offerer name", idx=1)
+        create_bank_information(offerer=offerer)
         venue = create_venue(
             offerer=offerer,
             city="Paris",
@@ -506,6 +525,7 @@ class BuildObjectTest:
         # Given
         in_four_days = datetime.utcnow() + timedelta(days=4)
         offerer = create_offerer(name="Offerer name", idx=1)
+        create_bank_information(offerer=offerer)
         venue = create_venue(
             offerer=offerer,
             city="Paris",

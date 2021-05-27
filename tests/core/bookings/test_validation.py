@@ -105,6 +105,7 @@ class CheckQuantityTest:
 class CheckStockIsBookableTest:
     def test_dont_raise_if_bookable(self):
         stock = offers_factories.StockFactory()
+        offers_factories.BankInformationFactory(venue=stock.offer.venue)
         validation.check_stock_is_bookable(stock)  # should not raise
 
     def test_raise_if_not_bookable(self):
@@ -287,6 +288,7 @@ class InsufficientFundsSQLCheckTest:
 
         # They should be able to book free offers
         stock = offers_factories.StockFactory(price=0)
+        offers_factories.BankInformationFactory(venue=stock.offer.venue)
         api.book_offer(user, stock.id, quantity=1)
         assert models.Booking.query.filter_by(user=user).count() == 2
 

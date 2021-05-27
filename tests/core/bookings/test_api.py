@@ -109,7 +109,7 @@ class BookOfferTest:
     def test_create_booking(self, mocked_add_offer_id, app):
         user = users_factories.UserFactory()
         stock = offers_factories.StockFactory(price=10, dnBookedQuantity=5, offer__bookingEmail="offerer@example.com")
-
+        offers_factories.BankInformationFactory(venue=stock.offer.venue)
         booking = api.book_offer(beneficiary=user, stock_id=stock.id, quantity=1)
 
         # One request should have been sent to Batch with the user's
@@ -150,7 +150,7 @@ class BookOfferTest:
 
         stock1 = offers_factories.StockFactory(price=10, dnBookedQuantity=5, offer=offer1)
         stock2 = offers_factories.StockFactory(price=10, dnBookedQuantity=5, offer=offer2)
-
+        offers_factories.BankInformationFactory(venue=stock1.offer.venue)
         user = users_factories.UserFactory()
         date_created = datetime.now() - timedelta(days=5)
         factories.BookingFactory.create_batch(3, user=user, dateCreated=date_created, stock=stock2)
@@ -173,6 +173,7 @@ class BookOfferTest:
         offer = offers_factories.OfferFactory(product=offers_factories.DigitalProductFactory())
         stock = offers_factories.StockFactory(price=10, dnBookedQuantity=5, offer=offer)
         user = users_factories.UserFactory()
+        offers_factories.BankInformationFactory(venue=stock.offer.venue)
 
         booking = api.book_offer(beneficiary=user, stock_id=stock.id, quantity=1)
 
@@ -192,6 +193,7 @@ class BookOfferTest:
         ten_days_from_now = datetime.utcnow() + timedelta(days=10)
         user = users_factories.UserFactory()
         stock = offers_factories.StockFactory(price=10, beginningDatetime=ten_days_from_now, dnBookedQuantity=5)
+        offers_factories.BankInformationFactory(venue=stock.offer.venue)
 
         booking = api.book_offer(beneficiary=user, stock_id=stock.id, quantity=1)
 
@@ -220,6 +222,7 @@ class BookOfferTest:
     def test_do_not_sync_algolia_if_feature_is_disabled(self, mocked_add_offer_id):
         user = users_factories.UserFactory()
         stock = offers_factories.StockFactory()
+        offers_factories.BankInformationFactory(venue=stock.offer.venue)
 
         api.book_offer(beneficiary=user, stock_id=stock.id, quantity=1)
         mocked_add_offer_id.assert_not_called()
@@ -227,6 +230,7 @@ class BookOfferTest:
     def test_raise_if_is_admin(self):
         user = users_factories.UserFactory(isAdmin=True)
         stock = offers_factories.StockFactory()
+        offers_factories.BankInformationFactory(venue=stock.offer.venue)
 
         with pytest.raises(exceptions.UserHasInsufficientFunds):
             api.book_offer(beneficiary=user, stock_id=stock.id, quantity=1)
@@ -234,6 +238,7 @@ class BookOfferTest:
     def test_raise_if_pro_user(self):
         user = users_factories.UserFactory(isBeneficiary=False, isAdmin=False)
         stock = offers_factories.StockFactory()
+        offers_factories.BankInformationFactory(venue=stock.offer.venue)
 
         with pytest.raises(exceptions.UserHasInsufficientFunds):
             api.book_offer(beneficiary=user, stock_id=stock.id, quantity=1)
@@ -258,6 +263,8 @@ class BookOfferTest:
 
     def test_raise_if_user_has_no_more_money(self):
         stock = offers_factories.StockFactory(price=800)
+        offers_factories.BankInformationFactory(venue=stock.offer.venue)
+
         with pytest.raises(exceptions.UserHasInsufficientFunds):
             api.book_offer(
                 beneficiary=users_factories.UserFactory(),
@@ -278,6 +285,8 @@ class BookOfferTest:
             # Given
             user = users_factories.UserFactory()
             stock = offers_factories.StockWithActivationCodesFactory()
+            offers_factories.BankInformationFactory(venue=stock.offer.venue)
+
             first_activation_code = stock.activationCodes[0]
 
             # When
@@ -293,6 +302,7 @@ class BookOfferTest:
             stock = offers_factories.StockWithActivationCodesFactory(
                 activationCodes=["code-vgya451afvyux", "code-bha45k15fuz"]
             )
+            offers_factories.BankInformationFactory(venue=stock.offer.venue)
             stock.activationCodes[0].booking = booking
 
             # When
@@ -306,6 +316,7 @@ class BookOfferTest:
             user = users_factories.UserFactory()
             booking = factories.BookingFactory(isUsed=True, token="ABCDEF")
             stock = offers_factories.StockWithActivationCodesFactory(activationCodes=["code-vgya451afvyux"])
+            offers_factories.BankInformationFactory(venue=stock.offer.venue)
             stock.activationCodes[0].booking = booking
 
             # When
@@ -324,6 +335,7 @@ class BookOfferTest:
             stock = offers_factories.StockWithActivationCodesFactory(
                 activationCodes__expirationDate=datetime(2000, 1, 1)
             )
+            offers_factories.BankInformationFactory(venue=stock.offer.venue)
 
             # When
             with pytest.raises(exceptions.NoActivationCodeAvailable) as error:
