@@ -180,7 +180,6 @@ class ValidationView(BaseAdminView):
         "dateCreated": "Date de création",
     }
     column_filters = ["name", "venue.name", "id", "dateCreated"]
-    simple_list_pager = True
     column_default_sort = ("dateCreated", True)
     page_size = 100
 
@@ -292,7 +291,6 @@ class ImportConfigValidationOfferView(BaseAdminView):
         "user": "Utilisateur",
     }
 
-    simple_list_pager = True
     column_default_sort = ("dateCreated", True)
 
     column_formatters = {
