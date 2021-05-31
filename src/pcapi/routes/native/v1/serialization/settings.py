@@ -12,6 +12,7 @@ class SettingsResponse(BaseModel):
     auto_activate_digital_bookings: bool
     allow_id_check_registration: bool
     enable_native_id_check_version: bool
+    enable_native_id_check_verbose_debugging: bool
     enable_phone_validation: bool
     whole_france_opening: bool
     display_dms_redirection: bool
