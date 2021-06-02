@@ -89,5 +89,6 @@ def retrieve_data_for_beneficiary_booking_confirmation_email(booking: Booking) -
             "can_expire": can_expire,
             "has_offer_url": has_offer_url,
             "digital_offer_url": booking.completedUrl or "",
+            "offer_withdrawal_details": offer.withdrawalDetails or "",
         },
     }
