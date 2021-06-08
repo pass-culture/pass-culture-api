@@ -5,7 +5,6 @@ from freezegun import freeze_time
 import pytest
 
 from pcapi.core.testing import override_features
-from pcapi.core.testing import override_settings
 from pcapi.core.users.models import PhoneValidationStatusType
 from pcapi.core.users.models import User
 from pcapi.model_creators.generic_creators import create_user
@@ -16,6 +15,7 @@ from pcapi.notifications.push import testing as push_testing
 from pcapi.repository import repository
 
 from tests.conftest import TestClient
+from tests.use_cases.create_beneficiary_from_application_test import JOUVE_CONTENT
 
 
 class Post:
@@ -36,13 +36,16 @@ class Post:
         @patch("pcapi.use_cases.create_beneficiary_from_application.send_accepted_as_beneficiary_email")
         @patch("pcapi.use_cases.create_beneficiary_from_application.send_activation_email")
         @patch("pcapi.domain.password.random_token")
-        @override_settings(
-            JOUVE_APPLICATION_BACKEND="tests.use_cases.create_beneficiary_from_application_test.FakeBeneficiaryJouveBackend"
-        )
+        @patch("pcapi.connectors.beneficiaries.jouve_backend.get_application_content")
         @freeze_time("2013-05-15 09:00:00")
         @pytest.mark.usefixtures("db_session")
         def test_user_becomes_beneficiary(
-            self, stubed_random_token, mocked_send_activation_email, mocked_send_accepted_as_beneficiary_email, app
+            self,
+            get_application_content,
+            stubed_random_token,
+            mocked_send_activation_email,
+            mocked_send_accepted_as_beneficiary_email,
+            app,
         ):
             """
             Test that a user which has validated its email and phone number, becomes a
@@ -52,6 +55,7 @@ class Post:
             # Given
             application_id = 35
             stubed_random_token.return_value = "token"
+            get_application_content.return_value = JOUVE_CONTENT
 
             user = create_user(idx=4, email="rennes@example.org", is_beneficiary=False, is_email_validated=True)
 
@@ -119,14 +123,16 @@ class Post:
         @patch("pcapi.use_cases.create_beneficiary_from_application.send_accepted_as_beneficiary_email")
         @patch("pcapi.use_cases.create_beneficiary_from_application.send_activation_email")
         @patch("pcapi.domain.password.random_token")
-        @patch(
-            "pcapi.settings.JOUVE_APPLICATION_BACKEND",
-            "tests.use_cases.create_beneficiary_from_application_test.FakeBeneficiaryJouveBackend",
-        )
+        @patch("pcapi.connectors.beneficiaries.jouve_backend.get_application_content")
         @freeze_time("2013-05-15 09:00:00")
         @pytest.mark.usefixtures("db_session")
         def test_user_does_not_become_beneficiary(
-            self, stubed_random_token, mocked_send_activation_email, mocked_send_accepted_as_beneficiary_email, app
+            self,
+            get_application_content,
+            stubed_random_token,
+            mocked_send_activation_email,
+            mocked_send_accepted_as_beneficiary_email,
+            app,
         ):
             """
             Test that an application is correctly processed and that a non-beneficiary
@@ -136,6 +142,7 @@ class Post:
             # Given
             application_id = 35
             stubed_random_token.return_value = "token"
+            get_application_content.return_value = JOUVE_CONTENT
 
             # When
             data = {"id": "35"}
