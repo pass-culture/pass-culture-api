@@ -171,6 +171,8 @@ workers:
   - name: worker
     enabled: true
     replicaCount: 1
+    autoscaling:
+      enabled: false
     command:
       - python
     args:
@@ -185,6 +187,8 @@ workers:
   - name: worker-low
     enabled: true
     replicaCount: 1
+    autoscaling:
+      enabled: false
     command:
       - python
     args:
@@ -200,6 +204,8 @@ workers:
   - name: worker-idcheck
     enabled: true
     replicaCount: 1
+    autoscaling:
+      enabled: false
     command:
       - python
     args:

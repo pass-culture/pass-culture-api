@@ -172,6 +172,13 @@ workers:
   - name: worker
     enabled: true
     replicaCount: 5
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 5
+      targetCPUUtilization: 70
+      # Enable this option to scale on memory percentage
+      # targetMemoryUtilization: 70
     command:
       - python
     args:
@@ -186,6 +193,8 @@ workers:
   - name: worker-low
     enabled: true
     replicaCount: 1
+    autoscaling:
+      enabled: false
     command:
       - python
     args:
@@ -201,6 +210,8 @@ workers:
   - name: worker-idcheck
     enabled: true
     replicaCount: 2
+    autoscaling:
+      enabled: false
     command:
       - python
     args:
