@@ -123,7 +123,7 @@ def set_booking_is_used_for_digital_offers_with_activation_code(stock, booking) 
     if (
         feature_queries.is_active(FeatureToggle.ENABLE_ACTIVATION_CODES)
         and stock.offer.isDigital
-        and stock.activationCodes
+        and offers_repository.has_activation_codes(stock)
     ):
         booking.activationCode = offers_repository.get_available_activation_code(stock)
 

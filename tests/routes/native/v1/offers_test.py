@@ -66,7 +66,10 @@ class OffersTest:
         BookingFactory(stock=exhaustedStock)
 
         offer_id = offer.id
-        with assert_num_queries(1):
+        # QUERY COUNT
+        # 1: the offer
+        # 2-3-4: 1 query to get available_activation_code for each offer.stocks
+        with assert_num_queries(4):
             response = TestClient(app.test_client()).get(f"/native/v1/offer/{offer_id}")
 
         assert response.status_code == 200
@@ -163,7 +166,10 @@ class OffersTest:
         ThingStockFactory(offer=offer, price=12.34)
 
         offer_id = offer.id
-        with assert_num_queries(1):
+        # QUERY COUNT
+        # 1: the offer
+        # 2: 1 query to get available_activation_code for each offer.stocks
+        with assert_num_queries(2):
             response = TestClient(app.test_client()).get(f"/native/v1/offer/{offer_id}")
 
         assert response.status_code == 200
