@@ -4,17 +4,20 @@ from unittest.mock import patch
 import pytest
 
 import pcapi.core.mails.testing as mails_testing
+from pcapi.core.offers.factories import OfferCategoryFactory
 from pcapi.core.offers.factories import OfferFactory
 from pcapi.core.offers.factories import OffererFactory
 from pcapi.core.offers.factories import UserOffererFactory
 from pcapi.core.offers.models import OfferValidationStatus
 import pcapi.core.users.factories as users_factories
 from pcapi.domain.admin_emails import maybe_send_offerer_validation_email
+from pcapi.domain.admin_emails import send_categories_modification_to_data
 from pcapi.domain.admin_emails import send_offer_creation_notification_to_administration
 from pcapi.domain.admin_emails import send_offer_rejection_notification_to_administration
 from pcapi.domain.admin_emails import send_offer_validation_notification_to_administration
 from pcapi.domain.admin_emails import send_payment_details_email
 from pcapi.domain.admin_emails import send_payments_report_emails
+from pcapi.domain.admin_emails import send_subcategories_modification_to_data
 from pcapi.domain.admin_emails import send_wallet_balances_email
 
 
@@ -149,3 +152,31 @@ class SendOfferNotificationToAdministrationTest:
         assert len(mails_testing.outbox) == 1
         assert mails_testing.outbox[0].sent_data["To"] == "administration@example.com"
         assert mails_testing.outbox[0].sent_data["Subject"] == "[Création d’offre - 75] Test Book"
+
+
+@pytest.mark.usefixtures("db_session")
+class SendCategoriesModificationToDataTest:
+    def test_when_mailjet_status_code_200_sends_categories_modification_to_data_email(self, app):
+        superadmin = users_factories.UserFactory(email="superadmin@email.com")
+        category = OfferCategoryFactory()
+
+        # When
+        send_categories_modification_to_data(category.name, superadmin.email, "link")
+
+        # Then
+        assert len(mails_testing.outbox) == 1
+        assert mails_testing.outbox[0].sent_data["To"] == "data@example.com"
+
+
+@pytest.mark.usefixtures("db_session")
+class SendSubcategoriesModificationToDataTest:
+    def test_when_mailjet_status_code_200_sends_subcategories_modification_to_data_email(self, app):
+        superadmin = users_factories.UserFactory(email="superadmin@email.com")
+        category = OfferCategoryFactory()
+
+        # When
+        send_subcategories_modification_to_data(category.name, superadmin.email, "link")
+
+        # Then
+        assert len(mails_testing.outbox) == 1
+        assert mails_testing.outbox[0].sent_data["To"] == "data@example.com"

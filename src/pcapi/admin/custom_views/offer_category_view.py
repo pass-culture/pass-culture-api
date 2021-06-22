@@ -1,4 +1,11 @@
+from flask.helpers import url_for
+from flask_login import current_user
+from wtforms import Form
+
+from pcapi import settings
 from pcapi.admin.base_configuration import BaseAdminView
+from pcapi.domain.admin_emails import send_categories_modification_to_data
+from pcapi.domain.admin_emails import send_subcategories_modification_to_data
 
 
 class OfferCategoryView(BaseAdminView):
@@ -21,6 +28,14 @@ class OfferCategoryView(BaseAdminView):
 
     def is_accessible(self):
         return super().is_accessible() and self.check_super_admins()
+
+    def after_model_change(self, form: Form, model, is_created: bool) -> None:
+        if is_created:
+            send_categories_modification_to_data(
+                model.name, current_user.email, f'{settings.API_URL}{url_for("/offer_categories.index_view")}'
+            )
+
+        super().after_model_change(form, model, is_created)
 
 
 class OfferSubcategoryView(BaseAdminView):
@@ -78,3 +93,11 @@ class OfferSubcategoryView(BaseAdminView):
 
     def is_accessible(self):
         return super().is_accessible() and self.check_super_admins()
+
+    def after_model_change(self, form: Form, model, is_created: bool) -> None:
+        if is_created:
+            send_subcategories_modification_to_data(
+                model.name, current_user.email, f'{settings.API_URL}{url_for("/offer_subcategories.index_view")}'
+            )
+
+        super().after_model_change(form, model, is_created)

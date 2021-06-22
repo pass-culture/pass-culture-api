@@ -4,11 +4,13 @@ from pcapi.core.offerers.models import Offerer
 from pcapi.core.offers.models import OfferValidationStatus
 from pcapi.models import Offer
 from pcapi.models import UserOfferer
+from pcapi.utils.mailing import make_categories_modification_email
 from pcapi.utils.mailing import make_offer_creation_notification_email
 from pcapi.utils.mailing import make_offer_rejection_notification_email
 from pcapi.utils.mailing import make_payment_details_email
 from pcapi.utils.mailing import make_payment_message_email
 from pcapi.utils.mailing import make_payments_report_email
+from pcapi.utils.mailing import make_subcategories_modification_email
 from pcapi.utils.mailing import make_validation_email_object
 from pcapi.utils.mailing import make_wallet_balances_email
 
@@ -66,3 +68,15 @@ def send_offer_validation_notification_to_administration(
     if validation_status is OfferValidationStatus.REJECTED:
         return send_offer_rejection_notification_to_administration(offer)
     return False
+
+
+def send_categories_modification_to_data(category_name: str, superadmin_email: str, link_to_categories: str) -> bool:
+    data = make_categories_modification_email(category_name, superadmin_email, link_to_categories)
+    return mails.send(recipients=[settings.DATA_EMAIL_ADDRESS], data=data)
+
+
+def send_subcategories_modification_to_data(
+    subcategory_name: str, superadmin_email: str, link_to_subcategories: str
+) -> bool:
+    data = make_subcategories_modification_email(subcategory_name, superadmin_email, link_to_subcategories)
+    return mails.send(recipients=[settings.DATA_EMAIL_ADDRESS], data=data)

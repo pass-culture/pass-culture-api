@@ -156,7 +156,7 @@ def install_admin_views(admin: Admin, session: Session) -> None:
             models.OfferCategory,
             session,
             name="Catégories d'offres",
-            endpoint="/offer_categoriess",
+            endpoint="/offer_categories",
             category=Category.CUSTOM_OPERATIONS,
         )
     )

@@ -341,3 +341,33 @@ def _summarize_user_vars(user_offerer: UserOfferer) -> dict:
         "phoneNumber": user_offerer.user.phoneNumber,
         "activity": user_offerer.user.activity,
     }
+
+
+def make_categories_modification_email(category_name: str, superadmin_email: str, link_to_categories: str) -> dict:
+    html = render_template(
+        "mails/categories_modification_email.html",
+        category_name=category_name,
+        superadmin=superadmin_email,
+        link_to_categories=link_to_categories,
+    )
+    return {
+        "Html-part": html,
+        "FromName": "pass Culture",
+        "Subject": "[Modification de Catégorie]",
+    }
+
+
+def make_subcategories_modification_email(
+    subcategory_name: str, superadmin_email: str, link_to_subcategories: str
+) -> dict:
+    html = render_template(
+        "mails/subcategories_modification_email.html",
+        subcategory_name=subcategory_name,
+        superadmin=superadmin_email,
+        link_to_subcategories=link_to_subcategories,
+    )
+    return {
+        "Html-part": html,
+        "FromName": "pass Culture",
+        "Subject": "[Modification de sous-catégorie]",
+    }

@@ -3,8 +3,11 @@ from datetime import timezone
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
+from bs4 import BeautifulSoup
 import pytest
 
+import pcapi.core.offers.factories as offers_factories
+import pcapi.core.users.factories as users_factories
 from pcapi.model_creators.generic_creators import create_booking
 from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_user
@@ -20,6 +23,8 @@ from pcapi.utils.mailing import build_pc_pro_offer_link
 from pcapi.utils.mailing import extract_users_information_from_bookings
 from pcapi.utils.mailing import format_booking_date_for_email
 from pcapi.utils.mailing import format_booking_hours_for_email
+from pcapi.utils.mailing import make_categories_modification_email
+from pcapi.utils.mailing import make_subcategories_modification_email
 from pcapi.utils.mailing import make_validation_email_object
 
 from tests.files.api_entreprise import MOCKED_SIREN_ENTREPRISES_API_RETURN
@@ -208,3 +213,58 @@ class MakeValidationEmailObjectTest:
 
         # Then
         assert email_object.get("Subject") == "95 - inscription / rattachement PRO à valider : Test Offerer"
+
+
+@pytest.mark.usefixtures("db_session")
+class MakeCategoriesModificationEmailTest:
+    def test_make_categories_modification_email(self):
+        superadmin = users_factories.UserFactory(email="superadmin@example.com")
+        category = offers_factories.OfferCategoryFactory(name="theatre")
+
+        # When
+        email = make_categories_modification_email(category.name, superadmin.email, "link_to_categories")
+
+        # Then
+        assert email["FromName"] == "pass Culture"
+        assert email["Subject"] == "[Modification de Catégorie]"
+
+        parsed_email = BeautifulSoup(email["Html-part"], "html.parser")
+
+        category_html = str(parsed_email.find("p", {"id": "category"}))
+        assert 'Une nouvelle catégorie : "theatre"' in category_html
+
+        superadmin_html = str(parsed_email.find("p", {"id": "superadmin"}))
+        assert "superadmin@example.com" in superadmin_html
+
+        flask_admin_category_link_html = str(parsed_email.find("p", {"id": "flask_admin_category_link"}))
+        assert (
+            '<a href="link_to_categories">Lien vers les catégories sur Flaskadmin</a>' in flask_admin_category_link_html
+        )
+
+
+@pytest.mark.usefixtures("db_session")
+class MakeSubcategoriesModificationEmailTest:
+    def test_make_subcategories_modification_email(self):
+        superadmin = users_factories.UserFactory(email="superadmin@example.com")
+        subcategory = offers_factories.OfferSubcategoryFactory(name="theatre")
+
+        # When
+        email = make_subcategories_modification_email(subcategory.name, superadmin.email, "link_to_subcategories")
+
+        # Then
+        assert email["FromName"] == "pass Culture"
+        assert email["Subject"] == "[Modification de sous-catégorie]"
+
+        parsed_email = BeautifulSoup(email["Html-part"], "html.parser")
+
+        category_html = str(parsed_email.find("p", {"id": "subcategory"}))
+        assert 'Une nouvelle sous-catégorie : "theatre"' in category_html
+
+        superadmin_html = str(parsed_email.find("p", {"id": "superadmin"}))
+        assert "superadmin@example.com" in superadmin_html
+
+        flask_admin_category_link_html = str(parsed_email.find("p", {"id": "flask_admin_subcategory_link"}))
+        assert (
+            '<a href="link_to_subcategories">Lien vers les sous-catégories sur Flaskadmin</a>'
+            in flask_admin_category_link_html
+        )
