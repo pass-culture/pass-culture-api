@@ -359,6 +359,8 @@ secrets:
     version: 1
   - name: DATABASE_URL
     version: 4
+  - name: DATA_EMAIL_ADDRESS
+    version: 1
   - name: DEMARCHES_SIMPLIFIEES_TOKEN
     version: 2
   - name: DEMARCHES_SIMPLIFIEES_WEBHOOK_TOKEN

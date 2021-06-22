@@ -351,6 +351,8 @@ secrets:
     version: 1
   - name: DATABASE_URL
     version: 2
+  - name: DATA_EMAIL_ADDRESS
+    version: 2
   - name: DEV_EMAIL_ADDRESS
     version: 2
   - name: GCP_BUCKET_CREDENTIALS

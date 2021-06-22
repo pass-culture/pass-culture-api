@@ -382,6 +382,8 @@ secrets:
     version: 2
   - name: DEMARCHES_SIMPLIFIEES_WEBHOOK_TOKEN
     version: 2
+  - name: DATA_EMAIL_ADDRESS
+    version: 1
   - name: DEV_EMAIL_ADDRESS
     version: 2
   - name: EXPORT_TOKEN
