@@ -9,8 +9,8 @@ jobs:
        - run: pip install bandit black flake8 isort mypy pytest pyupgrade safety
        - run: bandit --recursive --skip B101 . || true  # B101 is assert statements
        - run: black --check .
-       - run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-       - run: flake8 . --count --exit-zero --max-complexity=27 --max-line-length=800 --show-source --statistics
+       - run: flake8 . --count --ignore=E131,E203,E302,E402,E71,E722,E741,F40,F841
+                --max-complexity=27 --max-line-length=1500 --show-source --statistics
        - run: isort --check-only --profile black .
        - run: pip install -r requirements.txt
        - run: mypy --ignore-missing-imports . || true
