@@ -24,18 +24,24 @@ class AppSearchBackend(base.SearchBackend):
         self.redis_client = current_app.redis_client
 
     def enqueue_offer_ids(self, offer_ids: Iterable[int]):
+        if not offer_ids:
+            return
         try:
             self.redis_client.sadd(REDIS_OFFER_IDS_TO_INDEX, *offer_ids)
         except redis.exceptions.RedisError:
             logger.exception("Could not add offers to indexation queue", extra={"offers": offer_ids})
 
     def enqueue_offer_ids_in_error(self, offer_ids: Iterable[int]):
+        if not offer_ids:
+            return
         try:
             self.redis_client.sadd(REDIS_OFFER_IDS_IN_ERROR_TO_INDEX, *offer_ids)
         except redis.exceptions.RedisError:
             logger.exception("Could not add offers to error queue", extra={"offers": offer_ids})
 
     def enqueue_venue_ids(self, venue_ids: Iterable[int]):
+        if not venue_ids:
+            return
         try:
             self.redis_client.sadd(REDIS_VENUE_IDS_TO_INDEX, *venue_ids)
         except redis.exceptions.RedisError:
@@ -63,6 +69,8 @@ class AppSearchBackend(base.SearchBackend):
             return set()
 
     def delete_venue_ids_from_queue(self, venue_ids: Iterable[int]) -> None:
+        if not venue_ids:
+            return
         try:
             self.redis_client.srem(REDIS_VENUE_IDS_TO_INDEX, *venue_ids)
         except redis.exceptions.RedisError:
@@ -121,4 +129,45 @@ class AppSearchBackend(base.SearchBackend):
             logger.exception("Could not clear indexed offers cache")
 
     def serialize_offer(self, offer: offers_models.Offer) -> dict:
-        return {}  # FIXME (dbaty): that won't do, I am afraid
+        dates = []
+        if offer.isEvent:
+            dates = [stock.beginningDatetime for stock in offer.bookableStocks]
+        extra_data = offer.extraData
+        # FIXME: see Cyril's FIXME about that.
+        isbn = (extra_data.get("isbn") or extra_data.get("visa")) if extra_data else None
+
+        venue = offer.venue
+        if venue.longitude is not None and venue.latitude is not None:
+            position = [venue.longitude, venue.latitude]
+        else:
+            position = None
+
+        return {
+            "id": offer.id,
+            "author": extra_data.get("author") if extra_data else None,
+            "category": offer.offer_category_name_for_app,
+            "date_created": offer.dateCreated,
+            "dates": dates,
+            "description": offer.description,
+            "is_digital": int(offer.isDigital),
+            "is_duo": int(offer.isDuo),
+            "is_event": int(offer.isEvent),
+            "is_thing": int(offer.isThing),
+            "isbn": isbn,
+            "label": offer.offerType["appLabel"],
+            "music_type": extra_data.get("musicType") if extra_data else None,
+            "name": offer.name,
+            "performer": extra_data.get("performer") if extra_data else None,
+            "prices": [int(stock.price * 100) for stock in offer.bookableStocks],
+            "ranking_weight": offer.rankingWeight,
+            "show_type": extra_data.get("showType") if extra_data else None,
+            "speaker": extra_data.get("speaker") if extra_data else None,
+            "stage_director": extra_data.get("stageDirector") if extra_data else None,
+            "thumb_url": offer.thumbUrl,  # FIXME: return last part of the path only
+            "offerer_name": venue.managingOfferer.name,
+            "venue_city": venue.city,
+            "venue_department_code": venue.departementCode,
+            "venue_name": venue.name,
+            "venue_position": position,
+            "venue_public_name": venue.publicName,
+        }

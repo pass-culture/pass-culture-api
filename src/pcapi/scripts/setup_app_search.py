@@ -9,7 +9,6 @@ import requests
 
 import pcapi.core.offers.models as offers_models
 from pcapi.flask_app import app
-from pcapi.utils.human_ids import humanize
 
 
 HOST = "https://search-testing.ent.europe-west1.gcp.cloud.es.io"
@@ -93,50 +92,6 @@ def init_schema():
 # boolean. Boolean values would be rejected by App Search API. They
 # must be converted as integers. It's not easy to do that at the
 # serialization level.
-def serialize(offer):
-    dates = []
-    if offer.isEvent:
-        dates = [stock.beginningDatetime.timestamp() for stock in offer.bookableStocks]
-    extra_data = offer.extraData
-    # FIXME: see Cyril's FIXME about that.
-    isbn = (extra_data.get("isbn") or extra_data.get("visa")) if extra_data else None
-
-    venue = offer.venue
-    if venue.longitude is not None and venue.latitude is not None:
-        position = [venue.longitude, venue.latitude]
-    else:
-        position = None
-
-    return {
-        "id": offer.id,
-        "author": extra_data.get("author") if extra_data else None,
-        "category": offer.offer_category_name_for_app,
-        "date_created": offer.dateCreated,
-        "dates": dates,
-        "description": offer.description,
-        "human_id": humanize(offer.id),
-        "is_digital": int(offer.isDigital),
-        "is_duo": int(offer.isDuo),
-        "is_event": int(offer.isEvent),
-        "is_thing": int(offer.isThing),
-        "isbn": isbn,
-        "label": offer.offerType["appLabel"],
-        "music_type": extra_data.get("musicType") if extra_data else None,
-        "name": offer.name,
-        "performer": extra_data.get("performer") if extra_data else None,
-        "prices": [int(stock.price * 100) for stock in offer.bookableStocks],
-        "ranking_weight": offer.rankingWeight,
-        "show_type": extra_data.get("showType") if extra_data else None,
-        "speaker": extra_data.get("speaker") if extra_data else None,
-        "stage_director": extra_data.get("stageDirector") if extra_data else None,
-        "thumb_url": offer.thumbUrl,  # FIXME: return last part of the path only
-        "offerer_name": venue.managingOfferer.name,
-        "venue_city": venue.city,
-        "venue_department_code": venue.departementCode,
-        "venue_name": venue.name,
-        "venue_position": position,
-        "venue_public_name": venue.publicName,
-    }
 
 
 class AppSearchJsonEncoder(json.JSONEncoder):
@@ -151,6 +106,9 @@ class AppSearchJsonEncoder(json.JSONEncoder):
 def index_offers():
     endpoint = f"/api/as/v1/engines/{ENGINE_NAME}/documents"
     documents = []
+
+    serialize = AppSearch().serialize
+
     with app.app_context():
         offers = offers_models.Offer.query.all()
         for offer in offers:
