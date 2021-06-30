@@ -18,6 +18,9 @@ PRIVATE_API_KEY = os.environ["APP_SEARCH_PRIVATE_API_KEY"]
 ENGINE_NAME = "offers"
 ENGINE_LANGUAGE = None
 
+# FIXME: replace "author", "speaker", "performer" and "stage_director"
+# fields by a single "searchable_text" field that holds everything in
+# a space-separated string.
 SCHEMA = {
     "offer_author": "text",
     "offer_category": "text",
@@ -27,6 +30,7 @@ SCHEMA = {
     "offer_is_digital": "number",
     "offer_is_duo": "number",
     "offer_is_event": "number",
+    "offer_is_thing": "number",
     "offer_isbn": "text",
     "offer_label": "text",
     "offer_music_type": "text",
@@ -114,6 +118,7 @@ def serialize(offer):
         "is_digital": int(offer.isDigital),
         "is_duo": int(offer.isDuo),
         "is_event": int(offer.isEvent),
+        "is_thing": int(offer.isThing),
         "isbn": isbn,
         "label": offer.offerType["appLabel"],
         "music_type": extra_data.get("musicType") if extra_data else None,
