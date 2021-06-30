@@ -17,11 +17,7 @@ PRIVATE_API_KEY = os.environ["APP_SEARCH_PRIVATE_API_KEY"]
 ENGINE_NAME = "offers"
 ENGINE_LANGUAGE = None
 
-# FIXME: replace "author", "speaker", "performer" and "stage_director"
-# fields by a single "searchable_text" field that holds everything in
-# a space-separated string.
 SCHEMA = {
-    "author": "text",
     "category": "text",
     "date_created": "date",
     "dates": "date",
@@ -34,12 +30,10 @@ SCHEMA = {
     "label": "text",
     "music_type": "text",
     "name": "text",
-    "performer": "text",
     "prices": "number",
     "ranking_weight": "number",
+    "searchable_text": "text",
     "show_type": "text",
-    "speaker": "text",
-    "stage_director": "text",
     "stocks_date_created": "text",
     "tags": "text",
     "times": "text",

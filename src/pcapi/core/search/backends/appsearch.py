@@ -136,6 +136,10 @@ class AppSearchBackend(base.SearchBackend):
         # FIXME: see Cyril's FIXME about that.
         isbn = (extra_data.get("isbn") or extra_data.get("visa")) if extra_data else None
 
+        searchable_text = " ".join(
+            extra_data.get(key, "") for key in ("author", "performer", "speaker", "stageDirector")
+        )
+
         venue = offer.venue
         if venue.longitude is not None and venue.latitude is not None:
             position = [venue.longitude, venue.latitude]
@@ -144,7 +148,6 @@ class AppSearchBackend(base.SearchBackend):
 
         return {
             "id": offer.id,
-            "author": extra_data.get("author") if extra_data else None,
             "category": offer.offer_category_name_for_app,
             "date_created": offer.dateCreated,
             "dates": dates,
@@ -157,12 +160,10 @@ class AppSearchBackend(base.SearchBackend):
             "label": offer.offerType["appLabel"],
             "music_type": extra_data.get("musicType") if extra_data else None,
             "name": offer.name,
-            "performer": extra_data.get("performer") if extra_data else None,
             "prices": [int(stock.price * 100) for stock in offer.bookableStocks],
             "ranking_weight": offer.rankingWeight,
+            "searchable_text": searchable_text,
             "show_type": extra_data.get("showType") if extra_data else None,
-            "speaker": extra_data.get("speaker") if extra_data else None,
-            "stage_director": extra_data.get("stageDirector") if extra_data else None,
             "thumb_url": offer.thumbUrl,  # FIXME: return last part of the path only
             "offerer_name": venue.managingOfferer.name,
             "venue_city": venue.city,
