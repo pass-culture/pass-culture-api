@@ -174,7 +174,7 @@ class UserProfileUpdateRequest(BaseModel):
 
 
 class BeneficiaryInformationUpdateRequest(BaseModel):
-    address: Optional[str]
+    address: str
     city: str
     postal_code: str
     activity: ActivityEnum

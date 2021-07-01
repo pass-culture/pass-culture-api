@@ -1343,12 +1343,10 @@ class UpdateBeneficiaryInformationTest:
         assert notification["attribute_values"]["u.is_beneficiary"]
         assert notification["attribute_values"]["u.postal_code"] == "77000"
 
-    def test_update_beneficiary_information_without_address(self, app):
+    def test_update_beneficiary_information_incomplete(self, app):
         """
-        Test that valid request:
-            * updates the user's id check profile information;
-            * sets the user to beneficiary;
-            * send a request to Batch to update the user's information
+        Test that a request with a missing field returns an error and does not
+        update nor send anything.
         """
         user = users_factories.UserFactory(
             isBeneficiary=False,
@@ -1376,24 +1374,20 @@ class UpdateBeneficiaryInformationTest:
 
         response = test_client.patch("/native/v1/beneficiary_information", profile_data)
 
-        assert response.status_code == 204
+        assert response.status_code == 400
+        assert "address" in response.json
 
         user = User.query.get(user.id)
         assert user.address is None
-        assert user.city == "Uneville"
-        assert user.postalCode == "77000"
-        assert user.activity == "Lycéen"
+        assert user.city is None
+        assert user.postalCode is None
+        assert user.activity is None
 
-        assert user.isBeneficiary
-        assert user.has_beneficiary_role
-        assert user.deposit
+        assert not user.isBeneficiary
+        assert not user.has_beneficiary_role
+        assert not user.deposit
 
-        assert len(push_testing.requests) == 1
-        notification = push_testing.requests[0]
-
-        assert notification["user_id"] == user.id
-        assert notification["attribute_values"]["u.is_beneficiary"]
-        assert notification["attribute_values"]["u.postal_code"] == "77000"
+        assert not push_testing.requests
 
 
 class ProfilingFraudScoreTest:
