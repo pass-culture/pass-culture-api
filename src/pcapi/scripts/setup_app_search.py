@@ -49,11 +49,6 @@ SCHEMA = {
 }
 
 
-# FIXME (dbaty): we're going to try without this default position.
-# DEFAULT_LONGITUDE = 2.409289
-# DEFAULT_LATITUDE = 47.158459
-
-
 def _call_api(method, endpoint, data):
     headers = {"Authorization": f"Bearer {PRIVATE_API_KEY}", "Content-Type": "application/json"}
     url = f"{HOST}{endpoint}"
