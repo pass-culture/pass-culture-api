@@ -132,7 +132,7 @@ class AppSearchBackend(base.SearchBackend):
         dates = []
         if offer.isEvent:
             dates = [stock.beginningDatetime for stock in offer.bookableStocks]
-        extra_data = offer.extraData
+        extra_data = offer.extraData or {}
         # FIXME: see Cyril's FIXME about that.
         isbn = (extra_data.get("isbn") or extra_data.get("visa")) if extra_data else None
 

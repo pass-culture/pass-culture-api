@@ -8,6 +8,7 @@ import sys
 import requests
 
 import pcapi.core.offers.models as offers_models
+from pcapi.core.search.backends.appsearch import AppSearchBackend
 from pcapi.flask_app import app
 
 
@@ -82,12 +83,6 @@ def init_schema():
         print("Schema has been initialized.")
 
 
-# FIXME : in tests, check that this function does not return any
-# boolean. Boolean values would be rejected by App Search API. They
-# must be converted as integers. It's not easy to do that at the
-# serialization level.
-
-
 class AppSearchJsonEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime.datetime):
@@ -101,7 +96,7 @@ def index_offers():
     endpoint = f"/api/as/v1/engines/{ENGINE_NAME}/documents"
     documents = []
 
-    serialize = AppSearch().serialize
+    serialize = AppSearchBackend().serialize
 
     with app.app_context():
         offers = offers_models.Offer.query.all()
