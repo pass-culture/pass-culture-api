@@ -1,7 +1,7 @@
 import pytest
 
 import pcapi.core.offers.factories as offers_factories
-from pcapi.core.search.backends.appsearch import AppSearchBackend
+from pcapi.core.search.backends import appsearch
 
 
 pytestmark = pytest.mark.usefixtures("db_session")
@@ -18,6 +18,18 @@ def test_do_no_return_booleans():
     # data type).
 
     offer = offers_factories.OfferFactory()
-    serialized = AppSearchBackend().serialize_offer(offer)
+    serialized = appsearch.AppSearchBackend().serialize_offer(offer)
     for key, value in serialized.items():
         assert not isinstance(value, bool), f"Key {key}should not be a boolean"
+
+
+@pytest.mark.parametrize(
+    "url,expected",
+    [
+        ("https://example.com/foo/bar", "/foo/bar"),
+        ("https://example.com/foo/bar?baz=1", "/foo/bar?baz=1"),
+        ("https://example.com/foo/bar?baz=1#quuz", "/foo/bar?baz=1#quuz"),
+    ],
+)
+def test_url_path(url, expected):
+    assert appsearch.url_path(url) == expected

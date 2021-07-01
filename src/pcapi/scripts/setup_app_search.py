@@ -7,7 +7,6 @@ import sys
 
 import requests
 
-import pcapi.core.offers.models as offers_models
 from pcapi.core.search.backends.appsearch import AppSearchBackend
 from pcapi.flask_app import app
 
@@ -88,12 +87,14 @@ class AppSearchJsonEncoder(json.JSONEncoder):
 
 
 def index_offers():
+    # FIXME (dbaty, 2021-07-01): late import to avoid import loop of models.
+    import pcapi.core.offers.models as offers_models
+
     endpoint = f"/api/as/v1/engines/{ENGINE_NAME}/documents"
     documents = []
 
-    serialize = AppSearchBackend().serialize
-
     with app.app_context():
+        serialize = AppSearchBackend().serialize_offer
         offers = offers_models.Offer.query.all()
         for offer in offers:
             if offer.isBookable:

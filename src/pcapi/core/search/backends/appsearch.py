@@ -1,5 +1,6 @@
 import logging
 from typing import Iterable
+import urllib.parse
 
 from flask import current_app
 import redis
@@ -15,6 +16,23 @@ REDIS_VENUE_IDS_TO_INDEX = "search:appsearch:venue-ids-to-index"
 REDIS_INDEXED_OFFER_IDS = "search:appsearch:indexed-offer-ids"
 
 logger = logging.getLogger(__name__)
+
+
+def url_path(url):
+    """Return the path component of a URL.
+
+    Example::
+
+        >>> url_path("https://example.com/foo/bar/baz?a=1")
+        "/foo/bar/baz?a=1"
+    """
+    parts = urllib.parse.urlparse(url)
+    path = parts.path
+    if parts.query:
+        path += f"?{parts.query}"
+    if parts.fragment:
+        path += f"#{parts.fragment}"
+    return path
 
 
 class AppSearchBackend(base.SearchBackend):
@@ -164,7 +182,7 @@ class AppSearchBackend(base.SearchBackend):
             "ranking_weight": offer.rankingWeight,
             "searchable_text": searchable_text,
             "show_type": extra_data.get("showType") if extra_data else None,
-            "thumb_url": offer.thumbUrl,  # FIXME: return last part of the path only
+            "thumb_url": url_path(offer.thumbUrl),
             "offerer_name": venue.managingOfferer.name,
             "venue_city": venue.city,
             "venue_department_code": venue.departementCode,
