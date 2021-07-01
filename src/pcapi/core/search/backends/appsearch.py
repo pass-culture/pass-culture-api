@@ -6,6 +6,7 @@ from flask import current_app
 import redis
 
 import pcapi.core.offers.models as offers_models
+import pcapi.utils.date as date_utils
 
 from . import base
 
@@ -148,13 +149,18 @@ class AppSearchBackend(base.SearchBackend):
 
     def serialize_offer(self, offer: offers_models.Offer) -> dict:
         dates = []
+        times = []
         if offer.isEvent:
             dates = [stock.beginningDatetime for stock in offer.bookableStocks]
+            times = [
+                date_utils.get_time_in_seconds_from_datetime(stock.beginningDatetime) for stock in offer.bookableStocks
+            ]
+
         extra_data = offer.extraData or {}
         # FIXME: see Cyril's FIXME about that.
         isbn = (extra_data.get("isbn") or extra_data.get("visa")) if extra_data else None
 
-        searchable_text = " ".join(
+        artist = " ".join(
             extra_data.get(key, "") for key in ("author", "performer", "speaker", "stageDirector")
         )
 
@@ -165,24 +171,29 @@ class AppSearchBackend(base.SearchBackend):
             position = None
 
         return {
-            "id": offer.id,
+            "artist": artist,
             "category": offer.offer_category_name_for_app,
-            "date_created": offer.dateCreated,
+            "date_created": offer.dateCreated, # used only to rank results
             "dates": dates,
             "description": offer.description,
+            # TODO(antoinewg): remove fields once we've migrated completely to App Search.
+            # isDigital is used by the frontend to not show the fake geoloc for digital offers used by algolia
+            # Since we don't fake geoloc on App Search => we don't need it
             "is_digital": int(offer.isDigital),
             "is_duo": int(offer.isDuo),
             "is_event": int(offer.isEvent),
             "is_thing": int(offer.isThing),
             "isbn": isbn,
             "label": offer.offerType["appLabel"],
-            "music_type": extra_data.get("musicType") if extra_data else None,
             "name": offer.name,
+            "id": offer.id,
             "prices": [int(stock.price * 100) for stock in offer.bookableStocks],
-            "ranking_weight": offer.rankingWeight,
-            "searchable_text": searchable_text,
-            "show_type": extra_data.get("showType") if extra_data else None,
+            "ranking_weight": offer.rankingWeight or 0,
+            "stocks_date_created": [stock.dateCreated.timestamp() for stock in offer.bookableStocks],
+            "tags": [criterion.name for criterion in offer.criteria],
+            "times": times,
             "thumb_url": url_path(offer.thumbUrl),
+            "type": offer.offerType["sublabel"],
             "offerer_name": venue.managingOfferer.name,
             "venue_city": venue.city,
             "venue_department_code": venue.departementCode,

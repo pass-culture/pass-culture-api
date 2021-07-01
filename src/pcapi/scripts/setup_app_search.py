@@ -8,6 +8,7 @@ import sys
 import requests
 
 from pcapi.core.search.backends.appsearch import AppSearchBackend
+from pcapi.core.search.backends.appsearch import Fields
 from pcapi.flask_app import app
 
 
@@ -18,9 +19,10 @@ ENGINE_NAME = "offers"
 ENGINE_LANGUAGE = None
 
 SCHEMA = {
+    "artist": "text",
     "category": "text",
     "date_created": "date",
-    "dates": "date",
+    "dates": "number", # works better with number
     "description": "text",
     "is_digital": "number",
     "is_duo": "number",
@@ -28,15 +30,13 @@ SCHEMA = {
     "is_thing": "number",
     "isbn": "text",
     "label": "text",
-    "music_type": "text",
     "name": "text",
+    "id": "text",
     "prices": "number",
     "ranking_weight": "number",
-    "searchable_text": "text",
-    "show_type": "text",
-    "stocks_date_created": "text",
+    "stocks_date_created": "number", # works better with number
     "tags": "text",
-    "times": "text",
+    "times": "number",
     "thumb_url": "text",
     "type": "text",
     "offerer_name": "text",
