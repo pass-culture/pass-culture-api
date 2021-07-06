@@ -5,6 +5,7 @@ import pytest
 
 import pcapi.core.fraud.api as fraud_api
 import pcapi.core.fraud.factories as fraud_factories
+import pcapi.core.fraud.models as fraud_models
 from pcapi.core.fraud.models import BeneficiaryFraudCheck
 from pcapi.core.fraud.models import BeneficiaryFraudResult
 from pcapi.core.fraud.models import FraudCheckType
@@ -116,6 +117,47 @@ class JouveFraudCheckTest:
 
         db.session.refresh(user)
         assert not user.isBeneficiary
+
+    def test_on_identity_fraud_check_result_retry(self):
+        user = UserFactory(isBeneficiary=False)
+        content = fraud_factories.JouveContentFactory(
+            birthLocationCtrl="OK",
+            bodyBirthDateCtrl="OK",
+            bodyBirthDateLevel=100,
+            bodyFirstnameCtrl="OK",
+            bodyFirstnameLevel=100,
+            bodyNameLevel=100,
+            bodyNameCtrl="OK",
+            bodyPieceNumber="wrong-id-piece-number",
+            bodyPieceNumberCtrl="KO",  # ensure we correctly update this field later in the test
+            bodyPieceNumberLevel=100,
+            creatorCtrl="OK",
+            initialSizeCtrl="OK",
+        )
+        fraud_check = fraud_factories.BeneficiaryFraudCheckFactory(
+            type=fraud_models.FraudCheckType.JOUVE, user=user, resultContent=content
+        )
+        fraud_check = fraud_api.admin_update_identity_fraud_check_result(user, "123123123123")
+        fraud_result = fraud_factories.BeneficiaryFraudResultFactory(
+            user=user, status=fraud_models.FraudStatus.SUSPICIOUS, reason="Suspiscious case"
+        )
+        fraud_api.on_identity_fraud_check_result(user, fraud_check)
+        fraud_result = fraud_models.BeneficiaryFraudResult.query.get(fraud_result.id)
+        assert fraud_result.status == fraud_models.FraudStatus.OK
+
+    def test_admin_update_identity_fraud_check_result(self):
+        user = UserFactory(isBeneficiary=False)
+
+        fraud_factories.BeneficiaryFraudCheckFactory(
+            type=fraud_models.FraudCheckType.JOUVE,
+            user=user,
+        )
+
+        fraud_check = fraud_api.admin_update_identity_fraud_check_result(user, "id-piece-number")
+        content = fraud_models.JouveContent(**fraud_check.resultContent)
+        assert content.bodyPieceNumberLevel == 70
+        assert content.bodyPieceNumber == "id-piece-number"
+        assert content.bodyPieceNumberCtrl == "OK"
 
     # TODO(xordoquy): make fraud fields configurable and reactivate this test
     # @patch("pcapi.connectors.beneficiaries.jouve_backend._get_raw_content")
