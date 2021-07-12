@@ -230,7 +230,6 @@ class AppSearchBackend(base.SearchBackend):
             "isbn": isbn,
             "label": offer.offerType["appLabel"],
             "name": offer.name,
-            "id": offer.id,
             "prices": [int(stock.price * 100) for stock in offer.bookableStocks],
             "ranking_weight": offer.rankingWeight or 0,
             "stocks_date_created": [stock.dateCreated.timestamp() for stock in offer.bookableStocks],
