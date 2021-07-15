@@ -72,7 +72,7 @@ class LimitConfigurationV1(BaseLimitConfiguration):
 
 class LimitConfigurationV2(BaseLimitConfiguration):
     # For now this total cap duplicates what we store in `Deposit.amount`.
-    TOTAL_CAP = Decimal(300)
+    TOTAL_CAP = Decimal(10000)
 
     DIGITAL_CAP = Decimal(100)
     DIGITAL_CAPPED_TYPES = {
