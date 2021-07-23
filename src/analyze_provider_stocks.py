@@ -8,7 +8,7 @@ from pcapi.utils.human_ids import dehumanize
 from pcapi.utils.human_ids import humanize
 
 
-VENUE_ID = dehumanize("L92A")
+VENUE_ID = dehumanize("HFLQ")
 # ISBN = "9782820338013"
 
 
@@ -26,7 +26,7 @@ class AnalyzeStocks:
         self.gcu_compatible_products = set()
         self.existing_offers = set()
         self.existing_stocks = set()
-        self.unbooked_offers = set()
+        self.unbooked_stocks = set()
         self.active_offers = set()
         venue = Venue.query.get(VENUE_ID)
         self.venue_provider = venue.venueProviders[0]
@@ -66,13 +66,48 @@ class AnalyzeStocks:
             for (idx, quantity, booked_quantity, offer_id) in stocks:
                 self.existing_stocks.add(idx)
                 if quantity > booked_quantity:
-                    self.unbooked_offers.add(offer_id)
-        for offer_ids in batch(list(self.unbooked_offers), 1000):
+                    self.unbooked_stocks.add(offer_id)
+        for offer_ids in batch(list(self.unbooked_stocks), 1000):
             offers = Offer.query.filter(Offer.id.in_(offer_ids)).with_entities(Offer.id, Offer.isActive).all()
             for (idx, is_active) in offers:
                 if is_active:
                     self.active_offers.add(idx)
         print(self.results())
+    def get_step_of(self, isbn):
+        if isbn not in self.provider_stocks:
+            return 0
+        if isbn not in self.available_stocks:
+            return 1
+        product = (
+            Product.query.filter(Product.type == str(ThingType.LIVRE_EDITION))
+            .filter(Product.idAtProviders == isbn)
+            .with_entities(Product.id, Product.isGcuCompatible)
+            .first()
+        )
+        if not product:
+            return 2
+        if not product[1]:
+            return 3
+        offer = (
+            Offer.query.filter(Offer.productId == product[0])
+            .filter(Offer.venueId == VENUE_ID)
+            .with_entities(Offer.id, Offer.isActive)
+            .first()
+        )
+        if not offer:
+            return 4
+        stock = (
+            Stock.query.filter(Stock.offerId.in_(offer[0]))
+            .with_entities(Stock.id, Stock.quantity, Stock.dnBookedQuantity, Stock.offerId)
+            .first()
+        )
+        if not stock:
+            return 5
+        if stock[1] <= stock[2]:
+            return 6
+        if not offer[1]:
+            return 7
+        return 8
     def results(self):
         return f"""
 -- Analyse terminée --
@@ -85,11 +120,11 @@ Pour la librairie {self.venue_provider.venue.publicName or self.venue_provider.v
 {len(self.gcu_compatible_products)} correspondent à des produits compatibles avec nos GCU.
 {len(self.existing_offers)} sont dans les offres de la librairie.
 {len(self.existing_stocks)} sont dans les stocks de la librairie.
-{len(self.unbooked_offers)} ont une quantité de stock disponible supérieure au nombre de réservations en attente sur le pass.
+{len(self.unbooked_stocks)} ont une quantité de stock disponible supérieure au nombre de réservations en attente sur le pass.
 {len(self.active_offers)} sont actives.
 
 C'est ce qu'on observe sur le compte de la structure ? https://pro.passculture.beta.gouv.fr/accueil?structure={humanize(self.venue_provider.venue.managingOffererId)}
 """
 
 
-AnalyzeStocks(VENUE_ID)
+analyzer = AnalyzeStocks(VENUE_ID)
