@@ -16,7 +16,11 @@
     <div><b>Offre :</b> {{ booking.stock.offer.name }}</div>
     <div><b>Date d'annulation :</b>
       {% if booking.isCancelled %}
-        {{ booking.cancellationDate.strftime('%d/%m/%Y %H:%M') }}
+        {% if booking.cancellationDate %}
+            {{ booking.cancellationDate.strftime('%d/%m/%Y %H:%M') }}
+        {% else %}
+            manquante
+        {% endif %}
       {% else %}
         non annulée
       {% endif %}
