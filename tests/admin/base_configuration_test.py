@@ -2,6 +2,7 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 import flask_login
+import pytest
 
 from pcapi.admin.base_configuration import BaseAdminView
 from pcapi.core.testing import override_settings
@@ -140,3 +141,77 @@ class BaseAdminFormTest:
                 form = view.get_edit_form()
                 assert hasattr(form, "firstName") is False
                 assert hasattr(form, "lastName") is False
+
+
+@pytest.mark.usefixtures("db_session")
+class GoogleLoginTest:
+    # @override_settings(GOOGLE_CLIENT_ID="client-id", GOOGLE_CLIENT_SECRET="client-secret")
+    # def test_login_end_to_end(self, client):
+    #     response = client.get("/pc/back-office/")
+    #     assert response.status_code == 302
+    #     assert response.headers["Location"] == "http://localhost/pc/back-office/login/"
+
+    #     response = client.get("/pc/back-office/login")
+    #     assert response.status_code == 302
+
+    #     requests_mock.register_uri(
+    #         "GET",
+    #         "https://accounts.google.com/o/oauth2/v2/auth",
+    #         headers={"Location": flask.url_for(".authorize")},
+    #         status_code=302,
+    #     )
+
+    #     response = requests.get(response.headers["Location"])
+    #     import ipdb
+
+    #     ipdb.set_trace()
+
+    @patch("pcapi.admin.base_configuration.oauth.google.authorize_access_token")
+    @patch("pcapi.admin.base_configuration.oauth.google.parse_id_token")
+    def test_authorize(self, parse_id_token, authorize_access_token, client):
+        parse_id_token.return_value = {
+            "email": "firstname.lastname@passculture.app",
+            "family_name": "Lastname",
+            "given_name": "Firstname",
+            "name": "Firstname Lastname",
+        }
+        response = client.get("/pc/back-office/authorize")
+        assert response.status_code == 302
+
+        user = users_models.User.query.filter_by(email="firstname.lastname@passculture.app").one_or_none()
+
+        assert user.firstName == "Firstname"
+        assert user.lastName == "Lastname"
+        assert user.isAdmin
+        assert user.has_admin_role
+
+        client.with_auth(user.email)
+        response = client.get("/pc/back-office/")
+        assert response.status_code == 200
+        assert (
+            "Bonjour <strong>Firstname Lastname</strong>, bienvenue dans le back office du pass Culture !"
+            in response.data.decode()
+        )
+
+    @patch("pcapi.admin.base_configuration.oauth.google.authorize_access_token")
+    @patch("pcapi.admin.base_configuration.oauth.google.parse_id_token")
+    def test_authorize_user_already_exists(self, parse_id_token, authorize_access_token, client):
+        parse_id_token.return_value = {
+            "email": "firstname.lastname@passculture.app",
+            "family_name": "Lastname",
+            "given_name": "Firstname",
+            "name": "Firstname Lastname",
+        }
+        users_factories.AdminFactory(email="firstname.lastname@passculture.app")
+        response = client.get("/pc/back-office/authorize")
+        assert response.status_code == 302
+
+        user = users_models.User.query.filter_by(email="firstname.lastname@passculture.app").one_or_none()
+
+        client.with_auth(user.email)
+        response = client.get("/pc/back-office/")
+        assert response.status_code == 200
+        assert (
+            f"Bonjour <strong>{user.firstName} {user.lastName}</strong>, bienvenue dans le back office du pass Culture !"
+            in response.data.decode()
+        )
