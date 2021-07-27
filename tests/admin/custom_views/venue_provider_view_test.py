@@ -18,7 +18,7 @@ class VenueProviderViewTest:
         # Then
         assert not view.is_accessible()
 
-    @patch("pcapi.admin.base_configuration.current_user")
+    @patch("pcapi.admin.base_configuration.flask_login.current_user")
     def test_prevent_access_missing_venue_access(self, current_user, app, db_session):
         # Given
         current_user.is_authenticated = True

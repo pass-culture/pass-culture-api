@@ -1,6 +1,6 @@
 from enum import Enum
 
-from flask import Flask
+import flask
 from flask_admin.base import Admin
 from sqlalchemy.orm.session import Session
 
@@ -31,6 +31,7 @@ from pcapi.core.offers.models import OfferValidationConfig
 from pcapi.core.providers.models import VenueProvider
 from pcapi.core.users.models import User
 
+from . import base_configuration
 from . import templating
 
 
@@ -44,7 +45,18 @@ class Category(Enum):
     FRAUD = "Anti Fraude"
 
 
-def install_admin_views(admin: Admin, session: Session) -> None:
+def install_admin(app: flask.Flask, session: Session) -> None:
+    admin = Admin(
+        name="Back Office du Pass Culture",
+        url="/pc/back-office/",
+        index_view=base_configuration.AdminIndexView(url="/pc/back-office/"),
+        template_mode="bootstrap4",
+    )
+    admin.init_app(app)
+    install_views(admin, session)
+
+
+def install_views(admin: Admin, session: Session) -> None:
     admin.add_view(
         offer_view.OfferView(models.Offer, session, name="Offres", category=Category.OFFRES_STRUCTURES_LIEUX)
     )
@@ -177,5 +189,5 @@ def install_admin_views(admin: Admin, session: Session) -> None:
     )
 
 
-def install_admin_template_filters(app: Flask) -> None:
+def install_admin_template_filters(app: flask.Flask) -> None:
     app.jinja_env.filters["yesno"] = templating.yesno

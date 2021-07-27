@@ -16,13 +16,12 @@ from requests.auth import _basic_auth_str
 
 import pcapi
 from pcapi import settings
-from pcapi.admin.install import install_admin_views
+from pcapi.admin.install import install_admin
 import pcapi.core.mails.testing as mails_testing
 import pcapi.core.object_storage.testing as object_storage_testing
 import pcapi.core.search.testing as search_testing
 import pcapi.core.testing
 from pcapi.core.users import testing as users_testing
-from pcapi.flask_app import admin
 from pcapi.install_database_extensions import install_database_extensions
 from pcapi.local_providers.install import install_local_providers
 from pcapi.model_creators.generic_creators import PLAIN_DEFAULT_TESTING_PASSWORD
@@ -78,8 +77,7 @@ def app_fixture():
     install_routes(app)
     install_handlers(app)
     install_local_providers()
-    admin.init_app(app)
-    install_admin_views(admin, db.session)
+    install_admin(app, db.session)
 
     app.redis_client = redis.from_url(url=settings.REDIS_URL)
     app.register_blueprint(adage_v1, url_prefix="/adage/v1")
