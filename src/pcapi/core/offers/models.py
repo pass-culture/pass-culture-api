@@ -55,7 +55,7 @@ from pcapi.utils.date import DateTimes
 logger = logging.getLogger(__name__)
 
 
-class Mediation(PcObject, Model, HasThumbMixin, ProvidableMixin, DeactivableMixin):
+class Mediation(PcObject, Model, HasThumbMixin, DeactivableMixin):
     __tablename__ = "mediation"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
