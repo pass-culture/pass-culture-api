@@ -139,7 +139,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = False
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SECURE"] = not settings.IS_DEV
-app.config["SESSION_COOKIE_SAMESITE"] = "Strict"
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax" if settings.IS_DEV else "Strict"
 app.config["REMEMBER_COOKIE_HTTPONLY"] = True
 app.config["REMEMBER_COOKIE_SECURE"] = not settings.IS_DEV
 app.config["REMEMBER_COOKIE_DURATION"] = 90 * 24 * 3600
@@ -155,7 +155,9 @@ oauth = OAuth(app)
 oauth.register(
     name="google",
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-    client_kwargs={"scope": "openid email profile"},
+    client_kwargs={
+        "scope": "openid email profile  https://www.googleapis.com/auth/admin.directory.user.readonly https://www.googleapis.com/auth/admin.directory.group.readonly https://www.googleapis.com/auth/admin.directory.group.member.readonly"
+    },
 )
 
 jwt = JWTManager(app)

@@ -103,7 +103,9 @@ class AdminIndexView(flask_admin.base.AdminIndexView):
         from pcapi.utils import login_manager
 
         token = oauth.google.authorize_access_token()
+
         google_user = oauth.google.parse_id_token(token)
+        breakpoint()
         db_user = users_models.User.query.filter_by(email=google_user["email"]).one_or_none()
         if not db_user:
             db_user = users_models.User(
