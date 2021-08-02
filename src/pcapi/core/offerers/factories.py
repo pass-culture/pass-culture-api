@@ -1,5 +1,6 @@
 import factory
 
+from pcapi.core.offerers import models as offerers_models
 from pcapi.core.offerers.models import ApiKey
 from pcapi.core.offerers.models import VenueLabel
 from pcapi.core.offerers.models import VenueType
@@ -77,14 +78,16 @@ class VirtualVenueTypeFactory(BaseFactory):
     class Meta:
         model = VenueType
 
-    label = "Offre numérique"
+    code = offerers_models.VenueTypeEnum.DIGITAL.name
+    label = offerers_models.VenueTypeEnum.DIGITAL.value
 
 
 class VenueTypeFactory(BaseFactory):
     class Meta:
         model = VenueType
 
-    label = "Librairie"
+    code = offerers_models.VenueTypeEnum.BOOKSTORE.name
+    label = offerers_models.VenueTypeEnum.BOOKSTORE.value
 
 
 class VenueLabelFactory(BaseFactory):

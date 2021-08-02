@@ -1,4 +1,5 @@
 from datetime import datetime
+import enum
 from typing import Optional
 
 from sqlalchemy import BigInteger
@@ -213,8 +214,44 @@ class VenueLabel(PcObject, Model):
     venue = relationship("Venue")
 
 
+class VenueTypeEnum(enum.Enum):
+    """
+    Define all the codes and label allowed for a VenueType.
+    Format: <CODE> = "<label>"
+    """
+
+    VISUAL_ARTS = "Arts visuels, arts plastiques et galeries"
+    CULTURAL_CENTRE = "Centre culturel"
+    ARTISTIC_COURSE = "Cours et pratique artistiques"
+    SCIENTIFIC_CULTURE = "Culture scientifique"
+    FESTIVAL = "Festival"
+    GAMES = "Jeux / Jeux vidéos"
+    BOOKSTORE = "Librairie"
+    LIBRARY = "Bibliothèque ou médiathèque"
+    MUSEUM = "Musée"
+    RECORD_STORE = "Musique - Disquaire"
+    MUSICAL_INSTRUMENT_STORE = "Musique - Magasin d’instruments"
+    CONCERT_HALL = "Musique - Salle de concerts"
+    DIGITAL = "Offre numérique"
+    PATRIMONY_TOURISM = "Patrimoine et tourisme"
+    MOVIE = "Cinéma - Salle de projections"
+    PERFORMING_ARTS = "Spectacle vivant"
+    CREATIVE_ARTS_STORE = "Magasin arts créatifs"
+    OTHER = "Autre"
+
+    @staticmethod
+    def get(code: str) -> enum.Enum:
+        return VenueTypeEnum.__members__.get(code, VenueTypeEnum.OTHER)
+
+    @staticmethod
+    def get_codes() -> list[str]:
+        return list(VenueTypeEnum.__members__.keys())
+
+
 class VenueType(PcObject, Model):
     label = Column(String(100), nullable=False)
+
+    code = Column(String(64), nullable=True)
 
     venue = relationship("Venue")
 
