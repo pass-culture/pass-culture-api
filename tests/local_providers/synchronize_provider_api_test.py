@@ -6,6 +6,7 @@ import pytest
 import requests_mock
 
 from pcapi.core.bookings.factories import BookingFactory
+from pcapi.core.bookings.models import BookingStatus
 import pcapi.core.offerers.factories as offerers_factories
 from pcapi.core.offers import factories
 from pcapi.core.offers.models import Offer
@@ -97,7 +98,7 @@ class ProviderAPICronTest:
         create_product(ISBNs[6], isGcuCompatible=False, product_price="10.04")
 
         stock_with_booking = create_stock(ISBNs[5], siret, quantity=20, product_price="18.01")
-        BookingFactory(stock=stock_with_booking)
+        BookingFactory(stock=stock_with_booking, isUsed=True, status=BookingStatus.USED)
         BookingFactory(stock=stock_with_booking, quantity=2)
 
         # When
@@ -136,8 +137,8 @@ class ProviderAPICronTest:
         second_created_offer = Offer.query.filter_by(idAtProviders=f"{ISBNs[4]}@{siret}").one()
         assert second_created_offer.stocks[0].quantity == 17
 
-        # Test existing bookings are added to quantity
-        assert stock_with_booking.quantity == 17 + 1 + 2
+        # Test that "used" bookings are added to quantity sent by provider
+        assert stock_with_booking.quantity == 17 + 1
         assert stock_with_booking.rawProviderQuantity == 17
 
         # Test fill stock attributes

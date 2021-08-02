@@ -205,7 +205,7 @@ def get_offers_map_by_id_at_providers(id_at_providers: list[str]) -> dict[str, i
 def get_stocks_by_id_at_providers(id_at_providers: list[str]) -> dict:
     stocks = (
         Stock.query.filter(Stock.idAtProviders.in_(id_at_providers))
-        .outerjoin(Booking, and_(Stock.id == Booking.stockId, Booking.isCancelled.is_(False)))
+        .outerjoin(Booking, and_(Stock.id == Booking.stockId, Booking.isUsed.is_(True)))
         .group_by(Stock.id)
         .with_entities(
             Stock.id,

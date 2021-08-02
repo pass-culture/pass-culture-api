@@ -5,6 +5,7 @@ from freezegun.api import freeze_time
 import pytest
 
 from pcapi.core.bookings.factories import BookingFactory
+from pcapi.core.bookings.models import BookingStatus
 import pcapi.core.offerers.factories as offerers_factories
 from pcapi.core.offers import factories
 from pcapi.core.offers.factories import VenueFactory
@@ -82,7 +83,7 @@ class SynchronizeStocksTest:
         create_product(spec[6]["ref"], isGcuCompatible=False)
 
         stock_with_booking = create_stock(spec[5]["ref"], siret, quantity=20)
-        BookingFactory(stock=stock_with_booking)
+        BookingFactory(stock=stock_with_booking, isUsed=True, status=BookingStatus.USED)
         BookingFactory(stock=stock_with_booking, quantity=2)
 
         # When
@@ -111,8 +112,8 @@ class SynchronizeStocksTest:
         second_created_offer = Offer.query.filter_by(idAtProviders=f"{spec[4]['ref']}@{siret}").one()
         assert second_created_offer.stocks[0].quantity == 17
 
-        # Test existing bookings are added to quantity
-        assert stock_with_booking.quantity == 17 + 1 + 2
+        # Test that "used" bookings are added to quantity sent by provider
+        assert stock_with_booking.quantity == 17 + 1
         assert stock_with_booking.rawProviderQuantity == 17
 
         # Test fill stock attributes
