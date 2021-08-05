@@ -15,6 +15,9 @@ class ResendValidationEmailForm(SecureForm):
 
 
 def _format_is_email_validated(view, context, model, name):
+    if model.has_admin_role or model.has_pro_role:
+        return model.isEmailValidated
+
     if model.isEmailValidated:
         return True
     url = url_for(".resend_validation_email_view")
