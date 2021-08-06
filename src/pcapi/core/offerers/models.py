@@ -165,6 +165,14 @@ class Venue(PcObject, Model, HasThumbMixin, HasAddressMixin, ProvidableMixin, Ne
 
     withdrawalDetails = Column(Text, nullable=True)
 
+    audioDisabilityCompliant = Column(Boolean, nullable=True)
+
+    mentalDisabilityCompliant = Column(Boolean, nullable=True)
+
+    motorDisabilityCompliant = Column(Boolean, nullable=True)
+
+    visualDisabilityCompliant = Column(Boolean, nullable=True)
+
     def store_departement_code(self) -> None:
         self.departementCode = PostalCode(self.postalCode).get_departement_code()
 
