@@ -30,8 +30,8 @@ resources:
     memory: 256Mi
 
 workflows:
+
   dump_restore: true
-  post_process: false
 
 serviceAccount:
   create: true

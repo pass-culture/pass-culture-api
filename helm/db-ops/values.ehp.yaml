@@ -18,7 +18,7 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
-schedule:  "0 3 * * 4" # Thursday at 3am
+schedule:  "0 4 * * 4" # Thursday at 4 am
 timezone: "Europe/Paris"
 
 resources:
@@ -30,9 +30,23 @@ resources:
     memory: 256Mi
 
 workflows:
-  dump_restore: false
-  post_process: true
-
+  - name: staging
+    post_process: true
+    secretsNamePrefix: pcapi-staging
+    configmap:
+      ENV: staging
+      POSTGRES_INSTANCE_DEST: pcapi-ehp-0ef86e9a
+      POSTGRES_DATABASE_DEST: pcapi-staging
+      POSTGRES_USER_DEST: pcapi-staging
+  - name: perf
+    post_process: true
+    secretsNamePrefix: pcapi-perf
+    configmap:
+      ENV: testing 
+      POSTGRES_INSTANCE_DEST: pcapi-perf-1ac56766
+      POSTGRES_DATABASE_DEST: pcapi-perf
+      POSTGRES_USER_DEST: pcapi-perf
+  
 serviceAccount:
   create: true
   annotations:
@@ -51,17 +65,6 @@ configmap:
   POSTGRES_UNNEEDED_TABLES : "activity user_session email"
   DISABLE_VENUE_PROVIDERS: "true"
 
-configmapStaging:
-  ENV: staging
-  POSTGRES_INSTANCE_DEST: pcapi-ehp-0ef86e9a
-  POSTGRES_DATABASE_DEST: pcapi-staging
-  POSTGRES_USER_DEST: pcapi-staging
-
-configmapPerf:
-  ENV: testing 
-  POSTGRES_INSTANCE_DEST: pcapi-perf-1ac56766
-  POSTGRES_DATABASE_DEST: pcapi-perf
-  POSTGRES_USER_DEST: pcapi-perf
 
 databaseUrlSecretName: DATABASE_URL
 
