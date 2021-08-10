@@ -9,6 +9,7 @@ from pcapi.core.offerers.models import VenueType
 from pcapi.core.users.models import User
 from pcapi.models.db import db
 from pcapi.repository import repository
+from pcapi.routes.serialization import venues_serialize
 from pcapi.routes.serialization.venues_serialize import PostVenueBodyModel
 from pcapi.utils import crypto
 
@@ -80,6 +81,11 @@ def update_venue(
         search.async_index_venue_ids([venue.id])
 
     return venue
+
+
+def update_venue_description(venue: Venue, data: venues_serialize.EditVenueDescriptionBodyModel) -> None:
+    venue.description = data.description
+    repository.save(venue)
 
 
 def create_venue(venue_data: PostVenueBodyModel) -> Venue:

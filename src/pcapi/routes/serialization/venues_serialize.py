@@ -4,6 +4,7 @@ from decimal import InvalidOperation
 from typing import Optional
 from typing import Union
 
+import pydantic
 from pydantic import BaseModel
 from pydantic import validator
 
@@ -161,6 +162,14 @@ class EditVenueBodyModel(BaseModel):
 
     _dehumanize_venue_label_id = dehumanize_field("venueLabelId")
     _dehumanize_venue_type_id = dehumanize_field("venueTypeId")
+
+
+class EditVenueDescriptionBodyModel(BaseModel):
+    class Config:
+        alias_generator = to_camel
+        extra = pydantic.Extra.forbid
+
+    description: pydantic.constr(max_length=1000, strip_whitespace=True)  # type: ignore
 
 
 class VenueListItemResponseModel(BaseModel):

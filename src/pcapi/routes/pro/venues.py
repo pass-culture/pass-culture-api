@@ -10,6 +10,7 @@ from pcapi.core.offers.repository import get_active_offers_count_for_venue
 from pcapi.core.offers.repository import get_sold_out_offers_count_for_venue
 from pcapi.flask_app import private_api
 from pcapi.models.feature import FeatureToggle
+from pcapi.routes.serialization import venues_serialize
 from pcapi.routes.serialization.venues_serialize import EditVenueBodyModel
 from pcapi.routes.serialization.venues_serialize import GetVenueListResponseModel
 from pcapi.routes.serialization.venues_serialize import GetVenueResponseModel
@@ -96,6 +97,16 @@ def edit_venue(venue_id: str, body: EditVenueBodyModel) -> GetVenueResponseModel
         update_all_venue_offers_email_job.delay(venue, body.bookingEmail)
 
     return GetVenueResponseModel.from_orm(venue)
+
+
+@private_api.route("/venues/<venue_id>/description", methods=["PUT"])
+@login_required
+@spectree_serialize(on_success_status=204, on_error_statuses=[400])
+def edit_venue_description(venue_id: str, body: venues_serialize.EditVenueDescriptionBodyModel) -> None:
+    venue = load_or_404(Venue, venue_id)
+
+    check_user_has_access_to_offerer(current_user, venue.managingOffererId)
+    offerers_api.update_venue_description(venue, body)
 
 
 @private_api.route("/venues/<humanized_venue_id>/stats", methods=["GET"])

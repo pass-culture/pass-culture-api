@@ -150,6 +150,7 @@ class Returns200Test:
                         "dateCreated": format_into_utc_date(offer.venue.dateCreated),
                         "dateModifiedAtLastProvider": format_into_utc_date(offer.venue.dateModifiedAtLastProvider),
                         "departementCode": "75",
+                        "description": None,
                         "fieldsUpdated": [],
                         "id": humanize(offer.venue.id),
                         "idAtProviders": None,
