@@ -6,7 +6,6 @@ from decimal import Decimal
 from pcapi.core.categories import subcategories
 from pcapi.core.offers.models import Offer
 from pcapi.models import Booking
-from pcapi.models import ThingType
 
 
 MIN_DATETIME = datetime.datetime(datetime.MINYEAR, 1, 1)
@@ -112,7 +111,7 @@ class ReimbursementRateForBookAbove20000(ReimbursementRule):
     valid_until = None
 
     def is_relevant(self, booking: Booking, **kwargs: Decimal) -> bool:
-        if not booking.stock.offer.type == str(ThingType.LIVRE_EDITION):
+        if not booking.stock.offer.subcategoryId == subcategories.LIVRE_PAPIER.id:
             return False
         return kwargs["cumulative_value"] > 20000
 
@@ -180,7 +179,8 @@ def get_reimbursement_rule(
 
 # FIXME (rchaffal, 2021-07-15): temporary workaroud before implementing subcategory reimbursement rules for all offers
 def _is_offer_an_exception_to_reimbursement_rules(offer: Offer) -> bool:
-    return (
-        offer.type in (str(ThingType.CINEMA_CARD), str(ThingType.LIVRE_EDITION))
-        or offer.subcategoryId == subcategories.MUSEE_VENTE_DISTANCE
+    return offer.subcategoryId in (
+        subcategories.CINE_VENTE_DISTANCE.id,
+        subcategories.LIVRE_PAPIER.id,
+        subcategories.MUSEE_VENTE_DISTANCE.id,
     )
