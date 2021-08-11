@@ -1,8 +1,10 @@
 from pcapi.flask_app import public_api
 from pcapi.utils.health_checker import check_database_connection
 from pcapi.utils.health_checker import read_version_from_file
+from pcapi.utils.rate_limiting import ip_rate_limiter
 
 
+@ip_rate_limiter
 @public_api.route("/health/api", methods=["GET"])
 def health_api():
     output = read_version_from_file()
