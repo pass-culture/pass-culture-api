@@ -4,12 +4,14 @@ from flask_login import login_required
 
 from pcapi.core.providers import api
 from pcapi.core.providers import repository
+from pcapi.core.providers.models import VenueProvider
 from pcapi.flask_app import private_api
 from pcapi.routes.serialization.venue_provider_serialize import ListVenueProviderQuery
 from pcapi.routes.serialization.venue_provider_serialize import ListVenueProviderResponse
 from pcapi.routes.serialization.venue_provider_serialize import PostVenueProviderBody
 from pcapi.routes.serialization.venue_provider_serialize import VenueProviderResponse
 from pcapi.serialization.decorator import spectree_serialize
+from pcapi.utils.date import utc_datetime_to_department_timezone
 from pcapi.workers.venue_provider_job import venue_provider_job
 
 
@@ -21,6 +23,10 @@ def list_venue_providers(query: ListVenueProviderQuery) -> ListVenueProviderResp
     for venue_provider in venue_provider_list:
         if venue_provider.isFromAllocineProvider:
             venue_provider.price = _allocine_venue_provider_price(venue_provider)
+        if venue_provider.lastSyncDate:
+            venue_provider.lastSyncDate = utc_datetime_to_department_timezone(
+                venue_provider.lastSyncDate, venue_provider.venue.departementCode
+            )
     return ListVenueProviderResponse(
         venue_providers=[VenueProviderResponse.from_orm(venue_provider) for venue_provider in venue_provider_list]
     )
@@ -38,7 +44,7 @@ def create_venue_provider(body: PostVenueProviderBody) -> VenueProviderResponse:
     return VenueProviderResponse.from_orm(new_venue_provider)
 
 
-def _allocine_venue_provider_price(venue_provider) -> Union[float, None]:
+def _allocine_venue_provider_price(venue_provider: VenueProvider) -> Union[float, None]:
     for price_rule in venue_provider.priceRules:
         if price_rule.priceRule():
             return price_rule.price
