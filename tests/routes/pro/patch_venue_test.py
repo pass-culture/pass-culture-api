@@ -49,7 +49,7 @@ class Returns200Test:
         venue_type = offerers_factories.VenueTypeFactory(label="Musée")
         venue_label = offerers_factories.VenueLabelFactory(label="CAC - Centre d'art contemporain d'intérêt national")
 
-        auth_request = TestClient(app.test_client()).with_auth(email=user_offerer.user.email)
+        auth_request = TestClient(app.test_client()).with_session_auth(email=user_offerer.user.email)
         venue_id = venue.id
 
         # when
@@ -82,7 +82,7 @@ class Returns200Test:
             name="old name", managingOfferer=user_offerer.offerer, bookingEmail="old.venue@email.com"
         )
 
-        auth_request = TestClient(app.test_client()).with_auth(email=user_offerer.user.email)
+        auth_request = TestClient(app.test_client()).with_session_auth(email=user_offerer.user.email)
 
         venue_data = populate_missing_data_from_venue(
             {
@@ -126,7 +126,7 @@ class Returns200Test:
             managingOfferer=user_offerer.offerer,
         )
 
-        auth_request = TestClient(app.test_client()).with_auth(email=user_offerer.user.email)
+        auth_request = TestClient(app.test_client()).with_session_auth(email=user_offerer.user.email)
 
         venue_data = populate_missing_data_from_venue(
             {
@@ -154,7 +154,7 @@ class Returns200Test:
             managingOfferer=user_offerer.offerer,
         )
         venue_data = populate_missing_data_from_venue({}, venue)
-        auth_request = TestClient(app.test_client()).with_auth(email=user_offerer.user.email)
+        auth_request = TestClient(app.test_client()).with_session_auth(email=user_offerer.user.email)
 
         # when
         response = auth_request.patch("/venues/%s" % humanize(venue.id), json=venue_data)

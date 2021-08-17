@@ -18,7 +18,7 @@ class BookingViewTest:
         users_factories.AdminFactory(email="admin@example.com")
         booking = bookings_factories.BookingFactory()
 
-        client = TestClient(app.test_client()).with_auth("admin@example.com")
+        client = TestClient(app.test_client()).with_session_auth("admin@example.com")
         response = client.post("/pc/back-office/bookings/", form={"token": booking.token})
 
         assert response.status_code == 200
@@ -30,7 +30,7 @@ class BookingViewTest:
         users_factories.AdminFactory(email="admin@example.com")
         bookings_factories.BookingFactory(isCancelled=True, status=BookingStatus.CANCELLED, token="ABCDEF")
 
-        client = TestClient(app.test_client()).with_auth("admin@example.com")
+        client = TestClient(app.test_client()).with_session_auth("admin@example.com")
         response = client.post("/pc/back-office/bookings/", form={"token": "abcdeF"})
 
         assert response.status_code == 200
@@ -41,7 +41,7 @@ class BookingViewTest:
         users_factories.AdminFactory(email="admin@example.com")
         booking = bookings_factories.BookingFactory(isCancelled=True, status=BookingStatus.CANCELLED)
 
-        client = TestClient(app.test_client()).with_auth("admin@example.com")
+        client = TestClient(app.test_client()).with_session_auth("admin@example.com")
         route = f"/pc/back-office/bookings/mark-as-used/{booking.id}"
         response = client.post(route, form={})
 
@@ -60,7 +60,7 @@ class BookingViewTest:
         users_factories.AdminFactory(email="admin@example.com")
         booking = bookings_factories.BookingFactory()
 
-        client = TestClient(app.test_client()).with_auth("admin@example.com")
+        client = TestClient(app.test_client()).with_session_auth("admin@example.com")
         route = f"/pc/back-office/bookings/mark-as-used/{booking.id}"
         response = client.post(route, form={})
 
@@ -77,7 +77,7 @@ class BookingViewTest:
         booking = bookings_factories.BookingFactory(isCancelled=False)
 
         route = f"/pc/back-office/bookings/cancel/{booking.id}"
-        response = client.with_auth(admin.email).post(route, form={})
+        response = client.with_session_auth(admin.email).post(route, form={})
 
         assert response.status_code == 302
         assert response.location == f"http://localhost/pc/back-office/bookings/?id={booking.id}"
@@ -94,7 +94,7 @@ class BookingViewTest:
         booking = bookings_factories.BookingFactory(isCancelled=False)
         payments_factories.PaymentFactory(booking=booking)
 
-        client = TestClient(app.test_client()).with_auth("admin@example.com")
+        client = TestClient(app.test_client()).with_session_auth("admin@example.com")
         route = f"/pc/back-office/bookings/cancel/{booking.id}"
         response = client.post(route, form={})
 
@@ -112,7 +112,7 @@ class BookingViewTest:
         users_factories.UserFactory(email="admin@example.com", isAdmin=True)
         booking = bookings_factories.BookingFactory(isCancelled=True)
 
-        client = TestClient(app.test_client()).with_auth("admin@example.com")
+        client = TestClient(app.test_client()).with_session_auth("admin@example.com")
         route = f"/pc/back-office/bookings/cancel/{booking.id}"
         response = client.post(route, form={})
 

@@ -30,7 +30,9 @@ class Returns200Test:
         repository.delete(*user.deposits)
 
         # When
-        response = TestClient(app.test_client()).with_auth(email="toto@example.com").get("/beneficiaries/current")
+        response = (
+            TestClient(app.test_client()).with_session_auth(email="toto@example.com").get("/beneficiaries/current")
+        )
 
         # Then
         assert response.status_code == 200
@@ -77,7 +79,9 @@ class Returns200Test:
         )
 
         # When
-        response = TestClient(app.test_client()).with_auth("wallet_test@email.com").get("/beneficiaries/current")
+        response = (
+            TestClient(app.test_client()).with_session_auth("wallet_test@email.com").get("/beneficiaries/current")
+        )
 
         # Then
         assert response.json["wallet_is_activated"] == True
@@ -102,7 +106,9 @@ class Returns200Test:
         repository.save(venue, booking)
 
         # When
-        response = TestClient(app.test_client()).with_auth("wallet_test@email.com").get("/beneficiaries/current")
+        response = (
+            TestClient(app.test_client()).with_session_auth("wallet_test@email.com").get("/beneficiaries/current")
+        )
 
         # Then
         assert response.json["wallet_balance"] == 495.0
@@ -123,7 +129,9 @@ class Returns200Test:
         )
 
         # When
-        response = TestClient(app.test_client()).with_auth("wallet_test@email.com").get("/beneficiaries/current")
+        response = (
+            TestClient(app.test_client()).with_session_auth("wallet_test@email.com").get("/beneficiaries/current")
+        )
 
         # Then
         assert response.json["wallet_balance"] == 500.0
@@ -139,7 +147,9 @@ class Returns200Test:
         BeneficiaryFactory(email="wallet_test@email.com", postalCode=None, departementCode=None)
 
         # When
-        response = TestClient(app.test_client()).with_auth("wallet_test@email.com").get("/beneficiaries/current")
+        response = (
+            TestClient(app.test_client()).with_session_auth("wallet_test@email.com").get("/beneficiaries/current")
+        )
 
         # Then
         assert response.status_code == 200
@@ -152,7 +162,7 @@ class Returns200Test:
         repository.save(pro)
 
         # When
-        response = TestClient(app.test_client()).with_auth("pro@example.com").get("/beneficiaries/current")
+        response = TestClient(app.test_client()).with_session_auth("pro@example.com").get("/beneficiaries/current")
 
         # Then
         assert response.status_code == 200
@@ -164,7 +174,7 @@ class Returns200Test:
         AdminFactory(email="admin@example.com", postalCode=None, dateOfBirth=None)
 
         # When
-        response = TestClient(app.test_client()).with_auth("admin@example.com").get("/beneficiaries/current")
+        response = TestClient(app.test_client()).with_session_auth("admin@example.com").get("/beneficiaries/current")
 
         # Then
         assert response.status_code == 200
@@ -175,7 +185,9 @@ class Returns200Test:
         BeneficiaryFactory(email="wallet_test@email.com", postalCode="93020", deposit__version=1)
 
         # When
-        response = TestClient(app.test_client()).with_auth("wallet_test@email.com").get("/beneficiaries/current")
+        response = (
+            TestClient(app.test_client()).with_session_auth("wallet_test@email.com").get("/beneficiaries/current")
+        )
 
         # Then
 

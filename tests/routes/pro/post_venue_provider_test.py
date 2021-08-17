@@ -35,7 +35,7 @@ class Returns201Test:
             "venueId": humanize(venue.id),
         }
 
-        auth_request = TestClient(app.test_client()).with_auth(email=user.email)
+        auth_request = TestClient(app.test_client()).with_session_auth(email=user.email)
         stubbed_check.return_value = True
 
         # When
@@ -63,7 +63,7 @@ class Returns201Test:
 
         venue_provider_data = {"providerId": humanize(provider.id), "venueId": humanize(venue.id), "price": "9.99"}
 
-        auth_request = TestClient(app.test_client()).with_auth(email=user.email)
+        auth_request = TestClient(app.test_client()).with_session_auth(email=user.email)
 
         # When
         response = auth_request.post("/venueProviders", json=venue_provider_data)
@@ -92,7 +92,7 @@ class Returns201Test:
             "isDuo": True,
         }
 
-        auth_request = TestClient(app.test_client()).with_auth(email=user.email)
+        auth_request = TestClient(app.test_client()).with_session_auth(email=user.email)
 
         # When
         response = auth_request.post("/venueProviders", json=venue_provider_data)
@@ -115,7 +115,7 @@ class Returns201Test:
             "venueId": humanize(venue.id),
         }
 
-        auth_request = TestClient(app.test_client()).with_auth(email=user.email)
+        auth_request = TestClient(app.test_client()).with_session_auth(email=user.email)
         stubbed_check.return_value = True
 
         # When
@@ -165,7 +165,7 @@ class Returns201Test:
             "venueIdAtOfferProvider": "====VY24G1AGF56",
         }
 
-        auth_request = TestClient(app.test_client()).with_auth(email=user.email)
+        auth_request = TestClient(app.test_client()).with_session_auth(email=user.email)
         stubbed_check.return_value = True
 
         # When
@@ -187,7 +187,7 @@ class Returns400Test:
     def when_api_error_raise_when_missing_fields(self, app):
         # Given
         user = user_factories.AdminFactory()
-        auth_request = TestClient(app.test_client()).with_auth(email=user.email)
+        auth_request = TestClient(app.test_client()).with_session_auth(email=user.email)
         venue_provider_data = {}
 
         # When
@@ -208,7 +208,7 @@ class Returns400Test:
         venue_provider = create_venue_provider(venue, provider, venue_id_at_offer_provider="12345678912345")
         repository.save(venue_provider)
 
-        auth_request = TestClient(app.test_client()).with_auth(email=user.email)
+        auth_request = TestClient(app.test_client()).with_session_auth(email=user.email)
         venue_provider_data = {
             "providerId": humanize(provider.id),
             "venueId": humanize(venue.id),
@@ -237,7 +237,7 @@ class Returns400Test:
             "price": "wrong_price",
         }
 
-        auth_request = TestClient(app.test_client()).with_auth(email=user.email)
+        auth_request = TestClient(app.test_client()).with_session_auth(email=user.email)
 
         # When
         response = auth_request.post("/venueProviders", json=venue_provider_data)
@@ -261,7 +261,7 @@ class Returns400Test:
             "venueId": humanize(venue.id),
         }
 
-        auth_request = TestClient(app.test_client()).with_auth(email=user.email)
+        auth_request = TestClient(app.test_client()).with_session_auth(email=user.email)
 
         # When
         response = auth_request.post("/venueProviders", json=venue_provider_data)
@@ -295,7 +295,7 @@ class Returns404Test:
             "venueId": "AZERT",
         }
 
-        auth_request = TestClient(app.test_client()).with_auth(email=user.email)
+        auth_request = TestClient(app.test_client()).with_session_auth(email=user.email)
 
         # When
         response = auth_request.post("/venueProviders", json=venue_provider_data)
@@ -315,7 +315,7 @@ class Returns404Test:
             "venueId": humanize(venue.id),
         }
 
-        auth_request = TestClient(app.test_client()).with_auth(email=user.email)
+        auth_request = TestClient(app.test_client()).with_session_auth(email=user.email)
 
         # When
         response = auth_request.post("/venueProviders", json=venue_provider_data)
@@ -341,7 +341,7 @@ class Returns422Test:
             "venueId": humanize(venue.id),
         }
 
-        auth_request = TestClient(app.test_client()).with_auth(email=user.email)
+        auth_request = TestClient(app.test_client()).with_session_auth(email=user.email)
 
         errors = ApiErrors()
         errors.status_code = 422
@@ -380,7 +380,7 @@ class ConnectProviderToVenueTest:
             "venueId": humanize(venue.id),
         }
 
-        auth_request = TestClient(app.test_client()).with_auth(email=user.email)
+        auth_request = TestClient(app.test_client()).with_session_auth(email=user.email)
         stubbed_check.return_value = True
 
         # When
@@ -410,7 +410,7 @@ class ConnectProviderToVenueTest:
             "venueId": humanize(venue.id),
         }
 
-        auth_request = TestClient(app.test_client()).with_auth(email=user.email)
+        auth_request = TestClient(app.test_client()).with_session_auth(email=user.email)
         stubbed_check.return_value = True
 
         # When
