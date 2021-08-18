@@ -13,7 +13,6 @@ import pcapi.models  # pylint: disable=unused-import
 from pcapi import settings
 import pcapi.core.bookings.api as bookings_api
 from pcapi.core.logging import install_logging
-from pcapi.core.offers.repository import check_stock_consistency
 from pcapi.core.offers.repository import delete_past_draft_offers
 from pcapi.core.offers.repository import find_tomorrow_event_stock_ids
 from pcapi.core.providers.repository import get_provider_by_local_class
@@ -133,14 +132,6 @@ def pc_clean_expired_tokens(app: Flask) -> None:
 
 @log_cron
 @cron_context
-def pc_check_stock_quantity_consistency(app: Flask) -> None:
-    inconsistent_stocks = check_stock_consistency()
-    if inconsistent_stocks:
-        logger.error("Found inconsistent stocks: %s", ", ".join([str(stock_id) for stock_id in inconsistent_stocks]))
-
-
-@log_cron
-@cron_context
 def pc_send_tomorrow_events_notifications(app: Flask) -> None:
     stock_ids = find_tomorrow_event_stock_ids()
     for stock_id in stock_ids:
@@ -200,8 +191,6 @@ def main() -> None:
     scheduler.add_job(pc_notify_newly_eligible_users, "cron", [app], day="*", hour="3")
 
     scheduler.add_job(pc_clean_expired_tokens, "cron", [app], day="*", hour="2")
-
-    scheduler.add_job(pc_check_stock_quantity_consistency, "cron", [app], day="*", hour="1")
 
     scheduler.add_job(pc_send_tomorrow_events_notifications, "cron", [app], day="*", hour="16")
 

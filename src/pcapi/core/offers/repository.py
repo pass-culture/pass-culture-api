@@ -256,19 +256,6 @@ def get_and_lock_stock(stock_id: int) -> Stock:
     return stock
 
 
-def check_stock_consistency() -> list[int]:
-    return [
-        item[0]
-        for item in db.session.query(Stock.id)
-        .outerjoin(Stock.bookings)
-        .group_by(Stock.id)
-        .having(
-            Stock.dnBookedQuantity != func.coalesce(func.sum(Booking.quantity).filter(Booking.isCancelled == False), 0)
-        )
-        .all()
-    ]
-
-
 def find_tomorrow_event_stock_ids() -> set[int]:
     """Find stocks linked to offers that happen tomorrow (and that are not cancelled)"""
     tomorrow = datetime.now() + timedelta(days=1)
