@@ -91,6 +91,16 @@ def check_update_only_allowed_fields_for_offer_from_provider(updated_fields: set
         raise api_error
 
 
+def check_stock_quantity_positive_or_unlimited(quantity: Union[int, None]) -> None:
+    api_errors = ApiErrors()
+
+    if quantity is not None and quantity < 0:
+        api_errors.add_error("quantity", "Le stock ne doit pas être négatif")
+
+    if api_errors.errors:
+        raise api_errors
+
+
 def check_stock_quantity(quantity: Union[int, None], bookingQuantity: int = 0) -> None:
     api_errors = ApiErrors()
 

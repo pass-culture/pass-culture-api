@@ -268,7 +268,7 @@ def _create_stock(
     validation.check_required_dates_for_stock(offer, beginning, booking_limit_datetime)
     validation.check_stock_can_be_created_for_offer(offer)
     validation.check_stock_price(price)
-    validation.check_stock_quantity(quantity)
+    validation.check_stock_quantity_positive_or_unlimited(quantity)
 
     return Stock(
         offer=offer,
