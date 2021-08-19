@@ -1,10 +1,12 @@
 import datetime
 import logging
 import re
+import typing
 from typing import Optional
 from typing import Union
 
-import sqlalchemy
+import sqlalchemy as sa
+import sqlalchemy.sql.functions as funcs
 
 from pcapi.connectors.beneficiaries import jouve_backend
 from pcapi.core.users.models import User
@@ -152,7 +154,7 @@ def _duplicate_user_fraud_item(first_name: str, last_name: str, birth_date: date
     duplicate_user = User.query.filter(
         matching(User.firstName, first_name)
         & (matching(User.lastName, last_name))
-        & (sqlalchemy.func.DATE(User.dateOfBirth) == birth_date)
+        & (sa.func.DATE(User.dateOfBirth) == birth_date)
         & (User.isBeneficiary == True)
     ).first()
 
@@ -264,23 +266,43 @@ def get_source_data(user: User) -> models.JouveContent:
     return mapped_class[fraud_check_type.type](**fraud_check_type.resultContent)
 
 
+def get_latest_fraud_result(user: User) -> typing.Optional[models.BeneficiaryFraudResult]:
+    """
+    A user's latest fraud result, if any, is the most recently updated or
+    created.
+    """
+    date_updated_col = models.BeneficiaryFraudResult.dateUpdated
+    date_created_col = models.BeneficiaryFraudResult.dateCreated
+
+    return (
+        models.BeneficiaryFraudResult.query.filter_by(userId=user.id)
+        .order_by(sa.desc(funcs.coalesce(date_updated_col, date_created_col)))
+        .first()
+    )
+
+
 def upsert_suspicious_fraud_result(user: User, reason: str) -> models.BeneficiaryFraudResult:
     """
     If the user has no fraud result: create one suspicious fraud result with
     the given reason. If it already has one: update the result's reason.
     """
-    fraud_result = models.BeneficiaryFraudResult.query.filter_by(userId=user.id).one_or_none()
+    fraud_result = get_latest_fraud_result(user)
 
     if not fraud_result:
-        fraud_result = models.BeneficiaryFraudResult(user=user, status=models.FraudStatus.SUSPICIOUS, reason=reason)
+        status = models.FraudStatus.SUSPICIOUS
+        fraud_result = models.BeneficiaryFraudResult(user=user, status=status, reason=reason)
     else:
         # if this function is called twice (or more) in a row with the same
         # reason, do not update the reason column with the same reason repeated
         # over and over. It makes the reason less readable and therefore less
         # useful.
-        last_reason = fraud_result.reason.split(FRAUD_RESULT_REASON_SEPARATOR)[-1].strip() if fraud_result else None
+        last_reason = None
+        if fraud_result:
+            last_reason = fraud_result.reason.split(FRAUD_RESULT_REASON_SEPARATOR)[-1].strip()
+
         if last_reason != reason:
             fraud_result.reason = f"{fraud_result.reason} {FRAUD_RESULT_REASON_SEPARATOR} {reason}"
+            fraud_result.dateUpdated = datetime.datetime.now()
 
     repository.save(fraud_result)
     return fraud_result
