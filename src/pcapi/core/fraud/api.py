@@ -267,10 +267,6 @@ def get_source_data(user: User) -> models.JouveContent:
 
 
 def get_latest_fraud_result(user: User) -> typing.Optional[models.BeneficiaryFraudResult]:
-    """
-    A user's latest fraud result, if any, is the most recently updated or
-    created.
-    """
     date_updated_col = models.BeneficiaryFraudResult.dateUpdated
     date_created_col = models.BeneficiaryFraudResult.dateCreated
 
@@ -296,10 +292,7 @@ def upsert_suspicious_fraud_result(user: User, reason: str) -> models.Beneficiar
         # reason, do not update the reason column with the same reason repeated
         # over and over. It makes the reason less readable and therefore less
         # useful.
-        last_reason = None
-        if fraud_result:
-            last_reason = fraud_result.reason.split(FRAUD_RESULT_REASON_SEPARATOR)[-1].strip()
-
+        last_reason = fraud_result.reason.split(FRAUD_RESULT_REASON_SEPARATOR)[-1].strip()
         if last_reason != reason:
             fraud_result.reason = f"{fraud_result.reason} {FRAUD_RESULT_REASON_SEPARATOR} {reason}"
             fraud_result.dateUpdated = datetime.datetime.now()
