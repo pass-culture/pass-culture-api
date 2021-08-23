@@ -4,7 +4,6 @@ import logging
 from operator import attrgetter
 
 from pcapi import settings
-from pcapi.core.bookings.api import recompute_dnBookedQuantity
 from pcapi.core.bookings.models import Booking
 from pcapi.core.bookings.models import BookingCancellationReasons
 from pcapi.core.bookings.models import BookingStatus
@@ -74,12 +73,6 @@ def cancel_expired_bookings(batch_size: int = 500) -> None:
                 synchronize_session=False,
             )
         )
-        # Recompute denormalized stock quantity
-        stocks_to_recompute = [
-            row[0]
-            for row in db.session.query(Booking.stockId).filter(Booking.id.in_(expiring_booking_ids)).distinct().all()
-        ]
-        recompute_dnBookedQuantity(stocks_to_recompute)
         db.session.commit()
 
         updated_total += updated

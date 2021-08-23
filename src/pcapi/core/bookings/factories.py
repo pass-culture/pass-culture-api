@@ -47,7 +47,6 @@ class BookingFactory(BaseFactory):
     def _create(cls, model_class, *args, **kwargs):
         if not kwargs.get("isCancelled", False):
             stock = kwargs.get("stock")
-            stock.dnBookedQuantity = stock.dnBookedQuantity + kwargs.get("quantity", 1)
             kwargs["stock"] = stock
         kwargs["venue"] = kwargs["stock"].offer.venue
         kwargs["offerer"] = kwargs["stock"].offer.venue.managingOfferer

@@ -15,7 +15,7 @@ def _reset_stock_quantity(venue: Venue) -> None:
     """Reset all stock quantity with the number of non-cancelled bookings."""
     query = """
       UPDATE stock
-      SET quantity = "dnBookedQuantity"
+      SET quantity = (SELECT coalesce(sum(booking.quantity), 0) FROM booking  WHERE booking."isCancelled" = false AND booking."stockId" = stock.id)
       FROM offer
       WHERE
           offer."idAtProviders" IS NOT NULL

@@ -26,7 +26,7 @@ class Returns200Test:
             lastName="Doudou",
             email="jean.doux@example.com",
         )
-        stock: Stock = EventStockFactory(quantity=200, dnBookedQuantity=0)
+        stock: Stock = EventStockFactory(quantity=200)
         booking = EducationalBookingFactory(
             educationalBooking__educationalRedactor=redactor,
             status=BookingStatus.CONFIRMED,

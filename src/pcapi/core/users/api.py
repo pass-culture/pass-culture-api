@@ -41,8 +41,8 @@ from pcapi.core.users.models import TokenType
 from pcapi.core.users.models import User
 from pcapi.core.users.models import VOID_PUBLIC_NAME
 from pcapi.core.users.repository import does_validated_phone_exist
-from pcapi.core.users.repository import get_and_lock_user
 from pcapi.core.users.repository import get_beneficiary_import_for_beneficiary
+from pcapi.core.users.repository import get_user
 from pcapi.core.users.utils import decode_jwt_token
 from pcapi.core.users.utils import delete_object
 from pcapi.core.users.utils import encode_jwt_payload
@@ -321,7 +321,7 @@ def activate_beneficiary(user: User, deposit_source: str = None) -> User:
 
 def check_and_activate_beneficiary(userId: int, deposit_source: str = None) -> User:
     with transaction():
-        user = get_and_lock_user(userId)
+        user = get_user(userId)
         if user.isBeneficiary or not user.hasCompletedIdCheck:
             db.session.rollback()
             return user

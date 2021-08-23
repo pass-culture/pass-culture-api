@@ -102,9 +102,7 @@ def book_offer(
             if FeatureToggle.AUTO_ACTIVATE_DIGITAL_BOOKINGS.is_active():
                 booking.mark_as_used()
 
-        stock.dnBookedQuantity += booking.quantity
-
-        repository.save(booking, stock)
+        repository.save(booking)
 
     logger.info(
         "Beneficiary booked an offer",
@@ -136,7 +134,6 @@ def book_offer(
 def _cancel_booking(booking: Booking, reason: BookingCancellationReasons) -> None:
     """Cancel booking and update a user's credit information on Batch"""
     with transaction():
-        stock = offers_repository.get_and_lock_stock(stock_id=booking.stockId)
         db.session.refresh(booking)
         try:
             booking.cancel_booking()
@@ -150,8 +147,7 @@ def _cancel_booking(booking: Booking, reason: BookingCancellationReasons) -> Non
             )
             return
         booking.cancellationReason = reason
-        stock.dnBookedQuantity -= booking.quantity
-        repository.save(booking, stock)
+        repository.save(booking)
     logger.info(
         "Booking has been cancelled",
         extra={
@@ -180,7 +176,6 @@ def _cancel_bookings_from_stock(stock: Stock, reason: BookingCancellationReasons
                 logger.info(str(e), extra={"booking": booking.id, "reason": str(reason)})
             else:
                 booking.cancellationReason = reason
-                stock.dnBookedQuantity -= booking.quantity
                 deleted_bookings.append(booking)
         repository.save(*deleted_bookings)
 
@@ -264,16 +259,12 @@ def mark_as_used(booking: Booking, uncancel: bool = False) -> None:
     # Since I lock the stock, I really want to make sure the lock is
     # removed ASAP.
     with transaction():
-        objects_to_save = [booking]
         if uncancel and booking.isCancelled:
             booking.uncancel_booking()
             booking.cancellationReason = None
-            stock = offers_repository.get_and_lock_stock(stock_id=booking.stockId)
-            stock.dnBookedQuantity += booking.quantity
-            objects_to_save.append(stock)
         validation.check_is_usable(booking)
         booking.mark_as_used()
-        repository.save(*objects_to_save)
+        repository.save(booking)
     logger.info("Booking was marked as used", extra={"booking": booking.id})
 
     update_external_user(booking.user)
@@ -360,30 +351,6 @@ def update_cancellation_limit_dates(
         )
     repository.save(*bookings_to_update)
     return bookings_to_update
-
-
-def recompute_dnBookedQuantity(stock_ids: list[int]) -> None:
-    query = """
-      WITH bookings_per_stock AS (
-        SELECT
-          stock.id AS stock_id,
-          COALESCE(SUM(booking.quantity), 0) AS total_bookings
-        FROM stock
-        -- The `NOT isCancelled` condition MUST be part of the JOIN.
-        -- If it were part of the WHERE clause, that would exclude
-        -- stocks that only have cancelled bookings.
-        LEFT OUTER JOIN booking
-          ON booking."stockId" = stock.id
-          AND NOT booking."isCancelled"
-        WHERE stock.id IN :stock_ids
-        GROUP BY stock.id
-      )
-      UPDATE stock
-      SET "dnBookedQuantity" = bookings_per_stock.total_bookings
-      FROM bookings_per_stock
-      WHERE stock.id = bookings_per_stock.stock_id
-    """
-    db.session.execute(query, {"stock_ids": tuple(stock_ids)})
 
 
 def auto_mark_as_used_after_event():

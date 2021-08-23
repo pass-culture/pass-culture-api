@@ -389,7 +389,7 @@ class RefuseEducationalBookingTest:
         assert refreshed_booking.status == BookingStatus.CONFIRMED
 
     def test_refuse_educational_booking(self, db_session):
-        stock = offers_factories.EventStockFactory(quantity=200, dnBookedQuantity=0)
+        stock = offers_factories.EventStockFactory(quantity=200)
         booking = bookings_factories.EducationalBookingFactory(
             status=BookingStatus.CONFIRMED,
             stock=stock,
@@ -407,7 +407,7 @@ class RefuseEducationalBookingTest:
             educational_api.refuse_educational_booking(123)
 
     def test_no_op_when_educational_booking_already_refused(self, db_session):
-        stock = offers_factories.EventStockFactory(dnBookedQuantity=20)
+        stock = offers_factories.EventStockFactory()
         booking = bookings_factories.EducationalBookingFactory(
             educationalBooking__status=EducationalBookingStatus.REFUSED,
             quantity=1,
@@ -416,4 +416,4 @@ class RefuseEducationalBookingTest:
 
         educational_api.refuse_educational_booking(booking.educationalBookingId)
 
-        assert stock.dnBookedQuantity == 21
+        assert stock.dnBookedQuantity == 1

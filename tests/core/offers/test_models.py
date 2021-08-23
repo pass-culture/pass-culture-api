@@ -297,15 +297,14 @@ class StockBookingsQuantityTest:
         offer = factories.OfferFactory()
         stock = factories.StockFactory(offer=offer, quantity=None)
 
-        assert Stock.query.filter(Stock.dnBookedQuantity == 0).one() == stock
+        assert stock.dnBookedQuantity == 0
 
     def test_bookings_quantity_with_booking(self):
         offer = factories.OfferFactory(product__subcategoryId=subcategories.ACHAT_INSTRUMENT.id)
         stock = factories.StockFactory(offer=offer, quantity=5)
         bookings_factories.BookingFactory(stock=stock)
 
-        assert Stock.query.filter(Stock.dnBookedQuantity == 0).count() == 0
-        assert Stock.query.filter(Stock.dnBookedQuantity == 1).one() == stock
+        assert stock.dnBookedQuantity == 1
 
     def test_bookings_quantity_with_a_cancelled_booking(self):
         offer = factories.OfferFactory(product__subcategoryId=subcategories.ACHAT_INSTRUMENT.id)
@@ -313,7 +312,7 @@ class StockBookingsQuantityTest:
         bookings_factories.BookingFactory(stock=stock)
         bookings_factories.CancelledBookingFactory(stock=stock)
 
-        assert Stock.query.filter(Stock.dnBookedQuantity == 1).one() == stock
+        assert stock.dnBookedQuantity == 1
 
 
 class OfferIsSoldOutTest:

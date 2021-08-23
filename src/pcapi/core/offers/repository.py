@@ -245,11 +245,14 @@ def get_and_lock_stock(stock_id: int) -> Stock:
     WARNING: MAKE SURE YOU FREE THE LOCK (with COMMIT or ROLLBACK) and don't hold it longer than
     strictly necessary.
     """
-    # Use `with_for_update()` to make sure we lock the stock while perfoming
-    # the booking checks and update the `dnBookedQuantity`
-    # This is required to prevent bugs due to concurent acces
+    # Use `with_for_update()` to do a select for update on stock
+    # This is the standard "select for update" pattern for dealing with concurrency access
+    # 1. I enter this method from create booking for instance (a lock is then put on this stock)
+    # 2. If another process involving this stock (cancel booking, add another booking ..) is entering
+    #    this same method, it will be waiting until this session is commited/rollbacked
+    #    Only the can it perform its select for update
     # Also call `populate_existing()` to make sure we don't use something
-    # older from the SQLAlchemy's session.
+    # older from the SQLAlchemy's session (sql alchemy issue : https://github.com/sqlalchemy/sqlalchemy/issues/5572)
     stock = Stock.query.filter_by(id=stock_id).populate_existing().with_for_update().one_or_none()
     if not stock:
         raise StockDoesNotExist()

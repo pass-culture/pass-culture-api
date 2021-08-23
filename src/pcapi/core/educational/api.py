@@ -18,8 +18,6 @@ from pcapi.repository import transaction
 
 logger = logging.getLogger(__name__)
 
-EAC_DEFAULT_BOOKED_QUANTITY = 1
-
 
 def create_redactor_from_email(redactor_email: str) -> EducationalRedactor:
     educational_redactor_information = get_institutional_project_redactor_by_email(redactor_email)
@@ -65,8 +63,6 @@ def book_educational_offer(redactor_email: str, uai_code: str, stock_id: int) ->
             offererId=stock.offer.venue.managingOffererId,
             status=bookings_models.BookingStatus.PENDING,
         )
-
-        stock.dnBookedQuantity += EAC_DEFAULT_BOOKED_QUANTITY
 
         repository.save(booking)
 
@@ -161,8 +157,6 @@ def refuse_educational_booking(educational_booking_id: int) -> EducationalBookin
                 },
             )
             raise exception
-
-        stock.dnBookedQuantity -= booking.quantity
 
         repository.save(booking, educational_booking)
 

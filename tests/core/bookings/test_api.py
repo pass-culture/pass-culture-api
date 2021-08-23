@@ -25,7 +25,6 @@ from pcapi.core.testing import override_features
 from pcapi.core.users.external.batch import BATCH_DATETIME_FORMAT
 import pcapi.core.users.factories as users_factories
 from pcapi.models import api_errors
-from pcapi.models.db import db
 import pcapi.notifications.push.testing as push_testing
 from pcapi.utils.token import random_token
 
@@ -36,7 +35,7 @@ class BookOfferConcurrencyTest:
     @clean_database
     def test_create_booking(self, app):
         beneficiary = users_factories.BeneficiaryFactory()
-        stock = offers_factories.StockFactory(price=10, dnBookedQuantity=5)
+        stock = offers_factories.StockFactory(price=10)
         assert models.Booking.query.count() == 0
 
         # open a second connection on purpose and lock the stock
@@ -48,62 +47,31 @@ class BookOfferConcurrencyTest:
                 api.book_offer(beneficiary=beneficiary, stock_id=stock.id, quantity=1)
 
         assert models.Booking.query.count() == 0
-        assert offers_models.Stock.query.filter_by(id=stock.id, dnBookedQuantity=5).count() == 1
-
-    @clean_database
-    def test_cancel_booking(self, app):
-        booking = factories.BookingFactory(stock__dnBookedQuantity=1)
-
-        # open a second connection on purpose and lock the stock
-        engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
-        with engine.connect() as connection:
-            connection.execute(
-                text("""SELECT * FROM stock WHERE stock.id = :stock_id FOR UPDATE"""), stock_id=booking.stockId
-            )
-
-            with pytest.raises(sqlalchemy.exc.OperationalError):
-                api.cancel_booking_by_beneficiary(booking.user, booking)
-
-        assert models.Booking.query.filter().count() == 1
-        assert models.Booking.query.filter(models.Booking.isCancelled == True).count() == 0
+        assert offers_models.Stock.query.filter_by(id=stock.id).count() == 1
 
     @pytest.mark.usefixtures("db_session")
-    def test_cancel_booking_with_concurrent_cancel(self, app):
-        booking = factories.BookingFactory(stock__dnBookedQuantity=1)
-        booking_id = booking.id
-        dnBookedQuantity = booking.stock.dnBookedQuantity
+    def test_cancel_booking(self, app):
+        booking = factories.BookingFactory()
+        assert booking.stock.dnBookedQuantity == 1
+        api.cancel_booking_by_beneficiary(booking.user, booking)
 
-        # simulate concurent change
-        db.session.query(Booking).filter(Booking.id == booking_id).update(
-            {Booking.isCancelled: True, Booking.cancellationReason: BookingCancellationReasons.BENEFICIARY},
-            synchronize_session=False,
-        )
-
-        # Cancelling the booking (that appears as not cancelled as verified) should
-        # not alter dnBookedQuantity due to the concurrent cancellation
-        assert not booking.isCancelled
-        assert booking.status is not BookingStatus.CANCELLED
-        api._cancel_booking(booking, BookingCancellationReasons.BENEFICIARY)
-        assert booking.stock.dnBookedQuantity == dnBookedQuantity
+        assert Booking.query.filter().count() == 1
+        assert Booking.query.filter(models.Booking.isCancelled == True).count() == 1
+        assert booking.stock.dnBookedQuantity == 0
 
     @clean_database
-    def test_cancel_all_bookings_from_stock(self, app):
-        stock = offers_factories.StockFactory(dnBookedQuantity=1)
+    def test_cancel_all_non_used_bookings_from_stock(self, app):
+        stock = offers_factories.StockFactory()
         factories.BookingFactory(stock=stock)
         factories.BookingFactory(stock=stock)
         factories.UsedBookingFactory(stock=stock)
         factories.CancelledBookingFactory(stock=stock)
 
-        # open a second connection on purpose and lock the stock
-        engine = create_engine(app.config["SQLALCHEMY_DATABASE_URI"])
-        with engine.connect() as connection:
-            connection.execute(text("""SELECT * FROM stock WHERE stock.id = :stock_id FOR UPDATE"""), stock_id=stock.id)
+        api.cancel_bookings_when_offerer_deletes_stock(stock)
 
-            with pytest.raises(sqlalchemy.exc.OperationalError):
-                api.cancel_bookings_when_offerer_deletes_stock(stock)
-
-        assert models.Booking.query.filter().count() == 4
-        assert models.Booking.query.filter(models.Booking.isCancelled == True).count() == 1
+        assert Booking.query.filter().count() == 4
+        assert Booking.query.filter(models.Booking.isCancelled == True).count() == 3
+        assert stock.dnBookedQuantity == 1
 
 
 @pytest.mark.usefixtures("db_session")
@@ -111,7 +79,7 @@ class BookOfferTest:
     @mock.patch("pcapi.core.search.async_index_offer_ids")
     def test_create_booking(self, mocked_async_index_offer_ids, app):
         beneficiary = users_factories.BeneficiaryFactory()
-        stock = offers_factories.StockFactory(price=10, dnBookedQuantity=5, offer__bookingEmail="offerer@example.com")
+        stock = offers_factories.StockFactory(price=10, offer__bookingEmail="offerer@example.com")
 
         booking = api.book_offer(beneficiary=beneficiary, stock_id=stock.id, quantity=1)
 
@@ -139,7 +107,7 @@ class BookOfferTest:
         assert not booking.isUsed
         assert booking.status not in [BookingStatus.CANCELLED, BookingStatus.USED]
         assert booking.cancellationLimitDate is None
-        assert stock.dnBookedQuantity == 6
+        assert stock.dnBookedQuantity == 1
 
         mocked_async_index_offer_ids.assert_called_once_with([stock.offer.id])
 
@@ -155,8 +123,8 @@ class BookOfferTest:
 
         offers_factories.OfferFactory(subcategoryId=subcategories.ACHAT_INSTRUMENT.id)
 
-        stock1 = offers_factories.StockFactory(price=10, dnBookedQuantity=5, offer=offer1)
-        stock2 = offers_factories.StockFactory(price=10, dnBookedQuantity=5, offer=offer2)
+        stock1 = offers_factories.StockFactory(price=10, offer=offer1)
+        stock2 = offers_factories.StockFactory(price=10, offer=offer2)
 
         beneficiary = users_factories.BeneficiaryFactory()
         date_created = datetime.now() - timedelta(days=5)
@@ -178,7 +146,7 @@ class BookOfferTest:
     @override_features(AUTO_ACTIVATE_DIGITAL_BOOKINGS=True, ENABLE_ACTIVATION_CODES=True)
     def test_booking_on_digital_offer_with_activation_stock(self):
         offer = offers_factories.OfferFactory(product=offers_factories.DigitalProductFactory())
-        stock = offers_factories.StockWithActivationCodesFactory(price=10, dnBookedQuantity=3, offer=offer)
+        stock = offers_factories.StockWithActivationCodesFactory(price=10, offer=offer)
         beneficiary = users_factories.BeneficiaryFactory()
 
         booking = api.book_offer(beneficiary=beneficiary, stock_id=stock.id, quantity=1)
@@ -189,7 +157,7 @@ class BookOfferTest:
     @override_features(AUTO_ACTIVATE_DIGITAL_BOOKINGS=True, ENABLE_ACTIVATION_CODES=True)
     def test_booking_on_digital_offer_without_activation_stock(self):
         offer = offers_factories.OfferFactory(product=offers_factories.DigitalProductFactory())
-        stock = offers_factories.StockFactory(price=10, dnBookedQuantity=5, offer=offer)
+        stock = offers_factories.StockFactory(price=10, offer=offer)
         beneficiary = users_factories.BeneficiaryFactory()
 
         booking = api.book_offer(beneficiary=beneficiary, stock_id=stock.id, quantity=1)
@@ -200,7 +168,7 @@ class BookOfferTest:
     def test_create_event_booking(self):
         ten_days_from_now = datetime.utcnow() + timedelta(days=10)
         beneficiary = users_factories.BeneficiaryFactory()
-        stock = offers_factories.StockFactory(price=10, beginningDatetime=ten_days_from_now, dnBookedQuantity=5)
+        stock = offers_factories.StockFactory(price=10, beginningDatetime=ten_days_from_now)
 
         booking = api.book_offer(beneficiary=beneficiary, stock_id=stock.id, quantity=1)
 
@@ -218,7 +186,7 @@ class BookOfferTest:
         assert booking.quantity == 1
         assert booking.amount == 10
         assert booking.stock == stock
-        assert stock.dnBookedQuantity == 6
+        assert stock.dnBookedQuantity == 1
         assert len(booking.token) == 6
         assert not booking.isCancelled
         assert not booking.isUsed
@@ -356,15 +324,15 @@ class CancelByBeneficiaryTest:
 
         queries = 1  # select booking
         queries += 1  # select user
-        queries += 1  # select stock for update
         queries += 1  # refresh booking
-        queries += 3  # update stock ; update booking ; release savepoint
+        queries += 2  # update booking ; release savepoint
         queries += 4  # (update batch attributes): select booking ; user ; user.bookings ; deposit
         queries += 1  # select offer
         queries += 2  # insert email ; release savepoint
         queries += 4  # (TODO: optimize) select booking ; stock ; offer ; user
         queries += 1  # select bookings of same stock with users joinedloaded to avoid N+1 requests
         queries += 2  # select venue ; offerer
+        queries += 3  # select count booking not cancelled
         queries += 2  # insert email ; release savepoint
         with assert_num_queries(queries):
             api.cancel_booking_by_beneficiary(booking.user, booking)
@@ -518,7 +486,7 @@ class CancelByOffererTest:
         assert push_testing.requests == []
 
     def test_cancel_all_bookings_from_stock(self, app):
-        stock = offers_factories.StockFactory(dnBookedQuantity=1)
+        stock = offers_factories.StockFactory()
         booking_1 = factories.BookingFactory(stock=stock)
         booking_2 = factories.BookingFactory(stock=stock)
         used_booking = factories.UsedBookingFactory(stock=stock)

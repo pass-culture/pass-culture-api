@@ -27,13 +27,13 @@ from sqlalchemy import exists
 from sqlalchemy import false
 from sqlalchemy import func
 from sqlalchemy import or_
-from sqlalchemy import text
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.event import listens_for
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 import pcapi.core.bookings.conf as bookings_conf
+from pcapi.core.bookings.models import Booking
 from pcapi.core.categories.subcategories import ALL_SUBCATEGORIES_DICT
 from pcapi.core.categories.subcategories import Subcategory
 from pcapi.models.db import Model
@@ -96,8 +96,6 @@ class Stock(PcObject, Model, ProvidableMixin, SoftDeletableMixin):
 
     bookingLimitDatetime = Column(DateTime, nullable=True)
 
-    dnBookedQuantity = Column(BigInteger, nullable=False, server_default=text("0"))
-
     rawProviderQuantity = Column(Integer, nullable=True)
 
     activationCodes = relationship("ActivationCode", back_populates="stock")
@@ -105,6 +103,14 @@ class Stock(PcObject, Model, ProvidableMixin, SoftDeletableMixin):
     @property
     def isBookable(self):
         return not self.isExpired and self.offer.isReleased and not self.isSoldOut
+
+    @property
+    def dnBookedQuantity(self):
+        return (
+            Booking.query.filter(Booking.stockId == self.id, Booking.isCancelled == False)
+            .with_entities(func.coalesce(func.sum(Booking.quantity), 0))
+            .scalar()
+        )
 
     @hybrid_property
     def hasBookingLimitDatetimePassed(self):
@@ -121,7 +127,12 @@ class Stock(PcObject, Model, ProvidableMixin, SoftDeletableMixin):
 
     @remainingQuantity.expression
     def remainingQuantity(cls):  # pylint: disable=no-self-argument
-        return case([(cls.quantity.is_(None), None)], else_=(cls.quantity - cls.dnBookedQuantity))
+        bookedQuantity = (
+            db.session.query(func.coalesce(func.sum(Booking.quantity), 0))
+            .filter(Booking.isCancelled == False, Booking.stockId == cls.id)
+            .as_scalar()
+        )
+        return case([(cls.quantity.is_(None), None)], else_=(cls.quantity - bookedQuantity))
 
     @hybrid_property
     def isEventExpired(self):

@@ -257,7 +257,7 @@ class UpsertStocksTest:
             api.upsert_stocks(offer_id=offer.id, stock_data_list=[created_stock_data, edited_stock_data], user=user)
 
         # Then
-        assert error.value.errors == {"quantity": ["Le stock doit être positif"]}
+        assert error.value.errors == {"quantity": ["Le stock ne doit pas être négatif"]}
 
     def test_does_not_allow_invalid_price_on_creation_and_edition(self):
         # Given
