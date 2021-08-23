@@ -1,10 +1,8 @@
-from gettext import gettext
 from typing import Union
 
 from flask import flash
 from flask import request
 from flask import url_for
-from flask_admin.helpers import get_form_data
 from markupsafe import Markup
 from markupsafe import escape
 from sqlalchemy.orm import query
@@ -16,12 +14,18 @@ from wtforms.validators import Optional
 from wtforms_sqlalchemy.fields import QuerySelectField
 
 from pcapi.admin.base_configuration import BaseAdminView
+from pcapi.core.offerers.models import Venue
 from pcapi.core.providers import api
+from pcapi.core.providers.exceptions import NoAllocinePivot
+from pcapi.core.providers.exceptions import NoPriceSpecified
+from pcapi.core.providers.exceptions import NoSiretSpecified
+from pcapi.core.providers.exceptions import ProviderNotFound
+from pcapi.core.providers.exceptions import ProviderWithoutApiImplementation
+from pcapi.core.providers.exceptions import VenueProviderException
+from pcapi.core.providers.exceptions import VenueSiretNotRegistered
 from pcapi.core.providers.models import VenueProvider
+from pcapi.core.providers.models import VenueProviderCreationPayload
 from pcapi.core.providers.repository import get_enabled_providers_for_pro_query
-from pcapi.models import ApiErrors
-from pcapi.routes.serialization.venue_provider_serialize import PostVenueProviderBody
-from pcapi.utils.human_ids import humanize
 from pcapi.workers.venue_provider_job import venue_provider_job
 
 
@@ -30,26 +34,45 @@ def _venue_link(view, context, model, name) -> Markup:
     return Markup('<a href="{}">Lieu associé</a>').format(escape(url))
 
 
-class VenueProviderView(BaseAdminView):
-    can_edit = True
-    can_create = True
+def _get_venue_name_and_id(venue: Venue) -> str:
+    return f"{venue.name} (#{venue.id})"
 
-    column_list = ["provider.name", "venueIdAtOfferProvider", "isActive", "provider.isActive", "lieu"]
+
+class VenueProviderView(BaseAdminView):
+    can_edit = False
+    can_create = True
+    can_delete = True
+
+    column_list = [
+        "id",
+        "venue.name",
+        "provider.name",
+        "venueIdAtOfferProvider",
+        "isActive",
+        "provider.isActive",
+        "venue_link",
+    ]
     column_labels = {
-        "provider.name": "Source de données",
-        "venueIdAtOfferProvider": "Identifiant pivot (SIRET, ID Allociné …)",
-        "isActive": "Import des offres et stocks activé",
+        "venue": "Lieu",
+        "venue.name": "Nom du lieu",
+        "provider.name": "Provider",
+        "venueIdAtOfferProvider": "Identifiant pivot (SIRET par défaut)",
+        "isActive": "Import activé",
         "provider.isActive": "Provider activé",
+        "venue_link": "Lien",
     }
-    form_columns = ["venueId", "provider", "venueIdAtOfferProvider", "isActive"]
+
+    column_default_sort = ("id", True)
+    column_searchable_list = ["venue.name", "provider.name"]
+    column_filters = ["id", "venue.name", "provider.name"]
+
+    form_columns = ["venue", "provider", "venueIdAtOfferProvider", "isActive"]
 
     form_args = dict(
         provider=dict(
             get_label="name",
         ),
-        venueId=dict(
-            label="ID du lieu",
-        ),
+        venue=dict(get_label=_get_venue_name_and_id, label="Nom du lieu"),
     )
 
     def get_query(self) -> query:
@@ -61,7 +84,7 @@ class VenueProviderView(BaseAdminView):
     @property
     def column_formatters(self):
         formatters = super().column_formatters
-        formatters.update(lieu=_venue_link)
+        formatters.update(venue_link=_venue_link)
         return formatters
 
     @staticmethod
@@ -76,36 +99,41 @@ class VenueProviderView(BaseAdminView):
     def scaffold_form(self) -> BaseForm:
         form_class = super().scaffold_form()
         form_class.provider = QuerySelectField(query_factory=get_enabled_providers_for_pro_query, get_label="name")
-        form_class.price = DecimalField("(Exclusivement Allociné) Prix", [Optional()])
-        form_class.isDuo = BooleanField("(Exclusivement Allociné) Offre duo", [Optional()])
+        form_class.price = DecimalField("Prix (Exclusivement et obligatoirement pour Allociné) ", [Optional()])
+        form_class.isDuo = BooleanField("Offre duo (Exclusivement et obligatoirement pour Allociné)", [Optional()])
 
         return form_class
 
     def create_model(self, form: Form) -> Union[None, VenueProvider]:
-        venue_provider_body = PostVenueProviderBody(
-            providerId=humanize(form.provider.data.id),
-            venueId=humanize(form.venueId.data),
-            isDuo=form.isDuo.data,
-            price=form.price.data,
-            venueIdAtOfferProvider=form.venueIdAtOfferProvider.data,
-        )
-
         venue_provider = None
 
         try:
-            venue_provider = api.create_venue_provider(venue_provider_body)
+            venue_provider = api.create_venue_provider(
+                form.provider.data.id,
+                form.venue.data.id,
+                VenueProviderCreationPayload(
+                    isDuo=bool(form.isDuo.data),
+                    price=form.price.data,
+                    venueIdAtOfferProvider=form.venueIdAtOfferProvider.data,
+                ),
+            )
             venue_provider_job.delay(venue_provider.id)
-        except ApiErrors as e:
-            for key in e.errors:
-                flash(gettext(f"{key} : {e.errors[key].pop()}"), "error")
+        except VenueSiretNotRegistered as exc:
+            flash(
+                f"L'api de {exc.provider_name} ne répond pas pour le SIRET {exc.siret}",
+                "error",
+            )
+        except NoSiretSpecified:
+            flash("Le siret du lieu n'est pas défini, veuillez en définir un", "error")
+        except ProviderNotFound:
+            flash("Aucun provider actif n'a été trouvé", "error")
+        except ProviderWithoutApiImplementation:
+            flash("Le provider choisir n'implémente pas notre api", "error")
+        except NoAllocinePivot:
+            flash("Aucun AllocinePivot n'est défini pour ce lieu", "error")
+        except NoPriceSpecified:
+            flash("Il est obligatoire de saisir un prix", "error")
+        except VenueProviderException:
+            flash("Le provider n'a pas pu être enregistré", "error")
 
         return venue_provider
-
-    def edit_form(self, obj=None) -> Form:
-        form_class = self.get_create_form()
-        form_class.venueId = None
-        form_class.provider = None
-        form_class.price = None
-        form_class.isDuo = None
-
-        return form_class(get_form_data(), obj=obj)

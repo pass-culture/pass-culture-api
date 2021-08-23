@@ -86,7 +86,10 @@ class ProviderAPI:
         if self.authentication_token is not None:
             headers = {"Authorization": f"Basic {self.authentication_token}"}
 
-        response = requests.get(url=api_url, headers=headers, timeout=REQUEST_TIMEOUT_FOR_PROVIDERS_IN_SECOND)
+        try:
+            response = requests.get(url=api_url, headers=headers, timeout=REQUEST_TIMEOUT_FOR_PROVIDERS_IN_SECOND)
+        except Exception:  # pylint: disable=broad-except
+            return False
 
         return response.status_code == 200
 

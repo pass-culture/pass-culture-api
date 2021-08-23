@@ -4,12 +4,22 @@ from flask_login import login_required
 
 from pcapi.core.providers import api
 from pcapi.core.providers import repository
+from pcapi.core.providers.exceptions import NoAllocinePivot
+from pcapi.core.providers.exceptions import NoPriceSpecified
+from pcapi.core.providers.exceptions import NoSiretSpecified
+from pcapi.core.providers.exceptions import ProviderWithoutApiImplementation
+from pcapi.core.providers.exceptions import VenueNotFound
+from pcapi.core.providers.exceptions import VenueProviderException
+from pcapi.core.providers.exceptions import VenueSiretNotRegistered
+from pcapi.core.providers.models import VenueProviderCreationPayload
 from pcapi.flask_app import private_api
+from pcapi.models.api_errors import ApiErrors
 from pcapi.routes.serialization.venue_provider_serialize import ListVenueProviderQuery
 from pcapi.routes.serialization.venue_provider_serialize import ListVenueProviderResponse
 from pcapi.routes.serialization.venue_provider_serialize import PostVenueProviderBody
 from pcapi.routes.serialization.venue_provider_serialize import VenueProviderResponse
 from pcapi.serialization.decorator import spectree_serialize
+from pcapi.utils.human_ids import dehumanize
 from pcapi.workers.venue_provider_job import venue_provider_job
 
 
@@ -32,8 +42,36 @@ def list_venue_providers(query: ListVenueProviderQuery) -> ListVenueProviderResp
 def create_venue_provider(body: PostVenueProviderBody) -> VenueProviderResponse:
     body.venueIdAtOfferProvider = None
 
-    new_venue_provider = api.create_venue_provider(body)
+    try:
+        new_venue_provider = api.create_venue_provider(
+            dehumanize(body.providerId),
+            dehumanize(body.venueId),
+            VenueProviderCreationPayload(
+                isDuo=body.isDuo, price=body.price, venueIdAtOfferProvider=body.venueIdAtOfferProvider
+            ),
+        )
+    except VenueSiretNotRegistered as exc:
+        raise ApiErrors(
+            {
+                "venue": [
+                    f"L’importation d’offres avec {exc.provider_name} n’est pas disponible pour le SIRET {exc.siret}"
+                ]
+            }
+        )
+    except VenueNotFound:
+        raise ApiErrors({"venue": ["Lieu introuvable"]}, 404)
+    except NoSiretSpecified:
+        raise ApiErrors({"venue": ["Le siret du lieu n'est pas défini, veuillez en définir un"]})
+    except ProviderWithoutApiImplementation:
+        raise ApiErrors({"provider": ["Le provider choisir n'implémente pas notre api"]})
+    except NoAllocinePivot:
+        raise ApiErrors({"allocine": ["Aucun AllocinePivot n'est défini pour ce lieu"]}, 404)
+    except NoPriceSpecified:
+        raise ApiErrors({"price": ["Il est obligatoire de saisir un prix"]})
+    except VenueProviderException:
+        raise ApiErrors({"global": ["Le provider n'a pas pu être enregistré"]})
     venue_provider_job.delay(new_venue_provider.id)
+
     if new_venue_provider.isFromAllocineProvider:
         new_venue_provider.price = _allocine_venue_provider_price(new_venue_provider)
 
