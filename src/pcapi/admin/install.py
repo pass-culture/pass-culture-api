@@ -9,6 +9,7 @@ from pcapi.admin.custom_views import fraud_view
 from pcapi.admin.custom_views import offer_view
 from pcapi.admin.custom_views.admin_user_view import AdminUserView
 from pcapi.admin.custom_views.allocine_pivot_view import AllocinePivotView
+from pcapi.admin.custom_views.allocine_venue_provider_price_rule_view import AllocineVenueProviderPriceRuleView
 from pcapi.admin.custom_views.api_key_view import ApiKeyView
 from pcapi.admin.custom_views.beneficiary_import_view import BeneficiaryImportView
 from pcapi.admin.custom_views.beneficiary_user_view import BeneficiaryUserView
@@ -85,6 +86,15 @@ def install_admin_views(admin: Admin, session: Session) -> None:
             name="Imports automatiques",
             endpoint="venue_providers",
             category=Category.CUSTOM_OPERATIONS,
+        )
+    )
+    admin.add_view(
+        AllocineVenueProviderPriceRuleView(
+            models.AllocineVenueProviderPriceRule,
+            session,
+            name="Règles de prix des imports Allociné",
+            category=Category.CUSTOM_OPERATIONS,
+            endpoint="/allocine-venue-provider-price-rules",
         )
     )
     admin.add_view(
