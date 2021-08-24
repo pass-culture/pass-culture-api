@@ -51,6 +51,8 @@ class AllocineProviderFactory(BaseFactory):
 
     name = factory.Sequence("Provider {}".format)
     localClass = "AllocineStocks"
+    enabledForPro = True
+    isActive = True
 
 
 class AllocineVenueProviderFactory(BaseFactory):

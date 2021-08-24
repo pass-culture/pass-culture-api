@@ -27,10 +27,14 @@ def connect_venue_to_allocine(
     if not venue_provider_payload.price:
         raise NoPriceSpecified()
 
+    for old_venue_provider in venue.venueProviders:
+        AllocineVenueProviderPriceRule.query.filter_by(allocineVenueProviderId=old_venue_provider.id).delete()
+        repository.delete(old_venue_provider)
+
     venue_provider = _create_allocine_venue_provider(allocine_pivot, provider_id, venue_provider_payload, venue)
     venue_provider_price_rule = _create_allocine_venue_provider_price_rule(venue_provider, venue_provider_payload.price)
 
-    repository.save(venue_provider_price_rule)
+    repository.save(venue_provider, venue_provider_price_rule)
 
     return venue_provider
 

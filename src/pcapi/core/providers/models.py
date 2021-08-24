@@ -128,7 +128,7 @@ class VenueProvider(PcObject, Model, ProvidableMixin, DeactivableMixin):
 class AllocineVenueProvider(VenueProvider):
     __tablename__ = "allocine_venue_provider"
 
-    id = Column(BigInteger, ForeignKey("venue_provider.id"), primary_key=True)
+    id = Column(BigInteger, ForeignKey("venue_provider.id", ondelete="CASCADE"), primary_key=True)
 
     isDuo = Column(Boolean, default=True, server_default=true(), nullable=False)
 
@@ -144,10 +144,15 @@ class AllocineVenueProvider(VenueProvider):
 class AllocineVenueProviderPriceRule(PcObject, Model):
     priceRule = Column(Enum(PriceRule), nullable=False)
 
-    allocineVenueProviderId = Column(BigInteger, ForeignKey("allocine_venue_provider.id"), index=True, nullable=False)
+    allocineVenueProviderId = Column(
+        BigInteger, ForeignKey("allocine_venue_provider.id", ondelete="CASCADE"), index=True, nullable=False
+    )
 
     allocineVenueProvider = relationship(
-        "AllocineVenueProvider", foreign_keys=[allocineVenueProviderId], backref="priceRules"
+        "AllocineVenueProvider",
+        foreign_keys=[allocineVenueProviderId],
+        backref="priceRules",
+        cascade="delete",
     )
 
     price = Column(Numeric(10, 2), CheckConstraint("price >= 0", name="check_price_is_not_negative"), nullable=False)

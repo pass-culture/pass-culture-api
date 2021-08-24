@@ -1,5 +1,3 @@
-from typing import Union
-
 from flask import flash
 from flask import request
 from flask import url_for
@@ -11,6 +9,7 @@ from wtforms import DecimalField
 from wtforms import Form
 from wtforms.form import BaseForm
 from wtforms.validators import Optional
+from wtforms.validators import ValidationError
 from wtforms_sqlalchemy.fields import QuerySelectField
 
 from pcapi.admin.base_configuration import BaseAdminView
@@ -39,7 +38,7 @@ def _get_venue_name_and_id(venue: Venue) -> str:
 
 
 class VenueProviderView(BaseAdminView):
-    can_edit = False
+    can_edit = True
     can_create = True
     can_delete = True
 
@@ -104,8 +103,16 @@ class VenueProviderView(BaseAdminView):
 
         return form_class
 
-    def create_model(self, form: Form) -> Union[None, VenueProvider]:
+    def on_model_change(self, form: Form, model: VenueProvider, is_created: bool) -> None:
         venue_provider = None
+
+        if (
+            not is_created
+            and not model.provider.isAllocine
+            and form.provider.data.id == model.provider.id
+            and form.venue.data.id == model.venue.id
+        ):
+            return super().on_model_change(form, model, is_created)
 
         try:
             venue_provider = api.create_venue_provider(
@@ -123,17 +130,24 @@ class VenueProviderView(BaseAdminView):
                 f"L'api de {exc.provider_name} ne répond pas pour le SIRET {exc.siret}",
                 "error",
             )
+            raise ValidationError("VenueSiretNotRegistered")
         except NoSiretSpecified:
             flash("Le siret du lieu n'est pas défini, veuillez en définir un", "error")
+            raise ValidationError("NoSiretSpecified")
         except ProviderNotFound:
             flash("Aucun provider actif n'a été trouvé", "error")
+            raise ValidationError("ProviderNotFound")
         except ProviderWithoutApiImplementation:
             flash("Le provider choisir n'implémente pas notre api", "error")
+            raise ValidationError("ProviderWithoutApiImplementation")
         except NoAllocinePivot:
             flash("Aucun AllocinePivot n'est défini pour ce lieu", "error")
+            raise ValidationError("NoAllocinePivot")
         except NoPriceSpecified:
             flash("Il est obligatoire de saisir un prix", "error")
+            raise ValidationError("NoPriceSpecified")
         except VenueProviderException:
             flash("Le provider n'a pas pu être enregistré", "error")
+            raise ValidationError("VenueProviderException")
 
         return venue_provider

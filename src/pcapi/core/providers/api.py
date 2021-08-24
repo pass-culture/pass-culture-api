@@ -46,14 +46,10 @@ def create_venue_provider(
     if not venue:
         raise VenueNotFound()
 
-    old_venue_providers = venue.venueProviders
-
     if provider.localClass == "AllocineStocks":
         new_venue_provider = connect_venue_to_allocine(venue, provider_id, payload)
     else:
         new_venue_provider = connect_venue_to_provider(venue, provider, payload.venueIdAtOfferProvider)
-
-    repository.delete(*old_venue_providers)
 
     return new_venue_provider
 
@@ -73,6 +69,8 @@ def connect_venue_to_provider(venue: Venue, provider: Provider, venueIdAtOfferPr
 
     if not _siret_can_be_synchronized(id_at_provider, provider):
         raise VenueSiretNotRegistered(provider.name, id_at_provider)
+
+    repository.delete(*venue.venueProviders)
 
     venue_provider = VenueProvider()
     venue_provider.venue = venue
