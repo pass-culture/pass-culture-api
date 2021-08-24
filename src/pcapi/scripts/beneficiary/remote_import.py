@@ -8,16 +8,12 @@ from pcapi.connectors.api_demarches_simplifiees import get_application_details
 import pcapi.core.fraud.api as fraud_api
 import pcapi.core.fraud.models as fraud_models
 from pcapi.core.users.api import activate_beneficiary
-from pcapi.core.users.api import create_reset_password_token
 from pcapi.core.users.api import steps_to_become_beneficiary
-from pcapi.core.users.constants import RESET_PASSWORD_TOKEN_LIFE_TIME_EXTENDED
 from pcapi.core.users.external import update_external_user
 from pcapi.core.users.models import User
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_validator import get_beneficiary_duplicates
 from pcapi.domain.demarches_simplifiees import get_closed_application_ids_for_demarche_simplifiee
 from pcapi.domain.user_activation import create_beneficiary_from_application
-from pcapi.domain.user_emails import send_accepted_as_beneficiary_email
-from pcapi.domain.user_emails import send_activation_email
 from pcapi.models import ApiErrors
 from pcapi.models import ImportStatus
 from pcapi.models.beneficiary_import import BeneficiaryImportSources
@@ -202,23 +198,21 @@ def process_beneficiary_application(
 
     if not steps_to_become_beneficiary(user):
         deposit_source = beneficiary_import.get_detailed_source()
-        activate_beneficiary(user, deposit_source)
+        try:
+            activate_beneficiary(user, deposit_source, has_preexisting_account=bool(preexisting_account))
+        except MailServiceException as mail_service_exception:
+            logger.exception(
+                "Email send_activation_email failure for application %s - Procedure %s : %s",
+                information.application_id,
+                procedure_id,
+                mail_service_exception,
+            )
+    else:
+        # TODO: send email to user to notify the missing steps
+        pass
 
     new_beneficiaries.append(user)
     update_external_user(user)
-    try:
-        if preexisting_account is None:
-            token = create_reset_password_token(user, token_life_time=RESET_PASSWORD_TOKEN_LIFE_TIME_EXTENDED)
-            send_activation_email(user, token=token)
-        else:
-            send_accepted_as_beneficiary_email(user)
-    except MailServiceException as mail_service_exception:
-        logger.exception(
-            "Email send_activation_email failure for application %s - Procedure %s : %s",
-            information.application_id,
-            procedure_id,
-            mail_service_exception,
-        )
 
 
 def _process_duplication(

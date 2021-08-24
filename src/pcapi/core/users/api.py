@@ -297,7 +297,7 @@ def update_user_information_from_external_source(user: User, data: fraud_models.
     return user
 
 
-def activate_beneficiary(user: User, deposit_source: str = None) -> User:
+def activate_beneficiary(user: User, deposit_source: str = None, has_preexisting_account: bool = True) -> User:
     if not deposit_source:
         beneficiary_import = get_beneficiary_import_for_beneficiary(user)
         if not beneficiary_import:
@@ -315,16 +315,25 @@ def activate_beneficiary(user: User, deposit_source: str = None) -> User:
     db.session.commit()
 
     logger.info("Activated beneficiary and created deposit", extra={"user": user.id})
+
+    if not has_preexisting_account:
+        token = create_reset_password_token(user, token_life_time=constants.RESET_PASSWORD_TOKEN_LIFE_TIME_EXTENDED)
+        user_emails.send_activation_email(user=user, token=token)
+    else:
+        user_emails.send_accepted_as_beneficiary_email(user=user)
+
     return user
 
 
-def check_and_activate_beneficiary(userId: int, deposit_source: str = None) -> User:
+def check_and_activate_beneficiary(
+    userId: int, deposit_source: str = None, has_preexisting_account: bool = True
+) -> User:
     with transaction():
         user = get_and_lock_user(userId)
         if user.isBeneficiary or not user.hasCompletedIdCheck:
             db.session.rollback()
             return user
-        user = activate_beneficiary(user, deposit_source)
+        user = activate_beneficiary(user, deposit_source, has_preexisting_account=has_preexisting_account)
         return user
 
 

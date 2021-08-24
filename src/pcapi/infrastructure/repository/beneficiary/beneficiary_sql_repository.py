@@ -9,14 +9,21 @@ from pcapi.repository import repository
 
 class BeneficiarySQLRepository:
     @classmethod
-    def save(cls, beneficiary_pre_subscription: BeneficiaryPreSubscription, user: Optional[User] = None) -> User:
+    def save(
+        cls,
+        beneficiary_pre_subscription: BeneficiaryPreSubscription,
+        user: Optional[User] = None,
+        has_preexisting_account: bool = True,
+    ) -> User:
         user_sql_entity = beneficiary_pre_subscription_sql_converter.to_model(beneficiary_pre_subscription, user=user)
         users_api.attach_beneficiary_import_details(user_sql_entity, beneficiary_pre_subscription)
         repository.save(user_sql_entity)
 
         if not users_api.steps_to_become_beneficiary(user_sql_entity):
             user_sql_entity = users_api.check_and_activate_beneficiary(
-                user_sql_entity.id, beneficiary_pre_subscription.deposit_source
+                user_sql_entity.id,
+                beneficiary_pre_subscription.deposit_source,
+                has_preexisting_account=has_preexisting_account,
             )
 
         return user_sql_entity

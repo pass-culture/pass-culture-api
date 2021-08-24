@@ -376,7 +376,7 @@ class ProcessBeneficiaryApplicationTest:
 
     @patch("pcapi.scripts.beneficiary.remote_import.create_beneficiary_from_application")
     @patch("pcapi.scripts.beneficiary.remote_import.repository")
-    @patch("pcapi.scripts.beneficiary.remote_import.send_activation_email")
+    @patch("pcapi.domain.user_emails.send_activation_email")
     @pytest.mark.usefixtures("db_session")
     def test_account_activation_email_is_sent(
         self, send_activation_email, mock_repository, create_beneficiary_from_application, app
@@ -396,7 +396,7 @@ class ProcessBeneficiaryApplicationTest:
 
     @patch("pcapi.scripts.beneficiary.remote_import.create_beneficiary_from_application")
     @patch("pcapi.scripts.beneficiary.remote_import.repository")
-    @patch("pcapi.scripts.beneficiary.remote_import.send_activation_email")
+    @patch("pcapi.domain.user_emails.send_activation_email")
     @pytest.mark.usefixtures("db_session")
     def test_error_is_collected_if_beneficiary_could_not_be_saved(
         self, send_activation_email, mock_repository, create_beneficiary_from_application, app
@@ -711,8 +711,6 @@ class RunIntegrationTest:
         assert beneficiary_import.currentStatus == ImportStatus.CREATED
         assert len(push_testing.requests) == 1
 
-        assert len(push_testing.requests) == 1
-
     @patch(
         "pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee",
     )
@@ -963,7 +961,7 @@ class RunIntegrationTest:
         assert len(push_testing.requests) == 1
         assert push_testing.requests[0]["attribute_values"]["u.is_beneficiary"]
 
-    @patch("pcapi.scripts.beneficiary.remote_import.send_activation_email")
+    @patch("pcapi.domain.user_emails.send_activation_email")
     @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
     @patch(
         "pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee",
@@ -1020,7 +1018,7 @@ class RunIntegrationTest:
         assert applicant.beneficiaryFraudResult.status == fraud_models.FraudStatus.SUSPICIOUS
         assert f"Duplicat de l'utilisateur {beneficiary.id}" in applicant.beneficiaryFraudResult.reason
 
-    @patch("pcapi.scripts.beneficiary.remote_import.send_activation_email")
+    @patch("pcapi.domain.user_emails.send_activation_email")
     @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
     @patch(
         "pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee",

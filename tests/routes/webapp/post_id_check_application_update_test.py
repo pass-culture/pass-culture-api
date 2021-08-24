@@ -59,8 +59,8 @@ class Returns200Test:
         mocked_beneficiary_job.assert_called_once_with(5)
 
     @override_features(APPLY_BOOKING_LIMITS_V2=False)
-    @patch("pcapi.use_cases.create_beneficiary_from_application.send_accepted_as_beneficiary_email")
-    @patch("pcapi.use_cases.create_beneficiary_from_application.send_activation_email")
+    @patch("pcapi.domain.user_emails.send_accepted_as_beneficiary_email")
+    @patch("pcapi.domain.user_emails.send_activation_email")
     @patch("pcapi.domain.password.random_token")
     @patch("pcapi.connectors.beneficiaries.jouve_backend._get_raw_content")
     @freeze_time("2013-05-15 09:00:00")
@@ -136,8 +136,8 @@ class Returns200Test:
         assert len(users_testing.sendinblue_requests) == 1
 
     @override_features(FORCE_PHONE_VALIDATION=True)
-    @patch("pcapi.use_cases.create_beneficiary_from_application.send_accepted_as_beneficiary_email")
-    @patch("pcapi.use_cases.create_beneficiary_from_application.send_activation_email")
+    @patch("pcapi.domain.user_emails.send_accepted_as_beneficiary_email")
+    @patch("pcapi.domain.user_emails.send_activation_email")
     @patch("pcapi.domain.password.random_token")
     @patch("pcapi.connectors.beneficiaries.jouve_backend._get_raw_content")
     @freeze_time("2013-05-15 09:00:00")

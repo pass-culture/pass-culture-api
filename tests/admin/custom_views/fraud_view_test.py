@@ -73,6 +73,9 @@ class BeneficiaryFraudValidationViewTest:
         assert user.firstName == jouve_content.firstName
         assert user.lastName == jouve_content.lastName
 
+        assert len(mails_testing.outbox) == 1
+        assert mails_testing.outbox[0].sent_data["Mj-TemplateID"] == 2016025
+
     @override_features(BENEFICIARY_VALIDATION_AFTER_FRAUD_CHECKS=True)
     def test_validation_view_validate_user_wrong_args(self, client):
         user = users_factories.UserFactory(isBeneficiary=False)

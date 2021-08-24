@@ -2,7 +2,6 @@ import logging
 
 from pcapi.connectors.beneficiaries import jouve_backend
 from pcapi.core.fraud.api import on_jouve_result
-from pcapi.core.users.api import create_reset_password_token
 from pcapi.core.users.external import update_external_user
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_exceptions import BeneficiaryIsADuplicate
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_exceptions import CantRegisterBeneficiary
@@ -10,8 +9,6 @@ from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_exce
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_exceptions import SuspiciousFraudDetected
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_fraud_validator import validate_fraud
 from pcapi.domain.beneficiary_pre_subscription.beneficiary_pre_subscription_validator import validate
-from pcapi.domain.user_emails import send_accepted_as_beneficiary_email
-from pcapi.domain.user_emails import send_activation_email
 from pcapi.domain.user_emails import send_fraud_suspicion_email
 from pcapi.domain.user_emails import send_rejection_email_to_beneficiary_pre_subscription
 from pcapi.infrastructure.repository.beneficiary.beneficiary_sql_repository import BeneficiarySQLRepository
@@ -100,14 +97,12 @@ class CreateBeneficiaryFromApplication:
                 beneficiary_is_eligible=isinstance(cant_register_beneficiary_exception, BeneficiaryIsADuplicate),
             )
         else:
-            user = self.beneficiary_repository.save(beneficiary_pre_subscription, user=preexisting_account)
+            user = self.beneficiary_repository.save(
+                beneficiary_pre_subscription,
+                user=preexisting_account,
+                has_preexisting_account=bool(preexisting_account),
+            )
             logger.info("User registered from application", extra={"applicationId": application_id, "userId": user.id})
-
-            if preexisting_account is None:
-                token = create_reset_password_token(user)
-                send_activation_email(user=user, token=token)
-            else:
-                send_accepted_as_beneficiary_email(user=user)
 
             update_external_user(user)
 
