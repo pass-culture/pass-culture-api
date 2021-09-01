@@ -7,6 +7,9 @@ from pcapi.core.testing import BaseFactory
 from . import models
 
 
+ADAGE_STARTING_EDUCATIONAL_YEAR = 2014
+
+
 class EducationalInstitutionFactory(BaseFactory):
     class Meta:
         model = models.EducationalInstitution
@@ -18,13 +21,30 @@ class EducationalYearFactory(BaseFactory):
     class Meta:
         model = models.EducationalYear
 
-    adageId = factory.Sequence(lambda number: str(7 + number))
+    adageId = factory.Sequence(lambda number: str(_get_current_educational_year_adage_id() + number))
     beginningDate = factory.Sequence(
-        lambda number: datetime.datetime(2021, 9, 1) + datetime.timedelta(days=365 * number)
+        lambda number: datetime.datetime(_get_current_educational_year(), 9, 1) + datetime.timedelta(days=365 * number)
     )
     expirationDate = factory.Sequence(
-        lambda number: datetime.datetime(2022, 8, 31) + datetime.timedelta(days=365 * number)
+        lambda number: datetime.datetime(_get_current_educational_year() + 1, 8, 31)
+        + datetime.timedelta(days=365 * number)
     )
+
+
+def _get_current_educational_year() -> int:
+    current_date = datetime.datetime.utcnow()
+    current_year = current_date.year
+    current_month = current_date.month
+    current_educational_year = current_year
+
+    if 1 <= current_month < 9:
+        current_educational_year = current_year - 1
+
+    return current_educational_year
+
+
+def _get_current_educational_year_adage_id() -> int:
+    return _get_current_educational_year() - ADAGE_STARTING_EDUCATIONAL_YEAR
 
 
 class EducationalDepositFactory(BaseFactory):
