@@ -18,12 +18,12 @@ class EducationalYearFactory(BaseFactory):
     class Meta:
         model = models.EducationalYear
 
-    adageId = factory.Sequence(lambda number: str(6 + number))
+    adageId = factory.Sequence(lambda number: str(7 + number))
     beginningDate = factory.Sequence(
-        lambda number: datetime.datetime(2020, 9, 1) + datetime.timedelta(days=365 * number)
+        lambda number: datetime.datetime(2021, 9, 1) + datetime.timedelta(days=365 * number)
     )
     expirationDate = factory.Sequence(
-        lambda number: datetime.datetime(2021, 8, 31) + datetime.timedelta(days=365 * number)
+        lambda number: datetime.datetime(2022, 8, 31) + datetime.timedelta(days=365 * number)
     )
 
 
