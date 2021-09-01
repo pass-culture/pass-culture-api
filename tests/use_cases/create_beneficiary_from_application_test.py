@@ -10,7 +10,6 @@ import pcapi.core.mails.testing as mails_testing
 from pcapi.core.testing import override_features
 from pcapi.core.users import api as users_api
 from pcapi.core.users import factories as users_factories
-from pcapi.core.users.factories import UserFactory
 from pcapi.core.users.models import TokenType
 from pcapi.core.users.models import User
 from pcapi.domain.beneficiary_pre_subscription.exceptions import BeneficiaryIsADuplicate
@@ -173,7 +172,7 @@ class CreateBeneficiaryTest:
     def test_application_for_native_app_user_with_load_smoothing(self, _get_raw_content, app, db_session):
         # Given
         application_id = 35
-        user = UserFactory(
+        user = users_factories.UserFactory(
             dateOfBirth=datetime(2003, 10, 25),
             phoneNumber="0607080900",
             isBeneficiary=False,
@@ -392,7 +391,7 @@ class CreateBeneficiaryTest:
     ):
         # Given
         ID_PIECE_NUMBER = "140767100016"
-        subscribing_user = UserFactory(
+        subscribing_user = users_factories.UserFactory(
             isBeneficiary=False,
             dateOfBirth=datetime.now() - relativedelta(years=18, day=5),
             email=BASE_JOUVE_CONTENT["email"],
@@ -421,12 +420,12 @@ class CreateBeneficiaryTest:
     ):
         # Given
         ID_PIECE_NUMBER = "140767100016"
-        subscribing_user = UserFactory(
+        subscribing_user = users_factories.UserFactory(
             isBeneficiary=False,
             dateOfBirth=datetime.now() - relativedelta(years=18, day=5),
             email=BASE_JOUVE_CONTENT["email"],
         )
-        UserFactory(idPieceNumber=ID_PIECE_NUMBER)
+        users_factories.UserFactory(idPieceNumber=ID_PIECE_NUMBER)
         mocked_get_content.return_value = BASE_JOUVE_CONTENT | {"bodyPieceNumber": ID_PIECE_NUMBER}
 
         # When
@@ -450,12 +449,12 @@ class CreateBeneficiaryTest:
     ):
         # Given
         ID_PIECE_NUMBER = "140767100016"
-        UserFactory(
+        users_factories.UserFactory(
             isBeneficiary=False,
             dateOfBirth=datetime.now() - relativedelta(years=18, day=5),
             email=BASE_JOUVE_CONTENT["email"],
         )
-        UserFactory(idPieceNumber=ID_PIECE_NUMBER)
+        users_factories.UserFactory(idPieceNumber=ID_PIECE_NUMBER)
         mocked_get_content.return_value = BASE_JOUVE_CONTENT | {
             "bodyPieceNumber": ID_PIECE_NUMBER,
             "bodyPieceNumberCtrl": "KO",
@@ -471,12 +470,12 @@ class CreateBeneficiaryTest:
     @patch("pcapi.connectors.beneficiaries.jouve_backend._get_raw_content")
     @pytest.mark.parametrize("wrong_piece_number", ["NOT_APPLICABLE", "KO", ""])
     def test_id_piece_number_invalid(self, mocked_get_content, wrong_piece_number):
-        subscribing_user = UserFactory(
+        subscribing_user = users_factories.UserFactory(
             isBeneficiary=False,
             dateOfBirth=datetime.now() - relativedelta(years=18, day=5),
             email=BASE_JOUVE_CONTENT["email"],
         )
-        UserFactory(idPieceNumber=wrong_piece_number)
+        users_factories.UserFactory(idPieceNumber=wrong_piece_number)
         mocked_get_content.return_value = BASE_JOUVE_CONTENT | {"bodyPieceNumberCtrl": wrong_piece_number}
 
         # When
@@ -492,12 +491,12 @@ class CreateBeneficiaryTest:
     @patch("pcapi.connectors.beneficiaries.jouve_backend._get_raw_content")
     @pytest.mark.parametrize("wrong_piece_number", ["NOT_APPLICABLE", "KO", ""])
     def test_id_piece_number_wrong_return_control(self, mocked_get_content, wrong_piece_number):
-        subscribing_user = UserFactory(
+        subscribing_user = users_factories.UserFactory(
             isBeneficiary=False,
             dateOfBirth=datetime.now() - relativedelta(years=18, day=5),
             email=BASE_JOUVE_CONTENT["email"],
         )
-        UserFactory(idPieceNumber=wrong_piece_number)
+        users_factories.UserFactory(idPieceNumber=wrong_piece_number)
         mocked_get_content.return_value = BASE_JOUVE_CONTENT | {"bodyPieceNumberCtrl": wrong_piece_number}
 
         # When
@@ -520,12 +519,12 @@ class CreateBeneficiaryTest:
         ],
     )
     def test_id_piece_number_wrong_format(self, mocked_get_content, id_piece_number):
-        subscribing_user = UserFactory(
+        subscribing_user = users_factories.UserFactory(
             isBeneficiary=False,
             dateOfBirth=datetime.now() - relativedelta(years=18, day=5),
             email=BASE_JOUVE_CONTENT["email"],
         )
-        UserFactory(idPieceNumber=id_piece_number)
+        users_factories.UserFactory(idPieceNumber=id_piece_number)
         mocked_get_content.return_value = BASE_JOUVE_CONTENT | {"bodyPieceNumber": id_piece_number}
 
         # When
@@ -546,13 +545,13 @@ class CreateBeneficiaryTest:
     ):
         # Given
         ID_PIECE_NUMBER = "NOT_APPLICABLE"
-        subscribing_user = UserFactory(
+        subscribing_user = users_factories.UserFactory(
             isBeneficiary=False,
             dateOfBirth=datetime.now() - relativedelta(years=18, day=5),
             email=BASE_JOUVE_CONTENT["email"],
         )
-        UserFactory(idPieceNumber=ID_PIECE_NUMBER)
-        UserFactory(idPieceNumber=None)
+        users_factories.UserFactory(idPieceNumber=ID_PIECE_NUMBER)
+        users_factories.UserFactory(idPieceNumber=None)
         mocked_get_content.return_value = BASE_JOUVE_CONTENT | {"bodyPieceNumber": ID_PIECE_NUMBER}
 
         # When
@@ -586,7 +585,7 @@ class JouveDataValidationTest:
     )
     @pytest.mark.parametrize("possible_value", ["KO", "NOT_APPLICABLE", "", "bodyPieceNumberCtrl"])
     def test_mandatory_jouve_fields_wrong_data(self, mocked_get_content, jouve_field, possible_value):
-        UserFactory(
+        users_factories.UserFactory(
             isBeneficiary=False,
             dateOfBirth=datetime.now() - relativedelta(years=18, day=5),
             email=BASE_JOUVE_CONTENT["email"],
@@ -602,7 +601,7 @@ class JouveDataValidationTest:
     @pytest.mark.parametrize("jouve_field", ["bodyBirthDateLevel", "bodyNameLevel", "bodyPieceNumberLevel"])
     @pytest.mark.parametrize("possible_value", ["", "NOT_APPLICABLE", "25"])
     def test_mandatory_jouve_fields_wrong_integer_data(self, mocked_get_content, jouve_field, possible_value):
-        UserFactory(
+        users_factories.UserFactory(
             isBeneficiary=False,
             dateOfBirth=datetime.now() - relativedelta(years=18, day=5),
             email=BASE_JOUVE_CONTENT["email"],
