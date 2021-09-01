@@ -25,7 +25,7 @@ class Returns400Test:
         }
 
         # When
-        response = TestClient(app.test_client()).with_session_auth(user.email).post("/favorites", json=json)
+        response = TestClient(app.test_client()).with_auth(user.email).post("/favorites", json=json)
 
         # Then
         assert response.status_code == 400
@@ -49,7 +49,7 @@ class Returns404Test:
         }
 
         # When
-        response = TestClient(app.test_client()).with_session_auth(user.email).post("/favorites", json=json)
+        response = TestClient(app.test_client()).with_auth(user.email).post("/favorites", json=json)
 
         # Then
         assert response.status_code == 404
@@ -70,7 +70,7 @@ class Returns404Test:
         }
 
         # When
-        response = TestClient(app.test_client()).with_session_auth(user.email).post("/favorites", json=json)
+        response = TestClient(app.test_client()).with_auth(user.email).post("/favorites", json=json)
 
         # Then
         assert response.status_code == 404
@@ -93,7 +93,7 @@ class Returns201Test:
         }
 
         # When
-        response = TestClient(app.test_client()).with_session_auth(user.email).post("/favorites", json=json)
+        response = TestClient(app.test_client()).with_auth(user.email).post("/favorites", json=json)
 
         # Then
         assert response.status_code == 201
@@ -123,7 +123,7 @@ class Returns201Test:
         }
 
         # When
-        response = TestClient(app.test_client()).with_session_auth(user.email).post("/favorites", json=json)
+        response = TestClient(app.test_client()).with_auth(user.email).post("/favorites", json=json)
 
         # Then
         assert response.status_code == 201

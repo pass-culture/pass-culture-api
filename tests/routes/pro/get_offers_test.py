@@ -30,7 +30,7 @@ class Returns200Test:
         )
         offers_factories.ThingOfferFactory(venue=other_venue)
         stock = offers_factories.StockFactory(offer=offer_on_requested_venue)
-        client = TestClient(app.test_client()).with_session_auth(email=admin.email)
+        client = TestClient(app.test_client()).with_auth(email=admin.email)
         path = f"/offers?venueId={humanize(requested_venue.id)}"
         select_offers_nb_queries = 1
 
@@ -91,7 +91,7 @@ class Returns200Test:
         # when
         response = (
             TestClient(app.test_client())
-            .with_session_auth(email=pro.email)
+            .with_auth(email=pro.email)
             .get(f"/offers?venueId={humanize(requested_venue.id)}")
         )
 
@@ -109,11 +109,7 @@ class Returns200Test:
         venue = offers_factories.VenueFactory(managingOfferer=offerer)
 
         # when
-        response = (
-            TestClient(app.test_client())
-            .with_session_auth(email=pro.email)
-            .get("/offers?venueId=" + humanize(venue.id))
-        )
+        response = TestClient(app.test_client()).with_auth(email=pro.email).get("/offers?venueId=" + humanize(venue.id))
 
         # then
         assert response.status_code == 200
@@ -138,7 +134,7 @@ class Returns200Test:
         offers_factories.UserOffererFactory(user=pro, offerer=offerer)
 
         # when
-        response = TestClient(app.test_client()).with_session_auth(email=pro.email).get("/offers?status=active")
+        response = TestClient(app.test_client()).with_auth(email=pro.email).get("/offers?status=active")
 
         # then
         assert response.status_code == 200
@@ -165,9 +161,7 @@ class Returns200Test:
 
         # when
         response = (
-            TestClient(app.test_client())
-            .with_session_auth(email=pro.email)
-            .get("/offers?offererId=" + humanize(offerer.id))
+            TestClient(app.test_client()).with_auth(email=pro.email).get("/offers?offererId=" + humanize(offerer.id))
         )
 
         # then
@@ -193,7 +187,7 @@ class Returns200Test:
         offers_factories.UserOffererFactory(user=pro, offerer=offerer)
 
         # when
-        response = TestClient(app.test_client()).with_session_auth(email=pro.email).get("/offers?creationMode=imported")
+        response = TestClient(app.test_client()).with_auth(email=pro.email).get("/offers?creationMode=imported")
 
         # then
         assert response.status_code == 200
@@ -220,7 +214,7 @@ class Returns200Test:
         # when
         response = (
             TestClient(app.test_client())
-            .with_session_auth(email=pro.email)
+            .with_auth(email=pro.email)
             .get("/offers?periodBeginningDate=2020-10-11T00:00:00Z")
         )
 
@@ -249,7 +243,7 @@ class Returns200Test:
         # when
         response = (
             TestClient(app.test_client())
-            .with_session_auth(email=pro.email)
+            .with_auth(email=pro.email)
             .get("/offers?periodEndingDate=2020-10-11T23:59:59Z")
         )
 
@@ -275,7 +269,7 @@ class Returns404Test:
         pro = users_factories.ProFactory()
 
         # when
-        response = TestClient(app.test_client()).with_session_auth(email=pro.email).get("/offers?venueId=ABC")
+        response = TestClient(app.test_client()).with_auth(email=pro.email).get("/offers?venueId=ABC")
 
         # then
         assert response.status_code == 404
@@ -288,11 +282,7 @@ class Returns404Test:
         venue = offers_factories.VenueFactory(managingOfferer=offerer)
 
         # when
-        response = (
-            TestClient(app.test_client())
-            .with_session_auth(email=pro.email)
-            .get(f"/offers?venueId={humanize(venue.id)}")
-        )
+        response = TestClient(app.test_client()).with_auth(email=pro.email).get(f"/offers?venueId={humanize(venue.id)}")
 
         # then
         assert response.status_code == 200
@@ -307,11 +297,7 @@ class Returns404Test:
         offers_factories.ThingOfferFactory(venue=venue)
 
         # when
-        response = (
-            TestClient(app.test_client())
-            .with_session_auth(email=pro.email)
-            .get(f"/offers?venueId={humanize(venue.id)}")
-        )
+        response = TestClient(app.test_client()).with_auth(email=pro.email).get(f"/offers?venueId={humanize(venue.id)}")
 
         # then
         assert response.status_code == 200

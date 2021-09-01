@@ -22,9 +22,7 @@ class Returns200Test:
 
         # when
         response = (
-            TestClient(app.test_client())
-            .with_session_auth(email=user1.email)
-            .get("/userOfferers/" + humanize(offerer.id))
+            TestClient(app.test_client()).with_auth(email=user1.email).get("/userOfferers/" + humanize(offerer.id))
         )
 
         # then
@@ -46,9 +44,7 @@ class Returns200Test:
 
         # when
         response = (
-            TestClient(app.test_client())
-            .with_session_auth(email=user1.email)
-            .get("/userOfferers/" + non_existing_offerer_id)
+            TestClient(app.test_client()).with_auth(email=user1.email).get("/userOfferers/" + non_existing_offerer_id)
         )
 
         # then
