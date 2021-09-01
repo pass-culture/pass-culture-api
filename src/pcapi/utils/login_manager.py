@@ -11,7 +11,6 @@ from pcapi.core.users import exceptions as users_exceptions
 from pcapi.core.users import repository as users_repo
 from pcapi.core.users.models import User
 from pcapi.models.api_errors import ApiErrors
-from pcapi.models.api_errors import UnauthorizedError
 from pcapi.repository.user_session_queries import delete_user_session
 from pcapi.repository.user_session_queries import existing_user_session
 from pcapi.repository.user_session_queries import register_user_session
@@ -30,11 +29,12 @@ def get_user_with_id(user_id):
 
 
 @app.login_manager.request_loader
-def basic_authentication(request, realm=None):
+def get_user_with_request(request):
     auth = request.authorization
     if not auth:
         return None
-    errors = UnauthorizedError(www_authenticate="Basic", realm=realm)
+    errors = ApiErrors()
+    errors.status_code = 401
     try:
         user = users_repo.get_user_with_credentials(auth.username, auth.password)
     except users_exceptions.InvalidIdentifier as exc:
