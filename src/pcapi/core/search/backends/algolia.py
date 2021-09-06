@@ -253,6 +253,7 @@ class AlgoliaBackend(base.SearchBackend):
                 # PC-8526: Warning: we should not store the full url of the image but only the path.
                 # Currrently we store `OBJECT_STORAGE_URL/path`, but we should store `path` and build the
                 # full url in the frontend.
+                "subcategoryId": offer.subcategoryId,
                 "thumbUrl": offer.thumbUrl,
                 "tags": tags,
                 "times": list(set(times)),

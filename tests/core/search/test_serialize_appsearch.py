@@ -56,6 +56,7 @@ def test_serialize():
         "ranking_weight": 2,
         "search_group": subcategories.SearchGroupChoices.LIVRE.value,
         "stocks_date_created": [stock.dateCreated],
+        "subcategoryId": subcategories.LIVRE_PAPIER.id,
         "tags": [],
         "times": [],
         "thumb_url": None,
