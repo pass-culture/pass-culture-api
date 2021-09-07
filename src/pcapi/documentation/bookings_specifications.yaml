@@ -462,7 +462,7 @@ securityDefinitions:
   BearerAuthentication:
     type: apiKey
     in: header
-    name: Authorisation
+    name: Authorization
     description: L'authentification auprès de l'API se fait au moyen d'une entête "Authorization" avec pour valeur votre token d'API précédé de la valeur "Bearer" (RFC 6750)
   UrlAuthentication:
     type: apiKey
