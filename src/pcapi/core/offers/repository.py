@@ -13,6 +13,7 @@ from sqlalchemy.orm import load_only
 from sqlalchemy.sql.functions import coalesce
 
 from pcapi.core.bookings.models import Booking
+from pcapi.core.categories import subcategories
 from pcapi.core.offerers.models import Offerer
 from pcapi.core.offers.exceptions import StockDoesNotExist
 from pcapi.core.offers.models import ActivationCode
@@ -30,7 +31,6 @@ from pcapi.models import Stock
 from pcapi.models import UserOfferer
 from pcapi.models import Venue
 from pcapi.models import db
-from pcapi.models.offer_type import ThingType
 
 
 IMPORTED_CREATION_MODE = "imported"
@@ -44,7 +44,7 @@ def get_capped_offers_for_filters(
     offerer_id: Optional[int] = None,
     status: Optional[str] = None,
     venue_id: Optional[int] = None,
-    type_id: Optional[str] = None,
+    subcategory_id: Optional[str] = None,
     name_keywords_or_isbn: Optional[str] = None,
     creation_mode: Optional[str] = None,
     period_beginning_date: Optional[str] = None,
@@ -56,7 +56,7 @@ def get_capped_offers_for_filters(
         offerer_id=offerer_id,
         status=status,
         venue_id=venue_id,
-        type_id=type_id,
+        subcategory_id=subcategory_id,
         name_keywords_or_isbn=name_keywords_or_isbn,
         creation_mode=creation_mode,
         period_beginning_date=period_beginning_date,
@@ -95,7 +95,7 @@ def get_offers_by_filters(
     offerer_id: Optional[int] = None,
     status: Optional[str] = None,
     venue_id: Optional[int] = None,
-    type_id: Optional[str] = None,
+    subcategory_id: Optional[str] = None,
     name_keywords_or_isbn: Optional[str] = None,
     creation_mode: Optional[str] = None,
     period_beginning_date: Optional[datetime] = None,
@@ -119,8 +119,8 @@ def get_offers_by_filters(
         query = query.filter(Offer.venueId == venue_id)
     if creation_mode is not None:
         query = _filter_by_creation_mode(query, creation_mode)
-    if type_id is not None:
-        query = query.filter(Offer.type == type_id)
+    if subcategory_id is not None:
+        query = query.filter(Offer.subcategoryId == subcategory_id)
     if name_keywords_or_isbn is not None:
         search = name_keywords_or_isbn
         if len(name_keywords_or_isbn) > 3:
@@ -185,7 +185,7 @@ def get_stocks_for_offer(offer_id: int) -> list[Stock]:
 def get_products_map_by_id_at_providers(id_at_providers: list[str]) -> dict[str, Product]:
     products = (
         Product.query.filter(Product.isGcuCompatible)
-        .filter(Product.type == str(ThingType.LIVRE_EDITION))
+        .filter(Product.subcategoryId == subcategories.LIVRE_PAPIER.id)
         .filter(Product.idAtProviders.in_(id_at_providers))
         .all()
     )

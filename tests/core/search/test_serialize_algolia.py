@@ -97,7 +97,6 @@ class BuildObjectTest:
             "offer": {
                 "subcategoryLabel": "Autre type d'événement musical",
                 "author": None,
-                "category": "MUSIQUE",
                 "dateCreated": 1577872800.0,
                 "dates": [1603098000.0, 1603098000.0, 1603098000.0],
                 "description": "Un lit sous une rivière",
@@ -110,7 +109,7 @@ class BuildObjectTest:
                 "isDigital": False,
                 "isEvent": True,
                 "isThing": False,
-                "label": "Concert ou festival",
+                "label": "Autre type d'événement musical",
                 "name": "Event name",
                 "musicSubType": None,
                 "musicType": None,
@@ -128,7 +127,6 @@ class BuildObjectTest:
                 "thumbUrl": f"http://localhost/storage/thumbs/products/{humanized_product_id}",
                 "tags": [],
                 "times": [32400],
-                "type": "Écouter",
                 "visa": None,
             },
             "offerer": {
@@ -463,7 +461,6 @@ class BuildObjectTest:
             "offer": {
                 "subcategoryLabel": "Autre type d'événement musical",
                 "author": None,
-                "category": "MUSIQUE",
                 "dateCreated": 1577872800.0,
                 "dates": [1603098000.0],
                 "description": "Un lit sous une rivière",
@@ -476,7 +473,7 @@ class BuildObjectTest:
                 "isDigital": False,
                 "isEvent": True,
                 "isThing": False,
-                "label": "Concert ou festival",
+                "label": "Autre type d'événement musical",
                 "name": "Event name",
                 "musicSubType": None,
                 "musicType": None,
@@ -494,7 +491,6 @@ class BuildObjectTest:
                 "thumbUrl": f"http://localhost/storage/thumbs/products/{humanized_product_id}",
                 "tags": ["Mon tag associé"],
                 "times": [32400],
-                "type": "Écouter",
                 "visa": None,
             },
             "offerer": {
@@ -558,7 +554,6 @@ class BuildObjectTest:
             "offer": {
                 "subcategoryLabel": "Autre type d'événement musical",
                 "author": None,
-                "category": "MUSIQUE",
                 "dateCreated": 1577872800.0,
                 "dates": [1603098000.0],
                 "description": "Un lit sous une rivière",
@@ -571,7 +566,7 @@ class BuildObjectTest:
                 "isDigital": False,
                 "isEvent": True,
                 "isThing": False,
-                "label": "Concert ou festival",
+                "label": "Autre type d'événement musical",
                 "name": "Event name",
                 "musicSubType": None,
                 "musicType": None,
@@ -589,7 +584,6 @@ class BuildObjectTest:
                 "thumbUrl": f"http://localhost/storage/thumbs/products/{humanized_product_id}",
                 "tags": {"Mon tag associé", "Iron Man mon super héros"},
                 "times": [32400],
-                "type": "Écouter",
                 "visa": None,
             },
             "offerer": {

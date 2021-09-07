@@ -115,7 +115,6 @@ class OffersTest:
                     "activationCode": None,
                 },
             ],
-            "category": {"categoryType": "Event", "label": "Cinéma", "name": "CINEMA"},
             "description": "desk cryption",
             "externalTicketOfficeUrl": "https://url.com",
             "expenseDomains": ["all"],
@@ -154,6 +153,7 @@ class OffersTest:
                 "publicName": "il est venu le temps des names",
             },
             "withdrawalDetails": "modalité de retrait",
+            "subcategoryId": "SEANCE_CINE",
         }
 
     def test_get_thing_offer(self, app):
@@ -168,11 +168,7 @@ class OffersTest:
         assert response.status_code == 200
         assert not response.json["stocks"][0]["beginningDatetime"]
         assert response.json["stocks"][0]["price"] == 1234
-        assert response.json["category"] == {
-            "categoryType": "Thing",
-            "label": "Musée, arts visuels et patrimoine",
-            "name": "VISITE",
-        }
+        assert response.json["subcategoryId"] == "ABO_MUSEE"
         assert response.json["isEducational"]
         assert not response.json["isExpired"]
 

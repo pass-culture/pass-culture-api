@@ -30,7 +30,6 @@ DOCUMENTS_PER_REQUEST_LIMIT = 100
 SCHEMA = {
     "subcategory_label": "text",
     "artist": "text",
-    "category": "text",
     "date_created": "date",
     "dates": "date",
     "description": "text",
@@ -225,7 +224,6 @@ class AppSearchBackend(base.SearchBackend):
         return {
             "subcategory_label": offer.subcategory.app_label,
             "artist": artist.strip() or None,
-            "category": offer.offer_category_name_for_app,
             "date_created": offer.dateCreated,  # used only to rank results
             "dates": dates,
             "description": offer.description,
@@ -235,7 +233,7 @@ class AppSearchBackend(base.SearchBackend):
             "is_educational": int(offer.isEducational),
             "is_event": int(offer.isEvent),
             "is_thing": int(offer.isThing),
-            "label": offer.offerType["appLabel"],
+            "label": offer.subcategory.app_label,
             "name": offer.name,
             "id": offer.id,
             "prices": [int(stock.price * 100) for stock in stocks],

@@ -1,5 +1,4 @@
 from pcapi.core.bookings.models import Booking
-from pcapi.models.offer_type import ProductType
 from pcapi.utils.date import get_date_formatted_for_email
 from pcapi.utils.date import get_time_formatted_for_email
 from pcapi.utils.date import utc_datetime_to_department_timezone
@@ -13,13 +12,13 @@ def retrieve_data_for_beneficiary_booking_confirmation_email(booking: Booking) -
     beneficiary = booking.user
 
     is_digital_offer = offer.isDigital
-    is_physical_offer = ProductType.is_thing(name=offer.type) and not is_digital_offer
-    is_event = ProductType.is_event(name=offer.type)
+    is_physical_offer = not offer.subcategory.is_event and not is_digital_offer
+    is_event = offer.subcategory.is_event
 
     if is_digital_offer and booking.activationCode:
         can_expire = 0
     else:
-        can_expire = int(offer.offerType.get("canExpire", False))
+        can_expire = int(offer.subcategory.can_expire)
 
     department_code = venue.departementCode if not is_digital_offer else beneficiary.departementCode
     booking_date_in_tz = utc_datetime_to_department_timezone(booking.dateCreated, department_code)

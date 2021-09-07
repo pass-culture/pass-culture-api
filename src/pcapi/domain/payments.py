@@ -53,7 +53,7 @@ class PaymentDetails:
         "ID du lieu",
         "ID de l'offre",
         "Nom de l'offre",
-        "Type de l'offre",
+        "Sous-catégorie de l'offre",
         "Date de la réservation",
         "Prix de la réservation",
         "Date de validation",
@@ -76,7 +76,7 @@ class PaymentDetails:
         self.venue_humanized_id = humanize(venue.id)
         self.offer_id = offer.id
         self.offer_name = offer.product.name
-        self.offer_type = offer.product.offerType["proLabel"]
+        self.offer_subcategoryId = offer.product.subcategoryId
         self.booking_date = payment.booking.dateCreated
         self.booking_amount = payment.booking.total_amount
         self.booking_used_date = payment.booking.dateUsed
@@ -100,7 +100,7 @@ class PaymentDetails:
             self.venue_humanized_id,
             str(self.offer_id),
             self.offer_name,
-            self.offer_type,
+            self.offer_subcategoryId,
             str(self.booking_date),
             str(self.booking_amount),
             str(self.booking_used_date),

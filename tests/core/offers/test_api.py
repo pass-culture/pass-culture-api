@@ -46,7 +46,6 @@ from pcapi.core.testing import override_settings
 import pcapi.core.users.factories as users_factories
 from pcapi.models import ApiErrors
 from pcapi.models import api_errors
-from pcapi.models import offer_type
 from pcapi.models.product import Product
 from pcapi.notifications.push import testing as push_testing
 from pcapi.routes.serialization import offers_serialize
@@ -713,7 +712,6 @@ class CreateOfferTest:
 
         assert offer.name == "A pretty good offer"
         assert offer.venue == venue
-        assert offer.type == str(offer_type.EventType.CINEMA)
         assert offer.subcategoryId == subcategories.SEANCE_CINE.id
         assert offer.product.owningOfferer == offerer
         assert offer.externalTicketOfficeUrl == "http://example.net"
@@ -747,7 +745,6 @@ class CreateOfferTest:
         offer = api.create_offer(data, user)
         assert offer.name == "An excellent offer"
         assert offer.subcategoryId == subcategories.SEANCE_CINE.id
-        assert offer.type == str(offer_type.EventType.CINEMA)
         assert offer.product == product
         assert offer.externalTicketOfficeUrl == "http://example.net"
         assert offer.audioDisabilityCompliant
@@ -784,7 +781,6 @@ class CreateOfferTest:
 
         assert offer.name == "FONDATION T.1"
         assert offer.subcategoryId == subcategories.LIVRE_PAPIER.id
-        assert offer.type == str(offer_type.ThingType.LIVRE_EDITION)
         assert offer.description == "Les prévisions du psychohistorien Hari Seldon sont formelles."
         assert offer.extraData == {"isbn": "9782207300893", "author": "Isaac Asimov", "bookFormat": "Soft cover"}
         assert offer.audioDisabilityCompliant

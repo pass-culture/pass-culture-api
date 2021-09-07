@@ -82,7 +82,7 @@ VALIDATION_KEYWORDS_MAPPING = {
 def list_offers_for_pro_user(
     user_id: int,
     user_is_admin: bool,
-    type_id: Optional[str],
+    subcategory_id: Optional[str],
     offerer_id: Optional[int],
     venue_id: Optional[int] = None,
     name_keywords_or_isbn: Optional[str] = None,
@@ -98,7 +98,7 @@ def list_offers_for_pro_user(
         offerer_id=offerer_id,
         status=status,
         venue_id=venue_id,
-        type_id=type_id,
+        subcategory_id=subcategory_id,
         name_keywords_or_isbn=name_keywords_or_isbn,
         creation_mode=creation_mode,
         period_beginning_date=period_beginning_date,
@@ -112,10 +112,8 @@ def create_offer(offer_data: PostOfferBodyModel, user: User) -> Offer:
     check_user_has_access_to_offerer(user, offerer_id=venue.managingOffererId)
     if offer_data.product_id:
         product = load_or_raise_error(Product, offer_data.product_id)
-        product_subcategory = subcategories.ALL_SUBCATEGORIES_DICT[product.subcategoryId]
         offer = Offer(
             product=product,
-            type=product_subcategory.matching_type,  # FIXME: fseguin(2021-07-22): deprecated
             subcategoryId=product.subcategoryId,
             name=product.name,
             description=product.description,
@@ -129,15 +127,13 @@ def create_offer(offer_data: PostOfferBodyModel, user: User) -> Offer:
             extraData=product.extraData,
         )
     elif FeatureToggle.ENABLE_ISBN_REQUIRED_IN_LIVRE_EDITION_OFFER_CREATION.is_active() and can_create_from_isbn(
-        subcategory_id=subcategory.id if subcategory else None, offer_type=subcategory.matching_type
+        subcategory_id=subcategory.id
     ):
         product = _load_product_by_isbn_and_check_is_gcu_compatible_or_raise_error(offer_data.extra_data["isbn"])
-        product_subcategory = subcategories.ALL_SUBCATEGORIES_DICT[product.subcategoryId]
         extra_data = product.extraData
         extra_data.update(offer_data.extra_data)
         offer = Offer(
             product=product,
-            type=product_subcategory.matching_type,  # FIXME: fseguin(2021-07-22): deprecated
             subcategoryId=product.subcategoryId,
             name=offer_data.name,
             description=offer_data.description if offer_data.description else product.description,
@@ -151,7 +147,6 @@ def create_offer(offer_data: PostOfferBodyModel, user: User) -> Offer:
         )
     else:
         data = offer_data.dict(by_alias=True)
-        data["type"] = subcategory.matching_type  # FIXME: fseguin(2021-07-22): deprecated
         product = Product()
         if data.get("url"):
             data["isNational"] = True
@@ -159,8 +154,7 @@ def create_offer(offer_data: PostOfferBodyModel, user: User) -> Offer:
         offer = Offer()
         offer.populate_from_dict(data)
         offer.product = product
-        offer.subcategoryId = subcategory.id if subcategory else None
-        offer.type = subcategory.matching_type
+        offer.subcategoryId = subcategory.id
         offer.product.owningOfferer = venue.managingOfferer
 
     offer.venue = venue

@@ -224,7 +224,6 @@ class AlgoliaBackend(base.SearchBackend):
             "offer": {
                 "subcategoryLabel": offer.subcategory.app_label,
                 "author": author,
-                "category": offer.offer_category_name_for_app,
                 "rankingWeight": offer.rankingWeight,
                 "dateCreated": date_created,
                 "dates": sorted(dates),
@@ -238,7 +237,7 @@ class AlgoliaBackend(base.SearchBackend):
                 "isEvent": offer.isEvent,
                 "isThing": offer.isThing,
                 # FIXME remove once subcategory logic is fully implemented
-                "label": offer.offerType["appLabel"],
+                "label": offer.subcategory.app_label,
                 "musicSubType": music_sub_type,
                 "musicType": music_type,
                 "name": offer.name,
@@ -258,7 +257,6 @@ class AlgoliaBackend(base.SearchBackend):
                 "thumbUrl": offer.thumbUrl,
                 "tags": tags,
                 "times": list(set(times)),
-                "type": offer.offerType["sublabel"],
                 "visa": visa,
                 "withdrawalDetails": offer.withdrawalDetails,
             },

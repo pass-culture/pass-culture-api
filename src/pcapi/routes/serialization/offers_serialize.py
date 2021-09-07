@@ -10,7 +10,6 @@ from pydantic import validator
 
 from pcapi.core.bookings.api import compute_cancellation_limit_date
 from pcapi.core.categories.conf import can_create_from_isbn
-from pcapi.core.categories.conf import get_subcategory_from_type
 from pcapi.core.offers import repository as offers_repository
 from pcapi.core.offers.models import OfferStatus
 from pcapi.core.offers.models import Stock
@@ -64,7 +63,6 @@ class CategoryResponseModel(BaseModel):
 class PostOfferBodyModel(BaseModel):
     venue_id: str
     product_id: Optional[str]
-    type: Optional[str]
     subcategory_id: Optional[str]
     name: Optional[str]
     booking_email: Optional[str]
@@ -114,7 +112,7 @@ class PostOfferBodyModel(BaseModel):
         if (
             FeatureToggle.ENABLE_ISBN_REQUIRED_IN_LIVRE_EDITION_OFFER_CREATION.is_active()
             and not values["product_id"]
-            and can_create_from_isbn(subcategory_id=values["subcategory_id"], offer_type=values["type"])
+            and can_create_from_isbn(subcategory_id=values["subcategory_id"])
         ):
             check_offer_isbn_is_valid(extra_data_field["isbn"])
         return extra_data_field
@@ -184,7 +182,7 @@ class PatchAllOffersActiveStatusBodyModel(BaseModel):
     offerer_id: Optional[int]
     venue_id: Optional[int]
     name_or_isbn: Optional[str]
-    type_id: Optional[str]
+    subcategory_id: Optional[str]
     creation_mode: Optional[str]
     status: Optional[str]
     period_beginning_date: Optional[datetime]
@@ -236,7 +234,6 @@ class ListOffersOfferResponseModel(BaseModel):
     stocks: list[ListOffersStockResponseModel]
     thumbUrl: Optional[str]
     productIsbn: Optional[str]
-    type: str
     subcategoryId: str
     venue: ListOffersVenueResponseModel
     status: str
@@ -255,7 +252,7 @@ class ListOffersQueryModel(BaseModel):
     offerer_id: Optional[int]
     status: Optional[str]
     venue_id: Optional[int]
-    type_id: Optional[str]
+    subcategory_id: Optional[str]
     creation_mode: Optional[str]
     period_beginning_date: Optional[str]
     period_ending_date: Optional[str]
@@ -267,23 +264,6 @@ class ListOffersQueryModel(BaseModel):
         alias_generator = to_camel
         extra = "forbid"
         arbitrary_types_allowed = True
-
-
-class GetOfferOfferTypeResponseModel(BaseModel):
-    appLabel: str
-    canExpire: Optional[bool]
-    conditionalFields: list[Optional[str]]
-    description: str
-    isActive: bool
-    offlineOnly: bool
-    onlineOnly: bool
-    proLabel: str
-    sublabel: str
-    type: str
-    value: str
-
-    class Config:
-        orm_mode = True
 
 
 class GetOfferProductResponseModel(BaseModel):
@@ -493,13 +473,11 @@ class GetOfferResponseModel(BaseModel):
     mediaUrls: list[str]
     mediations: list[GetOfferMediationResponseModel]
     name: str
-    offerType: GetOfferOfferTypeResponseModel
     product: GetOfferProductResponseModel
     productId: str
     stocks: list[GetOfferStockResponseModel]
     subcategoryId: str
     thumbUrl: Optional[str]
-    type: str
     externalTicketOfficeUrl: Optional[str]
     url: Optional[str]
     venue: GetOfferVenueResponseModel
@@ -519,11 +497,6 @@ class GetOfferResponseModel(BaseModel):
         if isinstance(date_range, DateTimes):
             return date_range.datetimes
         return date_range
-
-    @classmethod
-    def from_orm(cls, offer):  # type: ignore
-        offer.subcategoryId = offer.subcategoryId or get_subcategory_from_type(offer.type, offer.venue.isVirtual)
-        return super().from_orm(offer)
 
     class Config:
         orm_mode = True

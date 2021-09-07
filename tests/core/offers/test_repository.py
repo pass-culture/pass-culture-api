@@ -28,7 +28,6 @@ from pcapi.model_creators.generic_creators import create_provider
 from pcapi.model_creators.generic_creators import create_user_offerer
 from pcapi.model_creators.generic_creators import create_venue
 from pcapi.model_creators.specific_creators import create_offer_with_thing_product
-from pcapi.models import ThingType
 from pcapi.repository import repository
 from pcapi.utils.date import utc_datetime_to_department_timezone
 
@@ -94,7 +93,7 @@ class GetCappedOffersForFiltersTest:
         assert offers_id == [non_draft_offer.id]
 
     @pytest.mark.usefixtures("db_session")
-    def should_return_offers_of_given_type(self):
+    def should_return_offers_of_given_subcategory_id(self):
         user_offerer = offers_factories.UserOffererFactory()
         requested_offer = offers_factories.OfferFactory(
             subcategoryId=subcategories.SUPPORT_PHYSIQUE_FILM.id, venue__managingOfferer=user_offerer.offerer
@@ -107,7 +106,7 @@ class GetCappedOffersForFiltersTest:
             user_id=user_offerer.user.id,
             user_is_admin=user_offerer.user.isAdmin,
             offers_limit=10,
-            type_id=str(ThingType.AUDIOVISUEL),
+            subcategory_id=subcategories.SUPPORT_PHYSIQUE_FILM.id,
         )
 
         # then

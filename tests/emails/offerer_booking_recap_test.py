@@ -59,7 +59,7 @@ def get_expected_base_email_data(booking, **overrides):
             "contremarque": "ABC123",
             "ISBN": "",
             "lien_offre_pcpro": f"http://localhost:3001/offres/{offer_id}/edition",
-            "offer_type": "EventType.SPECTACLE_VIVANT",
+            "offer_type": "SPECTACLE_REPRESENTATION",
             "departement": "75",
             "must_use_token_for_payment": 1,
         },
@@ -176,7 +176,7 @@ def test_a_digital_booking_expires_after_30_days():
     booking = make_booking(
         quantity=10,
         stock__price=0,
-        stock__offer__product__subcategoryId=subcategories.VOD.id,
+        stock__offer__product__subcategoryId=subcategories.ABO_LIVRE_NUMERIQUE.id,
         stock__offer__product__url="http://example.com",
         stock__offer__name="Super offre numérique",
     )
@@ -192,7 +192,7 @@ def test_a_digital_booking_expires_after_30_days():
         is_event=0,
         prix="Gratuit",
         nom_offre="Super offre numérique",
-        offer_type="ThingType.AUDIOVISUEL",
+        offer_type="ABO_LIVRE_NUMERIQUE",
         quantity=10,
         can_expire_after_30_days=1,
         must_use_token_for_payment=0,
@@ -275,7 +275,7 @@ def test_no_need_when_booking_is_autovalidated():
         is_event=0,
         is_booking_autovalidated=1,
         must_use_token_for_payment=0,
-        offer_type="ThingType.AUDIOVISUEL",
+        offer_type="VOD",
         contremarque=booking.token,
     )
     assert email_data == expected
@@ -312,7 +312,7 @@ def test_a_digital_booking_with_activation_code_is_automatically_used():
         prix="10.00 €",
         is_event=0,
         nom_offre="Super offre numérique",
-        offer_type="ThingType.AUDIOVISUEL",
+        offer_type="VOD",
         quantity=1,
         can_expire_after_30_days=0,
         is_booking_autovalidated=1,

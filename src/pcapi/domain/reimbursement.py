@@ -5,10 +5,8 @@ from decimal import Decimal
 from typing import Optional
 
 from pcapi.core.categories import subcategories
-from pcapi.core.offers.models import Offer
 import pcapi.core.payments.models as payments_models
 from pcapi.models import Booking
-from pcapi.models import ThingType
 
 
 # A new set rules are in effect as of 1 September 2021 (i.e. 31 August 22:00 UTC)
@@ -23,7 +21,7 @@ class DigitalThingsReimbursement(payments_models.ReimbursementRule):
 
     def is_relevant(self, booking: Booking, cumulative_revenue="ignored") -> bool:
         offer = booking.stock.offer
-        return offer.isDigital and not _is_reimbursable_digital_offer(offer)
+        return offer.subcategory.reimbursement_rule == subcategories.ReimbursementRuleChoices.NOT_REIMBURSED.value
 
 
 class PhysicalOffersReimbursement(payments_models.ReimbursementRule):
@@ -34,7 +32,10 @@ class PhysicalOffersReimbursement(payments_models.ReimbursementRule):
 
     def is_relevant(self, booking: Booking, cumulative_revenue="ignored") -> bool:
         offer = booking.stock.offer
-        return not offer.isDigital or _is_reimbursable_digital_offer(offer)
+        return offer.subcategory.reimbursement_rule in (
+            subcategories.ReimbursementRuleChoices.STANDARD.value,
+            subcategories.ReimbursementRuleChoices.BOOK.value,
+        )
 
 
 class MaxReimbursementByOfferer(payments_models.ReimbursementRule):
@@ -93,7 +94,7 @@ class ReimbursementRateByVenueBetween20000And40000(payments_models.Reimbursement
     valid_until = None
 
     def is_relevant(self, booking: Booking, cumulative_revenue: Decimal) -> bool:
-        if booking.stock.offer.product.isDigital:
+        if booking.stock.offer.subcategory.reimbursement_rule != subcategories.ReimbursementRuleChoices.STANDARD.value:
             return False
         return 20000 < cumulative_revenue <= 40000
 
@@ -105,7 +106,7 @@ class ReimbursementRateByVenueBetween40000And150000(payments_models.Reimbursemen
     valid_until = None
 
     def is_relevant(self, booking: Booking, cumulative_revenue: Decimal) -> bool:
-        if booking.stock.offer.product.isDigital:
+        if booking.stock.offer.subcategory.reimbursement_rule != subcategories.ReimbursementRuleChoices.STANDARD.value:
             return False
         return 40000 < cumulative_revenue <= 150000
 
@@ -117,7 +118,7 @@ class ReimbursementRateByVenueAbove150000(payments_models.ReimbursementRule):
     valid_until = None
 
     def is_relevant(self, booking: Booking, cumulative_revenue: Decimal) -> bool:
-        if booking.stock.offer.product.isDigital:
+        if booking.stock.offer.subcategory.reimbursement_rule != subcategories.ReimbursementRuleChoices.STANDARD.value:
             return False
         return cumulative_revenue > 150000
 
@@ -129,7 +130,7 @@ class ReimbursementRateForBookAbove20000(payments_models.ReimbursementRule):
     valid_until = None
 
     def is_relevant(self, booking: Booking, cumulative_revenue: Decimal) -> bool:
-        if not booking.stock.offer.type == str(ThingType.LIVRE_EDITION):
+        if booking.stock.offer.subcategory.reimbursement_rule != subcategories.ReimbursementRuleChoices.BOOK.value:
             return False
         return cumulative_revenue > 20000
 
@@ -210,11 +211,3 @@ def get_reimbursement_rule(
         candidates.append(rule)
 
     return min(candidates, key=lambda r: r.apply(booking))
-
-
-# FIXME (rchaffal, 2021-07-15): temporary workaroud before implementing subcategory reimbursement rules for all offers
-def _is_reimbursable_digital_offer(offer: Offer) -> bool:
-    return (
-        offer.type in (str(ThingType.CINEMA_CARD), str(ThingType.LIVRE_EDITION))
-        or offer.subcategoryId == subcategories.MUSEE_VENTE_DISTANCE.id
-    )

@@ -3,9 +3,8 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from pcapi.core.categories import subcategories
 from pcapi.models import Booking
-from pcapi.models import EventType
-from pcapi.models import ThingType
 from pcapi.routes.serialization import serialize
 from pcapi.serialization.utils import to_camel
 from pcapi.utils.human_ids import humanize
@@ -29,11 +28,12 @@ def serialize_booking(booking: Booking) -> dict:
     offer_id = booking.stock.offer.id
     venue_name = booking.stock.offer.venue.name
     venue_address = booking.stock.offer.venue.address
+    # FIXME: replace variable by a bool `is_event`
     offer_type = "EVENEMENT" if booking.stock.offer.isEvent else "BIEN"
     offer_formula = ""
-    if booking.stock.offer.type == str(EventType.CINEMA):
+    if booking.stock.offer.subcategoryId == subcategories.SEANCE_CINE.id:
         offer_formula = "PLACE"
-    elif booking.stock.offer.type == str(ThingType.CINEMA_ABO):
+    elif booking.stock.offer.subcategoryId == subcategories.CARTE_CINE_ILLIMITE.id:
         offer_formula = "ABO"
     offer_date_time = serialize(booking.stock.beginningDatetime) if booking.stock.beginningDatetime else ""
     price = booking.stock.price
@@ -49,7 +49,10 @@ def serialize_booking(booking: Booking) -> dict:
 
     date_of_birth = ""
     phone_number = ""
-    if booking.educationalBookingId is None and booking.stock.offer.product.type == str(EventType.ACTIVATION):
+    if booking.educationalBookingId is None and booking.stock.offer.product.subcategoryId in (
+        subcategories.ACTIVATION_EVENT.id,
+        subcategories.ACTIVATION_THING.id,
+    ):
         date_of_birth = serialize(booking.user.dateOfBirth)
         phone_number = booking.user.phoneNumber
 

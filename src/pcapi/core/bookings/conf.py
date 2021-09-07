@@ -2,7 +2,6 @@ import datetime
 from decimal import Decimal
 
 from pcapi.models.feature import FeatureToggle
-from pcapi.models.offer_type import ThingType
 
 
 CONFIRM_BOOKING_AFTER_CREATION_DELAY = datetime.timedelta(hours=48)
@@ -30,14 +29,14 @@ class BaseLimitConfiguration:
         return (
             offer.isDigital
             and bool(self.DIGITAL_CAP)
-            and offer.type in {str(type_) for type_ in self.DIGITAL_CAPPED_TYPES}
+            and offer.subcategory.is_digital_deposit
         )
 
     def physical_cap_applies(self, offer):
         return (
             not offer.isDigital
             and bool(self.PHYSICAL_CAP)
-            and offer.type in {str(type_) for type_ in self.PHYSICAL_CAPPED_TYPES}
+            and offer.subcategory.is_physical_deposit
         )
     # fmt: on
 
@@ -45,46 +44,14 @@ class BaseLimitConfiguration:
 class LimitConfigurationV1(BaseLimitConfiguration):
     # For now this total cap duplicates what we store in `Deposit.amount`.
     TOTAL_CAP = Decimal(500)
-
     DIGITAL_CAP = Decimal(200)
-
-    DIGITAL_CAPPED_TYPES = {
-        ThingType.AUDIOVISUEL,
-        ThingType.JEUX_VIDEO,
-        ThingType.JEUX_VIDEO_ABO,
-        ThingType.LIVRE_AUDIO,
-        ThingType.LIVRE_EDITION,
-        ThingType.MUSIQUE,
-        ThingType.PRESSE_ABO,
-    }
-
     PHYSICAL_CAP = 200
-    PHYSICAL_CAPPED_TYPES = {
-        ThingType.AUDIOVISUEL,
-        ThingType.INSTRUMENT,
-        ThingType.JEUX,
-        ThingType.LIVRE_EDITION,
-        ThingType.MUSIQUE,
-        ThingType.OEUVRE_ART,
-        ThingType.MATERIEL_ART_CREA,
-    }
 
 
 class LimitConfigurationV2(BaseLimitConfiguration):
     # For now this total cap duplicates what we store in `Deposit.amount`.
     TOTAL_CAP = Decimal(300)
-
     DIGITAL_CAP = Decimal(100)
-    DIGITAL_CAPPED_TYPES = {
-        ThingType.AUDIOVISUEL,
-        ThingType.JEUX_VIDEO,
-        ThingType.JEUX_VIDEO_ABO,
-        ThingType.LIVRE_AUDIO,
-        ThingType.LIVRE_EDITION,
-        ThingType.MUSIQUE,
-        ThingType.PRESSE_ABO,
-    }
-
     PHYSICAL_CAP = None
 
 

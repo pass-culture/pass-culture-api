@@ -65,7 +65,12 @@ def get_favorites(user: User) -> serializers.PaginatedFavoritesResponse:
         .distinct(Favorite.id)
         .options(
             joinedload(Favorite.offer).load_only(
-                Offer.name, Offer.externalTicketOfficeUrl, Offer.url, Offer.type, Offer.isActive, Offer.validation
+                Offer.name,
+                Offer.externalTicketOfficeUrl,
+                Offer.url,
+                Offer.subcategoryId,
+                Offer.isActive,
+                Offer.validation,
             )
         )
         .options(

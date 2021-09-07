@@ -40,7 +40,6 @@ def test_serialize():
     assert serialized == {
         "subcategory_label": "Livre",
         "artist": "Author Performer Speaker Stage Director",
-        "category": "LIVRE",
         "date_created": offer.dateCreated,
         "dates": [],
         "description": "Un livre qu'il est bien pour le lire",
@@ -50,7 +49,7 @@ def test_serialize():
         "is_educational": 0,
         "is_event": 0,
         "is_thing": 1,
-        "label": "Livre ou carte lecture",
+        "label": "Livre",
         "name": "Titre formidable",
         "id": offer.id,
         "prices": [1000],

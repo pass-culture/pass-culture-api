@@ -152,8 +152,6 @@ paths:
                 type: integer
               offerName:
                 type: string
-              offerType:
-                type: string
               phoneNumber:
                 type: string
               price:
