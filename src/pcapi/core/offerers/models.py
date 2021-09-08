@@ -102,6 +102,33 @@ class VenueTypeCode(enum.Enum):
     CREATIVE_ARTS_STORE = "CREATIVE_ARTS_STORE"
     OTHER = "OTHER"
 
+    @classmethod
+    def from_label(cls, label: str) -> "VenueTypeCode":
+        return cls.codes_from_labels()[label]
+
+    @classmethod
+    def codes_from_labels(cls) -> dict[str, "VenueTypeCode"]:
+        return {
+            "Arts visuels, arts plastiques et galeries": cls.VISUAL_ARTS,
+            "Centre culturel": cls.CULTURAL_CENTRE,
+            "Cours et pratique artistiques": cls.ARTISTIC_COURSE,
+            "Culture scientifique": cls.SCIENTIFIC_CULTURE,
+            "Festival": cls.FESTIVAL,
+            "Jeux / Jeux vidéos": cls.GAMES,
+            "Librairie": cls.BOOKSTORE,
+            "Bibliothèque ou médiathèque": cls.LIBRARY,
+            "Musée": cls.MUSEUM,
+            "Musique - Disquaire": cls.RECORD_STORE,
+            "Musique - Magasin d’instruments": cls.MUSICAL_INSTRUMENT_STORE,
+            "Musique - Salle de concerts": cls.CONCERT_HALL,
+            "Offre numérique": cls.DIGITAL,
+            "Patrimoine et tourisme": cls.PATRIMONY_TOURISM,
+            "Cinéma - Salle de projections": cls.MOVIE,
+            "Spectacle vivant": cls.PERFORMING_ARTS,
+            "Magasin arts créatifs": cls.CREATIVE_ARTS_STORE,
+            "Autre": cls.OTHER,
+        }
+
 
 class Venue(PcObject, Model, HasThumbMixin, HasAddressMixin, ProvidableMixin, NeedsValidationMixin):
     __tablename__ = "venue"
@@ -246,6 +273,11 @@ class Venue(PcObject, Model, HasThumbMixin, HasAddressMixin, ProvidableMixin, Ne
         if field not in type(self).__table__.columns:
             raise ValueError(f"Unknown field {field} for model {type(self)}")
         return getattr(self, field) != value
+
+    def fill_venue_type_code_from_label(self) -> None:
+        if not self.venueType:
+            return
+        self.VenueTypeCode = VenueTypeCode.from_label(self.venueType.label)
 
 
 class VenueLabel(PcObject, Model):

@@ -65,6 +65,9 @@ def update_venue(venue: Venue, **attrs: typing.Any) -> Venue:
     validation.check_venue_edition(modifications, venue)
     venue.populate_from_dict(modifications)
 
+    # TODO: Remove this step when a new stable venue type system is setup
+    venue.fill_venue_type_code_from_label()
+
     repository.save(venue)
 
     indexing_modifications_fields = set(modifications.keys()) & set(VENUE_ALGOLIA_INDEXED_FIELDS)
@@ -97,6 +100,9 @@ def create_venue(venue_data: PostVenueBodyModel) -> Venue:
     data = venue_data.dict(by_alias=True)
     venue = Venue()
     venue.populate_from_dict(data)
+
+    # TODO: Remove this step when a new stable venue type system is setup
+    venue.fill_venue_type_code_from_label()
 
     repository.save(venue)
 
