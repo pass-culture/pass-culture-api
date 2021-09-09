@@ -20,7 +20,7 @@ REDIS_OFFER_IDS_TO_INDEX = "search:appsearch:offer-ids-to-index"
 REDIS_OFFER_IDS_IN_ERROR_TO_INDEX = "search:appsearch:offer-ids-in-error-to-index"
 REDIS_VENUE_IDS_TO_INDEX = "search:appsearch:venue-ids-to-index"
 
-ENGINE_NAME = "offers"
+ENGINE_NAME = "offers-gautier"
 ENGINE_LANGUAGE = "fr"
 # The App Search API accepts up to 100 documents per request
 # (https://www.elastic.co/guide/en/app-search/current/documents.html#documents-create).
