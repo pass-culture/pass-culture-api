@@ -83,51 +83,28 @@ CONSTRAINT_CHECK_HAS_SIRET_XOR_HAS_COMMENT_XOR_IS_VIRTUAL = """
 
 
 class VenueTypeCode(enum.Enum):
-    VISUAL_ARTS = "VISUAL_ARTS"
-    CULTURAL_CENTRE = "CULTURAL_CENTRE"
-    ARTISTIC_COURSE = "ARTISTIC_COURSE"
-    SCIENTIFIC_CULTURE = "SCIENTIFIC_CULTURE"
-    FESTIVAL = "FESTIVAL"
-    GAMES = "GAMES"
-    BOOKSTORE = "BOOKSTORE"
-    LIBRARY = "LIBRARY"
-    MUSEUM = "MUSEUM"
-    RECORD_STORE = "RECORD_STORE"
-    MUSICAL_INSTRUMENT_STORE = "MUSICAL_INSTRUMENT_STORE"
-    CONCERT_HALL = "CONCERT_HALL"
-    DIGITAL = "DIGITAL"
-    PATRIMONY_TOURISM = "PATRIMONY_TOURISM"
-    MOVIE = "MOVIE"
-    PERFORMING_ARTS = "PERFORMING_ARTS"
-    CREATIVE_ARTS_STORE = "CREATIVE_ARTS_STORE"
-    OTHER = "OTHER"
+    VISUAL_ARTS = "Arts visuels, arts plastiques et galeries"
+    CULTURAL_CENTRE = "Centre culturel"
+    ARTISTIC_COURSE = "Cours et pratique artistiques"
+    SCIENTIFIC_CULTURE = "Culture scientifique"
+    FESTIVAL = "Festival"
+    GAMES = "Jeux / Jeux vidéos"
+    BOOKSTORE = "Librairie"
+    LIBRARY = "Bibliothèque ou médiathèque"
+    MUSEUM = "Musée"
+    RECORD_STORE = "Musique - Disquaire"
+    MUSICAL_INSTRUMENT_STORE = "Musique - Magasin d’instruments"
+    CONCERT_HALL = "Musique - Salle de concerts"
+    DIGITAL = "Offre numérique"
+    PATRIMONY_TOURISM = "Patrimoine et tourisme"
+    MOVIE = "Cinéma - Salle de projections"
+    PERFORMING_ARTS = "Spectacle vivant"
+    CREATIVE_ARTS_STORE = "Magasin arts créatifs"
+    OTHER = "Autre"
 
     @classmethod
     def from_label(cls, label: str) -> "VenueTypeCode":
-        return cls.codes_from_labels()[label]
-
-    @classmethod
-    def codes_from_labels(cls) -> dict[str, "VenueTypeCode"]:
-        return {
-            "Arts visuels, arts plastiques et galeries": cls.VISUAL_ARTS,
-            "Centre culturel": cls.CULTURAL_CENTRE,
-            "Cours et pratique artistiques": cls.ARTISTIC_COURSE,
-            "Culture scientifique": cls.SCIENTIFIC_CULTURE,
-            "Festival": cls.FESTIVAL,
-            "Jeux / Jeux vidéos": cls.GAMES,
-            "Librairie": cls.BOOKSTORE,
-            "Bibliothèque ou médiathèque": cls.LIBRARY,
-            "Musée": cls.MUSEUM,
-            "Musique - Disquaire": cls.RECORD_STORE,
-            "Musique - Magasin d’instruments": cls.MUSICAL_INSTRUMENT_STORE,
-            "Musique - Salle de concerts": cls.CONCERT_HALL,
-            "Offre numérique": cls.DIGITAL,
-            "Patrimoine et tourisme": cls.PATRIMONY_TOURISM,
-            "Cinéma - Salle de projections": cls.MOVIE,
-            "Spectacle vivant": cls.PERFORMING_ARTS,
-            "Magasin arts créatifs": cls.CREATIVE_ARTS_STORE,
-            "Autre": cls.OTHER,
-        }
+        return {item.value: item for item in cls}[label]
 
 
 class Venue(PcObject, Model, HasThumbMixin, HasAddressMixin, ProvidableMixin, NeedsValidationMixin):
