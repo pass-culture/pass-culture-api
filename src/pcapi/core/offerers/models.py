@@ -254,7 +254,7 @@ class Venue(PcObject, Model, HasThumbMixin, HasAddressMixin, ProvidableMixin, Ne
     def fill_venue_type_code_from_label(self) -> None:
         if not self.venueType:
             return
-        self.VenueTypeCode = VenueTypeCode.from_label(self.venueType.label)
+        self.venueTypeCode = VenueTypeCode.from_label(self.venueType.label)
 
 
 class VenueLabel(PcObject, Model):
