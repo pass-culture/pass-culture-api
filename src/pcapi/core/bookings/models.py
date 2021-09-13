@@ -170,6 +170,7 @@ class Booking(PcObject, Model):
         self.cancellationReason = None
         self.status = BookingStatus.USED
         self.isUsed = True
+        self.dateUsed = datetime.utcnow()
 
     def mark_as_confirmed(self) -> None:
         self.status = BookingStatus.CONFIRMED
