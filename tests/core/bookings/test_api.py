@@ -577,6 +577,7 @@ class MarkAsUsedTest:
         assert booking.isUsed
         assert not booking.isCancelled
         assert booking.status is BookingStatus.USED
+        assert booking.dateUsed is not None
         assert not booking.cancellationReason
 
     def test_mark_as_used_when_stock_starts_soon(self):
