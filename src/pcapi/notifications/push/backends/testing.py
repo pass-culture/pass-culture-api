@@ -9,6 +9,9 @@ class TestingBackend(LoggerBackend):
         super().update_user_attributes(user_id, attribute_values)
         testing.requests.append({"user_id": user_id, "attribute_values": attribute_values})
 
+    def update_user_attributes_with_legacy_internal_task(self, user_id: int, attribute_values: dict) -> None:
+        self.update_user_attributes(user_id, attribute_values)
+
     def update_users_attributes(self, users_data: list[UserUpdateData]) -> None:
         super().update_users_attributes(users_data)
         testing.requests.append(users_data)

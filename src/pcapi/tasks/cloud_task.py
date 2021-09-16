@@ -1,3 +1,5 @@
+from dataclasses import InitVar
+from dataclasses import asdict
 from dataclasses import dataclass
 import json
 from typing import Optional
@@ -24,13 +26,18 @@ class CloudTaskHttpRequest:
     url: str
     headers: Optional[dict] = None
     body: Optional[bytes] = None
+    json: InitVar[bytes] = None
+
+    def __post_init__(self, json_param):
+        if json is not None:
+            self.body = json.dumps(json_param).encode()
 
 
 def enqueue_task(queue: str, http_request: CloudTaskHttpRequest):
     client = get_client()
     parent = client.queue_path(settings.GCP_PROJECT, settings.GCP_REGION_CLOUD_TASK, queue)
 
-    task_request = {"http_request": http_request}
+    task_request = {"http_request": asdict(http_request)}
 
     response = client.create_task(request={"parent": parent, "task": task_request})
 
@@ -43,7 +50,7 @@ def enqueue_internal_task(queue, url, payload):
         http_method=tasks_v2.HttpMethod.POST,
         url=url,
         headers={"Content-type": "application/json", AUTHORIZATION_HEADER_KEY: AUTHORIZATION_HEADER_VALUE},
-        body=json.dumps(payload).encode(),
+        json=payload,
     )
 
     return enqueue_task(queue, http_request)

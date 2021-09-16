@@ -9,6 +9,11 @@ def update_user_attributes(user_id: int, attribute_values: dict) -> None:
     backend().update_user_attributes(user_id, attribute_values)
 
 
+def update_user_attributes_with_legacy_internal_task(user_id: int, attribute_values: dict) -> None:
+    backend = import_string(settings.PUSH_NOTIFICATION_BACKEND)
+    backend().update_user_attributes_with_legacy_internal_task(user_id, attribute_values)
+
+
 def update_users_attributes(users_data: list[UserUpdateData]) -> None:
     backend = import_string(settings.PUSH_NOTIFICATION_BACKEND)
     backend().update_users_attributes(users_data)

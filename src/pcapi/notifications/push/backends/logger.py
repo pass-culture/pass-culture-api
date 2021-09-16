@@ -15,6 +15,9 @@ class LoggerBackend:
             attribute_values,
         )
 
+    def update_user_attributes_with_legacy_internal_task(self, user_id: int, attribute_values: dict) -> None:
+        self.update_user_attributes(user_id, attribute_values)
+
     def update_users_attributes(self, users_data: list[UserUpdateData]) -> None:
         logger.info(
             "A request to update users attributes would be sent for %d users: %s",

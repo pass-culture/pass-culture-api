@@ -2,12 +2,18 @@ from dataclasses import dataclass
 from enum import Enum
 import logging
 
+from google.cloud import tasks_v2
+
 from pcapi import settings
 from pcapi.notifications.push.transactional_notifications import TransactionalNotificationData
+from pcapi.tasks.cloud_task import CloudTaskHttpRequest
+from pcapi.tasks.cloud_task import enqueue_task
 from pcapi.utils import requests
 
 
 logger = logging.getLogger(__name__)
+
+BATCH_CUSTOM_DATA_QUEUE_NAME = settings.GCP_BATCH_CUSTOM_DATA_QUEUE_NAME
 
 
 @dataclass
@@ -27,6 +33,20 @@ class BatchBackend:
         self.headers = {"Content-Type": "application/json", "X-Authorization": settings.BATCH_SECRET_API_KEY}
 
     def update_user_attributes(self, user_id: int, attribute_values: dict) -> None:
+        def make_post_request(api: BatchAPI) -> None:
+            http_request = CloudTaskHttpRequest(
+                http_method=tasks_v2.HttpMethod.POST,
+                headers=self.headers,
+                url=f"{settings.BATCH_API_URL}/1.0/{api.value}/data/users/{user_id}",
+                json={"overwrite": False, "values": attribute_values},
+            )
+
+            enqueue_task(BATCH_CUSTOM_DATA_QUEUE_NAME, http_request)
+
+        make_post_request(BatchAPI.ANDROID)
+        make_post_request(BatchAPI.IOS)
+
+    def update_user_attributes_with_legacy_internal_task(self, user_id: int, attribute_values: dict) -> None:
         def make_post_request(api: BatchAPI) -> None:
             try:
                 response = requests.post(
