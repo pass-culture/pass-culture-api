@@ -54,7 +54,7 @@ def test_serialize():
         "id": offer.id,
         "prices": [1000],
         "ranking_weight": 2,
-        "search_group": subcategories.SearchGroupChoices.LIVRE.value,
+        "search_group_name": subcategories.SearchGroups.LIVRE.name,
         "stocks_date_created": [stock.dateCreated],
         "tags": [],
         "times": [],

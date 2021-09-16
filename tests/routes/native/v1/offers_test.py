@@ -520,7 +520,7 @@ class SubcategoriesTest:
             == [
                 "id",
                 "appLabel",
-                "searchGroup",
+                "searchGroupName",
                 "isEvent",
                 "canExpire",
                 "canBeDuo",

@@ -45,7 +45,7 @@ SCHEMA = {
     # "id": "number",  must not be provided when creating the schema.
     "prices": "number",
     "ranking_weight": "number",
-    "search_group": "text",
+    "search_group_name": "text",
     "stocks_date_created": "date",
     "tags": "text",
     "times": "number",
@@ -58,7 +58,50 @@ SCHEMA = {
     "venue_public_name": "text",
 }
 
-SYNONYM_SET = (
+OFFERS_FIELD_WEIGHTS = {
+    "category": 0,
+    "label": 0,
+    "search_group_name": 0,
+    "subcategory_label": 0,
+    "tags": 0,
+    "thumb_url": 0,
+    "venue_department_code": 0,
+    "artist": 1,
+    "group": 1,
+    "description": 2,
+    "offerer_name": 3,
+    "venue_name": 3,
+    "venue_public_name": 3,
+    "name": 5,
+}
+
+
+def check_offers_field_weights():
+    expected = {field for field, type_ in OFFERS_SCHEMA.items() if type_ == "text"}
+    diff = expected.difference(set(OFFERS_FIELD_WEIGHTS))
+    if diff:
+        raise ValueError(f"Missing or additional fields in OFFERS_FIELD_WEIGHTS: {diff}")
+
+
+check_offers_field_weights()
+
+OFFERS_FIELD_BOOSTS = {
+    "ranking_weight": {
+        "type": "functional",
+        "function": "linear",
+        "operation": "multiply",
+        "factor": 1,
+    }
+}
+
+
+def check_offers_field_boosts():
+    unknown = set(OFFERS_FIELD_BOOSTS) - set(OFFERS_SCHEMA)
+    if unknown:
+        raise ValueError(f"Unknown fields in OFFERS_FIELD_BOOSTS: {unknown}")
+
+
+OFFERS_SYNONYM_SET = (
     {"anime digital network", "ADN"},
     {"deezer", "spotify"},
     {"shingeki no kyojin", "snk", "l'attaque des titans"},
@@ -238,7 +281,7 @@ class AppSearchBackend(base.SearchBackend):
             "id": offer.id,
             "prices": [int(stock.price * 100) for stock in stocks],
             "ranking_weight": offer.rankingWeight or 0,
-            "search_group": offer.subcategory.search_group,
+            "search_group_name": offer.subcategory.search_group_name,
             "stocks_date_created": [stock.dateCreated for stock in stocks],
             "tags": [criterion.name for criterion in offer.criteria],
             "times": times,
