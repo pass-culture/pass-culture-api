@@ -20,7 +20,10 @@ class UpdateSendinblueContactRequest(BaseModel):
     emailBlacklisted: bool
 
 
+# TODO(viconnex): remove this endpoint when the tasks retargetting the api through this endpoint has been leased (27/09/2021)
 @task(SENDINBLUE_CONTACTS_QUEUE_NAME, "/sendinblue/update_contact_attributes")
 def update_contact_attributes_task(payload: UpdateSendinblueContactRequest) -> None:
-    if not sendinblue.make_update_request(payload):
+    if not sendinblue.make_update_request(
+        payload.email, payload.attributes, payload.contact_list_ids, payload.emailBlacklisted
+    ):
         raise ApiErrors(status_code=400)

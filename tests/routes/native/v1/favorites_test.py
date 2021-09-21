@@ -308,7 +308,7 @@ class PostTest:
             assert len(push_testing.requests) == 1
             assert len(users_testing.sendinblue_requests) == 1
             sendinblue_data = users_testing.sendinblue_requests[0]
-            assert sendinblue_data["attributes"]["LAST_FAVORITE_CREATION_DATE"] is not None
+            assert sendinblue_data["body"]["attributes"]["LAST_FAVORITE_CREATION_DATE"] is not None
 
         def when_user_creates_a_favorite_twice(self, app):
             # Given
@@ -331,7 +331,7 @@ class PostTest:
             assert len(push_testing.requests) == 1
             assert len(users_testing.sendinblue_requests) == 1
             sendinblue_data = users_testing.sendinblue_requests[0]
-            assert sendinblue_data["attributes"]["LAST_FAVORITE_CREATION_DATE"] is not None
+            assert sendinblue_data["body"]["attributes"]["LAST_FAVORITE_CREATION_DATE"] is not None
 
     class Returns400Test:
         @override_settings(MAX_FAVORITES=1)

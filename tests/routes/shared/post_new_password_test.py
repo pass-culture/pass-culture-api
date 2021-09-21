@@ -48,7 +48,7 @@ def test_change_password_validates_email(app):
     assert len(push_testing.requests) == 1
     assert len(users_testing.sendinblue_requests) == 1
     sendinblue_data = users_testing.sendinblue_requests[0]
-    assert sendinblue_data["attributes"]["IS_EMAIL_VALIDATED"]
+    assert sendinblue_data["body"]["attributes"]["IS_EMAIL_VALIDATED"]
 
 
 @pytest.mark.usefixtures("db_session")

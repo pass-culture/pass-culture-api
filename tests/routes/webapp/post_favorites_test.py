@@ -107,7 +107,7 @@ class Returns201Test:
         assert len(push_testing.requests) == 1
         assert len(users_testing.sendinblue_requests) == 1
         sendinblue_data = users_testing.sendinblue_requests[0]
-        assert sendinblue_data["attributes"]["LAST_FAVORITE_CREATION_DATE"] is not None
+        assert sendinblue_data["body"]["attributes"]["LAST_FAVORITE_CREATION_DATE"] is not None
 
     @pytest.mark.usefixtures("db_session")
     def when_mediation_id_doest_not_exist(self, app):
@@ -132,4 +132,4 @@ class Returns201Test:
         assert len(push_testing.requests) == 1
         assert len(users_testing.sendinblue_requests) == 1
         sendinblue_data = users_testing.sendinblue_requests[0]
-        assert sendinblue_data["attributes"]["LAST_FAVORITE_CREATION_DATE"] is not None
+        assert sendinblue_data["body"]["attributes"]["LAST_FAVORITE_CREATION_DATE"] is not None

@@ -1,5 +1,4 @@
 from copy import deepcopy
-from datetime import datetime
 from unittest.mock import call
 from unittest.mock import patch
 
@@ -7,10 +6,12 @@ import pytest
 from sib_api_v3_sdk.models.request_contact_import import RequestContactImport
 
 from pcapi import settings
+from pcapi.core.testing import override_settings
 from pcapi.core.users.external.sendinblue import SendinblueUserUpdateData
 from pcapi.core.users.external.sendinblue import build_file_body
 from pcapi.core.users.external.sendinblue import format_user_attributes
 from pcapi.core.users.external.sendinblue import import_contacts_in_sendinblue
+from pcapi.core.users.external.sendinblue import update_contact_attributes
 
 from . import common_user_attributes
 
@@ -26,8 +27,8 @@ class FormatUserAttributesTest:
             "BOOKED_OFFER_CATEGORIES": "CINEMA,LIVRE",
             "BOOKED_OFFER_SUBCATEGORIES": "ABO_LIVRE_NUMERIQUE,CARTE_CINE_ILLIMITE,CINE_PLEIN_AIR",
             "BOOKING_COUNT": 4,
-            "DATE_CREATED": datetime(2021, 2, 6),
-            "DATE_OF_BIRTH": datetime(2003, 5, 6),
+            "DATE_CREATED": "06-02-2021",
+            "DATE_OF_BIRTH": "06-05-2003",
             "DEPARTMENT_CODE": "12",
             "DEPOSIT_ACTIVATION_DATE": None,
             "DEPOSIT_EXPIRATION_DATE": None,
@@ -39,14 +40,34 @@ class FormatUserAttributesTest:
             "IS_ELIGIBLE": True,
             "IS_EMAIL_VALIDATED": True,
             "IS_PRO": False,
-            "LAST_BOOKING_DATE": datetime(2021, 5, 6),
+            "LAST_BOOKING_DATE": "06-05-2021",
             "LAST_FAVORITE_CREATION_DATE": None,
             "LAST_VISIT_DATE": None,
             "LASTNAME": "Last name",
             "MARKETING_EMAIL_SUBSCRIPTION": True,
             "POSTAL_CODE": None,
-            "PRODUCT_BRUT_X_USE_DATE": datetime(2021, 5, 6),
+            "PRODUCT_BRUT_X_USE_DATE": "06-05-2021",
             "USER_ID": 1,
+        }
+
+
+class UpdateUserAttributesTest:
+    @override_settings(IS_RUNNING_TESTS=False, IS_DEV=False, SENDINBLUE_API_KEY="cle-de-bras")
+    def test_update(self, cloud_task_client):
+        update_contact_attributes("coucou@example.com", common_user_attributes)
+
+        cloud_task_client.create_task.assert_called_once()
+        assert cloud_task_client.create_task.call_args.kwargs["request"]["task"] == {
+            "http_request": {
+                "http_method": 1,
+                "url": "https://api.sendinblue.com/v3/contacts",
+                "headers": {
+                    "Accept": "application/json",
+                    "api-key": "cle-de-bras",
+                    "Content-Type": "application/json",
+                },
+                "body": b'{"email": "coucou@example.com", "attributes": {"BOOKED_OFFER_CATEGORIES": "CINEMA,LIVRE", "BOOKED_OFFER_SUBCATEGORIES": "ABO_LIVRE_NUMERIQUE,CARTE_CINE_ILLIMITE,CINE_PLEIN_AIR", "BOOKING_COUNT": 4, "CREDIT": 480.0, "DATE_CREATED": "06-02-2021", "DATE_OF_BIRTH": "06-05-2003", "DEPARTMENT_CODE": "12", "DEPOSIT_ACTIVATION_DATE": null, "DEPOSIT_EXPIRATION_DATE": null, "FIRSTNAME": "First name", "HAS_COMPLETED_ID_CHECK": true, "INITIAL_CREDIT": 500.0, "IS_BENEFICIARY": true, "IS_ELIGIBLE": true, "IS_EMAIL_VALIDATED": true, "IS_PRO": false, "LAST_BOOKING_DATE": "06-05-2021", "LAST_FAVORITE_CREATION_DATE": null, "LAST_VISIT_DATE": null, "LASTNAME": "Last name", "MARKETING_EMAIL_SUBSCRIPTION": true, "POSTAL_CODE": null, "PRODUCT_BRUT_X_USE_DATE": "06-05-2021", "USER_ID": 1}, "emailBlacklisted": false, "listIds": [4], "updateEnabled": true}',
+            }
         }
 
 
@@ -74,9 +95,9 @@ class BulkImportUsersDataTest:
         ]
 
         self.expected_header = "BOOKED_OFFER_CATEGORIES;BOOKED_OFFER_SUBCATEGORIES;BOOKING_COUNT;CREDIT;DATE_CREATED;DATE_OF_BIRTH;DEPARTMENT_CODE;DEPOSIT_ACTIVATION_DATE;DEPOSIT_EXPIRATION_DATE;FIRSTNAME;HAS_COMPLETED_ID_CHECK;INITIAL_CREDIT;IS_BENEFICIARY;IS_ELIGIBLE;IS_EMAIL_VALIDATED;IS_PRO;LASTNAME;LAST_BOOKING_DATE;LAST_FAVORITE_CREATION_DATE;LAST_VISIT_DATE;MARKETING_EMAIL_SUBSCRIPTION;POSTAL_CODE;PRODUCT_BRUT_X_USE_DATE;USER_ID;EMAIL"
-        self.eren_expected_file_body = "CINEMA,LIVRE;ABO_LIVRE_NUMERIQUE,CARTE_CINE_ILLIMITE,CINE_PLEIN_AIR;4;480.00;06-02-2021;06-05-2003;12;;;First name;Yes;500;Yes;Yes;Yes;No;Last name;06-05-2021;;;Yes;;06-05-2021;1;eren.yeager@shinganshina.paradis"
-        self.mikasa_expected_file_body = "CINEMA,LIVRE;ABO_LIVRE_NUMERIQUE,CARTE_CINE_ILLIMITE,CINE_PLEIN_AIR;4;480.00;06-02-2021;06-05-2003;12;;;First name;Yes;500;Yes;Yes;Yes;Yes;Last name;06-05-2021;;;Yes;;06-05-2021;2;mikasa.ackerman@shinganshina.paradis"
-        self.armin_expected_file_body = "CINEMA,LIVRE;ABO_LIVRE_NUMERIQUE,CARTE_CINE_ILLIMITE,CINE_PLEIN_AIR;4;480.00;06-02-2021;06-05-2003;12;;;First name;Yes;500;Yes;Yes;Yes;No;Last name;06-05-2021;;;Yes;;06-05-2021;3;armin.arlert@shinganshina.paradis"
+        self.eren_expected_file_body = "CINEMA,LIVRE;ABO_LIVRE_NUMERIQUE,CARTE_CINE_ILLIMITE,CINE_PLEIN_AIR;4;480.0;06-02-2021;06-05-2003;12;;;First name;Yes;500.0;Yes;Yes;Yes;No;Last name;06-05-2021;;;Yes;;06-05-2021;1;eren.yeager@shinganshina.paradis"
+        self.mikasa_expected_file_body = "CINEMA,LIVRE;ABO_LIVRE_NUMERIQUE,CARTE_CINE_ILLIMITE,CINE_PLEIN_AIR;4;480.0;06-02-2021;06-05-2003;12;;;First name;Yes;500.0;Yes;Yes;Yes;Yes;Last name;06-05-2021;;;Yes;;06-05-2021;2;mikasa.ackerman@shinganshina.paradis"
+        self.armin_expected_file_body = "CINEMA,LIVRE;ABO_LIVRE_NUMERIQUE,CARTE_CINE_ILLIMITE,CINE_PLEIN_AIR;4;480.0;06-02-2021;06-05-2003;12;;;First name;Yes;500.0;Yes;Yes;Yes;No;Last name;06-05-2021;;;Yes;;06-05-2021;3;armin.arlert@shinganshina.paradis"
 
     def test_build_file_body(self):
         expected = (

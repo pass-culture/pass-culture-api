@@ -1,4 +1,3 @@
-from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
@@ -103,21 +102,21 @@ def test_format_sendinblue_user():
         "BOOKED_OFFER_CATEGORIES": "FILM",
         "BOOKED_OFFER_SUBCATEGORIES": "SUPPORT_PHYSIQUE_FILM",
         "BOOKING_COUNT": 1,
-        "CREDIT": Decimal("490.00"),
-        "DATE_CREATED": user.dateCreated,
-        "DATE_OF_BIRTH": user.dateOfBirth,
+        "CREDIT": 490,
+        "DATE_CREATED": user.dateCreated.strftime("%d-%m-%Y"),
+        "DATE_OF_BIRTH": user.dateOfBirth.strftime("%d-%m-%Y"),
         "DEPARTMENT_CODE": "75",
-        "DEPOSIT_ACTIVATION_DATE": user.deposit_activation_date,
-        "DEPOSIT_EXPIRATION_DATE": user.deposit_expiration_date,
+        "DEPOSIT_ACTIVATION_DATE": user.deposit_activation_date.strftime("%d-%m-%Y"),
+        "DEPOSIT_EXPIRATION_DATE": user.deposit_expiration_date.strftime("%d-%m-%Y"),
         "FIRSTNAME": "Jeanne",
         "HAS_COMPLETED_ID_CHECK": None,
-        "INITIAL_CREDIT": Decimal("500"),
+        "INITIAL_CREDIT": 500,
         "IS_BENEFICIARY": True,
         "IS_ELIGIBLE": user.is_eligible,
         "IS_EMAIL_VALIDATED": user.isEmailValidated,
         "IS_PRO": False,
         "LASTNAME": "Doux",
-        "LAST_BOOKING_DATE": booking.dateCreated,
+        "LAST_BOOKING_DATE": booking.dateCreated.strftime("%d-%m-%Y"),
         "LAST_FAVORITE_CREATION_DATE": None,
         "LAST_VISIT_DATE": None,
         "MARKETING_EMAIL_SUBSCRIPTION": True,

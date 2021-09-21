@@ -293,7 +293,7 @@ class AccountTest:
         assert len(users_testing.sendinblue_requests) == 1
 
         sendinblue_data = users_testing.sendinblue_requests[0]
-        assert sendinblue_data["attributes"]["HAS_COMPLETED_ID_CHECK"]
+        assert sendinblue_data["body"]["attributes"]["HAS_COMPLETED_ID_CHECK"]
 
         me_response = test_client.get("/native/v1/me")
         assert me_response.json["hasCompletedIdCheck"]

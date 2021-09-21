@@ -6,6 +6,7 @@ from typing import List
 from typing import Optional
 from typing import Union
 
+from google.cloud import tasks_v2
 import sib_api_v3_sdk
 from sib_api_v3_sdk.api.contacts_api import ContactsApi
 from sib_api_v3_sdk.rest import ApiException as SendinblueApiException
@@ -13,11 +14,15 @@ from sib_api_v3_sdk.rest import ApiException as SendinblueApiException
 from pcapi import settings
 from pcapi.core.users import testing
 from pcapi.core.users.external import UserAttributes
-from pcapi.tasks.sendinblue_tasks import UpdateSendinblueContactRequest
-from pcapi.tasks.sendinblue_tasks import update_contact_attributes_task
+from pcapi.tasks.cloud_task import CloudTaskHttpRequest
+from pcapi.tasks.cloud_task import enqueue_task
+from pcapi.utils import requests
 
 
 logger = logging.getLogger(__name__)
+
+SENDINBLUE_CONTACTS_QUEUE_NAME = settings.GCP_SENDINBLUE_CONTACTS_QUEUE_NAME
+CONTACT_API_URL = "https://api.sendinblue.com/v3/contacts"
 
 
 @dataclass
@@ -57,6 +62,51 @@ class SendinblueAttributes(Enum):
         return list(map(lambda c: c.value, cls))
 
 
+def format_list(raw_list: List[str]) -> str:
+    return ",".join(raw_list)
+
+
+def format_date(date: Optional[datetime]) -> str:
+    return date.strftime("%d-%m-%Y") if date else None
+
+
+def format_user_attributes(user_attributes: UserAttributes) -> dict:
+    return {
+        SendinblueAttributes.BOOKED_OFFER_CATEGORIES.value: format_list(user_attributes.booking_categories),
+        SendinblueAttributes.BOOKED_OFFER_SUBCATEGORIES.value: format_list(user_attributes.booking_subcategories),
+        SendinblueAttributes.BOOKING_COUNT.value: user_attributes.booking_count,
+        SendinblueAttributes.CREDIT.value: float(user_attributes.domains_credit.all.remaining)
+        if user_attributes.domains_credit
+        else None,
+        SendinblueAttributes.DATE_CREATED.value: format_date(user_attributes.date_created),
+        SendinblueAttributes.DATE_OF_BIRTH.value: format_date(user_attributes.date_of_birth),
+        SendinblueAttributes.DEPARTMENT_CODE.value: user_attributes.departement_code,
+        SendinblueAttributes.DEPOSIT_ACTIVATION_DATE.value: format_date(user_attributes.deposit_activation_date),
+        SendinblueAttributes.DEPOSIT_EXPIRATION_DATE.value: format_date(user_attributes.deposit_expiration_date),
+        SendinblueAttributes.FIRSTNAME.value: user_attributes.first_name,
+        SendinblueAttributes.HAS_COMPLETED_ID_CHECK.value: user_attributes.has_completed_id_check,
+        SendinblueAttributes.INITIAL_CREDIT.value: float(user_attributes.domains_credit.all.initial)
+        if user_attributes.domains_credit
+        else None,
+        SendinblueAttributes.IS_BENEFICIARY.value: user_attributes.is_beneficiary,
+        SendinblueAttributes.IS_ELIGIBLE.value: user_attributes.is_eligible,
+        SendinblueAttributes.IS_EMAIL_VALIDATED.value: user_attributes.is_email_validated,
+        SendinblueAttributes.IS_PRO.value: user_attributes.is_pro,
+        SendinblueAttributes.LAST_BOOKING_DATE.value: format_date(user_attributes.last_booking_date),
+        SendinblueAttributes.LAST_FAVORITE_CREATION_DATE.value: format_date(
+            user_attributes.last_favorite_creation_date
+        ),
+        SendinblueAttributes.LAST_VISIT_DATE.value: format_date(user_attributes.last_visit_date),
+        SendinblueAttributes.LASTNAME.value: user_attributes.last_name,
+        SendinblueAttributes.MARKETING_EMAIL_SUBSCRIPTION.value: user_attributes.marketing_email_subscription,
+        SendinblueAttributes.POSTAL_CODE.value: user_attributes.postal_code,
+        SendinblueAttributes.PRODUCT_BRUT_X_USE_DATE.value: format_date(
+            user_attributes.products_use_date.get("product_brut_x_use")
+        ),
+        SendinblueAttributes.USER_ID.value: user_attributes.user_id,
+    }
+
+
 def update_contact_attributes(user_email: str, user_attributes: UserAttributes) -> None:
     formatted_attributes = format_user_attributes(user_attributes)
 
@@ -66,106 +116,72 @@ def update_contact_attributes(user_email: str, user_attributes: UserAttributes) 
         else [settings.SENDINBLUE_YOUNG_CONTACT_LIST_ID]
     )
 
-    update_contact_attributes_task.delay(
-        UpdateSendinblueContactRequest(
-            email=user_email,
-            attributes=formatted_attributes,
-            contact_list_ids=constact_list_ids,
-            emailBlacklisted=not user_attributes.marketing_email_subscription,
-        )
-    )
-
-
-def format_list(raw_list: List[str]) -> str:
-    return ",".join(raw_list)
-
-
-def format_user_attributes(user_attributes: UserAttributes) -> dict:
-    return {
-        SendinblueAttributes.BOOKED_OFFER_CATEGORIES.value: format_list(user_attributes.booking_categories),
-        SendinblueAttributes.BOOKED_OFFER_SUBCATEGORIES.value: format_list(user_attributes.booking_subcategories),
-        SendinblueAttributes.BOOKING_COUNT.value: user_attributes.booking_count,
-        SendinblueAttributes.CREDIT.value: user_attributes.domains_credit.all.remaining
-        if user_attributes.domains_credit
-        else None,
-        SendinblueAttributes.DATE_CREATED.value: user_attributes.date_created,
-        SendinblueAttributes.DATE_OF_BIRTH.value: user_attributes.date_of_birth,
-        SendinblueAttributes.DEPARTMENT_CODE.value: user_attributes.departement_code,
-        SendinblueAttributes.DEPOSIT_ACTIVATION_DATE.value: user_attributes.deposit_activation_date,
-        SendinblueAttributes.DEPOSIT_EXPIRATION_DATE.value: user_attributes.deposit_expiration_date,
-        SendinblueAttributes.FIRSTNAME.value: user_attributes.first_name,
-        SendinblueAttributes.HAS_COMPLETED_ID_CHECK.value: user_attributes.has_completed_id_check,
-        SendinblueAttributes.INITIAL_CREDIT.value: user_attributes.domains_credit.all.initial
-        if user_attributes.domains_credit
-        else None,
-        SendinblueAttributes.IS_BENEFICIARY.value: user_attributes.is_beneficiary,
-        SendinblueAttributes.IS_ELIGIBLE.value: user_attributes.is_eligible,
-        SendinblueAttributes.IS_EMAIL_VALIDATED.value: user_attributes.is_email_validated,
-        SendinblueAttributes.IS_PRO.value: user_attributes.is_pro,
-        SendinblueAttributes.LAST_BOOKING_DATE.value: user_attributes.last_booking_date,
-        SendinblueAttributes.LAST_FAVORITE_CREATION_DATE.value: user_attributes.last_favorite_creation_date,
-        SendinblueAttributes.LAST_VISIT_DATE.value: user_attributes.last_visit_date,
-        SendinblueAttributes.LASTNAME.value: user_attributes.last_name,
-        SendinblueAttributes.MARKETING_EMAIL_SUBSCRIPTION.value: user_attributes.marketing_email_subscription,
-        SendinblueAttributes.POSTAL_CODE.value: user_attributes.postal_code,
-        SendinblueAttributes.PRODUCT_BRUT_X_USE_DATE.value: user_attributes.products_use_date.get("product_brut_x_use"),
-        SendinblueAttributes.USER_ID.value: user_attributes.user_id,
+    headers = {"Accept": "application/json", "api-key": settings.SENDINBLUE_API_KEY, "Content-Type": "application/json"}
+    body = {
+        "email": user_email,
+        "attributes": formatted_attributes,
+        "emailBlacklisted": not user_attributes.marketing_email_subscription,
+        "listIds": constact_list_ids,
+        "updateEnabled": True,
     }
 
-
-def make_update_request(payload: UpdateSendinblueContactRequest) -> bool:
     if settings.IS_RUNNING_TESTS:
-        testing.sendinblue_requests.append(
-            {"email": payload.email, "attributes": payload.attributes, "emailBlacklisted": payload.emailBlacklisted}
-        )
-        return True
+        testing.sendinblue_requests.append({"body": body, "headers": headers})
+        return
 
     if settings.IS_DEV:
-        logger.info(
-            "A request to Sendinblue Contact API would be sent for user %s with attributes %s emailBlacklisted: %s",
-            payload.email,
-            payload.attributes,
-            payload.emailBlacklisted,
-        )
-        return True
+        logger.info("A request to Sendinblue Contact API would be sent", extra={"body": body, "headers": headers})
+        return
 
-    configuration = sib_api_v3_sdk.Configuration()
-    configuration.api_key["api-key"] = settings.SENDINBLUE_API_KEY
-    api_instance = sib_api_v3_sdk.ContactsApi(sib_api_v3_sdk.ApiClient(configuration))
-    create_contact = sib_api_v3_sdk.CreateContact(
-        email=payload.email,
-        attributes=payload.attributes,
-        list_ids=payload.contact_list_ids,
-        update_enabled=True,
-        email_blacklisted=payload.emailBlacklisted,
+    http_request = CloudTaskHttpRequest(
+        http_method=tasks_v2.HttpMethod.POST,
+        headers=headers,
+        url=CONTACT_API_URL,
+        json=body,
     )
 
-    try:
-        api_instance.create_contact(create_contact)
-        return True
+    enqueue_task(SENDINBLUE_CONTACTS_QUEUE_NAME, http_request)
 
-    except SendinblueApiException as exception:
-        if exception.status == 524:
-            logger.warning(
-                "Timeout when calling ContactsApi->create_contact: %s",
-                exception,
-                extra={
-                    "email": payload.email,
-                    "attributes": payload.attributes,
-                    "emailBlacklisted": payload.emailBlacklisted,
-                },
-            )
-        else:
-            logger.exception(
-                "Exception when calling ContactsApi->create_contact: %s",
-                exception,
-                extra={
-                    "email": payload.email,
-                    "attributes": payload.attributes,
-                    "emailBlacklisted": payload.emailBlacklisted,
-                },
-            )
+
+# TODO(viconnex): remove this method when the cloud tasks retargetting the api has been leased (27/09/2021)
+def make_update_request(email: str, attributes: dict, contact_list_ids: list[int], emailBlacklisted: bool) -> bool:
+    headers = {"Accept": "application/json", "api-key": settings.SENDINBLUE_API_KEY, "Content-Type": "application/json"}
+    body = {
+        "email": email,
+        "attributes": attributes,
+        "emailBlacklisted": emailBlacklisted,
+        "listIds": contact_list_ids,
+        "updateEnabled": True,
+    }
+
+    try:
+        response = requests.post(CONTACT_API_URL, headers=headers, json=body)
+    except Exception as exception:  # pylint: disable=broad-except
+        logger.exception(
+            "Exception when calling ContactsApi->create_contact: %s",
+            exception,
+            extra={
+                "email": email,
+                "attributes": attributes,
+                "emailBlacklisted": emailBlacklisted,
+            },
+        )
         return False
+
+    if not response.ok:
+        logger.exception(
+            "Got %s status code when calling ContactsApi->create_contact with content: %s",
+            response.status_code,
+            response.content,
+            extra={
+                "email": email,
+                "attributes": attributes,
+                "emailBlacklisted": emailBlacklisted,
+            },
+        )
+        return False
+
+    return True
 
 
 def send_import_contacts_request(
