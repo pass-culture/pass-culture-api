@@ -41,6 +41,7 @@ class BookingCancellationReasons(enum.Enum):
     EXPIRED = "EXPIRED"
     FRAUD = "FRAUD"
     REFUSED_BY_INSTITUTE = "REFUSED_BY_INSTITUTE"
+    REFUND_CANCELLED = "REFUND_CANCELLED"
 
 
 class BookingStatus(enum.Enum):

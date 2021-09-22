@@ -563,6 +563,21 @@ class CancelForFraudTest:
 
 
 @pytest.mark.usefixtures("db_session")
+class CancelForRefundTest:
+    def test_cancel(self):
+        admin = users_factories.AdminFactory()
+        user = users_factories.BeneficiaryGrant18Factory()
+        balance = user.wallet_balance
+
+        stock = offers_factories.StockFactory()
+        booking = api.book_offer(user, stock.id, 1)
+        assert balance > user.wallet_balance
+        api.cancel_booking_for_refund(booking, admin)
+
+        assert balance == user.wallet_balance
+
+
+@pytest.mark.usefixtures("db_session")
 class MarkAsUsedTest:
     def test_mark_as_used(self):
         booking = factories.IndividualBookingFactory()

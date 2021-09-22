@@ -251,6 +251,14 @@ def cancel_booking_on_user_requested_account_suspension(booking: Booking) -> Non
         )
 
 
+def cancel_booking_for_refund(booking: Booking, admin: User):
+    validation.check_booking_can_be_cancelled(booking)
+    _cancel_booking(booking, BookingCancellationReasons.REFUND_CANCELLED)
+    logger.info("Cancelled booking for refund", extra={"booking": booking.id, "user": admin})
+
+    # TODO : do we want to notify the user ?
+
+
 def mark_as_used(booking: Booking) -> None:
     validation.check_is_usable(booking)
     booking.mark_as_used()
