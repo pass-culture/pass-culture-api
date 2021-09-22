@@ -288,6 +288,7 @@ class SubcategoryResponseModel(BaseModel):
     category_id: CategoryIdEnum
     app_label: str
     search_group_name: Optional[subcategories.SearchGroupNameEnum]
+    homepage_label_name: HomepageLabelNameEnum
     is_event: bool
     can_expire: bool
     can_be_duo: bool

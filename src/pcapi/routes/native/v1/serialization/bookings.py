@@ -6,6 +6,7 @@ from pydantic.class_validators import validator
 
 from pcapi.core.bookings.models import Booking
 from pcapi.core.bookings.models import BookingCancellationReasons
+from pcapi.core.categories.subcategories import SubcategoryIdEnum
 from pcapi.core.offerers.models import Venue
 from pcapi.routes.native.utils import convert_to_cent
 from pcapi.routes.native.v1.serialization.common_models import Coordinates
@@ -59,6 +60,7 @@ class BookingOfferResponse(BaseModel):
     url: Optional[str]
     venue: BookingVenueResponse
     withdrawalDetails: Optional[str]
+    subcategoryId: SubcategoryIdEnum
 
     class Config:
         orm_mode = True
