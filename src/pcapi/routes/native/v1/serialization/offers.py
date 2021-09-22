@@ -10,9 +10,11 @@ from pydantic.fields import Field
 from pcapi.core.bookings.api import compute_cancellation_limit_date
 from pcapi.core.categories import subcategories
 from pcapi.core.categories.categories import CategoryIdEnum
+from pcapi.core.categories.subcategories import HomepageLabelNameEnum
 from pcapi.core.categories.subcategories import SubcategoryIdEnum
 from pcapi.core.offers import repository as offers_repository
 from pcapi.core.offers.api import get_expense_domains
+from pcapi.core.offers.models import CategoryType
 from pcapi.core.offers.models import Offer
 from pcapi.core.offers.models import Reason
 from pcapi.core.offers.models import ReasonMeta
@@ -163,9 +165,26 @@ class OfferImageResponse(BaseModel):
         orm_mode = True
 
 
+class OfferCategoryResponse(BaseModel):
+    categoryType: CategoryType
+    label: str
+    # name: Optional[HomepageLabelNameEnum]
+    name: Optional[CategoryIdEnum]
+
+
+def get_serialized_legacy_offer_category(offer: Offer) -> dict:
+    return {
+        # "name": offer.subcategory.homepage_label_name,
+        "name": offer.subcategory.category_id,
+        "label": offer.subcategory.app_label,
+        "categoryType": offer.category_type,
+    }
+
+
 class OfferResponse(BaseModel):
     @classmethod
     def from_orm(cls: Any, offer: Offer):  # type: ignore
+        offer.category = get_serialized_legacy_offer_category(offer)
         offer.accessibility = {
             "audioDisability": offer.audioDisabilityCompliant,
             "mentalDisability": offer.mentalDisabilityCompliant,
@@ -186,6 +205,7 @@ class OfferResponse(BaseModel):
 
     id: int
     accessibility: OfferAccessibilityResponse
+    category: OfferCategoryResponse
     description: Optional[str]
     expense_domains: list[ExpenseDomain]
     externalTicketOfficeUrl: Optional[str]
