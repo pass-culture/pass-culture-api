@@ -496,6 +496,7 @@ class GetOfferResponseModel(BaseModel):
     audioDisabilityCompliant: Optional[bool]
     mentalDisabilityCompliant: Optional[bool]
     motorDisabilityCompliant: Optional[bool]
+    nonHumanizedId: int
     visualDisabilityCompliant: Optional[bool]
     lastProvider: Optional[GetOfferLastProviderResponseModel]
     lastProviderId: Optional[str]
@@ -532,6 +533,7 @@ class GetOfferResponseModel(BaseModel):
     @classmethod
     def from_orm(cls, offer):  # type: ignore
         offer.subcategoryId = offer.subcategoryId or get_subcategory_from_type(offer.type, offer.venue.isVirtual)
+        offer.nonHumanizedId = offer.id
         return super().from_orm(offer)
 
     class Config:
