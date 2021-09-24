@@ -296,8 +296,8 @@ def test_cannot_save_beneficiary_if_department_is_not_eligible(get_application_c
     assert beneficiary_import.detail == f"Postal code {postal_code} is not eligible."
 
 
-@patch("pcapi.use_cases.create_beneficiary_from_application.validate")
-@patch("pcapi.connectors.beneficiaries.jouve_backend._get_raw_content")
+@patch("pcapi.core.subscription.backends.validate")
+@patch("pcapi.core.subscription.backends.JouveBeneficiaryBackend.get_data_from_remote")
 def test_calls_send_rejection_mail_with_validation_error(_get_raw_content, stubed_validate, app):
     # Given
     error = BeneficiaryIsADuplicate("Some reason")
@@ -490,7 +490,7 @@ def test_id_piece_number_invalid_format_avoid_duplicate(
     assert mails_testing.outbox[0].sent_data["Mj-campaign"] == "dossier-en-analyse"
 
 
-@patch("pcapi.connectors.beneficiaries.jouve_backend._get_raw_content")
+@patch("pcapi.core.subscription.backends.JouveBeneficiaryBackend.get_data_from_remote")
 @pytest.mark.parametrize("wrong_piece_number", ["NOT_APPLICABLE", "KO", ""])
 def test_id_piece_number_invalid(mocked_get_content, wrong_piece_number):
     subscribing_user = UserFactory(
@@ -563,7 +563,7 @@ def test_id_piece_number_wrong_format(mocked_get_content, id_piece_number):
     assert mails_testing.outbox[0].sent_data["Mj-campaign"] == "dossier-en-analyse"
 
 
-@patch("pcapi.connectors.beneficiaries.jouve_backend._get_raw_content")
+@patch("pcapi.core.subscription.backends.JouveBeneficiaryBackend.get_data_from_remote")
 def test_id_piece_number_by_pass(
     mocked_get_content,
     app,
