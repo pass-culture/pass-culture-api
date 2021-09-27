@@ -118,6 +118,10 @@ class VenueTypeCode(enum.Enum):
     def from_label(cls, label: str) -> "VenueTypeCode":
         return {code.value: code.name for code in cls}[label]
 
+    @classmethod
+    def get_default(cls) -> "VenueTypeCode":
+        return cls.OTHER
+
 
 class Venue(PcObject, Model, HasThumbMixin, HasAddressMixin, ProvidableMixin, NeedsValidationMixin):
     __tablename__ = "venue"
@@ -174,7 +178,9 @@ class Venue(PcObject, Model, HasThumbMixin, HasAddressMixin, ProvidableMixin, Ne
 
     venueType = relationship("VenueType", foreign_keys=[venueTypeId])
 
-    venueTypeCode = Column(sa.Enum(VenueTypeCode, create_constraint=False), nullable=True, default=VenueTypeCode.OTHER)
+    venueTypeCode = Column(
+        sa.Enum(VenueTypeCode, create_constraint=False), nullable=True, default=VenueTypeCode.get_default()
+    )
 
     venueLabelId = Column(Integer, ForeignKey("venue_label.id"), nullable=True)
 
@@ -269,6 +275,11 @@ class Venue(PcObject, Model, HasThumbMixin, HasAddressMixin, ProvidableMixin, Ne
         if not self.venueType:
             return
         self.venueTypeCode = VenueTypeCode.from_label(self.venueType.label)
+
+    def get_venue_type_code(self) -> VenueTypeCode:
+        if not self.venueTypeCode:
+            self.venueTypeCode = VenueTypeCode.get_default()
+        return self.venueTypeCode
 
 
 class VenueLabel(PcObject, Model):

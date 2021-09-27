@@ -171,7 +171,7 @@ class Returns200Test:
                         "venueLabelId": None,
                         "venueTypeId": None,
                         "visualDisabilityCompliant": None,
-                        "venueTypeCode": offer.venue.venueTypeCode.value,
+                        "venueTypeCode": offer.venue.get_venue_type_code().value,
                         "withdrawalDetails": None,
                     },
                     "venueId": humanize(offer.venue.id),

@@ -25,7 +25,7 @@ class VenuesTest:
             "withdrawalDetails": venue.withdrawalDetails,
             "address": venue.address,
             "postalCode": venue.postalCode,
-            "venueTypeCode": venue.venueTypeCode.name,
+            "venueTypeCode": venue.get_venue_type_code().name,
             "description": venue.description,
             "contact": {
                 "email": venue.contact.email,

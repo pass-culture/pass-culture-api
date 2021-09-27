@@ -406,7 +406,7 @@ class AppSearchBackend(base.SearchBackend):
                 "id": venue.id,
                 "name": venue.publicName or venue.name,
                 "offerer_name": venue.managingOfferer.name,
-                "venue_type": venue.venueTypeCode.name,
+                "venue_type": venue.get_venue_type_code().name,
                 "position": position(venue),
                 "description": venue.description,
                 "audio_disability": to_app_search_bool(venue.audioDisabilityCompliant),

@@ -245,7 +245,7 @@ def test_serialize_venue():
         "id": venue.id,
         "name": venue.name,
         "offerer_name": venue.managingOfferer.name,
-        "venue_type": venue.venueTypeCode.name,
+        "venue_type": venue.get_venue_type_code().name,
         "position": f"{venue.latitude},{venue.longitude}",
         "description": venue.description,
         "email": "some@email.com",
