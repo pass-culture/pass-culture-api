@@ -24,6 +24,11 @@ class TestingBackend(LoggerBackend):
             }
         )
 
+<<<<<<< HEAD:api/src/pcapi/notifications/push/backends/testing.py
     def delete_user_attributes(self, user_id: int) -> None:
         super().delete_user_attributes(user_id)
         testing.requests.append({"user_id": user_id})
+=======
+    def send_transactional_notification_delayed(self, notification_data: TransactionalNotificationData) -> None:
+        self.send_transactional_notification(notification_data)
+>>>>>>> (PC-6876) unretrieved bookings: send notifications:src/pcapi/notifications/push/backends/testing.py

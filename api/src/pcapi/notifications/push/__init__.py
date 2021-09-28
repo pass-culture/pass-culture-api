@@ -28,6 +28,12 @@ def send_transactional_notification(notification_data: TransactionalNotification
     backend().send_transactional_notification(notification_data)
 
 
+<<<<<<< HEAD:api/src/pcapi/notifications/push/__init__.py
 def delete_user_attributes(user_id: int) -> None:
     backend = import_string(settings.PUSH_NOTIFICATION_BACKEND)
     backend().delete_user_attributes(user_id)
+=======
+def send_transactional_notification_delayed(notification_data: TransactionalNotificationData) -> None:
+    backend = import_string(settings.PUSH_NOTIFICATION_BACKEND)
+    backend().send_transactional_notification_delayed(notification_data)
+>>>>>>> (PC-6876) unretrieved bookings: send notifications:src/pcapi/notifications/push/__init__.py

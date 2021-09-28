@@ -31,8 +31,13 @@ class LoggerBackend:
             notification_data.message.body,
         )
 
+<<<<<<< HEAD:api/src/pcapi/notifications/push/backends/logger.py
     def delete_user_attributes(self, user_id: int) -> None:
         logger.info(
             "A request to delete user attributes would be sent for user with id=%d",
             user_id,
         )
+=======
+    def send_transactional_notification_delayed(self, notification_data: TransactionalNotificationData) -> None:
+        self.send_transactional_notification(notification_data)
+>>>>>>> (PC-6876) unretrieved bookings: send notifications:src/pcapi/notifications/push/backends/logger.py

@@ -15,6 +15,7 @@ from pcapi.utils import requests
 logger = logging.getLogger(__name__)
 
 BATCH_CUSTOM_DATA_QUEUE_NAME = settings.GCP_BATCH_CUSTOM_DATA_QUEUE_NAME
+BATCH_NOTIFICATION_QUEUE_NAME = settings.GCP_BATCH_NOTIFICATION_QUEUE_NAME
 
 
 @dataclass
@@ -124,6 +125,7 @@ class BatchBackend:
         make_post_request(BatchAPI.ANDROID)
         make_post_request(BatchAPI.IOS)
 
+<<<<<<< HEAD:api/src/pcapi/notifications/push/backends/batch.py
     def delete_user_attributes(self, user_id: int) -> None:
         for api in (BatchAPI.IOS, BatchAPI.ANDROID):
             url = f"{settings.BATCH_API_URL}/1.0/{api.value}/data/users/{user_id}"
@@ -140,6 +142,27 @@ class BatchBackend:
                     exc,
                     extra={"user_id": user_id, "api": str(api)},
                     url=url,
+=======
+    def send_transactional_notification_delayed(self, notification_data: TransactionalNotificationData) -> None:
+        user_ids = [str(user_id) for user_id in notification_data.user_ids]
+        json_data = {
+            "group_id": notification_data.group_id,
+            "recipients": {"custom_ids": user_ids},
+            "message": {
+                "title": notification_data.message.title,
+                "body": notification_data.message.body,
+            },
+            **notification_data.extra,
+        }
+
+        self._enqueue_api_call(
+            api_version="1.1",
+            url_suffix="transactional/send",
+            http_method=tasks_v2.HttpMethod.POST,
+            json=json_data,
+            queue_name=BATCH_NOTIFICATION_QUEUE_NAME,
+        )
+>>>>>>> (PC-6876) unretrieved bookings: send notifications:src/pcapi/notifications/push/backends/batch.py
 
     def _enqueue_api_call(
         self, api_version: str, url_suffix: str, http_method: int, json: dict[str, typing.Any], queue_name: str

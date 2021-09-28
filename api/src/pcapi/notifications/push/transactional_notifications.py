@@ -15,6 +15,7 @@ class GroupId(Enum):
     CANCEL_BOOKING = "Cancel_booking"
     TOMORROW_STOCK = "Tomorrow_stock"
     OFFER_LINK = "Offer_link"
+    UNRETRIEVED_BOOKING = "Unretrieved_bookings"
 
 
 @dataclass
@@ -80,4 +81,15 @@ def get_offer_notification_data(user_id: int, offer: Offer) -> TransactionalNoti
             body="Pour réserver, c'est par ici !",
         ),
         extra={"deeplink": offer_webapp_link(offer)},
+    )
+
+
+def get_unretrieved_bookings_with_offers_notification_data(booking: Booking) -> TransactionalNotificationData:
+    return TransactionalNotificationData(
+        group_id=GroupId.UNRETRIEVED_BOOKING.value,
+        user_ids=[booking.userId],
+        message=TransactionalNotificationMessage(
+            title=f"Tu n'as pas récupéré {booking.stock.offer.name}",
+            body="",
+        ),
     )
