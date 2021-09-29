@@ -1,10 +1,15 @@
 import dataclasses
 import datetime
+import enum
 from typing import Optional
+
+import sqlalchemy
 
 import pcapi.core.fraud.models as fraud_models
 from pcapi.domain.postal_code.postal_code import PostalCode
 from pcapi.models.beneficiary_import import BeneficiaryImportSources
+from pcapi.models.db import Model
+from pcapi.models.pc_object import PcObject
 
 
 @dataclasses.dataclass
@@ -56,3 +61,30 @@ class BeneficiaryPreSubscription:
             source_id=source_data.procedure_id,
             fraud_fields={},
         )
+
+
+class SubscriptionSteps(enum.Enum):
+    ACCOUNT_CREATION = "ACCOUNT_CREATION"
+    EMAIL_VALIDATION = "EMAIL_VALIDATION"
+    PHONE_VALIDATION = "PHONE_VALIDATION"
+    ID_CHECK_JOUVE = "ID_CHECK_JOUVE"
+    ID_CHECK_DMS = "ID_CHECK_DMS"
+    JOUVE_IDENTITY_DOCUMENT = "JOUVE_IDENTITY_DOCUMENT"
+    CHANGE_TO_BENEFICIARY = "CHANGE_TO_BENEFICIARY"
+
+
+class SubscritionStatus(PcObject, Model):
+    __tablename__ = "beneficiary_subscription_status"
+
+    id = sqlalchemy.Column(sqlalchemy.BigInteger, primary_key=True, autoincrement=True)
+    dateCreated = sqlalchemy.Column(sqlalchemy.DateTime, nullable=False, server_default=sqlalchemy.func.now())
+
+    userId = sqlalchemy.Column(
+        sqlalchemy.BigInteger, sqlalchemy.ForeignKey("user.id", ondelete="CASCADE"), index=True, nullable=False
+    )
+
+    user = sqlalchemy.orm.relationship("User", foreign_keys=[userId], backref="subscriptionStatuses")
+
+    step = sqlalchemy.Column(sqlalchemy.Enum(SubscriptionSteps, create_constraint=False))
+
+    isValid = sqlalchemy.Column(sqlalchemy.Boolean, nullable=False)

@@ -19,6 +19,7 @@ from pcapi.core.providers.models import AllocineVenueProvider
 from pcapi.core.providers.models import AllocineVenueProviderPriceRule
 from pcapi.core.providers.models import Provider
 from pcapi.core.providers.models import VenueProvider
+from pcapi.core.subscription.models import SubscritionStatus
 from pcapi.core.users.models import Favorite
 from pcapi.core.users.models import Token
 from pcapi.core.users.models import User
@@ -88,6 +89,7 @@ __all__ = (
     "PaymentStatus",
     "PaymentMessage",
     "Product",
+    "SubscritionStatus",
     "ThingType",
     "Token",
     "UserOfferer",
@@ -131,6 +133,7 @@ models = (
     LocalProviderEvent,
     OfferCriterion,
     PaymentMessage,
+    SubscritionStatus,
     CustomReimbursementRule,
     Payment,
     PaymentStatus,
