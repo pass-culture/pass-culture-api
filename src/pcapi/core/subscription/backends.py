@@ -1,4 +1,6 @@
 import logging
+from typing import Any
+from typing import Optional
 
 from pcapi import settings
 from pcapi.connectors.api_demarches_simplifiees import get_application_details
@@ -7,6 +9,7 @@ from pcapi.core.fraud.api import on_dms_fraud_check
 from pcapi.core.fraud.api import on_jouve_result
 from pcapi.core.subscription.models import BeneficiaryPreSubscription
 from pcapi.core.users.api import create_reset_password_token
+from pcapi.core.users.models import User
 from pcapi.domain import user_emails
 from pcapi.domain.beneficiary_pre_subscription.exceptions import BeneficiaryIsADuplicate
 from pcapi.domain.beneficiary_pre_subscription.exceptions import CantRegisterBeneficiary
@@ -30,7 +33,23 @@ class ExitProcess(Exception):
 
 
 class BaseBeneficiaryBackend:
-    def no_preexisting_account_error(self, application_id, beneficiary_pre_subscription):
+    SOURCE: Optional[BeneficiaryImportSources] = None
+    SOURCE_ID: Optional[int] = None
+    beneficiary_repository = BeneficiarySQLRepository()
+
+    def get_data_from_remote(self, application_id: int) -> dict:
+        raise NotImplementedError()
+
+    def parse_remote_data(self, application_id: int, raw_data: dict, ignore_id_piece_number_field: bool = False) -> Any:
+        raise NotImplementedError()
+
+    def process_result(self, preexisting_account: User, content: dict) -> None:
+        raise NotImplementedError()
+
+    def no_preexisting_account_error(
+        self, application_id: int, beneficiary_pre_subscription: BeneficiaryPreSubscription
+    ) -> None:
+        assert self.SOURCE
         save_beneficiary_import_with_status(
             ImportStatus.ERROR,
             application_id,
@@ -40,7 +59,14 @@ class BaseBeneficiaryBackend:
         )
         raise ExitProcess()
 
-    def reject_user(self, application_id, reason, preexisting_account, beneficiary_pre_subscription, is_eligible):
+    def reject_user(
+        self,
+        application_id: int,
+        reason: str,
+        preexisting_account: User,
+        beneficiary_pre_subscription: BeneficiaryPreSubscription,
+        is_eligible: bool,
+    ) -> None:
         logger.warning(
             "Couldn't register user from application",
             extra={
@@ -61,7 +87,7 @@ class BaseBeneficiaryBackend:
         run_fraud_detection: bool = True,
         ignore_id_piece_number_field: bool = False,
         fraud_detection_ko: bool = False,
-    ):
+    ) -> None:
         return self.process_pre_subscription(
             application_id=application_id,
             run_fraud_detection=run_fraud_detection,
@@ -117,7 +143,7 @@ class BaseBeneficiaryBackend:
                 raise ExitProcess()
             except CantRegisterBeneficiary as cant_register_beneficiary_exception:
                 exception_reason = str(cant_register_beneficiary_exception)
-                is_eligible = (isinstance(cant_register_beneficiary_exception, BeneficiaryIsADuplicate),)
+                is_eligible = isinstance(cant_register_beneficiary_exception, BeneficiaryIsADuplicate)
                 self.reject_user(
                     application_id,
                     exception_reason,
@@ -142,11 +168,10 @@ class BaseBeneficiaryBackend:
 class JouveBeneficiaryBackend(BaseBeneficiaryBackend):
     SOURCE = BeneficiaryImportSources.jouve
     SOURCE_ID = jouve_backend.DEFAULT_JOUVE_SOURCE_ID
-    beneficiary_repository = BeneficiarySQLRepository()  # TODO: review that class
 
-    def get_data_from_remote(self, application_id) -> dict:
+    def get_data_from_remote(self, application_id: int) -> dict:
         try:
-            return jouve_backend._get_raw_content(application_id)
+            return jouve_backend._get_raw_content(str(application_id))
         except jouve_backend.ApiJouveException as api_jouve_exception:
             logger.error(
                 api_jouve_exception.message,
@@ -179,18 +204,19 @@ class JouveBeneficiaryBackend(BaseBeneficiaryBackend):
             )
             raise ExitProcess()
 
-    def process_result(self, preexisting_account, jouve_content):
-        on_jouve_result(preexisting_account, jouve_backend.JouveContent(**jouve_content))
+    def process_result(self, preexisting_account: User, content: dict) -> None:
+        on_jouve_result(preexisting_account, jouve_backend.JouveContent(**content))
 
 
 class LegacyDMSBeneficiaryBackend(BaseBeneficiaryBackend):
     SOURCE = BeneficiaryImportSources.demarches_simplifiees
-    # beneficiary_repository = BeneficiarySQLRepository()  # TODO: review that class
 
     def __init__(self, procedure_id: int):
         self.SOURCE_ID = procedure_id
 
-    def get_data_from_remote(self, application_id) -> dict:
+    def get_data_from_remote(self, application_id: int) -> dict:
+        assert self.SOURCE_ID
+        assert settings.DMS_TOKEN
         try:
             return get_application_details(application_id, self.SOURCE_ID, settings.DMS_TOKEN)
         except Exception as api_dms_exception:
@@ -209,7 +235,7 @@ class LegacyDMSBeneficiaryBackend(BaseBeneficiaryBackend):
             # TODO: call dms_remote_immport.process_parsing_error
             logger.error(
                 "Validation error when parsing DMS content: %s",
-                exc.message,
+                str(exc),
                 extra={
                     "application_id": application_id,
                     "validation_errors": exc.errors,
@@ -218,5 +244,5 @@ class LegacyDMSBeneficiaryBackend(BaseBeneficiaryBackend):
             )
             raise ExitProcess()
 
-    def process_result(self, preexisting_account, jouve_content):
-        on_dms_fraud_check(preexisting_account, jouve_content)
+    def process_result(self, preexisting_account: User, content: dict) -> None:
+        on_dms_fraud_check(preexisting_account, content)

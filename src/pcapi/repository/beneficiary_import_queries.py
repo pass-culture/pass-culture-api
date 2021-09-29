@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import asc
 
 from pcapi.core.users.models import User
@@ -23,7 +25,7 @@ def is_already_imported(application_id: int) -> bool:
 def save_beneficiary_import_with_status(
     status: ImportStatus,
     application_id: int,
-    source_id: int,
+    source_id: Optional[int],
     source: BeneficiaryImportSources,
     detail: str = None,
     user: User = None,
