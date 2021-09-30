@@ -302,7 +302,7 @@ def test_calls_send_rejection_mail_with_validation_error(_get_raw_content, stube
     # Given
     error = BeneficiaryIsADuplicate("Some reason")
     stubed_validate.side_effect = error
-    _get_raw_content.return_value = JOUVE_CONTENT
+    _get_raw_content.return_value = jouve_backend.JouveContent(**JOUVE_CONTENT)
     users_factories.UserFactory(
         firstName=JOUVE_CONTENT["firstName"], lastName=JOUVE_CONTENT["lastName"], email=JOUVE_CONTENT["email"]
     )
@@ -499,7 +499,9 @@ def test_id_piece_number_invalid(mocked_get_content, wrong_piece_number):
         email=BASE_JOUVE_CONTENT["email"],
     )
     UserFactory(idPieceNumber=wrong_piece_number)
-    mocked_get_content.return_value = BASE_JOUVE_CONTENT | {"bodyPieceNumberCtrl": wrong_piece_number}
+    mocked_get_content.return_value = jouve_backend.JouveContent(
+        **(BASE_JOUVE_CONTENT | {"bodyPieceNumberCtrl": wrong_piece_number})
+    )
 
     # When
     create_beneficiary_from_application.execute(BASE_APPLICATION_ID)
@@ -577,7 +579,9 @@ def test_id_piece_number_by_pass(
     )
     UserFactory(idPieceNumber=ID_PIECE_NUMBER)
     UserFactory(idPieceNumber=None)
-    mocked_get_content.return_value = BASE_JOUVE_CONTENT | {"bodyPieceNumber": ID_PIECE_NUMBER}
+    mocked_get_content.return_value = jouve_backend.JouveContent(
+        **(BASE_JOUVE_CONTENT | {"bodyPieceNumber": ID_PIECE_NUMBER})
+    )
 
     # When
     create_beneficiary_from_application.execute(BASE_APPLICATION_ID, ignore_id_piece_number_field=True)
