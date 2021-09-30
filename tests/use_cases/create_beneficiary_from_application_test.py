@@ -54,7 +54,6 @@ JOUVE_CONTENT = {
 
 
 @override_features(FORCE_PHONE_VALIDATION=False)
-@patch("pcapi.connectors.beneficiaries.jouve_backend._get_raw_content", return_value=JOUVE_CONTENT)
 @patch("pcapi.domain.password.random_token")
 def test_saved_a_beneficiary_from_application(stubed_random_token, app):
     # Given
@@ -63,7 +62,9 @@ def test_saved_a_beneficiary_from_application(stubed_random_token, app):
         firstName=JOUVE_CONTENT["firstName"], lastName=JOUVE_CONTENT["lastName"], email=JOUVE_CONTENT["email"]
     )
     # When
-    create_beneficiary_from_application.execute(APPLICATION_ID)
+    create_beneficiary_from_application.process_pre_subscription(
+        APPLICATION_ID, jouve_backend.JouveContent(**JOUVE_CONTENT)
+    )
 
     # Then
     beneficiary = User.query.one()
@@ -101,7 +102,6 @@ def test_saved_a_beneficiary_from_application(stubed_random_token, app):
 
 
 @override_features(FORCE_PHONE_VALIDATION=False)
-@patch("pcapi.connectors.beneficiaries.jouve_backend._get_raw_content", return_value=JOUVE_CONTENT)
 def test_application_for_native_app_user(app):
     # Given
     users_api.create_account(
@@ -116,7 +116,9 @@ def test_application_for_native_app_user(app):
     push_testing.reset_requests()
 
     # When
-    create_beneficiary_from_application.execute(APPLICATION_ID)
+    create_beneficiary_from_application.process_pre_subscription(
+        APPLICATION_ID, jouve_backend.JouveContent(**JOUVE_CONTENT)
+    )
 
     # Then
     beneficiary = User.query.one()
@@ -140,8 +142,7 @@ def test_application_for_native_app_user(app):
 
 
 @override_features(FORCE_PHONE_VALIDATION=False)
-@patch("pcapi.connectors.beneficiaries.jouve_backend._get_raw_content")
-def test_application_for_native_app_user_with_load_smoothing(_get_raw_content, app, db_session):
+def test_application_for_native_app_user_with_load_smoothing(app, db_session):
     # Given
     application_id = 35
     user = UserFactory(
@@ -155,29 +156,34 @@ def test_application_for_native_app_user_with_load_smoothing(_get_raw_content, a
         hasCompletedIdCheck=True,
     )
     push_testing.reset_requests()
-    _get_raw_content.return_value = JOUVE_CONTENT | {
-        "id": BASE_APPLICATION_ID,
-        "firstName": "first_name",
-        "lastName": "last_name",
-        "email": user.email,
-        "activity": "Étudiant",
-        "address": "",
-        "city": "",
-        "gender": "M",
-        "bodyPieceNumber": "140767100016",
-        "birthDateTxt": f"{eighteen_years_in_the_past:%d/%m/%Y}",
-        "postalCode": "",
-        "phoneNumber": "0102030405",
-        "posteCodeCtrl": "OK",
-        "serviceCodeCtrl": "OK",
-        "birthLocationCtrl": "OK",
-        "creatorCtrl": "OK",
-        "bodyBirthDateLevel": "100",
-        "bodyNameLevel": "100",
-    }
+    content = jouve_backend.JouveContent(
+        **(
+            JOUVE_CONTENT
+            | {
+                "id": BASE_APPLICATION_ID,
+                "firstName": "first_name",
+                "lastName": "last_name",
+                "email": user.email,
+                "activity": "Étudiant",
+                "address": "",
+                "city": "",
+                "gender": "M",
+                "bodyPieceNumber": "140767100016",
+                "birthDateTxt": f"{eighteen_years_in_the_past:%d/%m/%Y}",
+                "postalCode": "",
+                "phoneNumber": "0102030405",
+                "posteCodeCtrl": "OK",
+                "serviceCodeCtrl": "OK",
+                "birthLocationCtrl": "OK",
+                "creatorCtrl": "OK",
+                "bodyBirthDateLevel": "100",
+                "bodyNameLevel": "100",
+            }
+        )
+    )
 
     # When
-    create_beneficiary_from_application.execute(application_id)
+    create_beneficiary_from_application.process_pre_subscription(APPLICATION_ID, content)
 
     # Then
     beneficiary = User.query.one()
@@ -206,14 +212,15 @@ def test_application_for_native_app_user_with_load_smoothing(_get_raw_content, a
 
 
 @override_features(FORCE_PHONE_VALIDATION=False)
-@patch("pcapi.connectors.beneficiaries.jouve_backend._get_raw_content", return_value=JOUVE_CONTENT)
 def test_cannot_save_beneficiary_if_email_is_already_taken(app):
     # Given
     email = "rennes@example.org"
     users_factories.BeneficiaryGrant18Factory(email=email, id=4)
 
     # When
-    create_beneficiary_from_application.execute(APPLICATION_ID)
+    create_beneficiary_from_application.process_pre_subscription(
+        APPLICATION_ID, jouve_backend.JouveContent(**JOUVE_CONTENT)
+    )
 
     # Then
     user = User.query.one()
@@ -228,7 +235,6 @@ def test_cannot_save_beneficiary_if_email_is_already_taken(app):
     assert push_testing.requests == []
 
 
-@patch("pcapi.connectors.beneficiaries.jouve_backend._get_raw_content", return_value=JOUVE_CONTENT)
 def test_cannot_save_beneficiary_if_duplicate(app):
     # Given
     first_name = "Thomas"
@@ -244,7 +250,9 @@ def test_cannot_save_beneficiary_if_duplicate(app):
     )
 
     # When
-    create_beneficiary_from_application.execute(APPLICATION_ID)
+    create_beneficiary_from_application.process_pre_subscription(
+        APPLICATION_ID, jouve_backend.JouveContent(**JOUVE_CONTENT)
+    )
 
     # Then
     beneficiary_import = BeneficiaryImport.query.one()
@@ -254,18 +262,18 @@ def test_cannot_save_beneficiary_if_duplicate(app):
     assert beneficiary_import.beneficiary is applicant
 
 
-@patch("pcapi.connectors.beneficiaries.jouve_backend._get_raw_content")
 @override_features(WHOLE_FRANCE_OPENING=False)
-def test_cannot_save_beneficiary_if_department_is_not_eligible_legacy_behaviour(get_application_content, app):
+def test_cannot_save_beneficiary_if_department_is_not_eligible_legacy_behaviour(app):
     # Given
     postal_code = "75000"
-    get_application_content.return_value = JOUVE_CONTENT | {"postalCode": postal_code}
     applicant = users_factories.UserFactory(
         firstName=JOUVE_CONTENT["firstName"], lastName=JOUVE_CONTENT["lastName"], email=JOUVE_CONTENT["email"]
     )
 
     # When
-    create_beneficiary_from_application.execute(APPLICATION_ID)
+    create_beneficiary_from_application.process_pre_subscription(
+        APPLICATION_ID, jouve_backend.JouveContent(**(JOUVE_CONTENT | {"postalCode": postal_code}))
+    )
 
     # Then
     beneficiary_import = BeneficiaryImport.query.one()
@@ -275,18 +283,18 @@ def test_cannot_save_beneficiary_if_department_is_not_eligible_legacy_behaviour(
     assert beneficiary_import.detail == f"Postal code {postal_code} is not eligible."
 
 
-@patch("pcapi.connectors.beneficiaries.jouve_backend._get_raw_content")
 @override_features(WHOLE_FRANCE_OPENING=True)
-def test_cannot_save_beneficiary_if_department_is_not_eligible(get_application_content, app):
+def test_cannot_save_beneficiary_if_department_is_not_eligible(app):
     # Given
     postal_code = "984"
-    get_application_content.return_value = JOUVE_CONTENT | {"postalCode": postal_code}
     applicant = users_factories.UserFactory(
         firstName=JOUVE_CONTENT["firstName"], lastName=JOUVE_CONTENT["lastName"], email=JOUVE_CONTENT["email"]
     )
 
     # When
-    create_beneficiary_from_application.execute(APPLICATION_ID)
+    create_beneficiary_from_application.process_pre_subscription(
+        APPLICATION_ID, jouve_backend.JouveContent(**(JOUVE_CONTENT | {"postalCode": postal_code}))
+    )
 
     # Then
     beneficiary_import = BeneficiaryImport.query.one()
@@ -297,18 +305,18 @@ def test_cannot_save_beneficiary_if_department_is_not_eligible(get_application_c
 
 
 @patch("pcapi.core.subscription.backends.validate")
-@patch("pcapi.core.subscription.backends.JouveBeneficiaryBackend.get_data_from_remote")
-def test_calls_send_rejection_mail_with_validation_error(_get_raw_content, stubed_validate, app):
+def test_calls_send_rejection_mail_with_validation_error(stubed_validate, app):
     # Given
     error = BeneficiaryIsADuplicate("Some reason")
     stubed_validate.side_effect = error
-    _get_raw_content.return_value = jouve_backend.JouveContent(**JOUVE_CONTENT)
     users_factories.UserFactory(
         firstName=JOUVE_CONTENT["firstName"], lastName=JOUVE_CONTENT["lastName"], email=JOUVE_CONTENT["email"]
     )
 
     # When
-    create_beneficiary_from_application.execute(APPLICATION_ID)
+    create_beneficiary_from_application.process_pre_subscription(
+        APPLICATION_ID, jouve_backend.JouveContent(**JOUVE_CONTENT)
+    )
 
     # Then
     assert len(mails_testing.outbox) == 1

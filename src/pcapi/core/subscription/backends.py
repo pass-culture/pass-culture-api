@@ -37,7 +37,7 @@ class BaseBeneficiaryBackend:
     SOURCE_ID: Optional[int] = None
     beneficiary_repository = BeneficiarySQLRepository()
 
-    def get_data_from_remote(self, application_id: int) -> BeneficiaryContent:
+    def get_data_from_remote(self, application_id: int) -> Optional[BeneficiaryContent]:
         raise NotImplementedError()
 
     def parse_remote_data(
@@ -90,8 +90,12 @@ class BaseBeneficiaryBackend:
         ignore_id_piece_number_field: bool = False,
         fraud_detection_ko: bool = False,
     ) -> None:
-        return self.process_pre_subscription(
+        content = self.get_data_from_remote(application_id)
+        if not content:
+            return
+        self.process_pre_subscription(
             application_id=application_id,
+            content=content,
             run_fraud_detection=run_fraud_detection,
             ignore_id_piece_number_field=ignore_id_piece_number_field,
             fraud_detection_ko=fraud_detection_ko,
@@ -100,12 +104,12 @@ class BaseBeneficiaryBackend:
     def process_pre_subscription(
         self,
         application_id: int,
+        content: BeneficiaryContent,
         run_fraud_detection: bool = True,
         ignore_id_piece_number_field: bool = False,
         fraud_detection_ko: bool = False,
     ) -> None:
         try:
-            content = self.get_data_from_remote(application_id)
             beneficiary_pre_subscription = self.parse_remote_data(
                 application_id, content, ignore_id_piece_number_field=ignore_id_piece_number_field
             )
@@ -171,7 +175,7 @@ class JouveBeneficiaryBackend(BaseBeneficiaryBackend):
     SOURCE = BeneficiaryImportSources.jouve
     SOURCE_ID = jouve_backend.DEFAULT_JOUVE_SOURCE_ID
 
-    def get_data_from_remote(self, application_id: int) -> jouve_backend.JouveContent:
+    def get_data_from_remote(self, application_id: int) -> Optional[jouve_backend.JouveContent]:
         try:
             raw_content = jouve_backend._get_raw_content(str(application_id))
         except jouve_backend.ApiJouveException as api_jouve_exception:
@@ -183,7 +187,7 @@ class JouveBeneficiaryBackend(BaseBeneficiaryBackend):
                     "applicationId": application_id,
                 },
             )
-            raise ExitProcess()
+            return None
 
         try:
             return jouve_backend.JouveContent(**raw_content)
@@ -193,7 +197,7 @@ class JouveBeneficiaryBackend(BaseBeneficiaryBackend):
                 exc.message,
                 extra={"application_id": application_id, "validation_errors": exc.errors},
             )
-            raise ExitProcess()
+            return None
 
     def parse_remote_data(
         self, application_id: int, content: jouve_backend.JouveContent, ignore_id_piece_number_field: bool = False
