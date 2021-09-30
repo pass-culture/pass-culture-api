@@ -262,27 +262,6 @@ def test_cannot_save_beneficiary_if_duplicate(app):
     assert beneficiary_import.beneficiary is applicant
 
 
-@override_features(WHOLE_FRANCE_OPENING=False)
-def test_cannot_save_beneficiary_if_department_is_not_eligible_legacy_behaviour(app):
-    # Given
-    postal_code = "75000"
-    applicant = users_factories.UserFactory(
-        firstName=JOUVE_CONTENT["firstName"], lastName=JOUVE_CONTENT["lastName"], email=JOUVE_CONTENT["email"]
-    )
-
-    # When
-    create_beneficiary_from_application.process_pre_subscription(
-        APPLICATION_ID, jouve_backend.JouveContent(**(JOUVE_CONTENT | {"postalCode": postal_code}))
-    )
-
-    # Then
-    beneficiary_import = BeneficiaryImport.query.one()
-    assert beneficiary_import.currentStatus == ImportStatus.REJECTED
-    assert beneficiary_import.applicationId == APPLICATION_ID
-    assert beneficiary_import.beneficiary == applicant
-    assert beneficiary_import.detail == f"Postal code {postal_code} is not eligible."
-
-
 @override_features(WHOLE_FRANCE_OPENING=True)
 def test_cannot_save_beneficiary_if_department_is_not_eligible(app):
     # Given
