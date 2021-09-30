@@ -1,5 +1,6 @@
 import datetime
 from decimal import Decimal
+from typing import Optional
 
 from dateutil.relativedelta import relativedelta
 
@@ -176,7 +177,9 @@ def get_current_limit_configuration_for_type(deposit_type: DepositType) -> BaseL
     return LIMIT_CONFIGURATIONS[deposit_type][version]
 
 
-def get_limit_configuration_for_type_and_version(deposit_type: DepositType, version: int) -> BaseLimitConfiguration:
+def get_limit_configuration_for_type_and_version(
+    deposit_type: DepositType, version: Optional[int]
+) -> BaseLimitConfiguration:
     if version is None:
         version = get_current_deposit_version_for_type(deposit_type)
 

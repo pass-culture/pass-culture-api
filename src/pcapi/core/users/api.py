@@ -23,8 +23,8 @@ from jwt import InvalidTokenError
 from redis import Redis
 
 # TODO (viconnex): fix circular import of pcapi/models/__init__.py
-from pcapi import models  # pylint: disable=unused-import
 from pcapi import settings
+from pcapi.connectors.beneficiaries.id_check_middleware import IdCheckErrorCodes
 from pcapi.connectors.beneficiaries.id_check_middleware import ask_for_identity_document_verification
 from pcapi.core import mails
 from pcapi.core.bookings.conf import get_limit_configuration_for_type_and_version
@@ -33,6 +33,7 @@ import pcapi.core.fraud.api as fraud_api
 import pcapi.core.fraud.models as fraud_models
 import pcapi.core.payments.api as payment_api
 from pcapi.core.subscription.models import BeneficiaryPreSubscription
+from pcapi.core.users.exceptions import UserDoesNotExist
 from pcapi.core.users.external import update_external_user
 from pcapi.core.users.models import Credit
 from pcapi.core.users.models import DomainsCredit
@@ -248,7 +249,7 @@ def steps_to_become_beneficiary(user: User) -> list[BeneficiaryValidationStep]:
     return missing_steps
 
 
-def validate_phone_number_and_activate_user(user: User, code: str) -> User:
+def validate_phone_number_and_activate_user(user: User, code: str) -> None:
     validate_phone_number(user, code)
 
     if not steps_to_become_beneficiary(user):
@@ -419,7 +420,7 @@ def fulfill_beneficiary_data(user: User, deposit_source: str, deposit_version: i
     return user
 
 
-def _generate_random_password(user):
+def _generate_random_password(user) -> None:
     user.password = random_hashed_password()
 
 
@@ -564,7 +565,7 @@ def update_user_info(
     needs_to_fill_cultural_survey=UNCHANGED,
     phone_number=UNCHANGED,
     public_name=UNCHANGED,
-):
+) -> None:
     if cultural_survey_filled_date is not UNCHANGED:
         user.culturalSurveyFilledDate = cultural_survey_filled_date
     if cultural_survey_id is not UNCHANGED:
@@ -891,9 +892,50 @@ def verify_identity_document_informations(image_storage_path: str) -> None:
     email, image = _get_identity_document_informations(image_storage_path)
     valid, code = ask_for_identity_document_verification(email, image)
     if not valid:
+        _process_id_check_error(email, code)
+    delete_object(image_storage_path)
+
+
+def _process_id_check_error(email: str, code: str) -> None:
+    if code == IdCheckErrorCodes.UNREAD_DOCUMENT.value:
+        _allow_user_to_retry_a_defined_number_of_times(email, code)
+    else:
         user_emails.send_document_verification_error_email(email, code)
         fraud_api.handle_document_validation_error(email, code)
-    delete_object(image_storage_path)
+
+
+def _allow_user_to_retry_a_defined_number_of_times(email: str, code: str) -> None:
+    user = find_user_by_email(email)
+    if not user:
+        raise UserDoesNotExist()
+    try:
+        _check_and_update_id_check_upload_attempts(app.redis_client, user)
+    except exceptions.IdCheckUploadDocumentAttemptsLimitReached:
+        user_emails.send_document_verification_error_email(email, code)
+        fraud_api.handle_document_validation_error(email, code)
+    else:
+        user.hasCompletedIdCheck = False
+        repository.save(user)
+
+
+def _check_and_update_id_check_upload_attempts(redis: Redis, user: User) -> None:
+    id_check_upload_attempts_key = f"id_check_upload_attempts_user_{user.id}"
+    id_check_upload_attempts = redis.get(id_check_upload_attempts_key)
+
+    if (
+        id_check_upload_attempts
+        and int(id_check_upload_attempts) >= settings.MAX_ID_CHECK_UNREAD_DOCUMENT_TRIAL_ATTEMPTS
+    ):
+        logger.warning(
+            "Id check document upload retries limit reached for user with id=%s",
+            user.id,
+            extra={"attempts_count": int(id_check_upload_attempts)},
+        )
+        raise exceptions.IdCheckUploadDocumentAttemptsLimitReached(int(id_check_upload_attempts))
+
+    count = redis.incr(id_check_upload_attempts_key)
+    if count == 1:
+        redis.expire(id_check_upload_attempts_key, settings.ID_CHECK_UNREAD_DOCUMENT_ATTEMPTS_TTL)
 
 
 @contextmanager

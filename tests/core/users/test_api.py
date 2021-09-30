@@ -1,3 +1,4 @@
+import copy
 from datetime import date
 from datetime import datetime
 from datetime import timedelta
@@ -59,6 +60,7 @@ from pcapi.models import db
 from pcapi.models.beneficiary_import import BeneficiaryImportSources
 from pcapi.models.user_session import UserSession
 from pcapi.notifications.push import testing as batch_testing
+from pcapi.repository.user_queries import find_user_by_email
 from pcapi.routes.serialization.users import ProUserCreationBodyModel
 from pcapi.tasks.account import VerifyIdentityDocumentRequest
 
@@ -940,11 +942,12 @@ class VerifyIdentityDocumentInformationsTest:
         self, mocked_get_identity_informations, mocked_ask_for_identity, mocked_delete_object, app
     ):
         # Given
-        existing_user = users_factories.UserFactory()
+        existing_user = users_factories.UserFactory(hasCompletedIdCheck=True)
         mocked_get_identity_informations.return_value = (existing_user.email, b"")
         mocked_ask_for_identity.return_value = (False, "invalid-document-date")
 
         users_api.verify_identity_document_informations("some_path")
+        updated_existing_user = find_user_by_email(existing_user.email)
 
         assert len(mails_testing.outbox) == 1
         sent_data = mails_testing.outbox[0].sent_data
@@ -954,9 +957,81 @@ class VerifyIdentityDocumentInformationsTest:
 
         assert len(existing_user.beneficiaryFraudChecks) == 1
         fraud_check = existing_user.beneficiaryFraudChecks[0]
+        assert updated_existing_user.hasCompletedIdCheck
         assert fraud_check.type == fraud_models.FraudCheckType.INTERNAL_REVIEW
         assert fraud_check.resultContent["message"] == "Erreur de lecture du document : invalid-document-date"
         assert fraud_check.resultContent["source"] == fraud_models.InternalReviewSource.DOCUMENT_VALIDATION_ERROR.value
+
+    # TODO (gvanneste, 2021-09-31) : tester l'email envoyé pour que le jeune retry idcheck
+    @patch("pcapi.core.users.api.delete_object")
+    @patch("pcapi.core.users.api.ask_for_identity_document_verification")
+    @patch("pcapi.core.users.api._get_identity_document_informations")
+    def test_user_should_be_able_to_complete_id_check_again_when_error_is_unread_document(
+        self, mocked_get_identity_informations, mocked_ask_for_identity, mocked_delete_object
+    ):
+        # Given
+        existing_user = users_factories.UserFactory(hasCompletedIdCheck=True)
+        mocked_get_identity_informations.return_value = (existing_user.email, b"")
+        mocked_ask_for_identity.return_value = (False, "unread-document")
+
+        # When
+        users_api.verify_identity_document_informations("some_path")
+
+        # Then
+        updated_existing_user = find_user_by_email(existing_user.email)
+        assert not updated_existing_user.hasCompletedIdCheck
+
+    @override_settings(MAX_ID_CHECK_UNREAD_DOCUMENT_TRIAL_ATTEMPTS=1)
+    @patch("pcapi.core.users.api.delete_object")
+    @patch("pcapi.core.users.api.ask_for_identity_document_verification")
+    @patch("pcapi.core.users.api._get_identity_document_informations")
+    def test_user_should_be_able_to_retry_id_check_no_more_than_MAX_ID_CHECK_UNREAD_DOCUMENT_RETRY_ATTEMPTS_times(
+        self, mocked_get_identity_informations, mocked_ask_for_identity, mocked_delete_object
+    ):
+        # Given
+        existing_user = users_factories.UserFactory(hasCompletedIdCheck=True)
+        mocked_get_identity_informations.return_value = (existing_user.email, b"")
+        mocked_ask_for_identity.return_value = (False, "unread-document")
+        users_api.verify_identity_document_informations("some_path")  # First id document upload trial
+
+        updated_existing_user_after_first_trial = copy.deepcopy(
+            find_user_by_email(existing_user.email)
+        )  # Keep state of user after 1st trial for later assertion
+        self._reset_hasCompletedIdCheck_to_true(existing_user.email)
+
+        # When
+        # second trial
+        mails_testing.outbox = []
+        users_api.verify_identity_document_informations("some_path")
+
+        # Then
+        assert not updated_existing_user_after_first_trial.hasCompletedIdCheck
+        updated_existing_user = find_user_by_email(existing_user.email)
+        assert updated_existing_user.hasCompletedIdCheck
+
+        assert len(mails_testing.outbox) == 1
+        sent_data = mails_testing.outbox[0].sent_data
+        assert sent_data["Vars"]["url"] == settings.DMS_USER_URL
+        assert sent_data["MJ-TemplateID"] == 2958557
+
+    # TODO (gvanneste, 2021-09-30) : tester après un premier try, que redis.ttl(id_check_upload_attempts_user_{user.id}) est bien > 0 et <= 24h
+    @override_settings(MAX_ID_CHECK_UNREAD_DOCUMENT_TRIAL_ATTEMPTS=1)
+    @patch("pcapi.core.users.api.delete_object")
+    @patch("pcapi.core.users.api.ask_for_identity_document_verification")
+    @patch("pcapi.core.users.api._get_identity_document_informations")
+    def test_restriction_ttl_to_user_retries_should_be_set_to_ID_CHECK_UNREAD_DOCUMENT_ATTEMPTS_TTL_after_first_trial(
+        self, mocked_get_identity_informations, mocked_ask_for_identity, mocked_delete_object
+    ):
+        pass
+
+    # TODO (gvanneste, 2021-09-30) : en attente du process d'envoi d'email au jeune pour lui indiquer de réessayer id check
+    @patch("pcapi.core.users.api.delete_object")
+    @patch("pcapi.core.users.api.ask_for_identity_document_verification")
+    @patch("pcapi.core.users.api._get_identity_document_informations")
+    def test_user_should_receive_proper_email_to_retry_id_check_when_error_is_unread_document_less_than_MAX_ID_CHECK_UNREAD_DOCUMENT_RETRY_ATTEMPTS_times(
+        self,
+    ):
+        pass
 
     @patch("pcapi.core.users.api.delete_object")
     @patch("pcapi.core.users.api.ask_for_identity_document_verification")
@@ -989,6 +1064,10 @@ class VerifyIdentityDocumentInformationsTest:
         users_api.verify_identity_document_informations("some_path")
 
         assert not mails_testing.outbox
+
+    def _reset_hasCompletedIdCheck_to_true(self, email: str) -> None:
+        User.query.filter_by(email=email).update({"hasCompletedIdCheck": True}, synchronize_session=False)
+        db.session.commit()
 
 
 class BeneficairyInformationUpdateTest:
@@ -1090,7 +1169,6 @@ class BeneficairyInformationUpdateTest:
 
     @override_features(ENABLE_PHONE_VALIDATION=True)
     def test_phone_number_does_not_update_from_jouve(self):
-
         user = UserFactory(phoneNumber="+33611111111")
         jouve_data = fraud_factories.JouveContentFactory(phoneNumber="+33622222222")
 
@@ -1100,7 +1178,6 @@ class BeneficairyInformationUpdateTest:
 
     @override_features(ENABLE_PHONE_VALIDATION=False)
     def test_phone_number_update_from_jouve_if_empty(self):
-
         user = UserFactory(phoneNumber=None)
         jouve_data = fraud_factories.JouveContentFactory(phoneNumber="+33622222222")
 
@@ -1110,7 +1187,6 @@ class BeneficairyInformationUpdateTest:
 
     @override_features(ENABLE_PHONE_VALIDATION=False)
     def test_phone_number_does_not_update_from_jouve_if_not_empty(self):
-
         user = UserFactory(phoneNumber="+33611111111")
         jouve_data = fraud_factories.JouveContentFactory(phoneNumber="+33622222222")
 

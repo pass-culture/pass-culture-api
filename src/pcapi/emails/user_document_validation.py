@@ -1,4 +1,5 @@
 from pcapi import settings
+from pcapi.connectors.beneficiaries.id_check_middleware import IdCheckErrorCodes
 
 
 class DocumentValidationUnknownError(Exception):
@@ -7,11 +8,11 @@ class DocumentValidationUnknownError(Exception):
 
 def build_data_for_document_verification_error(code: str) -> dict:
     error_codes_switch = {
-        "unread-document": _build_unread_document_data,
-        "unread-mrz-document": _build_invalid_document_data,
-        "invalid-document-date": _build_invalid_document_date_data,
-        "invalid-document": _build_invalid_document_data,
-        "invalid-age": _build_invalid_age_data,
+        IdCheckErrorCodes.UNREAD_DOCUMENT.value: _build_unread_document_data,
+        IdCheckErrorCodes.UNREAD_MRZ_DOCUMENT.value: _build_invalid_document_data,
+        IdCheckErrorCodes.INVALID_DOCUMENT_DATE.value: _build_invalid_document_date_data,
+        IdCheckErrorCodes.INVALID_DOCUMENT.value: _build_invalid_document_data,
+        IdCheckErrorCodes.INVALID_AGE.value: _build_invalid_age_data,
     }
 
     handler = error_codes_switch.get(code, _build_unread_document_data)

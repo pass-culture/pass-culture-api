@@ -80,6 +80,12 @@ class IdCheckAlreadyCompleted(Exception):
     pass
 
 
+class IdCheckUploadDocumentAttemptsLimitReached(Exception):
+    def __init__(self, attempts: int):
+        self.attempts = attempts
+        super().__init__()
+
+
 class BeneficiaryImportMissingException(Exception):
     pass
 

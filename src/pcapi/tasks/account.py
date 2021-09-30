@@ -20,5 +20,9 @@ def verify_identity_document(payload: VerifyIdentityDocumentRequest) -> None:
     try:
         api.verify_identity_document_informations(payload.image_storage_path)
         return
-    except (exceptions.IdentityDocumentVerificationException, IdCheckMiddlewareException):
+    except (
+        exceptions.IdentityDocumentVerificationException,
+        IdCheckMiddlewareException,
+        exceptions.UserDoesNotExist,
+    ):
         raise ApiErrors(status_code=503)

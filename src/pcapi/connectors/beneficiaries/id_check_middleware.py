@@ -1,3 +1,4 @@
+import enum
 from json.decoder import JSONDecodeError
 import logging
 
@@ -6,11 +7,19 @@ import requests
 from pcapi import settings
 
 
+logger = logging.getLogger(__name__)
+
+
 class IdCheckMiddlewareException(Exception):
     pass
 
 
-logger = logging.getLogger(__name__)
+class IdCheckErrorCodes(enum.Enum):
+    UNREAD_DOCUMENT = "unread-document"
+    UNREAD_MRZ_DOCUMENT = "unread-mrz-document"
+    INVALID_DOCUMENT_DATE = "invalid-document-date"
+    INVALID_DOCUMENT = "invalid-document"
+    INVALID_AGE = "invalid-age"
 
 
 def ask_for_identity_document_verification(email: str, identity_document: bytes) -> tuple[bool, str]:
