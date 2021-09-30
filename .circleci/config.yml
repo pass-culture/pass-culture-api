@@ -1,12 +1,12 @@
 version: 2.1
 orbs:
   slack: circleci/slack@4.2
-  
+
 parameters:
   venv_cache_key:
     type: string
     default: 'deps1-{{ checksum "/home/circleci/.pyenv/version" }}-{{ .Branch }}-{{ checksum "requirements.txt" }}'
-      
+
 slack-fail-post-step: &slack-fail-post-step
   post-steps:
     - slack/notify:
@@ -79,6 +79,125 @@ commands:
             --values << parameters.helm_values_file >> \
             --set-string image.tag=<< parameters.app_version >>
 
+  setup-python-environment:
+    description: Setup the Python environment
+    steps:
+      - checkout
+      - unless:
+          condition:
+            equal: [ "master", << pipeline.git.branch >> ]
+          steps:
+            - restore_cache:
+                key: << pipeline.parameters.venv_cache_key >>
+      - run:
+          name: Install requirements
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt --progress-bar off
+      - unless:
+          condition:
+            equal: [ "master", << pipeline.git.branch >> ]
+          steps:
+            - save_cache:
+                key: << pipeline.parameters.venv_cache_key >>
+                paths:
+                  - "venv"
+      - run:
+          name: Install pcapi Python package
+          command: |
+            venv/bin/pip install -e .
+            venv/bin/pip freeze
+      - run:
+          name: Download nltk wordlists
+          command: |
+            . venv/bin/activate
+            python -m nltk.downloader punkt stopwords
+
+  setup-front-environment:
+    description: Setup the Frontend environment
+    parameters:
+      subrepo_url:
+        type: string
+      subrepo_name:
+        type: string
+    steps:
+      - run:
+          name: Initialize environment
+          command: |
+            git clone https://github.com/pass-culture/pass-culture-main.git
+            cd pass-culture-main
+            git clone << parameters.subrepo_url >> << parameters.subrepo_name >>
+            ./install_lib_ci_with_chrome.sh
+      - checkout:
+          path: ~/pass-culture-main/api
+      - run:
+          name: Install dockerize
+          command: |
+            wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+            sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+            rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+            DOCKERIZE_VERSION: v0.6.1
+      - run:
+          name: Running API server
+          command: |
+            cd ~/pass-culture-main/api
+            cd ~/pass-culture-main
+            ./pc start-backend
+          background: true
+
+  run-frontend:
+    description: Run Frontend (Prod version)
+    parameters:
+      subrepo_name:
+        type: string
+    steps:
+      - run:
+          name: Run Frontend (Prod version)
+          command: |
+            export NVM_DIR="/opt/circleci/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            cd ~/pass-culture-main/<< parameters.subrepo_name >>
+            nvm install
+            git checkout master
+            yarn install
+            yarn start
+          background: true
+
+  run-sandbox:
+    description: Run Sandbox
+    parameters:
+      sandbox_name:
+        type: string
+    steps:
+      - run:
+          name: Run Sandbox
+          command: |
+            cd pass-culture-main
+            dockerize -wait http://localhost/health/api -timeout 5m -wait-retry-interval 5s
+            dockerize -wait http://localhost/health/database -timeout 5m -wait-retry-interval 5s
+            ./pc sandbox --name=<< parameters.sandbox_name >>
+
+  run-e2e-tests:
+    description: Run end-to-end tests
+    parameters:
+      subrepo_name:
+        type: string
+      port:
+        type: integer
+    steps:
+      - run:
+          name: Running end2end tests
+          command: |
+            export NVM_DIR="/opt/circleci/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            cd ~/pass-culture-main/<< parameters.subrepo_name >>
+            nvm install
+            dockerize -wait http://localhost:<< parameters.port >> -timeout 5m -wait-retry-interval 5s
+            yarn test:cafe
+
+
 ###################
 #  JOBS
 ###################
@@ -115,39 +234,7 @@ jobs:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
     steps:
-      - checkout
-      - unless:
-          condition:
-            equal: [ "master", << pipeline.git.branch >> ]
-          steps:
-            - restore_cache:
-                key: << pipeline.parameters.venv_cache_key >>
-      - run:
-          name: Install requirements
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r requirements.txt --progress-bar off
-      - unless:
-          condition:
-            equal: [ "master", << pipeline.git.branch >> ]
-          steps:
-            - save_cache:
-                key: << pipeline.parameters.venv_cache_key >>
-                paths:
-                  - "venv"
-      - run:
-          name: Install pcapi Python package
-          command: |
-            venv/bin/pip install -e .
-            venv/bin/pip freeze
-      - run:
-          name: Check for alembic multiple heads
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            python -m nltk.downloader punkt stopwords &> /dev/null
-            if [ ! -z "$(alembic branches)" ]; then echo "Multiple alembic heads found"; exit 1; fi
+      - setup-python-environment
       - run:
           name: Check database and model are aligned
           command: |
@@ -174,7 +261,6 @@ jobs:
                 command: >
                   RUN_ENV=tests venv/bin/pytest << parameters.pytest_extra_args >> --durations=10
                   --junitxml=test-results/junit.xml
-
       - store_test_results:
           path: test-results
       - store_artifacts:
@@ -188,32 +274,8 @@ jobs:
           username: $DOCKERHUB_USER
           password: $DOCKERHUB_PASSWORD
     steps:
-      - checkout
-      - unless:
-          condition:
-            equal: [ "master", << pipeline.git.branch >> ]
-          steps:
-            - restore_cache:
-                key: << pipeline.parameters.venv_cache_key >>
-      - run:
-          name: Install requirements
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r requirements.txt --progress-bar off
-      - unless:
-          condition:
-            equal: [ "master", << pipeline.git.branch >> ]
-          steps:
-            - save_cache:
-                key: << pipeline.parameters.venv_cache_key >>
-                paths:
-                  - "venv"
-      - run:
-          name: Install pcapi Python package
-          command: |
-            venv/bin/pip install -e .
-            venv/bin/pip freeze
+      - setup-python-environment
+
       - run:
           name: Check imports are well organized with isort
           when: always
@@ -311,57 +373,16 @@ jobs:
       image: ubuntu-2004:202101-01
     working_directory: ~/
     steps:
-      - run:
-          name: Initialize environment
-          command: |
-            git clone https://github.com/pass-culture/pass-culture-main.git
-            cd pass-culture-main
-            git clone https://github.com/pass-culture/pass-culture-browser.git webapp
-            ./install_lib_ci_with_chrome.sh
-      - checkout:
-          path: ~/pass-culture-main/api
-      - run:
-          name: Install dockerize
-          command: |
-            wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-            sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-            rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.6.1
-      - run:
-          name: Running API server
-          command: |
-            cd ~/pass-culture-main/api
-            cd ~/pass-culture-main
-            ./pc start-backend
-          background: true
-      - run:
-          name: Run Frontend Webapp (Prod version)
-          command: |
-            export NVM_DIR="/opt/circleci/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            cd ~/pass-culture-main/webapp
-            nvm install
-            git checkout master
-            yarn install
-            yarn start
-          background: true
-      - run:
-          name: Running Sandbox
-          command: |
-            cd pass-culture-main
-            dockerize -wait http://localhost/health/api -timeout 5m -wait-retry-interval 5s
-            dockerize -wait http://localhost/health/database -timeout 5m -wait-retry-interval 5s
-            ./pc sandbox --name=industrial
-      - run:
-          name: Running end2end tests WEBAPP
-          command: |
-            export NVM_DIR="/opt/circleci/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            cd ~/pass-culture-main/webapp
-            nvm install
-            dockerize -wait http://localhost:3000 -timeout 5m -wait-retry-interval 5s
-            yarn test:cafe
+      - setup-front-environment:
+          subrepo_url: https://github.com/pass-culture/pass-culture-browser.git
+          subrepo_name: webapp
+      - run-frontend:
+          subrepo_name: webapp
+      - run-sandbox:
+          sandbox_name: industrial
+      - run-e2e-tests:
+          subrepo_name: webapp
+          port: 3000
       - store_artifacts:
           path: ~/pass-culture-main/webapp/testcafe_screenshots
 
@@ -370,57 +391,16 @@ jobs:
       image: ubuntu-2004:202101-01
     working_directory: ~/
     steps:
-      - run:
-          name: Init env
-          command: |
-            git clone https://github.com/pass-culture/pass-culture-main.git
-            cd pass-culture-main
-            git clone https://github.com/pass-culture/pass-culture-pro.git pro
-            ./install_lib_ci_with_chrome.sh
-      - checkout:
-          path: ~/pass-culture-main/api
-      - run:
-          name: Install dockerize
-          command: |
-            wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-            sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-            rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.6.1
-      - run:
-          name: Running API server
-          command: |
-            cd ~/pass-culture-main/api
-            cd ~/pass-culture-main
-            ./pc start-backend
-          background: true
-      - run:
-          name: Run Frontend Pro (Prod version)
-          command: |
-            export NVM_DIR="/opt/circleci/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            cd ~/pass-culture-main/pro
-            nvm install
-            git checkout master
-            yarn install
-            yarn start
-          background: true
-      - run:
-          name: Running Sandbox
-          command: |
-            cd pass-culture-main
-            dockerize -wait http://localhost/health/api -timeout 5m -wait-retry-interval 5s
-            dockerize -wait http://localhost/health/database -timeout 5m -wait-retry-interval 5s
-            ./pc sandbox --name=testcafe
-      - run:
-          name: Running end2end tests PRO
-          command: |
-            export NVM_DIR="/opt/circleci/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            cd ~/pass-culture-main/pro
-            nvm install
-            dockerize -wait http://localhost:3001 -timeout 5m -wait-retry-interval 5s
-            yarn test:cafe
+      - setup-front-environment:
+          subrepo_url: https://github.com/pass-culture/pass-culture-pro.git
+          subrepo_name: pro
+      - run-frontend:
+          subrepo_name: pro
+      - run-sandbox:
+          sandbox_name: testcafe
+      - run-e2e-tests:
+          subrepo_name: pro
+          port: 3001
       - store_artifacts:
           path: ~/pass-culture-main/pro/testcafe_screenshots
 
@@ -486,7 +466,7 @@ workflows:
           context:
             - GCP
             - GCP_EHP
-            
+
   nightly:
     triggers:
       - schedule:
