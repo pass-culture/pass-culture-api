@@ -86,6 +86,7 @@ commands:
             --values << parameters.helm_values_file >> \
             --set-string image.tag=<< parameters.app_version >>
 
+
   setup-python-environment:
     description: Setup the Python environment
     steps:
@@ -179,12 +180,14 @@ commands:
         type: string
     steps:
       - run:
-          name: Run Sandbox
+          name: Wait for API and DB
           command: |
             cd pass-culture-main
             dockerize -wait http://localhost/health/api -timeout 5m -wait-retry-interval 5s
             dockerize -wait http://localhost/health/database -timeout 5m -wait-retry-interval 5s
-            ./pc sandbox --name=<< parameters.sandbox_name >>
+      - run:
+          name: Run Sandbox
+          command: flask sandbox --name=<< parameters.sandbox_name >>
 
   run-e2e-tests:
     description: Run end-to-end tests
