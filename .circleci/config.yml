@@ -11,7 +11,7 @@ slack-fail-post-step: &slack-fail-post-step
   post-steps:
     - slack/notify:
         event: fail
-        channel: shérif
+        channel: alertes-poc-ci
         template: basic_fail_1
 
 slack-deploy-fail-post-step: &slack-deploy-fail-post-step
