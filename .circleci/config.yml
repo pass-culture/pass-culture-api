@@ -14,6 +14,13 @@ slack-fail-post-step: &slack-fail-post-step
         channel: shérif
         template: basic_fail_1
 
+slack-deploy-fail-post-step: &slack-deploy-fail-post-step
+  post-steps:
+    - slack/notify:
+        event: fail
+        channel: alertes-deploiement
+        template: basic_fail_1
+
 ###################
 #  EXECUTORS
 ###################
@@ -459,13 +466,15 @@ workflows:
             - GCP
             - GCP_EHP
             - Slack
-          <<: *slack-fail-post-step
+          <<: *slack-deploy-fail-post-step
       - restart-pcapi:
           requires:
             - deploy-pcapi
           context:
             - GCP
             - GCP_EHP
+            - Slack
+          <<: *slack-deploy-fail-post-step
 
   nightly:
     triggers:
