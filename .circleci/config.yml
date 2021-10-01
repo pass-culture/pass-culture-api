@@ -187,7 +187,8 @@ commands:
             dockerize -wait http://localhost/health/database -timeout 5m -wait-retry-interval 5s
       - run:
           name: Run Sandbox
-          command: flask sandbox --name=<< parameters.sandbox_name >>
+          command: |
+            venv/bin/flask sandbox --name=<< parameters.sandbox_name >>
 
   run-e2e-tests:
     description: Run end-to-end tests
