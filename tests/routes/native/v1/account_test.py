@@ -1329,6 +1329,7 @@ class UpdateBeneficiaryInformationTest:
             phoneValidationStatus=PhoneValidationStatusType.VALIDATED,
             phoneNumber="+33609080706",
         )
+        fraud_factories.BeneficiaryFraudResultFactory(user=user, status=fraud_models.FraudStatus.OK)
 
         beneficiary_import = BeneficiaryImportFactory(beneficiary=user)
         beneficiary_import.setStatus(ImportStatus.CREATED)
@@ -1383,6 +1384,7 @@ class UpdateBeneficiaryInformationTest:
             activity=None,
             phoneValidationStatus=PhoneValidationStatusType.VALIDATED,
         )
+        fraud_factories.BeneficiaryFraudResultFactory(user=user, status=fraud_models.FraudStatus.OK)
 
         beneficiary_import = BeneficiaryImportFactory(beneficiary=user)
         beneficiary_import.setStatus(ImportStatus.CREATED)
@@ -1438,6 +1440,7 @@ class UpdateBeneficiaryInformationTest:
             activity=None,
             phoneValidationStatus=PhoneValidationStatusType.VALIDATED,
         )
+        fraud_factories.BeneficiaryFraudResultFactory(user=user, status=fraud_models.FraudStatus.OK)
 
         beneficiary_import = BeneficiaryImportFactory(beneficiary=user)
         beneficiary_import.setStatus(ImportStatus.CREATED)
