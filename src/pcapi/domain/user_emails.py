@@ -237,8 +237,6 @@ def send_activation_email(user: User, reset_password_token_life_time: typing.Opt
     token = users_api.create_reset_password_token(user, token_life_time=reset_password_token_life_time)
     data = beneficiary_activation.get_activation_email_data(user=user, token=token)
 
-    return mails.send(recipients=[user.email], data=data)
-
 
 def send_batch_stock_postponement_emails_to_users(bookings: list[Booking]) -> None:
     for booking in bookings:

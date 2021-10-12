@@ -11,6 +11,7 @@ from pcapi.connectors.api_demarches_simplifiees import GraphQLApplicationStates
 from pcapi.connectors.api_demarches_simplifiees import get_application_details
 import pcapi.core.fraud.api as fraud_api
 import pcapi.core.fraud.models as fraud_models
+from pcapi.core.mails.transactional.users.accepted_as_beneficiary_email import send_accepted_as_beneficiary_email
 import pcapi.core.subscription.api as subscription_api
 import pcapi.core.subscription.messages as subscription_messages
 import pcapi.core.users.api as users_api
@@ -356,6 +357,22 @@ def process_beneficiary_application(
         subscription_api.activate_beneficiary(user, deposit_source)
     else:
         users_external.update_external_user(user)
+
+    try:
+        if preexisting_account is None:
+            token = users_api.create_reset_password_token(
+                user, token_life_time=users_constants.RESET_PASSWORD_TOKEN_LIFE_TIME_EXTENDED
+            )
+            user_emails.send_activation_email(user, token=token)
+        elif user.is_beneficiary:
+            send_accepted_as_beneficiary_email(user)
+    except MailServiceException as mail_service_exception:
+        logger.exception(
+            "Email send_activation_email failure for application %s - Procedure %s : %s",
+            information.application_id,
+            procedure_id,
+            mail_service_exception,
+        )
 
 
 def _process_duplication(
