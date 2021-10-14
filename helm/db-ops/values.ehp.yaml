@@ -25,3 +25,5 @@ workflows:
   dummy:
     args:
       - "print('Dummy workflow that does nothing, bye !')"
+    envVars:
+      DUMMY_ENV: dummy_var
