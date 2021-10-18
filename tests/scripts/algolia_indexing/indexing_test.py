@@ -14,7 +14,7 @@ class BatchIndexingOffersInAlgoliaFromDatabaseTest:
         mock_get_paginated_active_offer_ids.side_effect = [[1], []]
 
         # When
-        batch_indexing_offers_in_algolia_from_database(ending_page=None, batch_size=1, starting_page=0)
+        batch_indexing_offers_in_algolia_from_database(batch_size=1, starting_page=0)
 
         # Then
         assert mock_get_paginated_active_offer_ids.call_count == 2
@@ -29,7 +29,7 @@ class BatchIndexingOffersInAlgoliaFromDatabaseTest:
         mock_get_paginated_active_offer_ids.side_effect = [[1], [2], []]
 
         # When
-        batch_indexing_offers_in_algolia_from_database(ending_page=None, batch_size=1, starting_page=0)
+        batch_indexing_offers_in_algolia_from_database(batch_size=1, starting_page=0)
 
         # Then
         assert mock_get_paginated_active_offer_ids.call_count == 3
