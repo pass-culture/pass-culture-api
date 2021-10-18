@@ -15,6 +15,19 @@ Elle ne contient toutefois pas les endpoints de l'api publique.
 
 Il existe une ancienne api très incomplète et non utilisable (A décommissioner) [http://localhost/api/doc](http://localhost/api/doc)
 
+
+## Coding Style
+
+- ### Imports
+
+Afin de simplifier les imports en debut de fichiers, il est important d'importer un module plutôt que chaques symboles séparément. Toujours dans un soucis de lisibilité, de comprehension du code et de cohérence voici des exemples d'imports les plus simples :
+
+```
+    import pcapi.core.users.models as users_models
+    import sqlalchemy as sa
+```
+
+
 ## Installation et Tests
 
 - ### Installation des requirements
