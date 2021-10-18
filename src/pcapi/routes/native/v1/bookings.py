@@ -6,6 +6,7 @@ from sqlalchemy.orm import joinedload
 import pcapi.core.bookings.api as bookings_api
 import pcapi.core.bookings.exceptions as exceptions
 from pcapi.core.bookings.models import Booking
+from pcapi.core.offerers.models import Offerer
 from pcapi.core.offerers.models import Venue
 from pcapi.core.offers.exceptions import StockDoesNotExist
 from pcapi.core.offers.models import Offer
@@ -85,8 +86,17 @@ def get_bookings(user: User) -> BookingsResponse:
                 Offer.subcategoryId,
                 Offer.withdrawalDetails,
                 Offer.extraData,
+                Offer.isActive,
+                Offer.isEducational,
+                Offer.validation,
             )
         )
+        # .options(
+        #     joinedload(Booking.stock)
+        #     .joinedload(Stock.offer)
+        #     .joinedload(Offer.stocks)
+        #     .load_only(Stock.isSoftDeleted, Stock.hasBookingLimitDatetimePassed)
+        # )
         .options(joinedload(Booking.stock).joinedload(Stock.offer).joinedload(Offer.mediations))
         .options(
             joinedload(Booking.stock)
@@ -98,7 +108,8 @@ def get_bookings(user: User) -> BookingsResponse:
             joinedload(Booking.stock)
             .joinedload(Stock.offer)
             .joinedload(Offer.venue)
-            .load_only(Venue.name, Venue.city, Venue.latitude, Venue.longitude, Venue.publicName)
+            .joinedload(Venue.managingOfferer)
+            .load_only(Offerer.name, Offerer.validationToken, Offerer.isActive)
         )
         .options(joinedload(Booking.activationCode))
     ).all()

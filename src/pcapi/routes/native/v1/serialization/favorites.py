@@ -50,7 +50,11 @@ class FavoriteOfferResponse(BaseModel):
     startPrice: Optional[int] = None
     date: Optional[datetime] = None
     startDate: Optional[datetime] = None
-    isExpired: bool = False
+    isExpired: bool
+    isReleased: bool
+    isSoldOut: bool
+    isDigital: bool
+    isEducational: bool
     expenseDomains: list[ExpenseDomain]
     isReleased: bool
     isSoldOut: bool = False
@@ -66,6 +70,7 @@ class FavoriteOfferResponse(BaseModel):
         offer.category = get_serialized_offer_category(offer)
         offer.coordinates = {"latitude": offer.venue.latitude, "longitude": offer.venue.longitude}
         offer.expenseDomains = get_expense_domains(offer)
+        offer.isExpired = offer.hasBookingLimitDatetimesPassed
         return super().from_orm(offer)
 
 

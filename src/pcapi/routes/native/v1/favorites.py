@@ -71,6 +71,7 @@ def get_favorites(user: User) -> serializers.PaginatedFavoritesResponse:
                 Offer.subcategoryId,
                 Offer.isActive,
                 Offer.validation,
+                Offer.isEducational,
             )
         )
         .options(
@@ -82,7 +83,7 @@ def get_favorites(user: User) -> serializers.PaginatedFavoritesResponse:
             joinedload(Favorite.offer)
             .joinedload(Offer.venue)
             .joinedload(Venue.managingOfferer)
-            .load_only(Offerer.validationToken, Offerer.isActive)
+            .load_only(Offerer.validationToken, Offerer.isActive, Offerer.isActive)
         )
         .options(
             joinedload(Favorite.offer)

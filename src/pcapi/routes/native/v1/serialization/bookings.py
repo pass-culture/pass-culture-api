@@ -60,6 +60,10 @@ class BookingOfferResponse(BaseModel):
     extraData: Optional[BookingOfferExtraData]
     image: Optional[OfferImageResponse]
     isDigital: bool
+    isEducational: bool
+    isExpired: bool = False  # FIXME() the query booking.offer.stocks.isSoftDeleted info introduces N+1
+    isReleased: bool
+    # isSoldOut: bool
     isPermanent: bool
     subcategoryId: SubcategoryIdEnum
     url: Optional[str]
@@ -72,6 +76,7 @@ class BookingOfferResponse(BaseModel):
     @classmethod
     def from_orm(cls: Any, offer: Offer):  # type: ignore
         offer.category = get_serialized_offer_category(offer)
+        # offer.isExpired = offer.hasBookingLimitDatetimesPassed
         return super().from_orm(offer)
 
 

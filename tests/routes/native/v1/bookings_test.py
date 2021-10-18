@@ -194,7 +194,10 @@ class GetBookingsTest:
                     "id": used2.stock.offer.id,
                     "image": {"credit": "street credit", "url": mediation.thumbUrl},
                     "isDigital": True,
+                    "isEducational": False,
+                    "isExpired": False,
                     "isPermanent": False,
+                    "isReleased": True,
                     "name": used2.stock.offer.name,
                     "url": f"https://demo.pass/some/path?token={used2.token}&email=pascal.ture@example.com&offerId={humanize(used2.stock.offer.id)}",
                     "venue": {
