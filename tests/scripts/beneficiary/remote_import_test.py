@@ -24,12 +24,10 @@ from pcapi.models import ImportStatus
 import pcapi.notifications.push.testing as push_testing
 from pcapi.scripts.beneficiary import remote_import
 
-from tests.scripts.beneficiary.fixture import APPLICATION_DETAIL_STANDARD_RESPONSE
+from tests.scripts.beneficiary.fixture import BENEFICIARY_BIRTH_DATE
 from tests.scripts.beneficiary.fixture import make_graphql_application
 from tests.scripts.beneficiary.fixture import make_new_application
-from tests.scripts.beneficiary.fixture import make_new_beneficiary_application_details
 from tests.scripts.beneficiary.fixture import make_new_stranger_application
-from tests.scripts.beneficiary.fixture_dms_with_selfie import APPLICATION_DETAIL_STANDARD_RESPONSE_AFTER_GENERALISATION
 
 
 NOW = datetime.utcnow()
@@ -115,7 +113,7 @@ class RunTest:
         assert process_beneficiary_application.call_count == 3
 
     @patch.object(DMSGraphQLClient, "get_applications_with_details")
-    @patch("pcapi.scripts.beneficiary.remote_import.parse_beneficiary_information_graphql")
+    @patch("pcapi.scripts.beneficiary.remote_import.parse_beneficiary_information")
     def test_an_error_status_is_saved_when_an_application_is_not_parsable(
         self,
         mocked_parse_beneficiary_information,
@@ -333,22 +331,22 @@ class ParseBeneficiaryInformationTest:
         def test_personal_information_of_beneficiary_are_parsed_from_application_detail(self):
             # when
             information = remote_import.parse_beneficiary_information(
-                APPLICATION_DETAIL_STANDARD_RESPONSE, procedure_id=201201
+                make_graphql_application(123, "closed"), procedure_id=201201
             )
 
             # then
             assert information.last_name == "Doe"
             assert information.first_name == "John"
-            assert information.birth_date == date(2000, 5, 1)
-            assert information.civility == "M."
-            assert information.email == "john.doe@test.com"
-            assert information.phone == "0123456789"
-            assert information.postal_code == "93130"
+            assert information.birth_date == BENEFICIARY_BIRTH_DATE
+            assert information.civility == "Mme"
+            assert information.email == "young.individual@example.com"
+            assert information.phone == "0783442376"
+            assert information.postal_code == "67200"
             assert information.application_id == 123
 
         def test_handles_two_digits_department_code(self):
             # given
-            application_detail = make_new_beneficiary_application_details(1, "closed", department_code="67 - Bas-Rhin")
+            application_detail = make_graphql_application(1, "closed", department_code="67 - Bas-Rhin")
 
             # when
             information = remote_import.parse_beneficiary_information(application_detail, procedure_id=201201)
@@ -358,7 +356,7 @@ class ParseBeneficiaryInformationTest:
 
         def test_handles_three_digits_department_code(self):
             # given
-            application_detail = make_new_beneficiary_application_details(1, "closed", department_code="973 - Guyane")
+            application_detail = make_graphql_application(1, "closed", department_code="973 - Guyane")
 
             # when
             information = remote_import.parse_beneficiary_information(application_detail, procedure_id=201201)
@@ -368,9 +366,7 @@ class ParseBeneficiaryInformationTest:
 
         def test_handles_uppercased_mixed_digits_and_letter_department_code(self):
             # given
-            application_detail = make_new_beneficiary_application_details(
-                1, "closed", department_code="2B - Haute-Corse"
-            )
+            application_detail = make_graphql_application(1, "closed", department_code="2B - Haute-Corse")
 
             # when
             information = remote_import.parse_beneficiary_information(application_detail, procedure_id=201201)
@@ -380,9 +376,7 @@ class ParseBeneficiaryInformationTest:
 
         def test_handles_lowercased_mixed_digits_and_letter_department_code(self):
             # given
-            application_detail = make_new_beneficiary_application_details(
-                1, "closed", department_code="2a - Haute-Corse"
-            )
+            application_detail = make_graphql_application(1, "closed", department_code="2a - Haute-Corse")
 
             # when
             information = remote_import.parse_beneficiary_information(application_detail, procedure_id=201201)
@@ -392,9 +386,9 @@ class ParseBeneficiaryInformationTest:
 
         def test_handles_department_code_with_another_label(self):
             # given
-            application_detail = make_new_beneficiary_application_details(1, "closed", department_code="67 - Bas-Rhin")
-            for field in application_detail["dossier"]["champs"]:
-                label = field["type_de_champ"]["libelle"]
+            application_detail = make_graphql_application(1, "closed", department_code="67 - Bas-Rhin")
+            for field in application_detail["champs"]:
+                label = field["label"]
                 if label == "Veuillez indiquer votre département":
                     field["type_de_champ"]["libelle"] = "Veuillez indiquer votre département de résidence"
 
@@ -406,7 +400,7 @@ class ParseBeneficiaryInformationTest:
 
         def test_handles_postal_codes_wrapped_with_spaces(self):
             # given
-            application_detail = make_new_beneficiary_application_details(1, "closed", postal_code="  93130  ")
+            application_detail = make_graphql_application(1, "closed", postal_code="  93130  ")
 
             # when
             information = remote_import.parse_beneficiary_information(application_detail, procedure_id=201201)
@@ -416,7 +410,7 @@ class ParseBeneficiaryInformationTest:
 
         def test_handles_postal_codes_containing_spaces(self):
             # given
-            application_detail = make_new_beneficiary_application_details(1, "closed", postal_code="67 200")
+            application_detail = make_graphql_application(1, "closed", postal_code="67 200")
 
             # when
             information = remote_import.parse_beneficiary_information(application_detail, procedure_id=201201)
@@ -426,7 +420,7 @@ class ParseBeneficiaryInformationTest:
 
         def test_handles_postal_codes_containing_city_name(self):
             # given
-            application_detail = make_new_beneficiary_application_details(1, "closed", postal_code="67 200 Strasbourg ")
+            application_detail = make_graphql_application(1, "closed", postal_code="67 200 Strasbourg ")
 
             # when
             information = remote_import.parse_beneficiary_information(application_detail, procedure_id=201201)
@@ -436,7 +430,7 @@ class ParseBeneficiaryInformationTest:
 
         def test_handles_civility_parsing(self):
             # given
-            application_detail = make_new_beneficiary_application_details(1, "closed", civility="M.")
+            application_detail = make_graphql_application(1, "closed", civility="M.")
 
             # when
             information = remote_import.parse_beneficiary_information(application_detail, procedure_id=201201)
@@ -446,7 +440,7 @@ class ParseBeneficiaryInformationTest:
 
         def test_handles_activity_parsing(self):
             # given
-            application_detail = make_new_beneficiary_application_details(1, "closed")
+            application_detail = make_graphql_application(1, "closed")
 
             # when
             information = remote_import.parse_beneficiary_information(application_detail, procedure_id=201201)
@@ -456,7 +450,7 @@ class ParseBeneficiaryInformationTest:
 
         def test_handles_activity_even_if_activity_is_not_filled(self):
             # given
-            application_detail = make_new_beneficiary_application_details(1, "closed", activity=None)
+            application_detail = make_graphql_application(1, "closed", activity=None)
 
             # when
             information = remote_import.parse_beneficiary_information(application_detail, procedure_id=201201)
@@ -465,40 +459,16 @@ class ParseBeneficiaryInformationTest:
             assert information.activity is None
 
     class AfterGeneralOpenningTest:
-        def test_personal_information_of_beneficiary_are_parsed_from_application_detail(self):
-            # when
-            information = remote_import.parse_beneficiary_information(
-                APPLICATION_DETAIL_STANDARD_RESPONSE_AFTER_GENERALISATION, procedure_id=201201
-            )
-
-            # then
-            assert information.last_name == "Doe"
-            assert information.first_name == "John"
-            assert information.birth_date == date(2000, 5, 1)
-            assert information.civility == "M."
-            assert information.email == "john.doe@test.com"
-            assert information.phone == "0123456789"
-            assert information.postal_code == "93130"
-            assert information.application_id == 123
-            assert information.procedure_id == 201201
-
         @pytest.mark.parametrize("possible_value", ["0123456789", " 0123456789", "0123456789 ", " 0123456789 "])
         def test_beneficiary_information_id_piece_number_with_spaces(self, possible_value):
-            application_detail = make_new_beneficiary_application_details(1, "closed", id_piece_number=possible_value)
-            information = remote_import.parse_beneficiary_information(application_detail, procedure_id=123123)
-            assert information.id_piece_number == "0123456789"
-
-        @pytest.mark.parametrize("possible_value", ["0123456789", " 0123456789", "0123456789 ", " 0123456789 "])
-        def test_beneficiary_information_id_piece_number_with_spaces_graphql(self, possible_value):
             application_detail = make_graphql_application(1, "closed", id_piece_number=possible_value)
-            information = remote_import.parse_beneficiary_information_graphql(application_detail, procedure_id=123123)
-
+            information = remote_import.parse_beneficiary_information(application_detail, procedure_id=123123)
             assert information.id_piece_number == "0123456789"
 
         @patch.object(DMSGraphQLClient, "get_applications_with_details")
         def test_new_procedure(self, get_applications_with_details):
             raw_data = make_new_application()
-            content = remote_import.parse_beneficiary_information_graphql(raw_data, 32)
+            content = remote_import.parse_beneficiary_information(raw_data, 32)
             assert content.last_name == "VALGEAN"
             assert content.first_name == "Jean"
             assert content.civility == "M"
@@ -516,7 +486,7 @@ class ParseBeneficiaryInformationTest:
         @patch.object(DMSGraphQLClient, "get_applications_with_details")
         def test_new_procedure_for_stranger_residents(self, get_applications_with_details):
             raw_data = make_new_stranger_application()
-            content = remote_import.parse_beneficiary_information_graphql(raw_data, 32)
+            content = remote_import.parse_beneficiary_information(raw_data, 32)
             assert content.last_name == "VALGEAN"
             assert content.first_name == "Jean"
             assert content.civility == "M"
@@ -533,7 +503,7 @@ class ParseBeneficiaryInformationTest:
 
     class ParsingErrorsTest:
         def test_beneficiary_information_postalcode_error(self):
-            application_detail = make_new_beneficiary_application_details(1, "closed", postal_code="Strasbourg")
+            application_detail = make_graphql_application(1, "closed", postal_code="Strasbourg")
             with pytest.raises(ValueError) as exc_info:
                 remote_import.parse_beneficiary_information(application_detail, procedure_id=123123)
 
@@ -541,7 +511,7 @@ class ParseBeneficiaryInformationTest:
 
         @pytest.mark.parametrize("possible_value", ["Passeport n: XXXXX", "sans numéro"])
         def test_beneficiary_information_id_piece_number_error(self, possible_value):
-            application_detail = make_new_beneficiary_application_details(1, "closed", id_piece_number=possible_value)
+            application_detail = make_graphql_application(1, "closed", id_piece_number=possible_value)
             with pytest.raises(ValueError) as exc_info:
                 remote_import.parse_beneficiary_information(application_detail, procedure_id=123123)
 
@@ -927,7 +897,7 @@ class RunIntegrationTest:
 
     @patch("pcapi.scripts.beneficiary.remote_import.user_emails.send_activation_email")
     @patch.object(DMSGraphQLClient, "get_applications_with_details")
-    @patch("pcapi.scripts.beneficiary.remote_import.parse_beneficiary_information_graphql")
+    @patch("pcapi.scripts.beneficiary.remote_import.parse_beneficiary_information")
     def test_beneficiary_is_not_created_if_duplicates_are_found(
         self,
         parse_beneficiary_info,
@@ -988,7 +958,7 @@ class RunIntegrationTest:
 
     @patch("pcapi.domain.user_emails.send_accepted_as_beneficiary_email")
     @patch.object(DMSGraphQLClient, "get_applications_with_details")
-    @patch("pcapi.scripts.beneficiary.remote_import.parse_beneficiary_information_graphql")
+    @patch("pcapi.scripts.beneficiary.remote_import.parse_beneficiary_information")
     def test_beneficiary_is_created_if_duplicates_are_found_but_id_is_in_retry_list(
         self,
         parse_beneficiary_info,
@@ -1090,7 +1060,7 @@ class GraphQLSourceProcessApplicationTest:
         birth_date = date(2002, 5, 12)
         application_details = make_graphql_application(application_id, "closed", birth_date=birth_date)
 
-        beneficiary_information = remote_import.parse_beneficiary_information_graphql(
+        beneficiary_information = remote_import.parse_beneficiary_information(
             application_details,
             procedure_id=123,
         )
@@ -1113,9 +1083,7 @@ class GraphQLSourceProcessApplicationTest:
         application_id = 123123
         application_details = make_graphql_application(application_id, "closed", email=user.email)
         # fixture
-        remote_import.process_application(
-            123123, 4234, application_details, [], parsing_function=remote_import.parse_beneficiary_information_graphql
-        )
+        remote_import.process_application(123123, 4234, application_details, [])
         assert BeneficiaryImport.query.count() == 1
         import_status = BeneficiaryImport.query.one_or_none()
         assert import_status.currentStatus == ImportStatus.CREATED
