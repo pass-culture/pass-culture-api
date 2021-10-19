@@ -38,19 +38,16 @@ NOW = datetime.utcnow()
 @pytest.mark.usefixtures("db_session")
 class RunTest:
     @patch("pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee")
-    @patch("pcapi.scripts.beneficiary.remote_import.find_applications_ids_to_retry")
     @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
     @patch("pcapi.scripts.beneficiary.remote_import.process_beneficiary_application")
     def test_should_retrieve_applications_from_new_procedure_id(
         self,
         process_beneficiary_application,
         get_details,
-        find_applications_ids_to_retry,
         get_closed_application_ids_for_demarche_simplifiee,
     ):
         # given
         get_closed_application_ids_for_demarche_simplifiee.return_value = [123, 456, 789]
-        find_applications_ids_to_retry.return_value = []
 
         get_details.side_effect = [
             make_new_beneficiary_application_details(123, "closed"),
@@ -68,19 +65,16 @@ class RunTest:
         get_closed_application_ids_for_demarche_simplifiee.assert_called_with(6712558, ANY)
 
     @patch("pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee")
-    @patch("pcapi.scripts.beneficiary.remote_import.find_applications_ids_to_retry")
     @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
     @patch("pcapi.scripts.beneficiary.remote_import.process_beneficiary_application")
     def test_all_applications_are_processed_once(
         self,
         process_beneficiary_application,
         get_details,
-        find_applications_ids_to_retry,
         get_closed_application_ids_for_demarche_simplifiee,
     ):
         # given
         get_closed_application_ids_for_demarche_simplifiee.return_value = [123, 456, 789]
-        find_applications_ids_to_retry.return_value = []
 
         users_factories.UserFactory(email="email1@example.com")
         users_factories.UserFactory(email="email2@example.com")
@@ -100,19 +94,18 @@ class RunTest:
         assert process_beneficiary_application.call_count == 3
 
     @patch("pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee")
-    @patch("pcapi.scripts.beneficiary.remote_import.find_applications_ids_to_retry")
     @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
     @patch("pcapi.scripts.beneficiary.remote_import.process_beneficiary_application")
     def test_applications_to_retry_are_processed(
         self,
         process_beneficiary_application,
         get_details,
-        find_applications_ids_to_retry,
         get_closed_application_ids_for_demarche_simplifiee,
     ):
         # given
         get_closed_application_ids_for_demarche_simplifiee.return_value = [123]
-        find_applications_ids_to_retry.return_value = [456, 789]
+        users_factories.BeneficiaryImportStatusFactory(status=ImportStatus.RETRY, beneficiaryImport__applicationId=456)
+        users_factories.BeneficiaryImportStatusFactory(status=ImportStatus.RETRY, beneficiaryImport__applicationId=789)
 
         users_factories.UserFactory(email="email1@example.com")
         users_factories.UserFactory(email="email2@example.com")
@@ -133,19 +126,16 @@ class RunTest:
         assert process_beneficiary_application.call_count == 3
 
     @patch("pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee")
-    @patch("pcapi.scripts.beneficiary.remote_import.find_applications_ids_to_retry")
     @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
     @patch("pcapi.scripts.beneficiary.remote_import.parse_beneficiary_information")
     def test_an_error_status_is_saved_when_an_application_is_not_parsable(
         self,
         mocked_parse_beneficiary_information,
         get_details,
-        find_applications_ids_to_retry,
         get_closed_application_ids_for_demarche_simplifiee,
     ):
         # given
         get_closed_application_ids_for_demarche_simplifiee.return_value = [123]
-        find_applications_ids_to_retry.return_value = []
 
         get_details.side_effect = [make_new_beneficiary_application_details(123, "closed")]
         mocked_parse_beneficiary_information.side_effect = [Exception()]
@@ -162,19 +152,16 @@ class RunTest:
         assert beneficiary_import.detail == "Le dossier 123 contient des erreurs et a été ignoré - Procedure 6712558"
 
     @patch("pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee")
-    @patch("pcapi.scripts.beneficiary.remote_import.find_applications_ids_to_retry")
     @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
     @patch("pcapi.scripts.beneficiary.remote_import.process_beneficiary_application")
     def test_application_with_known_application_id_are_not_processed(
         self,
         process_beneficiary_application,
         get_details,
-        find_applications_ids_to_retry,
         get_closed_application_ids_for_demarche_simplifiee,
     ):
         # given
         get_closed_application_ids_for_demarche_simplifiee.return_value = [123]
-        find_applications_ids_to_retry.return_value = []
         created_import = users_factories.BeneficiaryImportFactory(applicationId=123, source="demarches_simplifiees")
         users_factories.BeneficiaryImportStatusFactory(
             status=ImportStatus.CREATED,
@@ -192,19 +179,16 @@ class RunTest:
         process_beneficiary_application.assert_not_called()
 
     @patch("pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee")
-    @patch("pcapi.scripts.beneficiary.remote_import.find_applications_ids_to_retry")
     @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
     @patch("pcapi.scripts.beneficiary.remote_import.process_beneficiary_application")
     def test_application_with_known_email_and_already_beneficiary_are_saved_as_rejected(
         self,
         process_beneficiary_application,
         get_details,
-        find_applications_ids_to_retry,
         get_closed_application_ids_for_demarche_simplifiee,
     ):
         # given
         get_closed_application_ids_for_demarche_simplifiee.return_value = [123]
-        find_applications_ids_to_retry.return_value = []
 
         # same user, but different
         get_details.return_value = make_new_beneficiary_application_details(123, "closed", email="john.doe@example.com")
@@ -225,19 +209,16 @@ class RunTest:
 
     @override_features(FORCE_PHONE_VALIDATION=False)
     @patch("pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee")
-    @patch("pcapi.scripts.beneficiary.remote_import.find_applications_ids_to_retry")
     @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
     @patch("pcapi.scripts.beneficiary.remote_import.process_beneficiary_application")
     def test_beneficiary_is_created_with_procedure_id(
         self,
         process_beneficiary_application,
         get_details,
-        find_applications_ids_to_retry,
         get_closed_application_ids_for_demarche_simplifiee,
     ):
         # given
         get_closed_application_ids_for_demarche_simplifiee.return_value = [123]
-        find_applications_ids_to_retry.return_value = []
 
         get_details.side_effect = [make_new_beneficiary_application_details(123, "closed")]
 
@@ -1070,12 +1051,10 @@ class RunIntegrationTest:
     @patch(
         "pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee",
     )
-    @patch("pcapi.scripts.beneficiary.remote_import.find_applications_ids_to_retry")
     @patch("pcapi.scripts.beneficiary.remote_import.parse_beneficiary_information")
     def test_beneficiary_is_created_if_duplicates_are_found_but_id_is_in_retry_list(
         self,
         parse_beneficiary_info,
-        find_applications_ids_to_retryretry_ids,
         get_closed_application_ids_for_dms,
         get_applications_details,
         send_accepted_as_beneficiary_email,
@@ -1099,7 +1078,7 @@ class RunIntegrationTest:
             email="unexistant@example.com", dateOfBirth=eighteen_years_in_the_past, firstName="Jane", lastName="Doe"
         )
         users_factories.UserFactory(firstName="Jane", lastName="Doe", email="jane.doe@example.com")
-        find_applications_ids_to_retryretry_ids.return_value = [123]
+        users_factories.BeneficiaryImportStatusFactory(status=ImportStatus.RETRY, beneficiaryImport__applicationId=123)
         parse_beneficiary_info.return_value = information
         # beware to not add this application twice
         get_closed_application_ids_for_dms.return_value = []
