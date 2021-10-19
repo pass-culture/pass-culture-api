@@ -425,7 +425,7 @@ def auto_mark_as_used_after_event() -> None:
     educational_bookings = (
         bookings
         .filter(EducationalBooking.id == Booking.educationalBookingId)
-        .filter(EducationalBooking.status == EducationalBookingStatus.USED_BY_INSTITUTE)
+        .filter(EducationalBooking.status != EducationalBookingStatus.REFUSED)
     )
     # fmt: on
     n_individual_updated = individual_bookings.update(
