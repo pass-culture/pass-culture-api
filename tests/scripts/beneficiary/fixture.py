@@ -1,7 +1,13 @@
 import copy
+import datetime
 import random
 import string
 from typing import Optional
+
+from babel.dates import format_date
+
+
+BENEFICIARY_BIRTH_DATE = datetime.date.today() - datetime.timedelta(days=6752)  # ~18.5 years
 
 
 APPLICATION_DETAIL_STANDARD_RESPONSE = {
@@ -265,6 +271,7 @@ def make_graphql_application(
     state: str,
     postal_code: int = 67200,
     department_code: str = "67 - Bas-Rhin",
+    birth_date: datetime.date = BENEFICIARY_BIRTH_DATE,
     civility: str = "Mme",
     activity: str = "Étudiant",
     id_piece_number: Optional[str] = "123123123",
@@ -297,14 +304,18 @@ def make_graphql_application(
                 "label": "Veuillez indiquer votre département de résidence",
                 "stringValue": department_code,
             },
-            {"id": "Q2hhbXAtNTgyMjIw", "label": "Quelle est votre date de naissance", "stringValue": "12 mai 2002"},
+            {
+                "id": "Q2hhbXAtNTgyMjIw",
+                "label": "Quelle est votre date de naissance",
+                "stringValue": format_date(birth_date, "d MMMM y", locale="fr_FR"),
+            },
             {"id": "Q2hhbXAtNzE4MjIy", "label": "Pièces justificatives acceptées", "stringValue": ""},
             {
                 "id": "Q2hhbXAtNDU5ODE5",
                 "label": "Pièce d'identité (photocopie de la page avec votre photo)",
                 "stringValue": "",
                 "file": {
-                    "filename": "Carte Identité THOMAS MERLE.PDF",
+                    "filename": "Carte Identité.PDF",
                     "url": "https://some.url.example.com",
                 },
             },
@@ -322,7 +333,7 @@ def make_graphql_application(
             {
                 "id": "Q2hhbXAtNTgyMjIz",
                 "label": "Quelle est votre adresse de résidence",
-                "stringValue": "3 La Bigotais 22800 Saint-Donan",
+                "stringValue": "11 Rue du Test",
             },
             {"id": "Q2hhbXAtNzE4MDk0", "label": "Veuillez indiquer votre statut", "stringValue": activity},
             {"id": "Q2hhbXAtNDUxMjg0", "label": "Déclaration de résidence", "stringValue": ""},

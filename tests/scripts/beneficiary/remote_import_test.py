@@ -1,7 +1,6 @@
 from datetime import date
 from datetime import datetime
 from datetime import timedelta
-from unittest.mock import ANY
 from unittest.mock import patch
 
 from dateutil.relativedelta import relativedelta
@@ -9,6 +8,7 @@ import freezegun
 import pytest
 
 from pcapi.connectors.api_demarches_simplifiees import DMSGraphQLClient
+from pcapi.connectors.api_demarches_simplifiees import GraphQLApplicationStates
 import pcapi.core.fraud.factories as fraud_factories
 import pcapi.core.fraud.models as fraud_models
 import pcapi.core.mails.testing as mails_testing
@@ -37,22 +37,18 @@ NOW = datetime.utcnow()
 
 @pytest.mark.usefixtures("db_session")
 class RunTest:
-    @patch("pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee")
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
     @patch("pcapi.scripts.beneficiary.remote_import.process_beneficiary_application")
     def test_should_retrieve_applications_from_new_procedure_id(
         self,
         process_beneficiary_application,
-        get_details,
-        get_closed_application_ids_for_demarche_simplifiee,
+        get_applications_with_details,
     ):
         # given
-        get_closed_application_ids_for_demarche_simplifiee.return_value = [123, 456, 789]
-
-        get_details.side_effect = [
-            make_new_beneficiary_application_details(123, "closed"),
-            make_new_beneficiary_application_details(456, "closed"),
-            make_new_beneficiary_application_details(789, "closed"),
+        get_applications_with_details.return_value = [
+            make_graphql_application(123, "closed"),
+            make_graphql_application(456, "closed"),
+            make_graphql_application(789, "closed"),
         ]
 
         # when
@@ -61,28 +57,24 @@ class RunTest:
         )
 
         # then
-        assert get_closed_application_ids_for_demarche_simplifiee.call_count == 1
-        get_closed_application_ids_for_demarche_simplifiee.assert_called_with(6712558, ANY)
+        assert get_applications_with_details.call_count == 1
+        get_applications_with_details.assert_called_with(6712558, GraphQLApplicationStates.accepted)
 
-    @patch("pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee")
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
     @patch("pcapi.scripts.beneficiary.remote_import.process_beneficiary_application")
     def test_all_applications_are_processed_once(
         self,
         process_beneficiary_application,
-        get_details,
-        get_closed_application_ids_for_demarche_simplifiee,
+        get_applications_with_details,
     ):
         # given
-        get_closed_application_ids_for_demarche_simplifiee.return_value = [123, 456, 789]
-
         users_factories.UserFactory(email="email1@example.com")
         users_factories.UserFactory(email="email2@example.com")
         users_factories.UserFactory(email="email3@example.com")
-        get_details.side_effect = [
-            make_new_beneficiary_application_details(123, "closed", email="email1@example.com"),
-            make_new_beneficiary_application_details(456, "closed", email="email2@example.com"),
-            make_new_beneficiary_application_details(789, "closed", email="email3@example.com"),
+        get_applications_with_details.return_value = [
+            make_graphql_application(123, "closed", email="email1@example.com"),
+            make_graphql_application(456, "closed", email="email2@example.com"),
+            make_graphql_application(789, "closed", email="email3@example.com"),
         ]
 
         # when
@@ -93,17 +85,14 @@ class RunTest:
         # then
         assert process_beneficiary_application.call_count == 3
 
-    @patch("pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee")
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
     @patch("pcapi.scripts.beneficiary.remote_import.process_beneficiary_application")
     def test_applications_to_retry_are_processed(
         self,
         process_beneficiary_application,
-        get_details,
-        get_closed_application_ids_for_demarche_simplifiee,
+        get_applications_with_details,
     ):
         # given
-        get_closed_application_ids_for_demarche_simplifiee.return_value = [123]
         users_factories.BeneficiaryImportStatusFactory(status=ImportStatus.RETRY, beneficiaryImport__applicationId=456)
         users_factories.BeneficiaryImportStatusFactory(status=ImportStatus.RETRY, beneficiaryImport__applicationId=789)
 
@@ -111,10 +100,10 @@ class RunTest:
         users_factories.UserFactory(email="email2@example.com")
         users_factories.UserFactory(email="email3@example.com")
 
-        get_details.side_effect = [
-            make_new_beneficiary_application_details(123, "closed", email="email1@example.com"),
-            make_new_beneficiary_application_details(456, "closed", email="email2@example.com"),
-            make_new_beneficiary_application_details(789, "closed", email="email3@example.com"),
+        get_applications_with_details.return_value = [
+            make_graphql_application(123, "closed", email="email1@example.com"),
+            make_graphql_application(456, "closed", email="email2@example.com"),
+            make_graphql_application(789, "closed", email="email3@example.com"),
         ]
 
         # when
@@ -125,19 +114,15 @@ class RunTest:
         # then
         assert process_beneficiary_application.call_count == 3
 
-    @patch("pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee")
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
-    @patch("pcapi.scripts.beneficiary.remote_import.parse_beneficiary_information")
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
+    @patch("pcapi.scripts.beneficiary.remote_import.parse_beneficiary_information_graphql")
     def test_an_error_status_is_saved_when_an_application_is_not_parsable(
         self,
         mocked_parse_beneficiary_information,
-        get_details,
-        get_closed_application_ids_for_demarche_simplifiee,
+        get_applications_with_details,
     ):
         # given
-        get_closed_application_ids_for_demarche_simplifiee.return_value = [123]
-
-        get_details.side_effect = [make_new_beneficiary_application_details(123, "closed")]
+        get_applications_with_details.return_value = [make_graphql_application(123, "closed")]
         mocked_parse_beneficiary_information.side_effect = [Exception()]
 
         # when
@@ -151,24 +136,21 @@ class RunTest:
         assert beneficiary_import.applicationId == 123
         assert beneficiary_import.detail == "Le dossier 123 contient des erreurs et a été ignoré - Procedure 6712558"
 
-    @patch("pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee")
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
     @patch("pcapi.scripts.beneficiary.remote_import.process_beneficiary_application")
     def test_application_with_known_application_id_are_not_processed(
         self,
         process_beneficiary_application,
-        get_details,
-        get_closed_application_ids_for_demarche_simplifiee,
+        get_applications_with_details,
     ):
         # given
-        get_closed_application_ids_for_demarche_simplifiee.return_value = [123]
         created_import = users_factories.BeneficiaryImportFactory(applicationId=123, source="demarches_simplifiees")
         users_factories.BeneficiaryImportStatusFactory(
             status=ImportStatus.CREATED,
             beneficiaryImport=created_import,
             author=None,
         )
-        get_details.return_value = make_new_beneficiary_application_details(123, "closed")
+        get_applications_with_details.return_value = [make_graphql_application(123, "closed")]
 
         # when
         remote_import.run(
@@ -178,20 +160,18 @@ class RunTest:
         # then
         process_beneficiary_application.assert_not_called()
 
-    @patch("pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee")
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
     @patch("pcapi.scripts.beneficiary.remote_import.process_beneficiary_application")
     def test_application_with_known_email_and_already_beneficiary_are_saved_as_rejected(
         self,
         process_beneficiary_application,
-        get_details,
-        get_closed_application_ids_for_demarche_simplifiee,
+        get_applications_with_details,
     ):
         # given
-        get_closed_application_ids_for_demarche_simplifiee.return_value = [123]
-
         # same user, but different
-        get_details.return_value = make_new_beneficiary_application_details(123, "closed", email="john.doe@example.com")
+        get_applications_with_details.return_value = [
+            make_graphql_application(123, "closed", email="john.doe@example.com")
+        ]
         users_factories.BeneficiaryGrant18Factory(email="john.doe@example.com")
 
         # when
@@ -208,21 +188,19 @@ class RunTest:
         process_beneficiary_application.assert_not_called()
 
     @override_features(FORCE_PHONE_VALIDATION=False)
-    @patch("pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee")
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
     @patch("pcapi.scripts.beneficiary.remote_import.process_beneficiary_application")
     def test_beneficiary_is_created_with_procedure_id(
         self,
         process_beneficiary_application,
-        get_details,
-        get_closed_application_ids_for_demarche_simplifiee,
+        get_applications_with_details,
     ):
         # given
-        get_closed_application_ids_for_demarche_simplifiee.return_value = [123]
-
-        get_details.side_effect = [make_new_beneficiary_application_details(123, "closed")]
-
+        birth_date = date(2002, 5, 12)
         applicant = users_factories.UserFactory(firstName="Doe", lastName="John", email="john.doe@test.com")
+        get_applications_with_details.return_value = [
+            make_graphql_application(123, "closed", email=applicant.email, birth_date=birth_date)
+        ]
 
         # when
         remote_import.run(
@@ -239,11 +217,12 @@ class RunTest:
                 application_id=123,
                 procedure_id=6712558,
                 department="67",
-                phone="0123456789",
-                birth_date=date(2000, 5, 1),
+                phone="0783442376",
+                birth_date=birth_date,
                 activity="Étudiant",
-                address="35 Rue Saint Denis 93130 Noisy-le-Sec",
+                address="11 Rue du Test",
                 postal_code="67200",
+                id_piece_number="123123123",
             ),
             procedure_id=6712558,
             preexisting_account=applicant,
@@ -574,56 +553,14 @@ class RunIntegrationTest:
     EMAIL = "john.doe@example.com"
     BENEFICIARY_BIRTH_DATE = date.today() - timedelta(days=6752)  # ~18.5 years
 
-    def _get_details(self, application_id: int, procedure_id: int, token: str):
-        return {
-            "dossier": {
-                "individual": {
-                    "nom": "doe",
-                    "prenom": "john",
-                    "civilite": "M",
-                },
-                "email": self.EMAIL,
-                "id": application_id,
-                "champs": [
-                    {"type_de_champ": {"libelle": "Veuillez indiquer votre département :"}, "value": "93"},
-                    {
-                        "type_de_champ": {"libelle": "Quelle est votre date de naissance"},
-                        "value": self.BENEFICIARY_BIRTH_DATE.strftime("%Y-%m-%d"),
-                    },
-                    {
-                        "type_de_champ": {"libelle": "Quel est votre numéro de téléphone"},
-                        "value": "0102030405",
-                    },
-                    {
-                        "type_de_champ": {"libelle": "Quel est le code postal de votre commune de résidence ?"},
-                        "value": "93450",
-                    },
-                    {
-                        "type_de_champ": {"libelle": "Quelle est votre adresse de résidence"},
-                        "value": "11 Rue du Test",
-                    },
-                    {"type_de_champ": {"libelle": "Veuillez indiquer votre statut"}, "value": "Etudiant"},
-                    {
-                        "type_de_champ": {"libelle": "Quel est le numéro de la pièce que vous venez de saisir ?"},
-                        "value": "1234123412",
-                    },
-                ],
-            }
-        }
-
-    def _get_all_applications_ids(self, procedure_id: str, token: str):
-        return [123]
-
     @override_features(FORCE_PHONE_VALIDATION=False)
-    @patch(
-        "pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee",
-    )
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
-    def test_import_user(self, get_application_details, get_closed_application_ids_for_demarche_simplifiee):
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
+    def test_import_user(self, get_applications_with_details):
         # when
-        get_closed_application_ids_for_demarche_simplifiee.side_effect = self._get_all_applications_ids
-        get_application_details.side_effect = self._get_details
-        user = users_factories.UserFactory(firstName="john", lastName="doe", email="john.doe@example.com")
+        get_applications_with_details.return_value = [
+            make_graphql_application(123, "closed", email=self.EMAIL, birth_date=self.BENEFICIARY_BIRTH_DATE),
+        ]
+        user = users_factories.UserFactory(firstName="john", lastName="doe", email=self.EMAIL)
 
         remote_import.run(
             procedure_id=6712558,
@@ -632,10 +569,10 @@ class RunIntegrationTest:
         # then
         assert users_models.User.query.count() == 1
         user = users_models.User.query.first()
-        assert user.firstName == "john"
-        assert user.postalCode == "93450"
+        assert user.firstName == "John"
+        assert user.postalCode == "67200"
         assert user.address == "11 Rue du Test"
-        assert user.phoneNumber == "0102030405"
+        assert user.phoneNumber == "0783442376"
 
         assert BeneficiaryImport.query.count() == 1
 
@@ -646,16 +583,12 @@ class RunIntegrationTest:
         assert beneficiary_import.currentStatus == ImportStatus.CREATED
         assert len(push_testing.requests) == 1
 
-    @patch(
-        "pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee",
-    )
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
-    def test_import_user_requires_pre_creation(
-        self, get_application_details, get_closed_application_ids_for_demarche_simplifiee
-    ):
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
+    def test_import_user_requires_pre_creation(self, get_applications_with_details):
         # when
-        get_closed_application_ids_for_demarche_simplifiee.side_effect = self._get_all_applications_ids
-        get_application_details.side_effect = self._get_details
+        get_applications_with_details.return_value = [
+            make_graphql_application(123, "closed", email=self.EMAIL, birth_date=self.BENEFICIARY_BIRTH_DATE),
+        ]
 
         remote_import.run(
             procedure_id=6712558,
@@ -667,13 +600,8 @@ class RunIntegrationTest:
         assert beneficiary_import.statuses[-1].detail == "Aucun utilisateur trouvé pour l'email john.doe@example.com"
 
     @override_features(FORCE_PHONE_VALIDATION=True)
-    @patch(
-        "pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee",
-    )
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
-    def test_import_does_not_make_user_beneficiary(
-        self, get_application_details, get_closed_application_ids_for_demarche_simplifiee
-    ):
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
+    def test_import_does_not_make_user_beneficiary(self, get_applications_with_details):
         """
         Test that an imported user without a validated phone number, and the
         FORCE_PHONE_VALIDATION feature flag activated, cannot become
@@ -690,8 +618,9 @@ class RunIntegrationTest:
             dateOfBirth=date_of_birth,
             phoneValidationStatus=None,
         )
-        get_closed_application_ids_for_demarche_simplifiee.side_effect = self._get_all_applications_ids
-        get_application_details.side_effect = self._get_details
+        get_applications_with_details.return_value = [
+            make_graphql_application(123, "closed", email=self.EMAIL, birth_date=self.BENEFICIARY_BIRTH_DATE),
+        ]
 
         # when
         remote_import.run(
@@ -702,8 +631,8 @@ class RunIntegrationTest:
         assert users_models.User.query.count() == 1
         user = users_models.User.query.first()
 
-        assert user.firstName == "john"
-        assert user.postalCode == "93450"
+        assert user.firstName == "John"
+        assert user.postalCode == "67200"
         assert user.address == "11 Rue du Test"
         assert not user.isBeneficiary
 
@@ -728,13 +657,8 @@ class RunIntegrationTest:
 
         assert len(push_testing.requests) == 1
 
-    @patch(
-        "pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee",
-    )
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
-    def test_import_makes_user_beneficiary(
-        self, get_application_details, get_closed_application_ids_for_demarche_simplifiee
-    ):
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
+    def test_import_makes_user_beneficiary(self, get_applications_with_details):
         """
         Test that an existing user with its phone number validated can become
         beneficiary.
@@ -750,8 +674,9 @@ class RunIntegrationTest:
             dateOfBirth=date_of_birth,
             phoneValidationStatus=users_models.PhoneValidationStatusType.VALIDATED,
         )
-        get_closed_application_ids_for_demarche_simplifiee.side_effect = self._get_all_applications_ids
-        get_application_details.side_effect = self._get_details
+        get_applications_with_details.return_value = [
+            make_graphql_application(123, "closed", email=self.EMAIL, birth_date=self.BENEFICIARY_BIRTH_DATE),
+        ]
 
         # when
         remote_import.run(
@@ -762,12 +687,12 @@ class RunIntegrationTest:
         assert users_models.User.query.count() == 1
         user = users_models.User.query.first()
 
-        assert user.firstName == "john"
-        assert user.postalCode == "93450"
+        assert user.firstName == "John"
+        assert user.postalCode == "67200"
         assert user.address == "11 Rue du Test"
         assert user.isBeneficiary
-        assert user.phoneNumber == "0102030405"
-        assert user.idPieceNumber == "1234123412"
+        assert user.phoneNumber == "0783442376"
+        assert user.idPieceNumber == "123123123"
 
         assert len(user.beneficiaryFraudChecks) == 1
         fraud_check = user.beneficiaryFraudChecks[0]
@@ -789,11 +714,8 @@ class RunIntegrationTest:
 
     @override_features(FORCE_PHONE_VALIDATION=False)
     @freezegun.freeze_time("2021-10-30 09:00:00")
-    @patch(
-        "pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee",
-    )
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
-    def test_import_duplicated_user(self, get_application_details, get_closed_application_ids_for_demarche_simplifiee):
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
+    def test_import_duplicated_user(self, get_applications_with_details):
         # given
         existing_user = users_factories.BeneficiaryGrant18Factory(
             firstName="johnny",
@@ -807,7 +729,7 @@ class RunIntegrationTest:
         user = users_factories.UserFactory(
             firstName="john",
             lastName="doe",
-            email="john.doe@example.com",
+            email=self.EMAIL,
             isEmailValidated=True,
             isActive=True,
         )
@@ -820,8 +742,15 @@ class RunIntegrationTest:
             beneficiaryImport=created_import,
             author=None,
         )
-        get_closed_application_ids_for_demarche_simplifiee.side_effect = self._get_all_applications_ids
-        get_application_details.side_effect = self._get_details
+        get_applications_with_details.return_value = [
+            make_graphql_application(
+                123,
+                "closed",
+                email=self.EMAIL,
+                birth_date=self.BENEFICIARY_BIRTH_DATE,
+                id_piece_number=existing_user.idPieceNumber,
+            ),
+        ]
         # when
         remote_import.run(
             procedure_id=6712558,
@@ -854,13 +783,8 @@ class RunIntegrationTest:
         assert sub_msg.callToActionIcon == subscription_models.CallToActionIcon.EMAIL
 
     @override_features(FORCE_PHONE_VALIDATION=False)
-    @patch(
-        "pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee",
-    )
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
-    def test_import_with_existing_id_card(
-        self, get_application_details, get_closed_application_ids_for_demarche_simplifiee, mocker
-    ):
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
+    def test_import_with_existing_id_card(self, get_applications_with_details, mocker):
         user = users_factories.UserFactory(
             email=self.EMAIL,
             isBeneficiary=False,
@@ -869,8 +793,15 @@ class RunIntegrationTest:
             phoneValidationStatus=users_models.PhoneValidationStatusType.VALIDATED,
             idPieceNumber="1234123412",
         )
-        get_closed_application_ids_for_demarche_simplifiee.side_effect = self._get_all_applications_ids
-        get_application_details.side_effect = self._get_details
+        get_applications_with_details.return_value = [
+            make_graphql_application(
+                123,
+                "closed",
+                email=self.EMAIL,
+                birth_date=self.BENEFICIARY_BIRTH_DATE,
+                id_piece_number=user.idPieceNumber,
+            ),
+        ]
 
         # when
         process_mock = mocker.patch("pcapi.scripts.beneficiary.remote_import.process_beneficiary_application")
@@ -899,13 +830,8 @@ class RunIntegrationTest:
         assert beneficiary_import_status.detail == f"Nr de piece déjà utilisé par {user.id}"
 
     @override_features(FORCE_PHONE_VALIDATION=False)
-    @patch(
-        "pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee",
-    )
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
-    def test_import_with_existing_id_card_with_existing_applicant(
-        self, get_application_details, get_closed_application_ids_for_demarche_simplifiee, mocker
-    ):
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
+    def test_import_with_existing_id_card_with_existing_applicant(self, get_applications_with_details, mocker):
         applicant = users_factories.UserFactory(email=self.EMAIL, isBeneficiary=False)
         beneficiary = users_factories.BeneficiaryGrant18Factory(
             isEmailValidated=True,
@@ -913,8 +839,15 @@ class RunIntegrationTest:
             phoneValidationStatus=users_models.PhoneValidationStatusType.VALIDATED,
             idPieceNumber="1234123412",
         )
-        get_closed_application_ids_for_demarche_simplifiee.side_effect = self._get_all_applications_ids
-        get_application_details.side_effect = self._get_details
+        get_applications_with_details.return_value = [
+            make_graphql_application(
+                123,
+                "closed",
+                email=self.EMAIL,
+                birth_date=self.BENEFICIARY_BIRTH_DATE,
+                id_piece_number=beneficiary.idPieceNumber,
+            ),
+        ]
 
         # when
         process_mock = mocker.patch("pcapi.scripts.beneficiary.remote_import.process_beneficiary_application")
@@ -941,11 +874,8 @@ class RunIntegrationTest:
         )
 
     @override_features(FORCE_PHONE_VALIDATION=False)
-    @patch(
-        "pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee",
-    )
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
-    def test_import_native_app_user(self, get_application_details, get_closed_application_ids_for_demarche_simplifiee):
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
+    def test_import_native_app_user(self, get_applications_with_details):
         # given
         user = users_api.create_account(
             email=self.EMAIL,
@@ -956,8 +886,14 @@ class RunIntegrationTest:
             phone_number="0607080900",
         )
         push_testing.reset_requests()
-        get_closed_application_ids_for_demarche_simplifiee.side_effect = self._get_all_applications_ids
-        get_application_details.side_effect = self._get_details
+        get_applications_with_details.return_value = [
+            make_graphql_application(
+                123,
+                "closed",
+                email=self.EMAIL,
+                birth_date=self.BENEFICIARY_BIRTH_DATE,
+            ),
+        ]
 
         # when
         remote_import.run(
@@ -968,8 +904,8 @@ class RunIntegrationTest:
         assert users_models.User.query.count() == 1
 
         user = users_models.User.query.first()
-        assert user.firstName == "john"
-        assert user.postalCode == "93450"
+        assert user.firstName == "John"
+        assert user.postalCode == "67200"
 
         # Since the User already exists, the phone number should not be updated
         # during the import process
@@ -990,16 +926,12 @@ class RunIntegrationTest:
         assert push_testing.requests[0]["attribute_values"]["u.is_beneficiary"]
 
     @patch("pcapi.scripts.beneficiary.remote_import.user_emails.send_activation_email")
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
-    @patch(
-        "pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee",
-    )
-    @patch("pcapi.scripts.beneficiary.remote_import.parse_beneficiary_information")
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
+    @patch("pcapi.scripts.beneficiary.remote_import.parse_beneficiary_information_graphql")
     def test_beneficiary_is_not_created_if_duplicates_are_found(
         self,
         parse_beneficiary_info,
-        get_closed_application_ids_for_dms,
-        get_applications_details,
+        get_applications_with_details,
         send_activation_email,
     ):
         # given
@@ -1016,8 +948,6 @@ class RunIntegrationTest:
             civility="M",
             activity="Étudiant",
         )
-        parse_beneficiary_info.return_value = information
-        get_closed_application_ids_for_dms.return_value = [information.application_id]
         applicant = users_factories.UserFactory(
             isBeneficiary=False,
             dateOfBirth=information.birth_date,
@@ -1030,6 +960,16 @@ class RunIntegrationTest:
             firstName=information.first_name,
             lastName=information.last_name,
         )
+        parse_beneficiary_info.return_value = information
+
+        get_applications_with_details.return_value = [
+            make_graphql_application(
+                information.application_id,
+                "closed",
+                email=applicant.email,
+                birth_date=self.BENEFICIARY_BIRTH_DATE,
+            ),
+        ]
 
         # when
         remote_import.run(
@@ -1047,16 +987,12 @@ class RunIntegrationTest:
         assert f"Duplicat de l'utilisateur {beneficiary.id}" in applicant.beneficiaryFraudResult.reason
 
     @patch("pcapi.domain.user_emails.send_accepted_as_beneficiary_email")
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
-    @patch(
-        "pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee",
-    )
-    @patch("pcapi.scripts.beneficiary.remote_import.parse_beneficiary_information")
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
+    @patch("pcapi.scripts.beneficiary.remote_import.parse_beneficiary_information_graphql")
     def test_beneficiary_is_created_if_duplicates_are_found_but_id_is_in_retry_list(
         self,
         parse_beneficiary_info,
-        get_closed_application_ids_for_dms,
-        get_applications_details,
+        get_applications_with_details,
         send_accepted_as_beneficiary_email,
     ):
         # given
@@ -1081,7 +1017,14 @@ class RunIntegrationTest:
         users_factories.BeneficiaryImportStatusFactory(status=ImportStatus.RETRY, beneficiaryImport__applicationId=123)
         parse_beneficiary_info.return_value = information
         # beware to not add this application twice
-        get_closed_application_ids_for_dms.return_value = []
+        get_applications_with_details.return_value = [
+            make_graphql_application(
+                information.application_id,
+                "closed",
+                email=information.email,
+                birth_date=information.birth_date,
+            ),
+        ]
 
         # when
         remote_import.run(
@@ -1093,16 +1036,14 @@ class RunIntegrationTest:
         send_accepted_as_beneficiary_email.assert_called()
         assert beneficiary_import.currentStatus == ImportStatus.CREATED
 
-    @patch(
-        "pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee",
-    )
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
-    def test_dms_application_value_error(self, application_details, get_closed_application_ids_for_demarche_simplifiee):
-        get_closed_application_ids_for_demarche_simplifiee.side_effect = self._get_all_applications_ids
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
+    def test_dms_application_value_error(self, get_applications_with_details):
+        get_applications_with_details.return_value = [
+            make_graphql_application(
+                application_id=1, state="closed", postal_code="Strasbourg", id_piece_number="121314"
+            ),
+        ]
 
-        application_details.return_value = make_new_beneficiary_application_details(
-            application_id=1, state="closed", postal_code="Strasbourg", id_piece_number="121314"
-        )
         remote_import.run(
             procedure_id=6712558,
         )
@@ -1117,18 +1058,15 @@ class RunIntegrationTest:
         assert len(mails_testing.outbox) == 1
         assert mails_testing.outbox[0].sent_data["Mj-TemplateID"] == 3124925
 
-    @patch(
-        "pcapi.scripts.beneficiary.remote_import.get_closed_application_ids_for_demarche_simplifiee",
-    )
-    @patch("pcapi.scripts.beneficiary.remote_import.get_application_details")
-    def test_dms_application_value_error_known_user(
-        self, application_details, get_closed_application_ids_for_demarche_simplifiee
-    ):
+    @patch.object(DMSGraphQLClient, "get_applications_with_details")
+    def test_dms_application_value_error_known_user(self, get_applications_with_details):
         user = users_factories.UserFactory()
-        get_closed_application_ids_for_demarche_simplifiee.side_effect = self._get_all_applications_ids
-        application_details.return_value = make_new_beneficiary_application_details(
-            application_id=1, state="closed", postal_code="Strasbourg", id_piece_number="121314", email=user.email
-        )
+        get_applications_with_details.return_value = [
+            make_graphql_application(
+                application_id=1, state="closed", postal_code="Strasbourg", id_piece_number="121314", email=user.email
+            ),
+        ]
+
         remote_import.run(
             procedure_id=6712558,
         )
@@ -1149,7 +1087,8 @@ class RunIntegrationTest:
 class GraphQLSourceProcessApplicationTest:
     def test_parsing(self):
         application_id = 123123
-        application_details = make_graphql_application(application_id, "closed")
+        birth_date = date(2002, 5, 12)
+        application_details = make_graphql_application(application_id, "closed", birth_date=birth_date)
 
         beneficiary_information = remote_import.parse_beneficiary_information_graphql(
             application_details,
@@ -1162,11 +1101,11 @@ class GraphQLSourceProcessApplicationTest:
         assert beneficiary_information.application_id == application_id
         assert beneficiary_information.procedure_id == 123
         assert beneficiary_information.department == "67"
-        assert beneficiary_information.birth_date == date(2002, 5, 12)
+        assert beneficiary_information.birth_date == birth_date
         assert beneficiary_information.phone == "0783442376"
         assert beneficiary_information.postal_code == "67200"
         assert beneficiary_information.activity == "Étudiant"
-        assert beneficiary_information.address == "3 La Bigotais 22800 Saint-Donan"
+        assert beneficiary_information.address == "11 Rue du Test"
         assert beneficiary_information.id_piece_number == "123123123"
 
     def test_process_application_user_already_created(self):
