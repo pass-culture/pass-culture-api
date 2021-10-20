@@ -48,10 +48,24 @@ def get_user_profile(user: User) -> serializers.UserProfileResponse:
 )  # type: ignore
 @authenticated_user_required
 def update_user_profile(user: User, body: serializers.UserProfileUpdateRequest) -> serializers.UserProfileResponse:
-    api.update_notification_subscription(user, body.subscriptions)
-    update_external_user(user)
-
-    return serializers.UserProfileResponse.from_orm(user)
+    try:
+        api.update_user_profile(user, body)
+        return serializers.UserProfileResponse.from_orm(user)
+    except exceptions.EmailUpdateInvalidPassword:
+        raise ApiErrors(
+            {"code": "INVALID_PASSWORD", "message": "Mot de passe invalide"},
+            status_code=400,
+        )
+    except (exceptions.EmailExistsError, exceptions.InvalidEmailError):
+        raise ApiErrors(
+            {"code": "INVALID_EMAIL", "message": "Adresse email invalide"},
+            status_code=400,
+        )
+    except exceptions.EmailUpdateLimitReached:
+        raise ApiErrors(
+            {"code": "EMAIL_UPDATE_ATTEMPTS_LIMIT", "message": "Trop de tentatives"},
+            status_code=400,
+        )
 
 
 @blueprint.native_v1.route("/beneficiary_information", methods=["PATCH"])

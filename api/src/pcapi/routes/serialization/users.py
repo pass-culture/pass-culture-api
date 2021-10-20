@@ -2,6 +2,7 @@ from datetime import datetime
 import typing
 from typing import Optional
 
+import pydantic
 from pydantic import BaseModel
 from pydantic import EmailStr
 from pydantic.class_validators import validator
@@ -165,3 +166,8 @@ class SharedCurrentUserResponseModel(BaseModel):
         result = super().from_orm(user)
         result.isBeneficiary = user.is_beneficiary
         return result
+
+
+class UserProfileEmailUpdate(BaseModel):
+    email: pydantic.EmailStr
+    password: pydantic.constr(strip_whitespace=True, min_length=8, strict=True)  # type: ignore

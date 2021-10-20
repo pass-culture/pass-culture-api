@@ -524,24 +524,38 @@ class AccountCreationTest:
 class UserProfileUpdateTest:
     identifier = "email@example.com"
 
-    def test_update_user_profile(self, app):
-        users_factories.UserFactory(email=self.identifier)
+    def test_update_user_profile(self, app, client):
+        """
+        Update a user's subscriptions information and start the email
+        update process (send an email with a validation link).
+        """
+        user = users_factories.UserFactory(email=self.identifier)
+        password = "some_random_string"
+        user.setPassword(password)
 
-        access_token = create_access_token(identity=self.identifier)
-        test_client = TestClient(app.test_client())
-        test_client.auth_header = {"Authorization": f"Bearer {access_token}"}
-
-        response = test_client.post(
-            "/native/v1/profile", json={"subscriptions": {"marketingPush": True, "marketingEmail": False}}
+        client.with_token(user.email)
+        response = client.post(
+            "/native/v1/profile",
+            json={
+                "subscriptions": {"marketingPush": True, "marketingEmail": False},
+                "email": "updated_" + self.identifier,
+                "password": password,
+            },
         )
 
         assert response.status_code == 200
 
         user = User.query.filter_by(email=self.identifier).first()
+
+        # Subscriptions
         assert user.get_notification_subscriptions().marketing_push
         assert not user.get_notification_subscriptions().marketing_email
 
         assert len(push_testing.requests) == 1
+
+        # Email update
+        assert user.email == self.identifier  # email not updated until validation link is used
+        assert len(mails_testing.outbox) == 1  # email with validation link sent
 
     def test_unsubscribe_push_notifications(self, app):
         user = users_factories.UserFactory(email=self.identifier)
@@ -595,6 +609,94 @@ class UserProfileUpdateTest:
             "http_method": tasks_v2.HttpMethod.DELETE,
             "url": f"https://api.example.com/1.0/fake_android_api_key/data/users/{user.id}",
         }
+
+    def test_update_email_missing_password(self, app, client):
+        user = users_factories.UserFactory(email=self.identifier)
+
+        client.with_token(user.email)
+        response = client.post(
+            "/native/v1/profile",
+            json={
+                "email": "updated_" + self.identifier,
+            },
+        )
+
+        assert response.status_code == 400
+        assert response.json["code"] == "INVALID_PASSWORD"
+
+        # no subscriptions information sent -> no request to external service made
+        assert not push_testing.requests
+
+        assert user.email == self.identifier
+        assert not mails_testing.outbox  # missing password => no update, no email sent
+
+    @pytest.mark.parametrize(
+        "email,password",
+        [
+            ("new@example.com", "not_the_users_password"),
+            ("invalid.password@format.com", "short"),
+            ("not_an_email", "some_random_string"),
+        ],
+    )
+    def test_update_email_errors(self, app, client, email, password):
+        user = users_factories.UserFactory(email=self.identifier)
+
+        client.with_token(user.email)
+        response = client.post(
+            "/native/v1/profile",
+            json={
+                "email": email,
+                "password": password,
+            },
+        )
+
+        assert response.status_code == 400
+
+        user = User.query.filter_by(email=self.identifier).first()
+        assert user.email == self.identifier
+        assert not mails_testing.outbox
+
+    def test_update_email_existing_email(self, app, client):
+        user = users_factories.UserFactory(email=self.identifier)
+        other_user = users_factories.UserFactory(email="other_" + self.identifier)
+
+        client.with_token(user.email)
+        response = client.post(
+            "/native/v1/profile",
+            json={
+                "email": other_user.email,
+                "password": "does_not_matter",
+            },
+        )
+
+        assert response.status_code == 400
+
+        assert response.json["code"] == "INVALID_EMAIL"
+
+        user = User.query.filter_by(email=self.identifier).first()
+        assert user.email == self.identifier
+        assert not mails_testing.outbox
+
+    @override_settings(MAX_EMAIL_UPDATE_ATTEMPTS=0)
+    def test_update_email_too_many_attempts(self, app, client):
+        user = users_factories.UserFactory(email=self.identifier)
+
+        client.with_token(user.email)
+        response = client.post(
+            "/native/v1/profile",
+            json={
+                "email": "updated_" + user.email,
+                "password": "does_not_matter",
+            },
+        )
+
+        assert response.status_code == 400
+
+        assert response.json["code"] == "EMAIL_UPDATE_ATTEMPTS_LIMIT"
+
+        user = User.query.filter_by(email=self.identifier).first()
+        assert user.email == self.identifier
+        assert not mails_testing.outbox
 
 
 class CulturalSurveyTest:

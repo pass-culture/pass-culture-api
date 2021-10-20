@@ -13,14 +13,12 @@ import typing
 from typing import Optional
 from typing import Tuple
 from typing import Union
+import urllib
 
 from flask import current_app as app
 from flask_jwt_extended import create_access_token
 from google.cloud.storage.blob import Blob
-from jwt import DecodeError
-from jwt import ExpiredSignatureError
-from jwt import InvalidSignatureError
-from jwt import InvalidTokenError
+import pydantic
 from redis import Redis
 
 # TODO (viconnex): fix circular import of pcapi/models/__init__.py
@@ -52,6 +50,7 @@ from pcapi.core.users.models import TokenType
 from pcapi.core.users.models import User
 from pcapi.core.users.models import UserRole
 from pcapi.core.users.models import VOID_PUBLIC_NAME
+from pcapi.core.users import repository as users_repository
 from pcapi.core.users.repository import does_validated_phone_exist
 from pcapi.core.users.utils import decode_jwt_token
 from pcapi.core.users.utils import delete_object
@@ -75,12 +74,15 @@ from pcapi.notifications.sms.sending_limit import is_SMS_sending_allowed
 from pcapi.notifications.sms.sending_limit import update_sent_SMS_counter
 from pcapi.repository import repository
 from pcapi.repository import transaction
+from pcapi.repository import user_queries
 from pcapi.repository.user_queries import find_user_by_email
 from pcapi.routes.serialization.users import ProUserCreationBodyModel
+from pcapi.routes.serialization.users import UserProfileEmailUpdate
 from pcapi.tasks.account import VerifyIdentityDocumentRequest
 from pcapi.tasks.account import verify_identity_document
 from pcapi.utils import phone_number as phone_number_utils
 from pcapi.utils.token import random_token
+from pcapi.utils.urls import generate_firebase_dynamic_link
 from pcapi.utils.urls import get_webapp_url
 
 
@@ -92,6 +94,10 @@ from . import constants
 from . import exceptions
 from ..offerers.api import create_digital_venue
 from ..offerers.models import Offerer
+
+
+if typing.TYPE_CHECKING:
+    from pcapi.routes.native.v1.serialization import account as account_serialization
 
 
 UNCHANGED = object()
@@ -498,16 +504,14 @@ def bulk_unsuspend_account(user_ids: list[int], actor: User) -> None:
     )
 
 
-def send_user_emails_for_email_change(user: User, new_email: str) -> None:
+def send_user_emails_for_email_change(user: User, new_email: str, env: str = "webapp") -> None:
     user_with_new_email = find_user_by_email(new_email)
     if user_with_new_email:
         return
 
     send_information_email_change_email(user)
-    link_for_email_change = _build_link_for_email_change(user.email, new_email)
+    link_for_email_change = _build_link_for_email_change(user.email, new_email, env)
     send_confirmation_email_change_email(user, new_email, link_for_email_change)
-
-    return
 
 
 def change_user_email(token: str) -> None:
@@ -575,11 +579,19 @@ def update_user_info(
     repository.save(user)
 
 
-def _build_link_for_email_change(current_email: str, new_email: str) -> str:
+def _build_link_for_email_change(current_email: str, new_email: str, env: str) -> str:
     expiration_date = datetime.now() + constants.EMAIL_CHANGE_TOKEN_LIFE_TIME
-    token = encode_jwt_payload(dict(current_email=current_email, new_email=new_email), expiration_date)
+    token = encode_jwt_payload({"current_email": current_email, "new_email": new_email}, expiration_date)
+    expiration = int(expiration_date.timestamp())
 
-    return f"{get_webapp_url()}/changement-email?token={token}&expiration_timestamp={int(expiration_date.timestamp())}"
+    path = "changement-email"
+    params = {"token": token, "expiration_timestamp": expiration}
+
+    if env == "webapp":
+        url = urllib.parse.urljoin(get_webapp_url(), path)
+        return f"{url}?%s" % urllib.parse.urlencode(params)
+
+    return generate_firebase_dynamic_link(path, params)
 
 
 def get_domains_credit(user: User, user_bookings: list[bookings_models.Booking] = None) -> Optional[DomainsCredit]:
@@ -820,6 +832,48 @@ def check_and_update_phone_validation_attempts(redis: Redis, user: User) -> None
         redis.expire(phone_validation_attempts_key, settings.PHONE_VALIDATION_ATTEMPTS_TTL)
 
 
+def check_email_update_attempts(user: User, redis: Redis) -> None:
+    update_email_attempts_key = f"update_email_attemps_user_{user.id}"
+    count = redis.incr(update_email_attempts_key)
+
+    if count == 1:
+        redis.expire(update_email_attempts_key, settings.EMAIL_UPDATE_ATTEMPTS_TTL)
+
+    if count > settings.MAX_EMAIL_UPDATE_ATTEMPTS:
+        raise exceptions.EmailUpdateLimitReached()
+
+
+def check_user_password(user: User, password: Optional[str]) -> None:
+    if not password:
+        raise exceptions.EmailUpdateInvalidPassword()
+
+    try:
+        users_repository.check_user_and_credentials(user, password)
+    except (exceptions.InvalidIdentifier, exceptions.UnvalidatedAccount) as exc:
+        raise exceptions.EmailUpdateInvalidPassword() from exc
+
+
+def check_email_address_does_not_exist(email: str) -> None:
+    if user_queries.find_user_by_validated_email(email):
+        raise exceptions.EmailExistsError(email)
+
+
+def check_email_password_format(email: str, password: Optional[str]) -> None:
+    try:
+        UserProfileEmailUpdate(email=email, password=password)
+    except pydantic.ValidationError as validation_error:
+        for error in validation_error.errors():
+            loc = error["loc"][0]
+
+            if loc == "email":
+                raise exceptions.InvalidEmailError(email) from validation_error
+
+            if loc == "password":
+                raise exceptions.EmailUpdateInvalidPassword() from validation_error
+
+            raise
+
+
 def check_phone_number_not_used(phone_number: str) -> None:
     if does_validated_phone_exist(phone_number):
         raise exceptions.PhoneAlreadyExists(phone_number)
@@ -974,8 +1028,26 @@ def create_user_access_token(user: User) -> str:
     return create_access_token(identity=user.email, additional_claims={"user_claims": {"user_id": user.id}})
 
 
+def update_user_profile(user: User, content: "account_serialization.UserProfileUpdateRequest") -> None:
+    if content.subscriptions is not None:
+        update_notification_subscription(user, content.subscriptions)
+        update_external_user(user)
+
+    if content.email:
+        update_email(user, content.email, content.password)
+
+
+def update_email(user: User, email: str, password: Optional[str]) -> None:
+    check_email_update_attempts(user, app.redis_client)
+    check_email_password_format(email, password)
+    check_email_address_does_not_exist(email)
+    check_user_password(user, password)
+
+    send_user_emails_for_email_change(user, email, "native")
+
+
 def update_notification_subscription(
-    user: User, subscriptions: typing.Optional[users_models.NotificationSubscriptions]
+    user: User, subscriptions: "typing.Optional[account_serialization.NotificationSubscriptions]"
 ) -> None:
     if subscriptions is None:
         return

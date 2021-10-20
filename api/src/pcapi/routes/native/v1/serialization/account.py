@@ -246,6 +246,8 @@ class UserProfileResponse(BaseModel):
 
 class UserProfileUpdateRequest(BaseModel):
     subscriptions: Optional[NotificationSubscriptions]
+    email: Optional[str]
+    password: Optional[str]
 
 
 class BeneficiaryInformationUpdateRequest(BaseModel):
