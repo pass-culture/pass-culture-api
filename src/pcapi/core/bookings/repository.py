@@ -12,11 +12,11 @@ from sqlalchemy import cast
 from sqlalchemy import func
 from sqlalchemy import or_
 from sqlalchemy import text
+from sqlalchemy.engine import Row
 from sqlalchemy.orm import Query
 from sqlalchemy.orm import contains_eager
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.functions import coalesce
-from sqlalchemy.util._collections import AbstractKeyedTuple
 
 from pcapi.core.bookings import constants
 from pcapi.core.bookings.models import BookingCancellationReasons
@@ -478,7 +478,7 @@ def _apply_departement_timezone(naive_datetime: datetime, departement_code: str)
     )
 
 
-def _serialize_date_with_timezone(date_without_timezone: datetime, booking: AbstractKeyedTuple) -> datetime:
+def _serialize_date_with_timezone(date_without_timezone: datetime, booking: Row) -> datetime:
     if booking.venueDepartementCode:
         return _apply_departement_timezone(
             naive_datetime=date_without_timezone, departement_code=booking.venueDepartementCode
@@ -487,7 +487,7 @@ def _serialize_date_with_timezone(date_without_timezone: datetime, booking: Abst
     return _apply_departement_timezone(naive_datetime=date_without_timezone, departement_code=offerer_department_code)
 
 
-def _serialize_booking_recap(booking: AbstractKeyedTuple) -> BookingRecap:
+def _serialize_booking_recap(booking: Row) -> BookingRecap:
     return BookingRecap(
         offer_identifier=booking.offerId,
         offer_name=booking.offerName,
