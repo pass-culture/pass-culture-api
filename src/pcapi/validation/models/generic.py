@@ -11,7 +11,7 @@ from pcapi.models.db import Model
 
 def validate_generic(model: Model) -> ApiErrors:
     api_errors = ApiErrors()
-    columns = model.__class__.__table__.columns._data
+    columns = model.__class__.__table__.columns
 
     for key in columns.keys():
         column = columns[key]
