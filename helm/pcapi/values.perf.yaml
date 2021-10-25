@@ -49,8 +49,8 @@ api:
   replicaCount: 1
   autoscaling:
     enabled: true
-    minReplicas: 6
-    maxReplicas: 20
+    minReplicas: 10
+    maxReplicas: 60
     targetCPUUtilization: 70
     # Enable this option to scale on memory percentage
     # targetMemoryUtilization: 70
@@ -66,6 +66,10 @@ api:
       nginx.ingress.kubernetes.io/use-regex: "true"
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
       nginx.ingress.kubernetes.io/proxy-body-size: 10m
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        more_set_headers -s 503 'Access-Control-Allow-Headers: AppName,AppVersion,X-Request-ID,Content-Type';
+        more_set_headers -s 503 'Access-Control-Allow-Origin: $http_origin';
+        more_set_headers -s 503 'Access-Control-Allow-Credentials: true';
       cert-manager.io/cluster-issuer: letsencrypt-production
     hosts:
       - host: backend.perf.internal-passculture.app
@@ -158,6 +162,10 @@ admin:
       nginx.ingress.kubernetes.io/use-regex: "true"
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
       nginx.ingress.kubernetes.io/proxy-body-size: 10m
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        more_set_headers -s 503 'Access-Control-Allow-Headers: AppName,AppVersion,X-Request-ID,Content-Type';
+        more_set_headers -s 503 'Access-Control-Allow-Origin: $http_origin';
+        more_set_headers -s 503 'Access-Control-Allow-Credentials: true';
       cert-manager.io/cluster-issuer: letsencrypt-production
     hosts:
       - host: backend.perf.internal-passculture.app
@@ -172,14 +180,14 @@ admin:
 workers:
   - name: worker
     enabled: true
-    replicaCount: 1
+    replicaCount: 5
     command:
       - flask
     args:
       - worker
     resources:
       limits:
-        cpu: 500m
+        cpu: 800m
         memory: 512Mi
       requests:
         cpu: 300m
@@ -289,11 +297,11 @@ uploadIdentityDocument:
       cpu: 700m
       memory: 1536Mi
 
-  replicaCount: 1
+  replicaCount: 3
   autoscaling:
     enabled: true
-    minReplicas: 1
-    maxReplicas: 2
+    minReplicas: 3
+    maxReplicas: 10
     targetCPUUtilization: 70
     # Enable this option to scale on memory percentage
     # targetMemoryUtilization: 70
@@ -309,6 +317,10 @@ uploadIdentityDocument:
       nginx.ingress.kubernetes.io/use-regex: "true"
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
       nginx.ingress.kubernetes.io/proxy-body-size: 10m
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        more_set_headers -s 503 'Access-Control-Allow-Headers: AppName,AppVersion,X-Request-ID,Content-Type';
+        more_set_headers -s 503 'Access-Control-Allow-Origin: $http_origin';
+        more_set_headers -s 503 'Access-Control-Allow-Credentials: true';
       cert-manager.io/cluster-issuer: letsencrypt-production
     hosts:
       - host: backend.perf.internal-passculture.app
@@ -355,6 +367,10 @@ cloudTasks:
       nginx.ingress.kubernetes.io/use-regex: "true"
       nginx.ingress.kubernetes.io/ssl-redirect: "true"
       nginx.ingress.kubernetes.io/proxy-body-size: 10m
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        more_set_headers -s 503 'Access-Control-Allow-Headers: AppName,AppVersion,X-Request-ID,Content-Type';
+        more_set_headers -s 503 'Access-Control-Allow-Origin: $http_origin';
+        more_set_headers -s 503 'Access-Control-Allow-Credentials: true';
       cert-manager.io/cluster-issuer: letsencrypt-production
     hosts:
       - host: backend.perf.internal-passculture.app
@@ -369,7 +385,7 @@ aide:
   enabled: false
 
 configmapApi:
-   DATABASE_STATEMENT_TIMEOUT: 60000
+  DATABASE_STATEMENT_TIMEOUT: 60000
 
 configmap:
   ENV: testing
@@ -381,6 +397,13 @@ configmap:
   GUNICORN_TIMEOUT: 90
   GUNICORN_LOG_LEVEL: info
   DATABASE_IDLE_IN_TRANSACTION_SESSION_TIMEOUT: "1800000"
+  RATE_LIMIT_BY_EMAIL: 999999/second
+  RATE_LIMIT_BY_IP: 999999/second
+  EMAIL_BACKEND: pcapi.core.mails.backends.logger.LoggerBackend
+  MAILJET_EMAIL_BACKEND: pcapi.core.mails.backends.logger.LoggerBackend
+  PUSH_NOTIFICATION_BACKEND: pcapi.notifications.push.backends.logger.LoggerBackend
+  SMS_NOTIFICATION_BACKEND: pcapi.notifications.sms.backends.logger.LoggerBackend
+  SEARCH_BACKEND: pcapi.core.search.backends.testing.TestingBackend
 
 configmapCloudTasks:
   GUNICORN_THREADS : 10
