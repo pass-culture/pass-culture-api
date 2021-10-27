@@ -28,6 +28,7 @@ class BeneficiaryPreSubscriptionFactory(factory.Factory):
     source_id: str = None
     id_piece_number: str = "140767100016"
     fraud_fields = factory.LazyAttribute(lambda x: [])
+    registration_datetime = datetime.datetime(2013, 3, 5)
 
 
 class SubscriptionMessageFactory(testing.BaseFactory):

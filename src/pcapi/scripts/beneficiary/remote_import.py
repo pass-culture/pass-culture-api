@@ -213,6 +213,7 @@ def parse_beneficiary_information(application_detail: dict, procedure_id: int) -
     email = dossier["email"]
 
     information = {
+        "registration_datetime": datetime.strptime(dossier["created_at"], "%Y-%m-%dT%H:%M:%S.%fZ"),
         "last_name": dossier["individual"]["nom"],
         "first_name": dossier["individual"]["prenom"],
         "civility": dossier["individual"]["civilite"],
@@ -265,6 +266,9 @@ def parse_beneficiary_information_graphql(application_detail: dict, procedure_id
         "email": email,
         "application_id": application_detail["number"],
         "procedure_id": procedure_id,
+        "registration_datetime": application_detail[
+            "datePassageEnConstruction"
+        ],  # parse with format  "2021-09-15T15:19:20+02:00"
     }
     parsing_errors = {}
 

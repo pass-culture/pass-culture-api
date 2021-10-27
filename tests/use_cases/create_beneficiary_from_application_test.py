@@ -52,6 +52,7 @@ JOUVE_CONTENT = {
     "lastName": "DURAND",
     "phoneNumber": "0123456789",
     "postalCode": "35123",
+    "registrationDate": "10/21/2021 3:00 PM",
 }
 
 

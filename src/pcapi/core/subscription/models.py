@@ -26,6 +26,7 @@ class BeneficiaryPreSubscription:
     last_name: str
     phone_number: str
     postal_code: str
+    registration_datetime: datetime.datetime
     source: str
     source_id: Optional[int]
     fraud_fields: dict
@@ -57,6 +58,7 @@ class BeneficiaryPreSubscription:
             last_name=source_data.last_name,
             phone_number=source_data.phone,
             postal_code=source_data.postal_code,
+            registration_datetime=source_data.registration_datetime,
             source=BeneficiaryImportSources.demarches_simplifiees.value,
             source_id=source_data.procedure_id,
             fraud_fields={},

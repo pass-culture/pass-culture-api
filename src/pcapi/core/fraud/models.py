@@ -94,6 +94,7 @@ class JouveContent(pydantic.BaseModel):
     phoneNumber: typing.Optional[str]
     postalCode: typing.Optional[str]
     posteCodeCtrl: typing.Optional[str]
+    registrationDate: str
     serviceCodeCtrl: typing.Optional[str]
 
     _parse_body_birth_date_level = validator("bodyBirthDateLevel", pre=True, allow_reuse=True)(_parse_level)
@@ -117,6 +118,7 @@ class DMSContent(pydantic.BaseModel):
     activity: typing.Optional[str]
     address: typing.Optional[str]
     id_piece_number: typing.Optional[str]
+    registration_datetime: datetime.datetime
 
 
 class UserProfilingFraudData(pydantic.BaseModel):

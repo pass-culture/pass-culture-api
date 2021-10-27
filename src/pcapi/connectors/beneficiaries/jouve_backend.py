@@ -109,6 +109,7 @@ def get_subscription_from_content(content: JouveContent) -> BeneficiaryPreSubscr
         source=BeneficiaryImportSources.jouve.value,
         source_id=DEFAULT_JOUVE_SOURCE_ID,
         fraud_fields=fraud_fields,
+        registration_datetime=datetime.datetime.strptime(content.registrationDate, "%m/%d/%Y %H:%M %p"),
     )
 
 
