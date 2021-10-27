@@ -2,6 +2,8 @@ from datetime import datetime
 import logging
 
 from flask import request
+from jwt import InvalidTokenError
+import pydantic
 
 from pcapi import settings
 from pcapi.connectors import api_recaptcha
@@ -20,6 +22,7 @@ from pcapi.repository import repository
 from pcapi.repository import transaction
 from pcapi.repository.user_queries import find_user_by_email
 from pcapi.routes.native.security import authenticated_user_required
+from pcapi.routes.serialization import beneficiaries as beneficiaries_serialization
 from pcapi.serialization.decorator import spectree_serialize
 
 from . import blueprint
@@ -64,6 +67,31 @@ def update_user_profile(user: User, body: serializers.UserProfileUpdateRequest) 
     except exceptions.EmailUpdateLimitReached:
         raise ApiErrors(
             {"code": "EMAIL_UPDATE_ATTEMPTS_LIMIT", "message": "Trop de tentatives"},
+            status_code=400,
+        )
+
+
+@blueprint.native_v1.route("/profile/validate-email", methods=["PUT"])
+@spectree_serialize(on_success_status=204, api=blueprint.api)
+def validate_user_email(body: beneficiaries_serialization.ChangeBeneficiaryEmailBody) -> None:
+    try:
+        payload = beneficiaries_serialization.ChangeEmailTokenContent.from_token(body.token)
+        api.change_user_email(current_email=payload.current_email, new_email=payload.new_email)
+    except pydantic.ValidationError:
+        # ValidationError can only been raise by an invalid email at
+        # this point
+        raise ApiErrors(
+            {"code": "INVALID_EMAIL", "message": "Adresse email invalide"},
+            status_code=400,
+        )
+    except InvalidTokenError:
+        raise ApiErrors(
+            {"code": "INVALID_TOKEN", "message": "Token invalide"},
+            status_code=400,
+        )
+    except exceptions.EmailExistsError:
+        raise ApiErrors(
+            {"code": "INVALID_EMAIL", "message": "Adresse email invalide"},
             status_code=400,
         )
 

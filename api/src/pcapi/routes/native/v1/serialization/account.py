@@ -250,6 +250,10 @@ class UserProfileUpdateRequest(BaseModel):
     password: Optional[str]
 
 
+class ValidateEmailRequest(BaseModel):
+    token: str
+
+
 class BeneficiaryInformationUpdateRequest(BaseModel):
     activity: ActivityEnum
     address: Optional[str]

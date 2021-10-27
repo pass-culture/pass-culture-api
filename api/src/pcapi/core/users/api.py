@@ -38,7 +38,8 @@ from pcapi.core.subscription import api as subscription_api
 from pcapi.core.subscription import messages as subscription_messages
 from pcapi.core.subscription.models import BeneficiaryPreSubscription
 import pcapi.core.subscription.repository as subscription_repository
-from pcapi.core.users import models as users_models
+from pcapi.core.users import exceptions
+from pcapi.core.users import repository as users_repository
 from pcapi.core.users.external import update_external_user
 from pcapi.core.users.models import Credit
 from pcapi.core.users.models import DomainsCredit
@@ -50,9 +51,7 @@ from pcapi.core.users.models import TokenType
 from pcapi.core.users.models import User
 from pcapi.core.users.models import UserRole
 from pcapi.core.users.models import VOID_PUBLIC_NAME
-from pcapi.core.users import repository as users_repository
 from pcapi.core.users.repository import does_validated_phone_exist
-from pcapi.core.users.utils import decode_jwt_token
 from pcapi.core.users.utils import delete_object
 from pcapi.core.users.utils import encode_jwt_payload
 from pcapi.core.users.utils import get_object
@@ -62,6 +61,7 @@ from pcapi.domain import user_emails as old_user_emails
 from pcapi.domain.password import random_hashed_password
 from pcapi.domain.postal_code.postal_code import PostalCode
 from pcapi.domain.user_activation import create_beneficiary_from_application
+from pcapi.models import ApiErrors
 from pcapi.models import BeneficiaryImport
 from pcapi.models import ImportStatus
 from pcapi.models.db import db
@@ -514,36 +514,27 @@ def send_user_emails_for_email_change(user: User, new_email: str, env: str = "we
     send_confirmation_email_change_email(user, new_email, link_for_email_change)
 
 
-def change_user_email(token: str) -> None:
-    try:
-        jwt_payload = decode_jwt_token(token)
-    except (
-        ExpiredSignatureError,
-        InvalidSignatureError,
-        DecodeError,
-        InvalidTokenError,
-    ) as error:
-        raise InvalidTokenError() from error
-
-    if not {"exp", "new_email", "current_email"} <= set(jwt_payload):
-        raise InvalidTokenError()
-
-    new_email = sanitize_email(jwt_payload["new_email"])
-    if find_user_by_email(new_email):
-        return
-
-    current_user = find_user_by_email(jwt_payload["current_email"])
+def change_user_email(current_email: str, new_email: str) -> None:
+    current_user = user_queries.find_user_by_validated_email(current_email)
     if not current_user:
-        return
+        raise exceptions.UserDoesNotExist()
 
-    current_user.email = new_email
+    try:
+        current_user.email = new_email
+        repository.save(current_user)
+    except ApiErrors as error:
+        # The caller might not want to inform the end client that the
+        # email address exists. To do so, raise a specific error and
+        # let the caller handle this specific case as needed.
+        # Note: email addresses are unique (db constraint)
+        if "email" in error.errors:
+            raise exceptions.EmailExistsError() from error
+        raise
+
     sessions = UserSession.query.filter_by(userId=current_user.id)
     repository.delete(*sessions)
-    repository.save(current_user)
 
     logger.info("User has changed their email", extra={"user": current_user.id})
-
-    return
 
 
 def update_user_info(

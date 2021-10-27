@@ -11,6 +11,7 @@ from dateutil.relativedelta import relativedelta
 from flask_jwt_extended.utils import create_access_token
 from freezegun.api import freeze_time
 from google.cloud import tasks_v2
+import jwt
 import pytest
 
 from pcapi import settings
@@ -38,6 +39,7 @@ from pcapi.core.users.models import User
 from pcapi.core.users.models import UserRole
 from pcapi.core.users.models import VOID_PUBLIC_NAME
 from pcapi.core.users.repository import get_id_check_token
+from pcapi.core.users.utils import ALGORITHM_HS_256
 from pcapi.models import db
 from pcapi.models.beneficiary_import_status import ImportStatus
 from pcapi.notifications.push import testing as push_testing
@@ -555,7 +557,7 @@ class UserProfileUpdateTest:
 
         # Email update
         assert user.email == self.identifier  # email not updated until validation link is used
-        assert len(mails_testing.outbox) == 1  # email with validation link sent
+        assert len(mails_testing.outbox) == 2  # one email to the current address, another to the new
 
     def test_unsubscribe_push_notifications(self, app):
         user = users_factories.UserFactory(email=self.identifier)
@@ -697,6 +699,65 @@ class UserProfileUpdateTest:
         user = User.query.filter_by(email=self.identifier).first()
         assert user.email == self.identifier
         assert not mails_testing.outbox
+
+
+class ValidateEmailTest:
+    old_email = "old@email.com"
+    new_email = "new@email.com"
+
+    def test_validate_email(self, app, client):
+        user = users_factories.UserFactory(email=self.old_email)
+
+        response = self.send_request_with_token(client, user.email)
+        assert response.status_code == 204
+
+        user = User.query.get(user.id)
+        assert user.email == self.new_email
+
+    def test_email_exists(self, app, client):
+        user = users_factories.UserFactory(email=self.old_email)
+        users_factories.UserFactory(email=self.new_email, isEmailValidated=True)
+
+        response = self.send_request_with_token(client, user.email)
+
+        assert response.status_code == 400
+        assert response.json["code"] == "INVALID_EMAIL"
+
+        user = User.query.get(user.id)
+        assert user.email == self.old_email
+
+    def test_email_invalid(self, app, client):
+        response = self.send_request_with_token(client, "not_an_email")
+
+        assert response.status_code == 400
+        assert response.json["code"] == "INVALID_EMAIL"
+
+    def test_expired_token(self, app, client):
+        user = users_factories.UserFactory(email=self.old_email)
+        users_factories.UserFactory(email=self.new_email, isEmailValidated=True)
+
+        response = self.send_request_with_token(client, user.email, expiration_delta=-timedelta(hours=1))
+
+        assert response.status_code == 400
+        assert response.json["code"] == "INVALID_TOKEN"
+
+        user = User.query.get(user.id)
+        assert user.email == self.old_email
+
+    def send_request_with_token(self, client, email, expiration_delta=None):
+        if not expiration_delta:
+            expiration_delta = timedelta(hours=1)
+
+        expiration = int((datetime.now() + expiration_delta).timestamp())
+        token_payload = {"exp": expiration, "current_email": email, "new_email": self.new_email}
+
+        token = jwt.encode(
+            token_payload,
+            settings.JWT_SECRET_KEY,  # type: ignore # known as str in build assertion
+            algorithm=ALGORITHM_HS_256,
+        )
+
+        return client.with_token(email).put("/native/v1/profile/validate-email", json={"token": token})
 
 
 class CulturalSurveyTest:

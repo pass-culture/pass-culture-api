@@ -8,6 +8,7 @@ from flask_login import current_user
 from flask_login import login_required
 from flask_login import login_user
 from jwt import InvalidTokenError
+import pydantic
 
 from pcapi import settings
 from pcapi.connectors.api_recaptcha import ReCaptchaException
@@ -25,6 +26,7 @@ from pcapi.routes.serialization import beneficiaries as serialization_beneficiar
 from pcapi.routes.serialization.beneficiaries import BeneficiaryAccountResponse
 from pcapi.routes.serialization.beneficiaries import ChangeBeneficiaryEmailBody
 from pcapi.routes.serialization.beneficiaries import ChangeBeneficiaryEmailRequestBody
+from pcapi.routes.serialization.beneficiaries import ChangeEmailTokenContent
 from pcapi.routes.serialization.beneficiaries import PatchBeneficiaryBodyModel
 from pcapi.serialization.decorator import spectree_serialize
 from pcapi.utils.login_manager import stamp_session
@@ -89,11 +91,18 @@ def change_beneficiary_email_request(body: ChangeBeneficiaryEmailRequestBody) ->
 @spectree_serialize(on_success_status=204, on_error_statuses=[400])
 def change_beneficiary_email(body: ChangeBeneficiaryEmailBody) -> None:
     try:
-        users_api.change_user_email(body.token)
+        payload = ChangeEmailTokenContent.from_token(body.token)
+        users_api.change_user_email(current_email=payload.current_email, new_email=payload.new_email)
+    except pydantic.ValidationError:
+        # Do nothing to avoid a breaking change
+        pass
     except InvalidTokenError as error:
         errors = ApiErrors()
         errors.status_code = 400
         raise errors from error
+    except (users_exceptions.EmailExistsError, users_exceptions.UserDoesNotExist):
+        # Do nothing to avoid a breaking change
+        pass
 
 
 # @debt api-migration
