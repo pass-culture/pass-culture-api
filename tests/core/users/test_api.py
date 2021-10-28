@@ -453,7 +453,7 @@ class CreateBeneficiaryTest:
 
     def test_with_eligible_user(self):
         user = users_factories.UserFactory(roles=[], dateOfBirth=self.AGE18_ELIGIBLE_BIRTH_DATE)
-        user = users_api.activate_beneficiary(user, "test")
+        user = subscription_api.activate_beneficiary(user, "test")
         assert user.has_beneficiary_role
         assert len(user.deposits) == 1
 
@@ -479,7 +479,7 @@ class CreateBeneficiaryTest:
 
     def test_external_users_updated(self):
         user = users_factories.UserFactory(roles=[], dateOfBirth=self.AGE18_ELIGIBLE_BIRTH_DATE)
-        users_api.activate_beneficiary(user, "test")
+        subscription_api.activate_beneficiary(user, "test")
 
         assert len(batch_testing.requests) == 1
         assert len(sendinblue_testing.sendinblue_requests) == 1
