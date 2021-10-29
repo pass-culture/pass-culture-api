@@ -113,7 +113,9 @@ class EduconnectTest:
         user, request_id = self.connect_to_educonnect(client, app)
 
         # Then Educonnect will call /saml/acs
-        educonnect_user = users_factories.EduconnectUserFactory(saml_request_id=request_id)
+        educonnect_user = users_factories.EduconnectUserFactory(
+            first_name="Lucy", last_name="Ellingson", saml_request_id=request_id
+        )
         mock_get_educonnect_user.return_value = educonnect_user
 
         with caplog.at_level(logging.INFO):
@@ -137,6 +139,9 @@ class EduconnectTest:
         beneficiary_import = BeneficiaryImport.query.filter_by(beneficiaryId=user.id).one_or_none()
         assert beneficiary_import is not None
         assert beneficiary_import.currentStatus == ImportStatus.CREATED
+        assert user.firstName == "Lucy"
+        assert user.lastName == "Ellingson"
+        assert user.dateOfBirth == datetime.date.today() - relativedelta(years=15, months=1)
 
     @patch("pcapi.core.users.external.educonnect.api.get_educonnect_user")
     def test_educonnect_redirects_to_success_page_with_waning_log(self, mock_get_educonnect_user, client, app, caplog):
