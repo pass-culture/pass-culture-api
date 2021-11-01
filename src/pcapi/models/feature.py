@@ -75,6 +75,7 @@ class FeatureToggle(enum.Enum):
     ENFORCE_BANK_INFORMATION_WITH_SIRET = "Forcer les informations banquaires à être liées à un SIRET."
     ENABLE_PRO_BOOKINGS_V2 = "Activer l'affichage de la page booking avec la nouvelle architecture."
     IMPROVE_BOOKINGS_PERF = "Améliore les performances pour la page pro des réservations"
+    ENABLE_INE_WHITELIST_FILTER = "Active le filtre sur les INE whitelistés"
 
     def is_active(self) -> bool:
         if flask.has_request_context():
