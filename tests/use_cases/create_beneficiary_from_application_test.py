@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 from unittest.mock import patch
 
 from dateutil.relativedelta import relativedelta
@@ -6,6 +7,7 @@ import freezegun
 import pytest
 
 from pcapi.connectors.beneficiaries import jouve_backend
+from pcapi.core.fraud import models as fraud_models
 import pcapi.core.mails.testing as mails_testing
 from pcapi.core.payments.models import Deposit
 from pcapi.core.subscription import models as subscription_models
@@ -100,6 +102,23 @@ def test_saved_a_beneficiary_from_application(stubed_random_token, app):
     assert len(mails_testing.outbox) == 1
 
     assert len(push_testing.requests) == 1
+
+
+@override_features(PAUSE_JOUVE_SUBSCRIPTION=True)
+@patch("pcapi.connectors.beneficiaries.jouve_backend._get_raw_content", return_value=JOUVE_CONTENT)
+def test_marked_subscription_on_hold_when_jouve_subscription_journed_is_paused(_get_raw_content, caplog):
+    user = users_factories.UserFactory(
+        firstName=JOUVE_CONTENT["firstName"], lastName=JOUVE_CONTENT["lastName"], email=JOUVE_CONTENT["email"]
+    )
+    # When
+    with caplog.at_level(logging.INFO):
+        create_beneficiary_from_application.execute(APPLICATION_ID)
+
+    assert caplog.messages[0] == "User subscription is on hold"
+    assert user.beneficiaryFraudResult.status == fraud_models.FraudStatus.SUBSCRIPTION_ON_HOLD
+
+    assert len(mails_testing.outbox) == 0
+    assert len(push_testing.requests) == 0
 
 
 @override_features(FORCE_PHONE_VALIDATION=False)
