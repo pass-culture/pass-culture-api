@@ -254,7 +254,11 @@ class BeneficiaryView(base_configuration.BaseAdminView):
             user=user, author=flask_login.current_user, reason=form.data["reason"], review=form.data["review"]
         )
         if review.review == fraud_models.FraudReviewStatus.OK.value:
-            users_api.update_user_information_from_external_source(user, fraud_api.get_source_data(user))
+            identity_data = fraud_api.get_identity_data(user)
+            if not identity_data:
+                flask.flash("Aucun dossier Jouve, DMS ou Educonnect trouvé pour cet utilisateur", "error")
+                return flask.redirect(flask.url_for(".index_view"))
+            users_api.update_user_information_from_external_source(user, identity_data)
             subscription_api.activate_beneficiary(user, "fraud_validation")
             send_accepted_as_beneficiary_email(user=user)
             flask.flash(f"L'utilisateur à été activé comme bénéficiaire {user.firstName} {user.lastName}")

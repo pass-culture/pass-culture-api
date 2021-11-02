@@ -249,7 +249,7 @@ class CommonTest:
         fraud_data = fraud_factories.BeneficiaryFraudCheckFactory(user=user, type=fraud_models.FraudCheckType.JOUVE)
         fraud_factories.BeneficiaryFraudCheckFactory(user=user, type=fraud_models.FraudCheckType.DMS)
 
-        expected = fraud_api.get_source_data(user)
+        expected = fraud_api.get_identity_data(user)
 
         assert isinstance(expected, fraud_models.JouveContent)
         assert expected == fraud_models.JouveContent(**fraud_data.resultContent)

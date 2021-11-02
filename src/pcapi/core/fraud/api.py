@@ -361,17 +361,26 @@ def create_user_profiling_check(
     return fraud_check
 
 
-def get_source_data(user: user_models.User) -> models.JouveContent:
-    mapped_class = {models.FraudCheckType.DMS: models.DMSContent, models.FraudCheckType.JOUVE: models.JouveContent}
-    fraud_check_type = (
+def get_identity_data(user: user_models.User) -> Optional[models.JouveContent]:
+    mapped_class = {
+        models.FraudCheckType.DMS: models.DMSContent,
+        models.FraudCheckType.JOUVE: models.JouveContent,
+        models.FraudCheckType.EDUCONNECT: models.EduconnectContent,
+    }
+    fraud_check = (
         models.BeneficiaryFraudCheck.query.filter(
             models.BeneficiaryFraudCheck.userId == user.id,
-            models.BeneficiaryFraudCheck.type.in_([models.FraudCheckType.JOUVE, models.FraudCheckType.DMS]),
+            models.BeneficiaryFraudCheck.type.in_(
+                [models.FraudCheckType.JOUVE, models.FraudCheckType.DMS, models.FraudCheckType.EDUCONNECT]
+            ),
         )
         .order_by(models.BeneficiaryFraudCheck.dateCreated.desc())
         .first()
     )
-    return mapped_class[fraud_check_type.type](**fraud_check_type.resultContent)
+    if not fraud_check:
+        return None
+
+    return mapped_class[fraud_check.type](**fraud_check.resultContent)
 
 
 def upsert_suspicious_fraud_result(user: user_models.User, reason: str) -> models.BeneficiaryFraudResult:
