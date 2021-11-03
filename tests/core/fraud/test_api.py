@@ -120,7 +120,7 @@ class JouveFraudCheckTest:
         user = users_factories.UserFactory(
             hasCompletedIdCheck=True,
             phoneValidationStatus=users_models.PhoneValidationStatusType.VALIDATED,
-            dateOfBirth=self.AGE18_ELIGIBLE_BIRTH_DATE,
+            dateOfBirth=self.eighteen_years_in_the_past,
             email=self.user_email,
         )
         _get_raw_content.return_value = self.JOUVE_CONTENT
