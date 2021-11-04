@@ -29,10 +29,10 @@ def adage_jwt_required(route_function):
             try:
                 adage_jwt_decoded = user_utils.decode_jwt_token_rs256(adage_jwt)
             except InvalidSignatureError as invalid_signature_error:
-                logger.error("Signature of adage jwt cannot be verified", extra={"error": invalid_signature_error})
+                logger.error("Signature of adage jwt cannot be verified", extra={"error": str(invalid_signature_error)})
                 raise ForbiddenError({"Authorization": "Unrecognized token"})
             except ExpiredSignatureError as expired_signature_error:
-                logger.warning("Token has expired", extra={"error": expired_signature_error})
+                logger.warning("Token has expired", extra={"error": str(expired_signature_error)})
                 raise InvalidTokenError({"Token expired"})
 
             if not adage_jwt_decoded.get("exp"):
