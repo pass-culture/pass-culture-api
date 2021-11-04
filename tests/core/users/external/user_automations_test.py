@@ -5,6 +5,8 @@ from freezegun import freeze_time
 import pytest
 
 from pcapi.core.users.constants import ELIGIBILITY_AGE_18
+
+# from pcapi.core.users.external.user_automations import get_users_beneficiary_three_months_before_credit_expiration
 from pcapi.core.users.external.user_automations import get_inactive_user_since_thirty_days
 from pcapi.core.users.external.user_automations import get_users_by_month_created_one_year_before
 from pcapi.core.users.external.user_automations import get_users_who_will_turn_eighteen_in_one_month
@@ -30,8 +32,48 @@ class UserAutomationsTest:
 
         assert len(User.query.all()) == 2
 
+    # @freeze_time("2021-08-01 10:00:00")
+    # def test_get_users_beneficiary_three_months_before_credit_expiration(self):
+    #     with freeze_time("2021-08-01 15:00:00") as frozen_time:
+
+    #         user = users_factories.BeneficiaryGrant18Factory(email="fabien+test@example.net")
+    #         print(user.deposit)
+    #         print(user.deposit_expiration_date)
+    #         frozen_time.move_to("2021-08-31 15:00:01")
+    #         result = get_users_beneficiary_three_months_before_credit_expiration()
+
+    #         assert len(result) == 1
+    #         result = result[0]
+    #         assert result.email == user.email
+
     @freeze_time("2021-08-01 10:00:00")
-    def test_get_users_having_one_year_since_subscription_by_month(self):
+    def test_get_inactive_user_since_thirty_days(self):
+        with freeze_time("2021-08-01 15:00:00") as frozen_time:
+
+            user_beneficiary = users_factories.BeneficiaryGrant18Factory(
+                email="fabien+test@example.net", lastConnectionDate=datetime.datetime(2021, 8, 1)
+            )
+            user_not_beneficiary = users_factories.UserFactory(
+                email="marc+test@example.net", lastConnectionDate=datetime.datetime(2021, 8, 1)
+            )
+            user2 = users_factories.UserFactory(
+                email="daniel+test@example.net", lastConnectionDate=datetime.datetime(2021, 8, 2)
+            )
+            user3 = users_factories.UserFactory(
+                email="billy+test@example.net", dateCreated=datetime.datetime(2021, 7, 31)
+            )
+            user4 = users_factories.UserFactory(
+                email="gerard+test@example.net", dateCreated=datetime.datetime(2021, 9, 1)
+            )
+            frozen_time.move_to("2021-08-31 15:00:01")
+            result = get_inactive_user_since_thirty_days()
+            assert len(result) == 1
+            result = result[0]
+            assert result.email == user_beneficiary.email
+            assert result.email not in [user_not_beneficiary.email, user2.email, user3.email, user4.email]
+
+    @freeze_time("2021-08-01 10:00:00")
+    def test_get_users_by_month_created_one_year_before(self):
         with freeze_time("2021-08-01 15:00:00") as frozen_time:
 
             user = users_factories.UserFactory(
@@ -52,26 +94,3 @@ class UserAutomationsTest:
             for result in results:
                 assert result.email in [user.email, user2.email]
                 assert result.email not in [user3.email, user4.email]
-
-    @freeze_time("2021-08-01 10:00:00")
-    def test_get_inactive_user_since_thirty_days(self):
-        with freeze_time("2021-08-01 15:00:00") as frozen_time:
-
-            user = users_factories.UserFactory(
-                email="fabien+test@example.net", lastConnectionDate=datetime.datetime(2021, 8, 1)
-            )
-            user2 = users_factories.UserFactory(
-                email="daniel+test@example.net", lastConnectionDate=datetime.datetime(2021, 8, 2)
-            )
-            user3 = users_factories.UserFactory(
-                email="billy+test@example.net", dateCreated=datetime.datetime(2021, 7, 31)
-            )
-            user4 = users_factories.UserFactory(
-                email="gerard+test@example.net", dateCreated=datetime.datetime(2021, 9, 1)
-            )
-            frozen_time.move_to("2021-08-31 15:00:01")
-            result = get_inactive_user_since_thirty_days()
-            assert len(result) == 1
-            result = result[0]
-            assert result.email == user.email
-            assert result.email not in [user2.email, user3.email, user4.email]

@@ -43,6 +43,7 @@ def get_inactive_user_since_thirty_days() -> Optional[List[User]]:
         User.query.yield_per(1000)
         .options(load_only(User.email))
         .filter(func.date(User.lastConnectionDate) == _30_DAYS_AGO)
+        .filter(User.is_beneficiary == True)
         .all()
     )
 
