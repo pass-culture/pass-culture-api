@@ -1,13 +1,19 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+import json
 import logging
+from time import sleep
 from typing import List
 from typing import Optional
 from typing import Union
 
 import sib_api_v3_sdk
 from sib_api_v3_sdk.api.contacts_api import ContactsApi
+from sib_api_v3_sdk.api.process_api import ProcessApi
+from sib_api_v3_sdk.models.created_process_id import CreatedProcessId
+from sib_api_v3_sdk.models.get_process import GetProcess
+from sib_api_v3_sdk.models.post_contact_info import PostContactInfo
 from sib_api_v3_sdk.rest import ApiException as SendinblueApiException
 
 from pcapi import settings
@@ -61,7 +67,7 @@ class SendinblueAttributes(Enum):
 def update_contact_attributes(user_email: str, user_attributes: UserAttributes) -> None:
     formatted_attributes = format_user_attributes(user_attributes)
 
-    constact_list_ids = (
+    contact_list_ids = (
         [settings.SENDINBLUE_PRO_CONTACT_LIST_ID]
         if user_attributes.is_pro
         else [settings.SENDINBLUE_YOUNG_CONTACT_LIST_ID]
@@ -71,7 +77,7 @@ def update_contact_attributes(user_email: str, user_attributes: UserAttributes) 
         UpdateSendinblueContactRequest(
             email=user_email,
             attributes=formatted_attributes,
-            contact_list_ids=constact_list_ids,
+            contact_list_ids=contact_list_ids,
             emailBlacklisted=not user_attributes.marketing_email_subscription,
         )
     )
@@ -250,3 +256,84 @@ def import_contacts_in_sendinblue(
             list_ids=[settings.SENDINBLUE_YOUNG_CONTACT_LIST_ID],
             email_blacklist=email_blacklist,
         )
+
+
+def _wait_for_process(api_instance: ProcessApi, process_id: int) -> None:
+    if process_id:
+        # Last status should be 'completed' (exhaustive list of statuses not given in sendinblue API documentation)
+        status = "queued"
+        while status in ("queued", "in_process"):
+            sleep(1)
+            api_response: GetProcess = api_instance.get_process(process_id)
+            logger.warning("ProcessApi->get_process(%d) returned: %s", process_id, api_response)
+            status = api_response.status
+
+
+def add_contacts_to_list(user_emails: List[str], sib_list_id: int, clear_list_first: bool = True) -> bool:
+    """
+    Fills in a list of contacts using Sendinblue API.
+    This function is intended to be used for automation.
+
+    Args:
+        user_emails (List[str]): list of matching user email addresses
+        sib_list_id (int): Sendinblue list identifier
+        clear_list_first (bool): clear all contacts from the list before adding emails
+
+    Returns:
+        bool: True when successful, False otherwise
+    """
+
+    configuration = sib_api_v3_sdk.Configuration()
+    configuration.api_key["api-key"] = settings.SENDINBLUE_API_KEY
+    contacts_api_instance: ContactsApi = sib_api_v3_sdk.ContactsApi(sib_api_v3_sdk.ApiClient(configuration))
+    process_api_instance: ProcessApi = sib_api_v3_sdk.ProcessApi(sib_api_v3_sdk.ApiClient(configuration))
+
+    if clear_list_first is True:
+        # https://developers.sendinblue.com/reference/removecontactfromlist
+        remove_contact = sib_api_v3_sdk.RemoveContactFromList(all=True)
+
+        try:
+            remove_response: PostContactInfo = contacts_api_instance.remove_contact_from_list(
+                sib_list_id, remove_contact
+            )
+            logger.debug("ContactsApi->remove_contact_from_list(%d) returned: %s", sib_list_id, remove_response)
+
+            # While developing, this process takes up to 25 seconds to remove 2 contacts from the list!
+            # We must wait until process LIST_USERS_DELETE is completed, otherwise it may remove a contact which was
+            # re-added in next process IMPORTUSER
+            _wait_for_process(process_api_instance, remove_response.contacts.process_id)
+
+        except SendinblueApiException as exception:
+            message = json.loads(exception.body).get("message")
+            if exception.status == 400 and message == "Contacts already removed from list and/or does not exist":
+                logger.debug("ContactsApi->remove_contact_from_list(%d): list was already empty", sib_list_id)
+            else:
+                logger.exception(
+                    "Exception when calling ContactsApi->remove_contact_from_list(%d): %s",
+                    sib_list_id,
+                    exception,
+                    exc_info=True,
+                )
+                return False
+
+    # Add contacts API is limited to 150 email addresses:
+    # https://developers.sendinblue.com/reference/addcontacttolist-1
+    # So use bulk import (up to 8 MB CSV data):
+    # https://developers.sendinblue.com/reference/importcontacts-1
+    request_contact_import = sib_api_v3_sdk.RequestContactImport()
+    request_contact_import.file_body = "EMAIL\n" + "\n".join(user_emails)
+    request_contact_import.list_ids = [sib_list_id]
+
+    try:
+        import_response: CreatedProcessId = contacts_api_instance.import_contacts(request_contact_import)
+        logger.debug("ContactsApi->import_contacts(%d) returned: %s", sib_list_id, import_response)
+
+        _wait_for_process(process_api_instance, import_response.process_id)
+
+    except SendinblueApiException as exception:
+        logger.exception("Exception when calling ContactsApi->import_contacts: %s", exception, exc_info=True)
+        return False
+
+    # TODO split data: max 8MB per API call
+
+    return True
