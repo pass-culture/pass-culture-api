@@ -1,3 +1,4 @@
+from datetime import date
 from datetime import datetime
 import random
 import string
@@ -29,7 +30,7 @@ class JouveContentFactory(factory.Factory):
     bodyFirstnameLevel = factory.Faker("pyint", max_value=100)
     bodyNameLevel = factory.Faker("pyint", max_value=100)
     bodyNameCtrl = random.choice(JOUVE_CTRL_VALUES)
-    bodyPieceNumber = factory.Faker("pyint")
+    bodyPieceNumber = factory.Sequence(lambda _: "".join(random.choices(string.digits, k=12)))
     bodyPieceNumberCtrl = random.choice(JOUVE_CTRL_VALUES)
     bodyPieceNumberLevel = factory.Faker("pyint", max_value=100)
     city = "Paris"
@@ -101,13 +102,28 @@ class DMSContentFactory(factory.Factory):
     postal_code = "75008"
     activity = "Étudiant"
     address = factory.Faker("address")
-    id_piece_number = factory.Sequence("{}".format)
+    id_piece_number = factory.Sequence(lambda _: "".join(random.choices(string.digits, k=12)))
+
+
+class EduconnectContentFactory(factory.Factory):
+    class Meta:
+        model = models.EduconnectContent
+
+    class Params:
+        age = 15
+
+    birth_date = factory.LazyAttribute(lambda o: date.today() - relativedelta(years=o.age, months=4))
+    educonnect_id = factory.Faker("lexify", text="id-?????????????????")
+    first_name = factory.Faker("first_name")
+    ine_hash = factory.Sequence(lambda _: "".join(random.choices(string.ascii_lowercase + string.digits, k=32)))
+    last_name = factory.Faker("last_name")
 
 
 FRAUD_CHECK_TYPE_MODEL_ASSOCIATION = {
     models.FraudCheckType.DMS: DMSContentFactory,
     models.FraudCheckType.JOUVE: JouveContentFactory,
     models.FraudCheckType.USER_PROFILING: UserProfilingFraudDataFactory,
+    models.FraudCheckType.EDUCONNECT: EduconnectContentFactory,
 }
 
 
@@ -116,7 +132,7 @@ class BeneficiaryFraudCheckFactory(testing.BaseFactory):
         model = models.BeneficiaryFraudCheck
 
     user = factory.SubFactory(users_factories.BeneficiaryGrant18Factory)
-    type = factory.LazyAttribute(lambda o: random.choice(list(models.FraudCheckType)))
+    type = models.FraudCheckType.JOUVE
     thirdPartyId = factory.Sequence("ThirdPartyIdentifier-{0}".format)
     resultContent = factory.SubFactory(JouveContentFactory)
 
@@ -125,8 +141,10 @@ class BeneficiaryFraudCheckFactory(testing.BaseFactory):
         """Override the default ``_create`` with our custom call."""
         factory_class = FRAUD_CHECK_TYPE_MODEL_ASSOCIATION.get(kwargs["type"])
         content = {}
+
         if factory_class:
             content = factory_class()
+
         if factory_class and not isinstance(kwargs["resultContent"], factory_class._meta.get_model_class()):
             kwargs["resultContent"] = content
 
@@ -138,7 +156,7 @@ class BeneficiaryFraudResultFactory(testing.BaseFactory):
         model = models.BeneficiaryFraudResult
 
     user = factory.SubFactory(users_factories.BeneficiaryGrant18Factory)
-    status = factory.LazyAttribute(lambda o: random.choice(list(models.FraudStatus)).value)
+    status = models.FraudStatus.OK
     reason = factory.Sequence("Fraud Result excuse #{0}".format)
 
 
@@ -149,20 +167,6 @@ class BeneficiaryFraudReviewFactory(testing.BaseFactory):
     user = factory.SubFactory(users_factories.BeneficiaryGrant18Factory)
     author = factory.SubFactory(users_factories.AdminFactory)
     reason = factory.Sequence("Fraud validation reason #{0}".format)
-
-
-class EduconnectContentFactory(factory.Factory):
-    class Meta:
-        model = models.EduconnectContent
-
-    class Params:
-        age = 15
-
-    birth_date = factory.LazyAttribute(lambda o: datetime.now() - relativedelta(years=o.age, months=4))
-    educonnect_id = factory.Faker("lexify", text="id-?????????????????")
-    first_name = factory.Faker("first_name")
-    ine_hash = factory.Sequence(lambda _: "".join(random.choices(string.ascii_lowercase + string.digits, k=32)))
-    last_name = factory.Faker("last_name")
 
 
 ### TODO: remove after 15-17 test phase ###
