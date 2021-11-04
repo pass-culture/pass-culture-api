@@ -162,3 +162,26 @@ class BulkImportUsersDataTest:
         )
 
         assert result is True
+
+    def _test_add_many_contacts_to_list_without_mock(self, count: int, prefix: str):
+        # 40 characters per email address
+        test_time = datetime.now().strftime("%y%m%d.%H%M")
+        thousands_emails = [f"test.{prefix}.{test_time}.{i:06d}@yopmail.com" for i in range(1, count + 1)]
+
+        result = add_contacts_to_list(
+            thousands_emails,
+            settings.SENDINBLUE_AUTOMATION_TEST_CONTACT_LIST_ID,
+        )
+
+        assert result is True
+
+    @pytest.mark.skip(reason="For dev and debug only - this test sends data to sendinblue")
+    def test_add_200k_contacts_to_list_without_mock(self):
+        # 200k contacts: a single 8MB import request
+        self._test_add_many_contacts_to_list_without_mock(200000, "200k")
+
+    @pytest.mark.skip(reason="For dev and debug only - this test sends data to sendinblue")
+    def test_add_500k_contacts_to_list_without_mock(self):
+        # 500k contacts: several import requests
+        # Use with caution, test takes 12 minutes
+        self._test_add_many_contacts_to_list_without_mock(500000, "500k")

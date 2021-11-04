@@ -272,7 +272,7 @@ def _wait_for_process(api_instance: ProcessApi, process_id: int) -> None:
 def add_contacts_to_list(user_emails: List[str], sib_list_id: int, clear_list_first: bool = True) -> bool:
     """
     Fills in a list of contacts using Sendinblue API.
-    This function is intended to be used for automation.
+    This function is intended to be used for automation and returns synchronously (waits for completion).
 
     Args:
         user_emails (List[str]): list of matching user email addresses
@@ -296,7 +296,7 @@ def add_contacts_to_list(user_emails: List[str], sib_list_id: int, clear_list_fi
             remove_response: PostContactInfo = contacts_api_instance.remove_contact_from_list(
                 sib_list_id, remove_contact
             )
-            logger.debug("ContactsApi->remove_contact_from_list(%d) returned: %s", sib_list_id, remove_response)
+            logger.warning("ContactsApi->remove_contact_from_list(%d) returned: %s", sib_list_id, remove_response)
 
             # While developing, this process takes up to 25 seconds to remove 2 contacts from the list!
             # We must wait until process LIST_USERS_DELETE is completed, otherwise it may remove a contact which was
@@ -306,7 +306,7 @@ def add_contacts_to_list(user_emails: List[str], sib_list_id: int, clear_list_fi
         except SendinblueApiException as exception:
             message = json.loads(exception.body).get("message")
             if exception.status == 400 and message == "Contacts already removed from list and/or does not exist":
-                logger.debug("ContactsApi->remove_contact_from_list(%d): list was already empty", sib_list_id)
+                logger.warning("ContactsApi->remove_contact_from_list(%d): list was already empty", sib_list_id)
             else:
                 logger.exception(
                     "Exception when calling ContactsApi->remove_contact_from_list(%d): %s",
@@ -320,20 +320,35 @@ def add_contacts_to_list(user_emails: List[str], sib_list_id: int, clear_list_fi
     # https://developers.sendinblue.com/reference/addcontacttolist-1
     # So use bulk import (up to 8 MB CSV data):
     # https://developers.sendinblue.com/reference/importcontacts-1
-    request_contact_import = sib_api_v3_sdk.RequestContactImport()
-    request_contact_import.file_body = "EMAIL\n" + "\n".join(user_emails)
-    request_contact_import.list_ids = [sib_list_id]
-
     try:
-        import_response: CreatedProcessId = contacts_api_instance.import_contacts(request_contact_import)
-        logger.debug("ContactsApi->import_contacts(%d) returned: %s", sib_list_id, import_response)
+        # Let's put 200k emails addresses per API call, which allows an average email length of 41 characters to
+        # ensure that the body is not bigger than 8 MB. According to Google searches, the average length is between 20
+        # and 25. We are safe :-)
+        max_emails_per_import = 200000
+        process_ids = []
 
-        _wait_for_process(process_api_instance, import_response.process_id)
+        for offset in range(0, len(user_emails), max_emails_per_import):
+            current_emails = user_emails[offset : offset + max_emails_per_import]
+
+            request_contact_import = sib_api_v3_sdk.RequestContactImport()
+            request_contact_import.file_body = "EMAIL\n" + "\n".join(current_emails)
+            request_contact_import.list_ids = [sib_list_id]
+
+            logger.warning(
+                "ContactsApi->import_contacts: %d emails, size: %d KB",
+                len(current_emails),
+                len(request_contact_import.file_body) / 1024,
+            )
+
+            import_response: CreatedProcessId = contacts_api_instance.import_contacts(request_contact_import)
+            logger.warning("ContactsApi->import_contacts(%d) returned: %s", sib_list_id, import_response)
+            process_ids.append(import_response.process_id)
+
+        for process_id in process_ids:
+            _wait_for_process(process_api_instance, process_id)
 
     except SendinblueApiException as exception:
         logger.exception("Exception when calling ContactsApi->import_contacts: %s", exception, exc_info=True)
         return False
-
-    # TODO split data: max 8MB per API call
 
     return True
