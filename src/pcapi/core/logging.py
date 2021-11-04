@@ -86,6 +86,9 @@ def monkey_patch_logger_makeRecord():
             name, level, fn, lno, msg, args, exc_info, func=func, extra=extra, sinfo=sinfo
         )
         record.extra = extra or {}
+        if settings.IS_RUNNING_TESTS:
+            json.dumps(record.extra, cls=JsonLogEncoder)
+
         return record
 
     logging.Logger.__original_makeRecord = logging.Logger.makeRecord

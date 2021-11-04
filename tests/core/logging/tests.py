@@ -10,6 +10,7 @@ import pytest
 from pcapi.core.logging import JsonFormatter
 from pcapi.core.logging import get_logged_in_user_id
 from pcapi.core.logging import get_or_set_correlation_id
+from pcapi.core.testing import override_settings
 import pcapi.core.users.factories as users_factories
 
 
@@ -98,8 +99,14 @@ class JsonFormatterTest:
 
         # gracefully handle non-serializable objects
         obj = object()
-        record = self._make_record("Frobulated %d blobs", 12, extra={"blobs": obj})
+        with override_settings(IS_RUNNING_TESTS=False):
+            record = self._make_record("Frobulated %d blobs", 12, extra={"blobs": obj})
         serialized = formatter.format(record)
         deserialized = json.loads(serialized)
         assert deserialized["message"] == "Frobulated 12 blobs"
         assert deserialized["extra"] == {"unserializable": str({"blobs": obj})}
+
+        # raise an error in test if the log does not serialize
+        with override_settings(IS_RUNNING_TESTS=True):
+            with pytest.raises(Exception):
+                record = self._make_record("Frobulated %d blobs", 12, extra={"blobs": obj})
