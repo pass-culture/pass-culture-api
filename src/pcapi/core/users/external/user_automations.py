@@ -3,6 +3,7 @@ from typing import List
 from typing import Optional
 
 from dateutil.relativedelta import relativedelta
+from sqlalchemy import extract
 from sqlalchemy import func
 
 from pcapi.core.users.constants import ELIGIBILITY_AGE_18
@@ -31,13 +32,12 @@ def get_inactive_user_since_thirty_days() -> Optional[List[User]]:
     return User.query.filter(func.date(User.lastConnectionDate) >= _30_DAYS_AGO).all()
 
 
-def get_users_having_one_year_since_subscription_by_month() -> Optional[List[User]]:
-    # not tested yet
-    # example : get all users subscribed in january from one year ago
-    _12_MONTHS_AGO = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) - relativedelta(days=365)
-    _11_MONTHS_AGO = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) - relativedelta(days=335)
+def get_users_by_month_created_one_year_before() -> Optional[List[User]]:
+    # example : get all users created in january from one year ago
+    _12_MONTHS_AGO = datetime.utcnow() - relativedelta(months=12)
+    print(_12_MONTHS_AGO)
     return (
-        User.query.filter(func.date(User.deposit_activation_date) >= _12_MONTHS_AGO)
-        .filter(func.date(User.deposit_activation_date) <= _11_MONTHS_AGO)
+        User.query.filter(extract("year", User.dateCreated) == _12_MONTHS_AGO.year)
+        .filter(extract("month", User.dateCreated) == _12_MONTHS_AGO.month)
         .all()
     )
