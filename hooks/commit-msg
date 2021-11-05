@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo -e "Checking commit message format"
+MSG_FILE=$1
+cz check --commit-msg-file $MSG_FILE

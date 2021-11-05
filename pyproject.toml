@@ -27,3 +27,34 @@ multi_line_output = 3
 sections = "FUTURE,STDLIB,THIRDPARTY,FIRSTPARTY,TESTS,LOCALFOLDER"
 skip_gitignore = true
 use_parentheses = true
+
+[tool.commitizen]
+name = "cz_customize"
+
+[tool.commitizen.customize]
+message_template = "({{jira_ticket}}) {{change_type}}[{{scope}}]: {{message}}"
+example = "(PC-12345) feat:[pass culture] this feature enable customize through config file"
+schema = "(<ticket_number>) <type>:<scope>: <subject>\n<BLANK LINE>\n<body>\n<BLANK LINE>\n"
+schema_pattern = "(\\(|\\[)PC-\\d+(\\)|\\]) ?(build|ci|docs|feat|fix|perf|refactor|style|test|chore|revert|bump):(\\[[\\w\\s]+\\])?[\\w\\s]+$"
+
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "jira_ticket"
+message = "Jira ticket number. e.g. PC-XXXX"
+
+[[tool.commitizen.customize.questions]]
+type = "list"
+name = "change_type"
+choices = [{value = "fix", name = "fix: A bug fix."}, {value = "feat",name = "feat: A new feature."}, {value = "docs", name = "docs: Documentation only changes"},{value = "style",name = "style: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)"},{value = "refactor",name = "refactor: A code change that neither fixes a bug nor adds a feature"},{value = "perf",name = "perf: A code change that improves performance"},{value = "test",name = "test: Adding missing or correcting existing tests"},{value = "build",name = "build: Changes that affect the build system or external dependencies (example scopes: pip, docker, npm)"},{value = "ci",name = "ci: Changes to our CI configuration files and scripts (example scopes: GitLabCI)"},]
+message = "Select the type of change you are committing"
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "scope"
+message = "The scope of this commit"
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "message"
+message = "The commit message"

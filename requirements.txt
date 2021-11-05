@@ -76,3 +76,4 @@ tzlocal<3.0.0
 Werkzeug==1.0.1
 wheel==0.35.1
 WTForms-SQLAlchemy
+commitizen
