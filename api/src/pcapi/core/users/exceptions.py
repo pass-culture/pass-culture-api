@@ -134,3 +134,7 @@ class EmailExistsError(Exception):
 
 class InvalidEmailError(Exception):
     pass
+
+
+class EmailUpdateTokenExists(Exception):
+    pass

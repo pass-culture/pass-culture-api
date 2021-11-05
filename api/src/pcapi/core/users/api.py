@@ -504,13 +504,15 @@ def bulk_unsuspend_account(user_ids: list[int], actor: User) -> None:
     )
 
 
-def send_user_emails_for_email_change(user: User, new_email: str, env: str = "webapp") -> None:
+def send_user_emails_for_email_change(
+    user: User, new_email: str, expiration_date: datetime, env: str = "webapp"
+) -> None:
     user_with_new_email = find_user_by_email(new_email)
     if user_with_new_email:
         return
 
     send_information_email_change_email(user)
-    link_for_email_change = _build_link_for_email_change(user.email, new_email, env)
+    link_for_email_change = _build_link_for_email_change(user.email, new_email, expiration_date, env)
     send_confirmation_email_change_email(user, new_email, link_for_email_change)
 
 
@@ -530,6 +532,8 @@ def change_user_email(current_email: str, new_email: str) -> None:
         if "email" in error.errors:
             raise exceptions.EmailExistsError() from error
         raise
+
+    app.redis_client.unlink(email_update_token_ttl_key(current_user))
 
     sessions = UserSession.query.filter_by(userId=current_user.id)
     repository.delete(*sessions)
@@ -570,8 +574,7 @@ def update_user_info(
     repository.save(user)
 
 
-def _build_link_for_email_change(current_email: str, new_email: str, env: str) -> str:
-    expiration_date = datetime.now() + constants.EMAIL_CHANGE_TOKEN_LIFE_TIME
+def _build_link_for_email_change(current_email: str, new_email: str, expiration_date: datetime, env: str) -> str:
     token = encode_jwt_payload({"current_email": current_email, "new_email": new_email}, expiration_date)
     expiration = int(expiration_date.timestamp())
 
@@ -834,6 +837,31 @@ def check_email_update_attempts(user: User, redis: Redis) -> None:
         raise exceptions.EmailUpdateLimitReached()
 
 
+def email_update_token_ttl_key(user: User) -> str:
+    return f"update_email_active_tokens_{user.id}"
+
+
+def save_email_update_activation_token_ttl(user: User, redis: Redis) -> datetime:
+    """
+    Use a dummy counter to find out whether the user already has an
+    active token.
+
+    * If the incr command returns 1, there were none. Hence, set a TTL
+      (expiration_date, the lifetime of the validation token).
+    * If not, raise an error because there is already one.
+    """
+    key = email_update_token_ttl_key(user)
+    count = redis.incr(key)
+
+    if count > 1:
+        raise exceptions.EmailUpdateTokenExists()
+
+    expiration_date = datetime.now() + constants.EMAIL_CHANGE_TOKEN_LIFE_TIME
+    redis.expireat(key, expiration_date)
+
+    return expiration_date
+
+
 def check_user_password(user: User, password: Optional[str]) -> None:
     if not password:
         raise exceptions.EmailUpdateInvalidPassword()
@@ -1034,7 +1062,8 @@ def update_email(user: User, email: str, password: Optional[str]) -> None:
     check_email_address_does_not_exist(email)
     check_user_password(user, password)
 
-    send_user_emails_for_email_change(user, email, "native")
+    expiration_date = save_email_update_activation_token_ttl(user, app.redis_client)
+    send_user_emails_for_email_change(user, email, expiration_date, "native")
 
 
 def update_notification_subscription(

@@ -2,6 +2,7 @@ from datetime import datetime
 import logging
 
 from flask import abort
+from flask import current_app as app
 from flask import jsonify
 from flask import request
 from flask_login import current_user
@@ -80,7 +81,13 @@ def change_beneficiary_email_request(body: ChangeBeneficiaryEmailRequestBody) ->
         raise errors from exc
 
     try:
-        users_api.send_user_emails_for_email_change(user, body.new_email)
+        expiration_date = users_api.save_email_update_activation_token_ttl(user, app.redis_client)
+    except users_exceptions.EmailUpdateTokenExists as error:
+        errors.add_error("token", "Un token actif existe déjà")
+        raise errors from error
+
+    try:
+        users_api.send_user_emails_for_email_change(user, body.new_email, expiration_date)
     except MailServiceException as mail_service_exception:
         errors.status_code = 503
         errors.add_error("email", "L'envoi d'email a échoué")

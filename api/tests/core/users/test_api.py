@@ -1278,3 +1278,20 @@ class CheckEmailPasswordFormatTest:
 
         with pytest.raises(users_exceptions.EmailUpdateInvalidPassword):
             users_api.check_email_password_format("email@example.com", "nope")
+
+
+class UpdateEmailTest:
+    def test_update_email(self):
+        user = users_factories.UserFactory(email="py@test.com")
+        user.setPassword("some_password")
+
+        users_api.update_email(user, "new@email.com", "some_password")
+        assert len(mails_testing.outbox) == 2
+
+    def test_token_exists(self):
+        user = users_factories.UserFactory(email="py@test.com")
+        user.setPassword("some_password")
+
+        with pytest.raises(users_exceptions.EmailUpdateTokenExists):
+            users_api.update_email(user, "new@email.com", "some_password")
+            users_api.update_email(user, "another@email.com", "some_password")

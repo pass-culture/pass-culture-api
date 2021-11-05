@@ -54,6 +54,11 @@ def update_user_profile(user: User, body: serializers.UserProfileUpdateRequest) 
     try:
         api.update_user_profile(user, body)
         return serializers.UserProfileResponse.from_orm(user)
+    except exceptions.EmailUpdateTokenExists:
+        raise ApiErrors(
+            {"code": "TOKEN_EXISTS", "message": "Un token actif existe déjà"},
+            status_code=400,
+        )
     except exceptions.EmailUpdateInvalidPassword:
         raise ApiErrors(
             {"code": "INVALID_PASSWORD", "message": "Mot de passe invalide"},
