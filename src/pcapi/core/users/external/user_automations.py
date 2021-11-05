@@ -1,60 +1,175 @@
+from datetime import date
 from datetime import datetime
 from typing import List
-from typing import Optional
 
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import extract
 from sqlalchemy import func
 from sqlalchemy.orm import load_only
+from sqlalchemy.sql.expression import and_
+from sqlalchemy.sql.expression import or_
 
+from pcapi import settings
+from pcapi.core.payments.models import Deposit
 from pcapi.core.users.constants import ELIGIBILITY_AGE_18
+from pcapi.core.users.external.sendinblue import add_contacts_to_list
 from pcapi.models import User
 
 
-AGE18_ELIGIBLE_BIRTH_DATE = datetime.utcnow() - relativedelta(years=ELIGIBILITY_AGE_18)
+YIELD_COUNT_PER_DB_QUERY = 1000
 
 
-def get_users_who_will_turn_eighteen_in_one_month() -> Optional[List[User]]:
-    _18_YEARS_IN_1_MONTHS = (
-        datetime.utcnow() - relativedelta(years=ELIGIBILITY_AGE_18) + relativedelta(days=30)
-    ).date()
+def get_users_who_will_turn_eighteen_in_one_month() -> List[User]:
+    # Keep 30 days and not 1 month; otherwise any user born e.g. Jan 31 will never be included (no Feb 31)
+    expected_birth_date = date.today() - relativedelta(years=ELIGIBILITY_AGE_18, days=-30)
+
+    # Not clear who a young user is: a beneficiary or any role not in (admin, pro, jouve)?
+    # .filter(User.is_beneficiary is True) would exclude users who did not complete registration process
     return (
-        User.query.yield_per(1000)
+        User.query.yield_per(YIELD_COUNT_PER_DB_QUERY)
         .options(load_only(User.email))
-        .filter(func.date(User.dateOfBirth) == _18_YEARS_IN_1_MONTHS)
+        .filter(func.date(User.dateOfBirth) == expected_birth_date)
+        .filter(User.has_pro_role.is_(False))
+        .filter(User.isAdmin.is_(False))
         .all()
     )
 
 
-def get_users_beneficiary_three_months_before_credit_expiration() -> Optional[List[User]]:
-    # not tested yet
-    IN_3_MONTHS = (datetime.utcnow() + relativedelta(days=90)).date()
+def user_turned_eighteen_automation() -> bool:
+    """
+    This automation is called every day and includes all young users who will turn 18 exactly 30 days later.
+
+    List: jeunes-18-m-1
+    """
+    user_emails = (user.email for user in get_users_who_will_turn_eighteen_in_one_month())
+    return add_contacts_to_list(
+        user_emails, settings.SENDINBLUE_AUTOMATION_YOUNG_18_IN_1_MONTH_LIST_ID, clear_list_first=True
+    )
+
+
+def get_users_beneficiary_credit_expiration_within_next_3_months() -> List[User]:
     return (
-        User.query.yield_per(1000)
+        User.query.yield_per(YIELD_COUNT_PER_DB_QUERY)
         .options(load_only(User.email))
-        .filter(func.date(User.deposit_expiration_date) == IN_3_MONTHS)
+        .join(User.deposits)
+        .filter(User.is_beneficiary.is_(True))
+        .filter(
+            Deposit.expirationDate.between(
+                datetime.combine(date.today(), datetime.min.time()),
+                datetime.combine(date.today() + relativedelta(days=90), datetime.max.time()),
+            )
+        )
         .all()
     )
 
 
-def get_inactive_user_since_thirty_days() -> Optional[List[User]]:
-    _30_DAYS_AGO = (datetime.utcnow() - relativedelta(days=30)).date()
+def users_beneficiary_credit_expiration_within_next_3_months_automation() -> bool:
+    """
+    This automation is called every day and includes all young user whose pass expires in the next 3 months. They may
+    have remaining unspent credit or not.
+
+    User enters in the list on the 90th day before expiration date and leaves the list the day after expiration date.
+
+    List: jeunes-expiration-M-3
+    """
+    user_emails = (user.email for user in get_users_beneficiary_credit_expiration_within_next_3_months())
+    return add_contacts_to_list(
+        user_emails, settings.SENDINBLUE_AUTOMATION_YOUNG_EXPIRATION_M3_ID, clear_list_first=True
+    )
+
+
+def get_users_ex_beneficiary() -> List[User]:
     return (
-        User.query.yield_per(1000)
+        User.query.yield_per(YIELD_COUNT_PER_DB_QUERY)
         .options(load_only(User.email))
-        .filter(func.date(User.lastConnectionDate) == _30_DAYS_AGO)
-        .filter(User.is_beneficiary == True)
+        .join(User.deposits)
+        .filter(User.is_beneficiary.is_(True))
+        .filter(
+            or_(
+                Deposit.expirationDate <= datetime.combine(date.today(), datetime.min.time()),
+                and_(
+                    Deposit.expirationDate > datetime.combine(date.today(), datetime.min.time()),
+                    func.get_wallet_balance(User.id, False) <= 0,
+                ),
+            )
+        )
         .all()
     )
 
 
-def get_users_by_month_created_one_year_before() -> Optional[List[User]]:
-    # example : get all users created during january from one year ago
-    _12_MONTHS_AGO = datetime.utcnow() - relativedelta(months=12)
+def user_ex_beneficiary_automation() -> bool:
+    """
+    This automation is called every day to include all young users whose credit is expired: they either spent their full
+    credit or reached expiration date with unused credit.
+
+    Note that a young user may be in "jeunes-ex-benefs" list before "jeunes-expiration-M-3".
+
+    List: jeunes-ex-benefs
+    """
+    user_emails = (user.email for user in get_users_ex_beneficiary())
+    return add_contacts_to_list(
+        user_emails, settings.SENDINBLUE_AUTOMATION_YOUNG_EX_BENEFICIARY_ID, clear_list_first=False
+    )
+
+
+def get_inactive_user_since_thirty_days() -> List[User]:
+    date_30_days_ago = date.today() - relativedelta(days=30)
+
+    # same filter for young user as above in get_users_who_will_turn_eighteen_in_one_month -- keep synchronized
     return (
-        User.query.yield_per(1000)
+        User.query.yield_per(YIELD_COUNT_PER_DB_QUERY)
         .options(load_only(User.email))
-        .filter(extract("year", User.dateCreated) == _12_MONTHS_AGO.year)
-        .filter(extract("month", User.dateCreated) == _12_MONTHS_AGO.month)
+        .filter(func.date(User.lastConnectionDate) == date_30_days_ago)
+        .filter(User.has_pro_role.is_(False))
+        .filter(User.isAdmin.is_(False))
         .all()
+    )
+
+
+def users_inactive_since_30_days_automation() -> bool:
+    """
+    This automation update every day the list of users who are inactive since 30 days or more:
+    - adds or keeps any young user who did not connect to the app in the least 30 days (even if the email has been sent;
+      marketing filters will ensure that he or she receives the email only once)
+    - removes any inactive user who connected recently
+
+    List: jeunes-utilisateurs-inactifs
+    """
+    user_emails = (user.email for user in get_inactive_user_since_thirty_days())
+    return add_contacts_to_list(
+        user_emails, settings.SENDINBLUE_AUTOMATION_YOUNG_INACTIVE_30_DAYS_LIST_ID, clear_list_first=True
+    )
+
+
+def get_users_by_month_created_one_year_before() -> List[User]:
+    first_day_of_month = (date.today() - relativedelta(months=12)).replace(day=1)
+    last_day_of_month = first_day_of_month + relativedelta(months=1, days=-1)
+
+    # same filter for young user as above in get_users_who_will_turn_eighteen_in_one_month -- keep synchronized
+    return (
+        User.query.yield_per(YIELD_COUNT_PER_DB_QUERY)
+        .options(load_only(User.email))
+        .filter(
+            User.dateCreated.between(
+                datetime.combine(first_day_of_month, datetime.min.time()),
+                datetime.combine(last_day_of_month, datetime.max.time()),
+            )
+        )
+        .filter(User.has_pro_role.is_(False))
+        .filter(User.isAdmin.is_(False))
+        .all()
+    )
+
+
+def users_one_year_with_pass_automation() -> bool:
+    """
+    This automation is called once a month and includes young users who created their PassCulture account in the same
+    month (from first to last day) one year earlier.
+
+    Example: List produced in November 2021 contains all young users who created their account in November 2020
+
+    List: jeunes-un-an-sur-le-pass
+    """
+    user_emails = (user.email for user in get_users_by_month_created_one_year_before())
+    return add_contacts_to_list(
+        user_emails, settings.SENDINBLUE_AUTOMATION_YOUNG_1_YEAR_WITH_PASS_LIST_ID, clear_list_first=True
     )
