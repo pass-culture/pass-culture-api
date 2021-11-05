@@ -50,7 +50,7 @@ api:
   autoscaling:
     enabled: true
     minReplicas: 10
-    maxReplicas: 60
+    maxReplicas: 80
     targetCPUUtilization: 70
     # Enable this option to scale on memory percentage
     # targetMemoryUtilization: 70
@@ -180,7 +180,7 @@ admin:
 workers:
   - name: worker
     enabled: true
-    replicaCount: 5
+    replicaCount: 1
     command:
       - flask
     args:
@@ -209,7 +209,7 @@ workers:
         memory: 384Mi
   - name: worker-idcheck
     enabled: true
-    replicaCount: 2
+    replicaCount: 1
     command:
       - flask
     args:
@@ -297,10 +297,10 @@ uploadIdentityDocument:
       cpu: 700m
       memory: 1536Mi
 
-  replicaCount: 3
+  replicaCount: 1
   autoscaling:
     enabled: true
-    minReplicas: 3
+    minReplicas: 1
     maxReplicas: 10
     targetCPUUtilization: 70
     # Enable this option to scale on memory percentage
