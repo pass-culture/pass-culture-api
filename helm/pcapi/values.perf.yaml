@@ -50,7 +50,7 @@ api:
   autoscaling:
     enabled: true
     minReplicas: 10
-    maxReplicas: 80
+    maxReplicas: 120
     targetCPUUtilization: 70
     # Enable this option to scale on memory percentage
     # targetMemoryUtilization: 70
