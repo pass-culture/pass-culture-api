@@ -20,7 +20,7 @@ def get_venue(venue_id: int) -> serializers.VenueResponse:
         latitude=venue.latitude,
         longitude=venue.longitude,
         city=venue.city,
-        publicName=venue.publicName,
+        publicName=venue.publicName or venue.name,
         isVirtual=venue.isVirtual,
         isPermanent=venue.isPermanent,
         withdrawalDetails=venue.withdrawalDetails,

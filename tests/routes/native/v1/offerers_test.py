@@ -41,6 +41,14 @@ class VenuesTest:
             },
         }
 
+    def test_get_venue_public_name(self, client):
+        venue = offerer_factories.VenueFactory(isPermanent=True, publicName=None)
+
+        response = client.get(f"/native/v1/venue/{venue.id}")
+
+        assert response.status_code == 200
+        assert response.json["publicName"] == venue.name
+
     def test_get_non_permanent_venue(self, client):
         venue = offerer_factories.VenueFactory(isPermanent=False)
         response = client.get(f"/native/v1/venue/{venue.id}")
