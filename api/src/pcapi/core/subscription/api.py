@@ -32,14 +32,16 @@ def attach_beneficiary_import_details(
     application_id: int,
     source_id: int,
     source: BeneficiaryImportSources,
-    details: str,
+    details: Optional[str] = None,
     status: ImportStatus = ImportStatus.CREATED,
+    eligibilityType: users_models.EligibilityType = users_models.EligibilityType.AGE18,
 ) -> None:
     beneficiary_import = BeneficiaryImport.query.filter_by(
         applicationId=application_id,
         sourceId=source_id,
         source=source.value,
         beneficiary=beneficiary,
+        eligibilityType=eligibilityType,
     ).one_or_none()
     if not beneficiary_import:
         beneficiary_import = BeneficiaryImport(
@@ -47,6 +49,7 @@ def attach_beneficiary_import_details(
             sourceId=source_id,
             source=source.value,
             beneficiary=beneficiary,
+            eligibilityType=eligibilityType,
         )
 
     beneficiary_import.setStatus(status=status, detail=details)
@@ -109,10 +112,11 @@ def check_and_activate_beneficiary(
         return user
 
 
-def create_beneficiary_import(user: users_models.User) -> None:
-    if not user.beneficiaryFraudResult:
+def create_beneficiary_import(
+    user: users_models.User, fraud_result: Optional[fraud_models.BeneficiaryFraudResult]
+) -> None:
+    if not fraud_result:
         raise exceptions.BeneficiaryFraudResultMissing()
-    fraud_result: fraud_models.BeneficiaryFraudResult = user.beneficiaryFraudResult
     fraud_check = fraud_models.BeneficiaryFraudCheck.query.filter_by(
         user=user,
         type=fraud_models.FraudCheckType.EDUCONNECT,

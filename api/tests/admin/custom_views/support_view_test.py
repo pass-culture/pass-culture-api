@@ -326,7 +326,8 @@ class UpdateIDPieceNumberTest:
 
         assert response.status_code == 302
 
-        assert user.beneficiaryFraudResult.status == fraud_models.FraudStatus.OK
+        assert len(user.beneficiaryFraudResults) == 1
+        assert user.beneficiaryFraudResults[0].status == fraud_models.FraudStatus.OK
         assert fraud_check.resultContent["bodyPieceNumberCtrl"] == "OK"
         assert fraud_check.resultContent["bodyPieceNumber"] == id_piece_number
         assert user.idPieceNumber == id_piece_number
@@ -347,7 +348,8 @@ class UpdateIDPieceNumberTest:
         )
         assert response.status_code == 302
 
-        assert user.beneficiaryFraudResult.status == fraud_models.FraudStatus.OK
+        assert len(user.beneficiaryFraudResults) == 1
+        assert user.beneficiaryFraudResults[0].status == fraud_models.FraudStatus.OK
         assert fraud_check.resultContent["id_piece_number"] == id_piece_number
         assert user.idPieceNumber == id_piece_number
         assert user.has_beneficiary_role
@@ -374,7 +376,8 @@ class UpdateIDPieceNumberTest:
         )
         assert response.status_code == 302
 
-        assert user.beneficiaryFraudResult.status == fraud_models.FraudStatus.OK
+        assert len(user.beneficiaryFraudResults) == 1
+        assert user.beneficiaryFraudResults[0].status == fraud_models.FraudStatus.OK
         assert fraud_check.resultContent["id_piece_number"] == id_piece_number
         assert user.idPieceNumber == id_piece_number
         assert user.has_beneficiary_role

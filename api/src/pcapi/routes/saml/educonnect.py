@@ -85,11 +85,11 @@ def on_educonnect_authentication_response() -> Response:
         last_name=educonnect_user.last_name,
     )
 
-    fraud_api.on_educonnect_result(user, educonnect_content)
+    fraud_result = fraud_api.on_educonnect_result(user, educonnect_content)
 
     error_page_base_url = f"{settings.WEBAPP_V2_URL}/idcheck/educonnect/erreur?"
     try:
-        subscription_api.create_beneficiary_import(user)
+        subscription_api.create_beneficiary_import(user, fraud_result)
     except fraud_exceptions.UserAgeNotValid:
         logger.warning(
             "User age not valid",
