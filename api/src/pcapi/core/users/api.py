@@ -513,7 +513,7 @@ def send_user_emails_for_email_change(user: User, new_email: str, expiration_dat
 
 
 def change_user_email(current_email: str, new_email: str) -> None:
-    current_user = user_queries.find_user_by_validated_email(current_email)
+    current_user = user_queries.find_user_by_email(current_email)
     if not current_user:
         raise exceptions.UserDoesNotExist()
 
@@ -865,7 +865,7 @@ def check_user_password(user: User, password: Optional[str]) -> None:
 
 
 def check_email_address_does_not_exist(email: str) -> None:
-    if user_queries.find_user_by_validated_email(email):
+    if user_queries.find_user_by_email(email):
         raise exceptions.EmailExistsError(email)
 
 
