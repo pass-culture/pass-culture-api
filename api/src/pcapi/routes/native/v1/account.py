@@ -94,7 +94,7 @@ def validate_user_email(body: beneficiaries_serialization.ChangeBeneficiaryEmail
     try:
         payload = beneficiaries_serialization.ChangeEmailTokenContent.from_token(body.token)
         api.change_user_email(current_email=payload.current_email, new_email=payload.new_email)
-    except pydantic.ValidationError:
+    except (pydantic.ValidationError, exceptions.EmailExistsError):
         # ValidationError can only been raise by an invalid email at
         # this point
         raise ApiErrors(
@@ -104,11 +104,6 @@ def validate_user_email(body: beneficiaries_serialization.ChangeBeneficiaryEmail
     except InvalidTokenError:
         raise ApiErrors(
             {"code": "INVALID_TOKEN", "message": "Token invalide"},
-            status_code=400,
-        )
-    except exceptions.EmailExistsError:
-        raise ApiErrors(
-            {"code": "INVALID_EMAIL", "message": "Adresse email invalide"},
             status_code=400,
         )
 
