@@ -13,7 +13,6 @@ import typing
 from typing import Optional
 from typing import Tuple
 from typing import Union
-import urllib
 
 from flask import current_app as app
 from flask_jwt_extended import create_access_token
@@ -83,7 +82,6 @@ from pcapi.tasks.account import verify_identity_document
 from pcapi.utils import phone_number as phone_number_utils
 from pcapi.utils.token import random_token
 from pcapi.utils.urls import generate_firebase_dynamic_link
-from pcapi.utils.urls import get_webapp_url
 
 
 logger = logging.getLogger(__name__)
@@ -504,15 +502,13 @@ def bulk_unsuspend_account(user_ids: list[int], actor: User) -> None:
     )
 
 
-def send_user_emails_for_email_change(
-    user: User, new_email: str, expiration_date: datetime, env: str = "webapp"
-) -> None:
+def send_user_emails_for_email_change(user: User, new_email: str, expiration_date: datetime) -> None:
     user_with_new_email = find_user_by_email(new_email)
     if user_with_new_email:
         return
 
     send_information_email_change_email(user)
-    link_for_email_change = _build_link_for_email_change(user.email, new_email, expiration_date, env)
+    link_for_email_change = _build_link_for_email_change(user.email, new_email, expiration_date)
     send_confirmation_email_change_email(user, new_email, link_for_email_change)
 
 
@@ -574,16 +570,12 @@ def update_user_info(
     repository.save(user)
 
 
-def _build_link_for_email_change(current_email: str, new_email: str, expiration_date: datetime, env: str) -> str:
+def _build_link_for_email_change(current_email: str, new_email: str, expiration_date: datetime) -> str:
     token = encode_jwt_payload({"current_email": current_email, "new_email": new_email}, expiration_date)
     expiration = int(expiration_date.timestamp())
 
     path = "changement-email"
     params = {"token": token, "expiration_timestamp": expiration}
-
-    if env == "webapp":
-        url = urllib.parse.urljoin(get_webapp_url(), path)
-        return f"{url}?%s" % urllib.parse.urlencode(params)
 
     return generate_firebase_dynamic_link(path, params)
 
@@ -1063,7 +1055,7 @@ def update_email(user: User, email: str, password: Optional[str]) -> None:
     check_user_password(user, password)
 
     expiration_date = save_email_update_activation_token_ttl(user, app.redis_client)
-    send_user_emails_for_email_change(user, email, expiration_date, "native")
+    send_user_emails_for_email_change(user, email, expiration_date)
 
 
 def update_notification_subscription(
