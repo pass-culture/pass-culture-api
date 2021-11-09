@@ -10,6 +10,7 @@ from pcapi.core.bookings.api import compute_cancellation_limit_date
 from pcapi.core.educational import exceptions
 from pcapi.core.educational import repository as educational_repository
 from pcapi.core.educational import validation
+from pcapi.core.educational.adage import send_prebooking_information_to_adage
 from pcapi.core.educational.models import EducationalBooking
 from pcapi.core.educational.models import EducationalBookingStatus
 from pcapi.core.educational.models import EducationalDeposit
@@ -97,6 +98,8 @@ def book_educational_offer(redactor_informations: RedactorInformation, stock_id:
         mails.send(recipients=[stock.offer.bookingEmail], data=_build_prebooking_mail_data(booking))
 
     search.async_index_offer_ids([stock.offerId])
+
+    send_prebooking_information_to_adage(booking)
 
     return booking
 
