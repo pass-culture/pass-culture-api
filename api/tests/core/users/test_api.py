@@ -1268,18 +1268,6 @@ class UpdateUserLastConnectionDateTest:
         assert len(sendinblue_testing.sendinblue_requests) == 0
 
 
-class CheckEmailPasswordFormatTest:
-    def test_check_email_password_format(self):
-        users_api.check_email_password_format("email@example.com", "some_random_password")
-
-    def test_check_email_password_errors(self):
-        with pytest.raises(users_exceptions.InvalidEmailError):
-            users_api.check_email_password_format("not_an_email", "some_random_password")
-
-        with pytest.raises(users_exceptions.EmailUpdateInvalidPassword):
-            users_api.check_email_password_format("email@example.com", "nope")
-
-
 class UpdateEmailTest:
     def test_update_email(self):
         user = users_factories.UserFactory(email="py@test.com")

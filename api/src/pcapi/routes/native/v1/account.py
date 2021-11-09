@@ -51,8 +51,20 @@ def get_user_profile(user: User) -> serializers.UserProfileResponse:
 )  # type: ignore
 @authenticated_user_required
 def update_user_profile(user: User, body: serializers.UserProfileUpdateRequest) -> serializers.UserProfileResponse:
+    api.update_user_profile(user, body)
+    return serializers.UserProfileResponse.from_orm(user)
+
+
+@blueprint.native_v1.route("/profile/update_email", methods=["POST"])
+@spectree_serialize(
+    response_model=serializers.UserProfileResponse,
+    on_success_status=200,
+    api=blueprint.api,
+)  # type: ignore
+@authenticated_user_required
+def update_user_email(user: User, body: serializers.UserProfileEmailUpdate) -> serializers.UserProfileResponse:
     try:
-        api.update_user_profile(user, body)
+        api.update_email(user, body.email, body.password)
         return serializers.UserProfileResponse.from_orm(user)
     except exceptions.EmailUpdateTokenExists:
         raise ApiErrors(

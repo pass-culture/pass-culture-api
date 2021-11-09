@@ -5,6 +5,7 @@ from uuid import UUID
 
 from dateutil.relativedelta import relativedelta
 import flask
+import pydantic
 from pydantic.class_validators import validator
 from pydantic.fields import Field
 from sqlalchemy.orm import joinedload
@@ -246,8 +247,11 @@ class UserProfileResponse(BaseModel):
 
 class UserProfileUpdateRequest(BaseModel):
     subscriptions: Optional[NotificationSubscriptions]
-    email: Optional[str]
-    password: Optional[str]
+
+
+class UserProfileEmailUpdate(BaseModel):
+    email: pydantic.EmailStr
+    password: pydantic.constr(strip_whitespace=True, min_length=8, strict=True)  # type: ignore
 
 
 class ValidateEmailRequest(BaseModel):

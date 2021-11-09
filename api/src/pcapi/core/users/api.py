@@ -17,7 +17,6 @@ from typing import Union
 from flask import current_app as app
 from flask_jwt_extended import create_access_token
 from google.cloud.storage.blob import Blob
-import pydantic
 from redis import Redis
 
 # TODO (viconnex): fix circular import of pcapi/models/__init__.py
@@ -76,7 +75,6 @@ from pcapi.repository import transaction
 from pcapi.repository import user_queries
 from pcapi.repository.user_queries import find_user_by_email
 from pcapi.routes.serialization.users import ProUserCreationBodyModel
-from pcapi.routes.serialization.users import UserProfileEmailUpdate
 from pcapi.tasks.account import VerifyIdentityDocumentRequest
 from pcapi.tasks.account import verify_identity_document
 from pcapi.utils import phone_number as phone_number_utils
@@ -869,22 +867,6 @@ def check_email_address_does_not_exist(email: str) -> None:
         raise exceptions.EmailExistsError(email)
 
 
-def check_email_password_format(email: str, password: Optional[str]) -> None:
-    try:
-        UserProfileEmailUpdate(email=email, password=password)
-    except pydantic.ValidationError as validation_error:
-        for error in validation_error.errors():
-            loc = error["loc"][0]
-
-            if loc == "email":
-                raise exceptions.InvalidEmailError(email) from validation_error
-
-            if loc == "password":
-                raise exceptions.EmailUpdateInvalidPassword() from validation_error
-
-            raise
-
-
 def check_phone_number_not_used(phone_number: str) -> None:
     if does_validated_phone_exist(phone_number):
         raise exceptions.PhoneAlreadyExists(phone_number)
@@ -1044,13 +1026,9 @@ def update_user_profile(user: User, content: "account_serialization.UserProfileU
         update_notification_subscription(user, content.subscriptions)
         update_external_user(user)
 
-    if content.email:
-        update_email(user, content.email, content.password)
-
 
 def update_email(user: User, email: str, password: Optional[str]) -> None:
     check_email_update_attempts(user, app.redis_client)
-    check_email_password_format(email, password)
     check_email_address_does_not_exist(email)
     check_user_password(user, password)
 
