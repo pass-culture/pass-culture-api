@@ -1,3 +1,4 @@
+from datetime import date
 from datetime import datetime
 from unittest.mock import patch
 
@@ -30,35 +31,23 @@ from pcapi.models import User
 @pytest.mark.usefixtures("db_session")
 class UserAutomationsTest:
     def _create_users_around_18(self):
-        today = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0)
+        today = datetime.combine(date.today(), datetime.min.time())
 
-        users_factories.UserFactory(
-            email="marc+test@example.net",
-            dateOfBirth=today - relativedelta(years=ELIGIBILITY_AGE_18, days=-29),
-            roles=[UserRole.BENEFICIARY],
+        users_factories.BeneficiaryGrant18Factory(
+            email="marc+test@example.net", dateOfBirth=today - relativedelta(years=ELIGIBILITY_AGE_18, days=-29)
         )
-        users_factories.UserFactory(
-            email="fabien+test@example.net",
-            dateOfBirth=today - relativedelta(years=ELIGIBILITY_AGE_18, days=-30),
-            roles=[UserRole.BENEFICIARY],
+        users_factories.BeneficiaryGrant18Factory(
+            email="fabien+test@example.net", dateOfBirth=today - relativedelta(years=ELIGIBILITY_AGE_18, days=-30)
         )
-        users_factories.UserFactory(
-            email="daniel+test@example.net",
-            dateOfBirth=today - relativedelta(years=ELIGIBILITY_AGE_18, days=-31),
-            roles=[UserRole.BENEFICIARY],
+        users_factories.BeneficiaryGrant18Factory(
+            email="daniel+test@example.net", dateOfBirth=today - relativedelta(years=ELIGIBILITY_AGE_18, days=-31)
         )
-        users_factories.UserFactory(
-            email="bernard+test@example.net", dateOfBirth=today - relativedelta(years=20), roles=[UserRole.BENEFICIARY]
+        users_factories.UserFactory(email="bernard+test@example.net", dateOfBirth=today - relativedelta(years=20))
+        users_factories.ProFactory(
+            email="pro+test@example.net", dateOfBirth=today - relativedelta(years=ELIGIBILITY_AGE_18, days=-30)
         )
-        users_factories.UserFactory(
-            email="pro+test@example.net",
-            dateOfBirth=today - relativedelta(years=ELIGIBILITY_AGE_18, days=-30),
-            roles=[UserRole.PRO],
-        )
-        users_factories.UserFactory(
-            email="gerard+test@example.net",
-            dateOfBirth=today - relativedelta(years=ELIGIBILITY_AGE_18, days=-30),
-            roles=[UserRole.UNDERAGE_BENEFICIARY],
+        users_factories.UnderageBeneficiaryFactory(
+            email="gerard+test@example.net", dateOfBirth=today - relativedelta(years=ELIGIBILITY_AGE_18, days=-30)
         )
 
     @freeze_time("2021-08-01 10:00:00")
@@ -112,15 +101,13 @@ class UserAutomationsTest:
         today = datetime.combine(datetime.today(), datetime.min.time())
 
         for i in range(1, 1501):
-            users_factories.UserFactory(
+            users_factories.BeneficiaryGrant18Factory(
                 email=f"fabien+test+{i}@example.net",
                 dateOfBirth=today - relativedelta(years=ELIGIBILITY_AGE_18, days=-30),
-                roles=[UserRole.BENEFICIARY],
             )
-            users_factories.UserFactory(
+            users_factories.BeneficiaryGrant18Factory(
                 email=f"daniel+test+{i}@example.net",
                 dateOfBirth=today - relativedelta(years=ELIGIBILITY_AGE_18, days=3),
-                roles=[UserRole.BENEFICIARY],
             )
 
         result = user_turned_eighteen_automation()
@@ -313,11 +300,7 @@ class UserAutomationsTest:
             not_beneficiary = users_factories.UserFactory(
                 email="marc+test@example.net", lastConnectionDate=datetime(2021, 8, 1)
             )
-            users_factories.UserFactory(
-                email="pierre+test@example.net",
-                lastConnectionDate=datetime(2021, 8, 1),
-                roles=[UserRole.PRO],
-            )
+            users_factories.ProFactory(email="pierre+test@example.net", lastConnectionDate=datetime(2021, 8, 1))
             users_factories.UserFactory(email="daniel+test@example.net", lastConnectionDate=datetime(2021, 8, 2))
             users_factories.UserFactory(email="billy+test@example.net", dateCreated=datetime(2021, 7, 31))
             users_factories.UserFactory(email="gerard+test@example.net", dateCreated=datetime(2021, 9, 1))
@@ -336,11 +319,7 @@ class UserAutomationsTest:
             users_factories.BeneficiaryGrant18Factory(
                 email="fabien+test@example.net", lastConnectionDate=datetime(2021, 8, 1)
             )
-            users_factories.UserFactory(
-                email="pierre+test@example.net",
-                lastConnectionDate=datetime(2021, 8, 1),
-                roles=[UserRole.PRO],
-            )
+            users_factories.ProFactory(email="pierre+test@example.net", lastConnectionDate=datetime(2021, 8, 1))
             users_factories.UserFactory(email="daniel+test@example.net", lastConnectionDate=datetime(2021, 8, 2))
             users_factories.UserFactory(email="billy+test@example.net", dateCreated=datetime(2021, 7, 31))
             users_factories.UserFactory(email="gerard+test@example.net", dateCreated=datetime(2021, 9, 1))

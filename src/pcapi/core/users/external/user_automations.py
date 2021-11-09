@@ -127,7 +127,7 @@ def get_inactive_user_since_thirty_days() -> List[User]:
 
 def users_inactive_since_30_days_automation() -> bool:
     """
-    This automation update every day the list of users who are inactive since 30 days or more:
+    This automation called every day updates the list of users who are inactive since 30 days or more:
     - adds or keeps any young user who did not connect to the app in the least 30 days (even if the email has been sent;
       marketing filters will ensure that he or she receives the email only once)
     - removes any inactive user who connected recently
