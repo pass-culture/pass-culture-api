@@ -460,7 +460,19 @@ jobs:
           command: gcloud container clusters get-credentials --region ${GCP_REGION} ${GKE_CLUSTER_NAME}
       - run: kubectl get deploy -n testing -o name | xargs -L 1 kubectl rollout restart -n testing
       - notify-slack:
-         channel: alertes-deploiement
+          channel: alertes-deploiement
+
+  get-alembic-logs:
+    executor: gcp-sdk
+    environment:
+      GKE_CLUSTER_NAME: cluster-metier-ehp
+    steps:
+      - authenticate_gcp:
+          gcp-key-name: GCP_METIER_KEY
+      - run:
+          name: Get GKE cluster credentials
+          command: gcloud container clusters get-credentials --region ${GCP_REGION} ${GKE_CLUSTER_NAME}
+      - run: kubectl logs --selector=job-name=testing-pcapi-alembic-upgrade
 
 ###################
 #  WORKFLOWS
@@ -469,49 +481,10 @@ jobs:
 workflows:
   commit:
     jobs:
-      - run-tests:
-          name: "Run core tests after commit"
-          pytest_extra_args: "tests/core"
-      - run-tests:
-          name: "Run routes tests after commit"
-          pytest_extra_args: "tests/routes"
-      - run-tests:
-          name: "Run other tests after commit"
-          pytest_extra_args: "tests --ignore=tests/core --ignore=tests/routes"
-      - quality:
-          name: "Run quality checks after commit"
-      - build-container:
-          filters:
-            branches:
-              only:
-                - master
-      - build-and-push-image:
-          requires:
-            - "Run core tests after commit"
-            - "Run routes tests after commit"
-            - "Run other tests after commit"
-            - "Run quality checks after commit"
-          filters:
-            branches:
-              only:
-                - master
-          context:
-            - GCP
-            - GCP_EHP
-      - deploy-pcapi:
-          requires:
-            - build-and-push-image
-          context:
-            - GCP
-            - GCP_EHP
-            - Slack
-      - restart-pcapi:
-          requires:
-            - deploy-pcapi
-          context:
-            - GCP
-            - GCP_EHP
-            - Slack
+        - get-alembic-logs:
+            context:
+              - GCP
+              - GCP_EHP
 
   nightly:
     triggers:
