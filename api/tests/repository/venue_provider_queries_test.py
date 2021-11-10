@@ -1,9 +1,9 @@
 import pytest
 
 from pcapi.core.offerers.factories import APIProviderFactory
+from pcapi.core.offerers.factories import AllocineVenueProviderFactory
 from pcapi.core.providers.models import AllocineVenueProvider
 from pcapi.core.providers.models import VenueProvider
-from pcapi.model_creators.generic_creators import create_allocine_venue_provider
 from pcapi.model_creators.generic_creators import create_offerer
 from pcapi.model_creators.generic_creators import create_venue
 from pcapi.model_creators.generic_creators import create_venue_provider
@@ -70,15 +70,11 @@ class GetVenueProviderByIdTest:
     @pytest.mark.usefixtures("db_session")
     def test_should_return_matching_venue_provider_with_allocine_attributes(self):
         # Given
-        offerer = create_offerer()
-        venue = create_venue(offerer)
-        titelive_provider = activate_provider("AllocineStocks")
-        venue_provider = create_allocine_venue_provider(venue, titelive_provider)
-        repository.save(venue_provider)
+        allocine_venue_provider = AllocineVenueProviderFactory()
 
         # When
-        existing_venue_provider = get_venue_provider_by_id(venue_provider.id)
+        existing_venue_provider = get_venue_provider_by_id(allocine_venue_provider.id)
 
         # Then
-        assert existing_venue_provider == venue_provider
-        assert isinstance(venue_provider, AllocineVenueProvider)
+        assert existing_venue_provider == allocine_venue_provider
+        assert isinstance(allocine_venue_provider, AllocineVenueProvider)
