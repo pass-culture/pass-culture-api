@@ -497,6 +497,15 @@ class User(PcObject, Model, NeedsValidationMixin):
         subscriptions = self.get_notification_subscriptions()
         return subscriptions.marketing_push
 
+    def can_upgrade_beneficiary_role(self, eligibility: Optional[EligibilityType] = None) -> bool:
+        if not eligibility:
+            eligibility = self.eligibility
+
+        return bool(eligibility) and (
+            (eligibility == EligibilityType.UNDERAGE and not self.is_beneficiary)
+            or (eligibility == EligibilityType.AGE18 and not self.has_beneficiary_role)
+        )
+
 
 class ExpenseDomain(enum.Enum):
     ALL = "all"
