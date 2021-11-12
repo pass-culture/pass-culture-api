@@ -11,6 +11,7 @@ from pcapi.routes.apis import public_api
 from pcapi.scripts.beneficiary import remote_import
 from pcapi.serialization.decorator import spectree_serialize
 from pcapi.validation.routes import dms as dms_validation
+from pcapi.validation.routes import ubble as ubble_validation
 
 
 logger = logging.getLogger(__name__)
@@ -36,6 +37,8 @@ def dms_webhook_update_application_status(form: dms_validation.DMSWebhookRequest
     try:
         application = remote_import.parse_beneficiary_information_graphql(raw_data["dossier"], form.procedure_id)
     except remote_import.DMSParsingError:
+        # client.send_error_notification()
+        # mettre a jour l'état du dossier
         logger.info(
             "Cannot parse DMS application %d in webhook. Errors will be handled in the remote_import cron",
             form.dossier_id,
@@ -70,3 +73,8 @@ def dms_webhook_update_application_status(form: dms_validation.DMSWebhookRequest
     if not user.hasCompletedIdCheck:
         user.hasCompletedIdCheck = True
         repository.save(user)
+
+
+@public_api.route("/webhooks/ubble/application_status", methods=["POST"])
+def ubble_webhook_update_application_status(form: ubble_validation.WebhookRequest) -> None:
+    pass
