@@ -1,4 +1,8 @@
+from contextlib import contextmanager
+import typing
+
 import sentry_sdk
+from sentry_sdk import capture_exception
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 from sentry_sdk.integrations.rq import RqIntegration
@@ -19,3 +23,26 @@ def init_sentry_sdk():
         environment=settings.ENV,
         traces_sample_rate=settings.SENTRY_SAMPLE_RATE,
     )
+
+
+ExceptionType = typing.Type[Exception]
+ExceptionIterable = tuple[ExceptionType]
+
+
+@contextmanager
+def suppress_and_capture_errors(exception_classes: typing.Union[ExceptionType, ExceptionIterable]) -> typing.Generator:
+    """
+    Catch specified errors, send error information to Sentry, and
+    ignore them.
+
+    Usage:
+        with suppress_and_capture_errors(Exception):
+            # ...
+
+        with suppress_and_capture_errors((ValueError, MemoryError)):
+            # ...
+    """
+    try:
+        yield
+    except exception_classes as exc:
+        capture_exception(exc)
