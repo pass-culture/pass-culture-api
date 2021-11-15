@@ -18,6 +18,7 @@ from flask import current_app as app
 from flask_jwt_extended import create_access_token
 from google.cloud.storage.blob import Blob
 from redis import Redis
+from sentry_sdk import capture_exception
 
 # TODO (viconnex): fix circular import of pcapi/models/__init__.py
 from pcapi import models  # pylint: disable=unused-import
@@ -858,7 +859,14 @@ def check_user_password(user: User, password: Optional[str]) -> None:
 
     try:
         users_repository.check_user_and_credentials(user, password)
-    except (exceptions.InvalidIdentifier, exceptions.UnvalidatedAccount) as exc:
+    except exceptions.InvalidIdentifier as exc:
+        raise exceptions.EmailUpdateInvalidPassword() from exc
+    except exceptions.UnvalidatedAccount as exc:
+        # This should not happen. But, if it did:
+        # 1. send the error to sentry
+        # 2. raise the same error as above, so the end client
+        # can't guess what happened.
+        capture_exception(exc)
         raise exceptions.EmailUpdateInvalidPassword() from exc
 
 
