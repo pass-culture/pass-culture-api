@@ -13,6 +13,7 @@ from pcapi.core.logging import get_or_set_correlation_id
 from pcapi.core.offers.exceptions import FileSizeExceeded
 from pcapi.core.users import api
 from pcapi.core.users import constants
+from pcapi.core.users import email as email_api
 from pcapi.core.users import exceptions
 from pcapi.core.users.external import update_external_user
 from pcapi.core.users.models import User
@@ -64,7 +65,7 @@ def update_user_profile(user: User, body: serializers.UserProfileUpdateRequest) 
 @authenticated_user_required
 def update_user_email(user: User, body: serializers.UserProfileEmailUpdate) -> serializers.UserProfileResponse:
     try:
-        api.update_email(user, body.email, body.password)
+        email_api.update_email(user, body.email, body.password)
         return serializers.UserProfileResponse.from_orm(user)
     except exceptions.EmailUpdateTokenExists:
         raise ApiErrors(

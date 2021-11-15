@@ -1266,20 +1266,3 @@ class UpdateUserLastConnectionDateTest:
 
         assert user.lastConnectionDate == datetime(2021, 9, 20, 11, 00, 11)
         assert len(sendinblue_testing.sendinblue_requests) == 0
-
-
-class UpdateEmailTest:
-    def test_update_email(self):
-        user = users_factories.UserFactory(email="py@test.com")
-        user.setPassword("some_password")
-
-        users_api.update_email(user, "new@email.com", "some_password")
-        assert len(mails_testing.outbox) == 2
-
-    def test_token_exists(self):
-        user = users_factories.UserFactory(email="py@test.com")
-        user.setPassword("some_password")
-
-        with pytest.raises(users_exceptions.EmailUpdateTokenExists):
-            users_api.update_email(user, "new@email.com", "some_password")
-            users_api.update_email(user, "another@email.com", "some_password")

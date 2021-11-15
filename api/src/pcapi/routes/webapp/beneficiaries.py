@@ -15,6 +15,7 @@ from pcapi import settings
 from pcapi.connectors.api_recaptcha import ReCaptchaException
 from pcapi.connectors.api_recaptcha import check_webapp_recaptcha_token
 from pcapi.core.users import api as users_api
+from pcapi.core.users import email as email_api
 from pcapi.core.users import exceptions as users_exceptions
 from pcapi.core.users import models as user_models
 from pcapi.core.users import repository as users_repo
@@ -81,13 +82,13 @@ def change_beneficiary_email_request(body: ChangeBeneficiaryEmailRequestBody) ->
         raise errors from exc
 
     try:
-        expiration_date = users_api.save_email_update_activation_token_counter(user, app.redis_client)
+        expiration_date = email_api.save_email_update_activation_token_counter(user, app.redis_client)
     except users_exceptions.EmailUpdateTokenExists as error:
         errors.add_error("token", "Un token actif existe déjà")
         raise errors from error
 
     try:
-        users_api.send_user_emails_for_email_change(user, body.new_email, expiration_date)
+        email_api.send_user_emails_for_email_change(user, body.new_email, expiration_date)
     except MailServiceException as mail_service_exception:
         errors.status_code = 503
         errors.add_error("email", "L'envoi d'email a échoué")
