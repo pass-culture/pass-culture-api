@@ -81,7 +81,7 @@ def change_beneficiary_email_request(body: ChangeBeneficiaryEmailRequestBody) ->
         raise errors from exc
 
     try:
-        expiration_date = users_api.save_email_update_activation_token_ttl(user, app.redis_client)
+        expiration_date = users_api.save_email_update_activation_token_counter(user, app.redis_client)
     except users_exceptions.EmailUpdateTokenExists as error:
         errors.add_error("token", "Un token actif existe déjà")
         raise errors from error

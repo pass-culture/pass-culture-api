@@ -841,7 +841,7 @@ def email_update_token_ttl_key(user: User) -> str:
     return f"update_email_active_tokens_{user.id}"
 
 
-def save_email_update_activation_token_ttl(user: User, redis: Redis) -> datetime:
+def save_email_update_activation_token_counter(user: User, redis: Redis) -> datetime:
     """
     Use a dummy counter to find out whether the user already has an
     active token.
@@ -1049,7 +1049,7 @@ def update_email(user: User, email: str, password: Optional[str]) -> None:
     check_email_address_does_not_exist(email)
     check_user_password(user, password)
 
-    expiration_date = save_email_update_activation_token_ttl(user, app.redis_client)
+    expiration_date = save_email_update_activation_token_counter(user, app.redis_client)
     send_user_emails_for_email_change(user, email, expiration_date)
 
 
