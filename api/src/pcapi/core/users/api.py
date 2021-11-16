@@ -943,12 +943,6 @@ def create_user_access_token(user: User) -> str:
     return create_access_token(identity=user.email, additional_claims={"user_claims": {"user_id": user.id}})
 
 
-def update_user_profile(user: User, content: "account_serialization.UserProfileUpdateRequest") -> None:
-    if content.subscriptions is not None:
-        update_notification_subscription(user, content.subscriptions)
-        update_external_user(user)
-
-
 def update_notification_subscription(
     user: User, subscriptions: "typing.Optional[account_serialization.NotificationSubscriptions]"
 ) -> None:
@@ -964,3 +958,5 @@ def update_notification_subscription(
 
     if not subscriptions.marketing_push:
         push_notifications.delete_user_attributes(user.id)
+
+    update_external_user(user)

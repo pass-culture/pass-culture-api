@@ -52,7 +52,7 @@ def get_user_profile(user: User) -> serializers.UserProfileResponse:
 )  # type: ignore
 @authenticated_user_required
 def update_user_profile(user: User, body: serializers.UserProfileUpdateRequest) -> serializers.UserProfileResponse:
-    api.update_user_profile(user, body)
+    api.update_notification_subscription(user, body.subscriptions)
     return serializers.UserProfileResponse.from_orm(user)
 
 
