@@ -77,7 +77,7 @@ class ChangeEmailTokenContent(BaseModel):
         ) as error:
             raise InvalidTokenError() from error
 
-        if not {"exp", "new_email", "current_email"} <= set(jwt_payload):
+        if not {"new_email", "current_email"} <= set(jwt_payload):
             raise InvalidTokenError()
 
         current_email = jwt_payload["current_email"]
