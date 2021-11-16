@@ -15,7 +15,7 @@ from pcapi.repository import user_queries
 from .send import send_user_emails_for_email_change
 
 
-def update_email(user: User, email: str, password: Optional[str]) -> None:
+def request_email_update(user: User, email: str, password: Optional[str]) -> None:
     check_email_update_attempts(user, app.redis_client)
     check_email_address_does_not_exist(email)
     check_user_password(user, password)

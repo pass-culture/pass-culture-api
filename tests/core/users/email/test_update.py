@@ -10,11 +10,11 @@ pytestmark = pytest.mark.usefixtures("db_session")
 
 
 class UpdateEmailTest:
-    def test_update_email(self):
+    def test_request_email_update(self):
         user = users_factories.UserFactory(email="py@test.com")
         user.setPassword("some_password")
 
-        email_api.update_email(user, "new@email.com", "some_password")
+        email_api.request_email_update(user, "new@email.com", "some_password")
         assert len(mails_testing.outbox) == 2
 
     def test_token_exists(self):
@@ -22,5 +22,5 @@ class UpdateEmailTest:
         user.setPassword("some_password")
 
         with pytest.raises(users_exceptions.EmailUpdateTokenExists):
-            email_api.update_email(user, "new@email.com", "some_password")
-            email_api.update_email(user, "another@email.com", "some_password")
+            email_api.request_email_update(user, "new@email.com", "some_password")
+            email_api.request_email_update(user, "another@email.com", "some_password")

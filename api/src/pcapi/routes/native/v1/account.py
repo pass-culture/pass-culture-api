@@ -65,7 +65,7 @@ def update_user_profile(user: User, body: serializers.UserProfileUpdateRequest) 
 @authenticated_user_required
 def update_user_email(user: User, body: serializers.UserProfileEmailUpdate) -> serializers.UserProfileResponse:
     try:
-        email_api.update_email(user, body.email, body.password)
+        email_api.request_email_update(user, body.email, body.password)
         return serializers.UserProfileResponse.from_orm(user)
     except exceptions.EmailUpdateTokenExists:
         raise ApiErrors(
