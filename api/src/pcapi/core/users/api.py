@@ -34,7 +34,6 @@ from pcapi.core.subscription import api as subscription_api
 from pcapi.core.subscription import messages as subscription_messages
 from pcapi.core.subscription.models import BeneficiaryPreSubscription
 import pcapi.core.subscription.repository as subscription_repository
-from pcapi.core.users import email as email_api
 from pcapi.core.users import exceptions
 from pcapi.core.users.external import update_external_user
 from pcapi.core.users.models import Credit
@@ -75,7 +74,6 @@ from pcapi.routes.serialization.users import ProUserCreationBodyModel
 from pcapi.tasks.account import VerifyIdentityDocumentRequest
 from pcapi.tasks.account import verify_identity_document
 from pcapi.utils import phone_number as phone_number_utils
-from pcapi.utils.sentry import suppress_and_capture_errors
 from pcapi.utils.token import random_token
 
 
@@ -518,16 +516,6 @@ def change_user_email(current_email: str, new_email: str) -> None:
     repository.delete(*sessions)
 
     logger.info("User has changed their email", extra={"user": current_user.id})
-
-    with suppress_and_capture_errors(Exception):
-        # Passed the logger.info line, the email change process is done.
-        # BUT keep things clean and avoid any confusion, we must remove
-        # (unlink) the user's counter.
-        #
-        # It is not a huge problem if an error is encountered, no need
-        # to raise a 500 error and alert the end user, as long as it
-        # is sent to sentry.
-        app.redis_client.unlink(email_api.email_update_token_ttl_key(current_user))
 
 
 def update_user_info(
