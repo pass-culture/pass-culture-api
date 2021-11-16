@@ -35,10 +35,6 @@ def check_email_update_attempts(user: User, redis: Redis) -> None:
         raise exceptions.EmailUpdateLimitReached()
 
 
-def email_update_token_ttl_key(user: User) -> str:
-    return f"update_email_active_tokens_{user.id}"
-
-
 def save_email_update_activation_token_counter(user: User, redis: Redis) -> datetime:
     """
     Use a dummy counter to find out whether the user already has an
@@ -48,7 +44,7 @@ def save_email_update_activation_token_counter(user: User, redis: Redis) -> date
       (expiration_date, the lifetime of the validation token).
     * If not, raise an error because there is already one.
     """
-    key = email_update_token_ttl_key(user)
+    key = f"update_email_active_tokens_{user.id}"
     count = redis.incr(key)
 
     if count > 1:
