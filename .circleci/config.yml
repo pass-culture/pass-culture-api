@@ -1,0 +1,17 @@
+version: 2.1
+orbs:
+  cloudrun: circleci/gcp-cloud-run@1.0.2
+  slack: circleci/slack@4.2
+
+###################
+#  WORKFLOWS
+###################
+
+jobs:
+  build:
+    docker:
+      - image: ubuntu:latest
+    steps:
+      - run: echo "tota"
+
+
